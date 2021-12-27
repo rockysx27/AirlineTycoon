@@ -78,7 +78,7 @@ add_executable (AT
     DutyFree.cpp
     Editor.cpp
     Fracht.cpp
-    GameFrame.cpp
+    Gameframe.cpp
     GameMechanic.cpp
     Global.cpp
     Globe.cpp

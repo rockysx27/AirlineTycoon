@@ -1,6 +1,11 @@
 // GameFrame.h : header file
 //
 
+enum InputFlags {
+    None = 0,
+    FromTextInput = 1,
+};
+
 /////////////////////////////////////////////////////////////////////////////
 // GameFrame frame
 
