@@ -39,6 +39,7 @@ void HDU::HercPrintf(SLONG /*unused*/, const char *format, ...) {
     va_list args;
     va_start(args, format);
     vfprintf(Log, format, args);
+    V_AT_Log_I("Herc", format, args);
     va_end(args);
     fprintf(Log, "\n");
     fflush(Log);
@@ -51,6 +52,7 @@ void HDU::HercPrintf(const char *format, ...) {
     va_list args;
     va_start(args, format);
     vfprintf(Log, format, args);
+    V_AT_Log_I("Herc", format, args);
     va_end(args);
     fprintf(Log, "\n");
     fflush(Log);
@@ -103,7 +105,7 @@ SLONG TeakLibW_Exception(char *file, SLONG line, const char *format, ...) {
     char buffer[128];
     va_list args;
     va_start(args, format);
-    vsnprintf(buffer, sizeof(buffer), format, args);
+    vsprintf(buffer, format, args);
     va_end(args);
     // MessageBeep(0);
     // MessageBeep(0x30u);
@@ -111,8 +113,8 @@ SLONG TeakLibW_Exception(char *file, SLONG line, const char *format, ...) {
     Hdu.HercPrintf(0, "Exception in File %s, Line %li:", file, line);
     Hdu.HercPrintf(0, buffer);
     Hdu.HercPrintf(1, "====================================================================");
-    Hdu.HercPrintf(0, "C++ Exception thrown. Programm will probably be terminated.");
-    // Hdu.Close();
+    Hdu.HercPrintf(0, "C++ Exception thrown. Program will probably be terminated.");
+    Hdu.Close();
     // DebugBreak();
     throw std::runtime_error(buffer);
 }
