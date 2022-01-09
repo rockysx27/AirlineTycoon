@@ -1,4 +1,4 @@
-// Intro.cpp : Der Render-Intro
+﻿// Intro.cpp : Der Render-Intro
 
 /////////////////////////////////////////////////////////////////////////////
 // CIntro window
@@ -19,7 +19,7 @@ class CIntro : public CStdRaum
         SBBM         FadeTo;
         bool         bWasIntroPlayed;
 
-        GfxLib      *pRoomLib;               //Library f�r den Raum
+        GfxLib* pRoomLib;               //Library für den Raum
 
         SLONG        FrameNum;
         SLONG        FadeCount;

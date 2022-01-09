@@ -2080,6 +2080,7 @@ class PLAYER
         void  DelayFlightsIfNecessary (void);
         void  DoBodyguardRabatt (SLONG Money);
         void  EnterRoom (SLONG RoomNum, bool bDontBroadcast=false);
+        void  AddRocketPart(SLONG rocketPart, SLONG price);
         UWORD GetRoom (void);                         //Gibt den aktuellen Raum zurück
         SLONG GetMissionRating (bool bAnderer=false); //Gibt aktuellen Missionserfolg als Zahl zurück
         SLONG HasBerater (SLONG Berater);
@@ -2258,12 +2259,14 @@ class COptions
 {
     //Die Optionen:
     public:
+        SLONG       OptionFullscreen;
+        BOOL        OptionKeepAspectRatio;
         BOOL        OptionPlanes;
         BOOL        OptionPassengers;
-        BOOL        OptionEnableMidi;
+        SLONG       OptionMusicType;
         BOOL        OptionEnableDigi;
-        BOOL        OptionMusik;
-        BOOL        OptionMasterVolume;
+        SLONG       OptionMusik;
+        SLONG       OptionMasterVolume;
         SLONG       OptionLoopMusik;
         BOOL        OptionEffekte;
         BOOL        OptionAmbiente;

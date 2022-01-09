@@ -308,6 +308,10 @@ void PumpNetwork (void)
                             if (Sim.Players.GetAnzHumanPlayers()==1)
                             {
                                 gNetwork.DisConnect ();
+                                nOptionsOpen = 0;
+                                nAppsDisabled = 0;
+                                nWaitingForPlayer = 0;
+                                SetNetworkBitmap(0);
                                 Sim.bNetwork = false;
                                 return;
                             }
@@ -676,7 +680,8 @@ void PumpNetwork (void)
                                 >> qPlayer.Stunned         >> qPlayer.OfficeState     >> qPlayer.Koffein
                                 >> qPlayer.NumFlights      >> qPlayer.WalkSpeed
                                 >> qPlayer.WerbeBroschuere >> qPlayer.TelephoneDown   >> qPlayer.Presseerklaerung
-                                >> qPlayer.SecurityFlags   >> qPlayer.PlayerStinking;
+                                >> qPlayer.SecurityFlags   >> qPlayer.PlayerStinking
+                                >> qPlayer.RocketFlags     >> qPlayer.LastRocketFlags;
 
                             Anz--;
                         }
@@ -1002,8 +1007,8 @@ void PumpNetwork (void)
                             case 0:
                                 if (qPlayer.HasBerater (BERATERTYP_INFO))
                                 {
-                                    if (Generic1>=14) qPlayer.Messages.AddMessage (BERATERTYP_INFO, bprintf (StandardTexte.GetS (TOKEN_ADVICE, 9001), qFromPlayer.NameX, qFromPlayer.AirlineX));
-                                    if (Generic1>=7 && Generic1<14) qPlayer.Messages.AddMessage (BERATERTYP_INFO, bprintf (StandardTexte.GetS (TOKEN_ADVICE, 9002), qFromPlayer.NameX, qFromPlayer.AirlineX, (LPCTSTR)Cities[TafelData.City[Generic1-7].ZettelId].Name));
+                                    if (Generic1>=14) qPlayer.Messages.AddMessage (BERATERTYP_INFO, bprintf (StandardTexte.GetS (TOKEN_ADVICE, 9001), (LPCTSTR)qFromPlayer.NameX, (LPCTSTR)qFromPlayer.AirlineX));
+                                    if (Generic1>=7 && Generic1<14) qPlayer.Messages.AddMessage (BERATERTYP_INFO, bprintf (StandardTexte.GetS (TOKEN_ADVICE, 9002), (LPCTSTR)qFromPlayer.NameX, (LPCTSTR)qFromPlayer.AirlineX, (LPCTSTR)Cities[TafelData.City[Generic1-7].ZettelId].Name));
                                 }
                                 break;
 
@@ -1011,7 +1016,7 @@ void PumpNetwork (void)
                             case 1:
                                 if (qPlayer.HasBerater (BERATERTYP_INFO))
                                 {
-                                    qPlayer.Messages.AddMessage (BERATERTYP_INFO, bprintf (StandardTexte.GetS (TOKEN_ADVICE, 9000), qFromPlayer.NameX, qFromPlayer.AirlineX, Sim.UsedPlanes[0x1000000+Generic1].CalculatePrice()));
+                                    qPlayer.Messages.AddMessage (BERATERTYP_INFO, bprintf (StandardTexte.GetS (TOKEN_ADVICE, 9000), (LPCTSTR)qFromPlayer.NameX, (LPCTSTR)qFromPlayer.AirlineX, Sim.UsedPlanes[0x1000000+Generic1].CalculatePrice()));
                                 }
                                 break;
 
@@ -1019,7 +1024,7 @@ void PumpNetwork (void)
                             case 3:
                                 if (qPlayer.HasBerater (BERATERTYP_INFO))
                                 {
-                                    qPlayer.Messages.AddMessage (BERATERTYP_INFO, bprintf (StandardTexte.GetS (TOKEN_ADVICE, 9004), qFromPlayer.NameX, qFromPlayer.AirlineX, Generic1));
+                                    qPlayer.Messages.AddMessage (BERATERTYP_INFO, bprintf (StandardTexte.GetS (TOKEN_ADVICE, 9004), (LPCTSTR)qFromPlayer.NameX, (LPCTSTR)qFromPlayer.AirlineX, Generic1));
                                 }
                                 break;
 
@@ -1027,7 +1032,7 @@ void PumpNetwork (void)
                             case 4:
                                 if (qPlayer.HasBerater (BERATERTYP_INFO))
                                 {
-                                    qPlayer.Messages.AddMessage (BERATERTYP_INFO, bprintf (StandardTexte.GetS (TOKEN_ADVICE, 9005), qFromPlayer.NameX, qFromPlayer.AirlineX, Generic1));
+                                    qPlayer.Messages.AddMessage (BERATERTYP_INFO, bprintf (StandardTexte.GetS (TOKEN_ADVICE, 9005), (LPCTSTR)qFromPlayer.NameX, (LPCTSTR)qFromPlayer.AirlineX, Generic1));
                                 }
                                 break;
                         }
@@ -1041,6 +1046,11 @@ void PumpNetwork (void)
                         Message >> PlayerNum >> PlaneIndex >> Time;
 
                         PLAYER &qFromPlayer = Sim.Players.Players[PlayerNum];
+
+                        if(qFromPlayer.Planes.GetNumFree() < 2) {
+                            qFromPlayer.Planes.Planes.ReSize(qFromPlayer.Planes.AnzEntries() + 10);
+                            qFromPlayer.Planes.RepairReferences();
+                        }
 
                         qFromPlayer.Planes += Sim.UsedPlanes[0x1000000+PlaneIndex];
 
@@ -1135,9 +1145,11 @@ void PumpNetwork (void)
                         SLONG PlayerNum, PlaneId;
 
                         Message >> PlayerNum >> PlaneId;
+                        if(PlayerNum > 4)
+                            break;
                         Message >> Sim.Players.Players[PlayerNum].MechMode;
 
-                        if (PlaneId!=-1)
+                        if (PlaneId!=-1 && Sim.Players.Players[PlayerNum].Planes.IsInAlbum(PlaneId))
                         {
                             CPlane &qPlane = Sim.Players.Players[PlayerNum].Planes[PlaneId];
 

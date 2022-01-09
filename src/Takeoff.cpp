@@ -50,6 +50,7 @@ extern SBNetwork gNetwork;
 
 #include <fstream>
 #include <filesystem>
+#include <Dbghelp.h>
 
 CHLPool HLPool;
 
@@ -145,7 +146,23 @@ char *UCharToReadableAnsi( const unsigned char *pData, const unsigned uLen );
 unsigned char *ReadableAnsiToUChar( const char *pData, const unsigned uLen );
 
 
+LONG UnhandledExceptionCallback(
+        _EXCEPTION_POINTERS* exceptionInfo) {
 
+    _MINIDUMP_EXCEPTION_INFORMATION info = {GetCurrentThreadId(), exceptionInfo, TRUE};
+
+    HANDLE dump = CreateFile("last_crash.dmp", GENERIC_READ | GENERIC_WRITE, 0, NULL, CREATE_ALWAYS,
+            FILE_ATTRIBUTE_NORMAL, NULL);
+
+    MiniDumpWriteDump(
+            GetCurrentProcess(), GetCurrentProcessId(),
+            dump, MiniDumpNormal, &info, nullptr, nullptr);
+
+
+    CloseHandle(dump);
+
+    return EXCEPTION_EXECUTE_HANDLER;
+}
 
 
 
@@ -253,6 +270,8 @@ int main(int argc, char* argv[])
     v.muScramble           = 3556112065;
 
     long vv = v.GetValue();
+
+    SetUnhandledExceptionFilter(UnhandledExceptionCallback);
 
     const char* pText = "Hallo, ich bin ein Text";
 
@@ -768,6 +787,7 @@ BOOL CTakeOffApp::InitInstance(int argc, char* argv[])
 
                 FrameWnd->Invalidate(); MessagePump(); //lpDD->FlipToGDISurface();
                 SetMidiVolume(Sim.Options.OptionMusik);
+                gpMidi->SetMode(Sim.Options.OptionMusicType);
 
                 if (Sim.Options.OptionViewedIntro)
                 {
@@ -909,9 +929,13 @@ void CTakeOffApp::GameLoop(void*)
 
     Sim.TimeSlice = 0;
 
+    int startTime = 0, lastTime = 0;
     while (!bLeaveGameLoop)
     {
-        Time=timeGetTime();
+        Time= SDL_GetTicks();
+        startTime = Time;
+
+        int timerFps = Time;
         if (LastTime==0xffffffff || bgJustDidLotsOfWork || bActive==FALSE) LastTime=Time;
 
         bgJustDidLotsOfWork=FALSE;
@@ -1413,9 +1437,12 @@ void CTakeOffApp::GameLoop(void*)
                             }
                         }
 
-                        if (Sim.Players.Players[Sim.localPlayer].IsDrunk>0)
+                        if (nOptionsOpen == 0 && Sim.Players.Players[Sim.localPlayer].IsDrunk>0 && ((SDL_GetWindowFlags(FrameWnd->m_hWnd) & SDL_WINDOW_MOUSE_FOCUS) == SDL_WINDOW_MOUSE_FOCUS))
                         {
-                            SDL_WarpMouseGlobal(SLONG(gMousePosition.x+sin(Sim.TimeSlice*70/200.0)*cos(Sim.TimeSlice*70/160.0)*Sim.Players.Players[Sim.localPlayer].IsDrunk/30), SLONG(gMousePosition.y+cos(Sim.TimeSlice*70/230.0)*sin(Sim.TimeSlice*70/177.0)*Sim.Players.Players[Sim.localPlayer].IsDrunk/30));
+                            int mouseX = 0,mouseY = 0;
+                            SDL_GetGlobalMouseState(&mouseX, &mouseY);
+
+                            SDL_WarpMouseGlobal(SLONG(mouseX +sin(Sim.TimeSlice*70/200.0)*cos(Sim.TimeSlice*70/160.0)*Sim.Players.Players[Sim.localPlayer].IsDrunk/30), SLONG(mouseY +cos(Sim.TimeSlice*70/230.0)*sin(Sim.TimeSlice*70/177.0)*Sim.Players.Players[Sim.localPlayer].IsDrunk/30));
                             Sim.Players.Players[Sim.localPlayer].IsDrunk--;
                         }
 
@@ -1974,12 +2001,13 @@ void CTakeOffApp::GameLoop(void*)
                 FrameWnd->Invalidate();
 
                 RefreshNeccessary=FALSE;
+            }else{
+                MessagePump();
+                PrimaryBm.PrimaryBm.Present();
             }
-            else { PrimaryBm.PrimaryBm.Present(); }
 
             PumpNetwork ();
         }
-        else SDL_Delay (100);
 
         /*for (c=0; c<Sim.Players.AnzPlayers; c++)
           {

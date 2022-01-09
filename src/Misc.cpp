@@ -331,7 +331,7 @@ void MyMessageBox (LPCTSTR Title, LPCTSTR String, ...)
     };
     const SDL_MessageBoxData Data = {
         SDL_MESSAGEBOX_INFORMATION,
-        FrameWnd->m_hWnd,
+        NULL,
         Title,
         Buffer,
         SDL_arraysize(Buttons),
@@ -826,7 +826,7 @@ void HEADLINES::InterpolateHeadline (void)
             //Number of the Airline
             else if (atoi(Extrakt)>0)
             {
-                Headline[c*10].Headline = Headline[c*10].Headline.Mid(0, von) + Sim.Players.Players[(atoi(Extrakt)-1)%Sim.Players.AnzPlayers].Airline + Headline[c*10].Headline.Mid(bis+1, Headline[c*10].Headline.GetLength()-bis-1);
+                Headline[c*10].Headline = Headline[c*10].Headline.Mid(0, von) + Sim.Players.Players[(atoi(Extrakt)-1)%Sim.Players.AnzPlayers].Airline.c_str() + Headline[c*10].Headline.Mid(bis+1, Headline[c*10].Headline.GetLength()-bis-1);
             }
         }
         while (von!=-1);
@@ -1965,9 +1965,9 @@ long CountMatchingFilelist (CString DirAndWildcards)
 //--------------------------------------------------------------------------------------------
 void GetMatchingFilelist (CString DirAndWildcards, BUFFER<CString> &Array)
 {
-    int Pos = DirAndWildcards.Find('*');
+    int Pos = DirAndWildcards.Find("*");
     CString Dir = DirAndWildcards.Left(Pos);
-    CString Ext = DirAndWildcards.Right(Pos);
+    CString Ext = DirAndWildcards.Right(DirAndWildcards.GetLength() - Pos - 1);
 
     Array.ReSize (0);
 

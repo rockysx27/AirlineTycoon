@@ -103,85 +103,85 @@ ULONG SB_CBitmapCore::Line(SLONG x1, SLONG y1, SLONG x2, SLONG y2, SB_Hardwareco
     }
 
     // Bresenham's Line Algorithm
-    int x,y,dx,dy,dx1,dy1,px,py,xe,ye,i;
-    dx=x2-x1;
-    dy=y2-y1;
-    dx1=fabs(dx);
-    dy1=fabs(dy);
-    px=2*dy1-dx1;
-    py=2*dx1-dy1;
-    if(dy1<=dx1)
+    int x, y, dx, dy, dx1, dy1, px, py, xe, ye, i;
+    dx = x2 - x1;
+    dy = y2 - y1;
+    dx1 = fabs(dx);
+    dy1 = fabs(dy);
+    px = 2 * dy1 - dx1;
+    py = 2 * dx1 - dy1;
+    if (dy1 <= dx1)
     {
-        if(dx>=0)
+        if (dx >= 0)
         {
-            x=x1;
-            y=y1;
-            xe=x2;
+            x = x1;
+            y = y1;
+            xe = x2;
         }
         else
         {
-            x=x2;
-            y=y2;
-            xe=x1;
+            x = x2;
+            y = y2;
+            xe = x1;
         }
-        SetPixel(x,y,hwcolor);
-        for(i=0;x<xe;i++)
+        SetPixel(x, y, hwcolor);
+        for (i = 0; x < xe; i++)
         {
-            x=x+1;
-            if(px<0)
+            x = x + 1;
+            if (px < 0)
             {
-                px=px+2*dy1;
+                px = px + 2 * dy1;
             }
             else
             {
-                if((dx<0 && dy<0) || (dx>0 && dy>0))
+                if ((dx < 0 && dy < 0) || (dx > 0 && dy > 0))
                 {
-                    y=y+1;
+                    y = y + 1;
                 }
                 else
                 {
-                    y=y-1;
+                    y = y - 1;
                 }
-                px=px+2*(dy1-dx1);
+                px = px + 2 * (dy1 - dx1);
             }
-            SetPixel(x,y,hwcolor);
+            SetPixel(x, y, hwcolor);
         }
     }
     else
     {
-        if(dy>=0)
+        if (dy >= 0)
         {
-            x=x1;
-            y=y1;
-            ye=y2;
+            x = x1;
+            y = y1;
+            ye = y2;
         }
         else
         {
-            x=x2;
-            y=y2;
-            ye=y1;
+            x = x2;
+            y = y2;
+            ye = y1;
         }
-        SetPixel(x,y,hwcolor);
-        for(i=0;y<ye;i++)
+        SetPixel(x, y, hwcolor);
+        for (i = 0; y < ye; i++)
         {
-            y=y+1;
-            if(py<=0)
+            y = y + 1;
+            if (py <= 0)
             {
-                py=py+2*dx1;
+                py = py + 2 * dx1;
             }
             else
             {
-                if((dx<0 && dy<0) || (dx>0 && dy>0))
+                if ((dx < 0 && dy < 0) || (dx > 0 && dy > 0))
                 {
-                    x=x+1;
+                    x = x + 1;
                 }
                 else
                 {
-                    x=x-1;
+                    x = x - 1;
                 }
-                py=py+2*(dx1-dy1);
+                py = py + 2 * (dx1 - dy1);
             }
-            SetPixel(x,y,hwcolor);
+            SetPixel(x, y, hwcolor);
         }
     }
     return 0;
@@ -206,15 +206,15 @@ SB_Hardwarecolor SB_CBitmapCore::GetHardwarecolor(ULONG color)
     SLONG b = GetHighestSetBit(Format.blueMask) - GetHighestSetBit(0xFF);
 
     SLONG result;
-    if ( r >= 0 )
+    if (r >= 0)
         result = Format.redMask & ((color & 0xFF0000) << r);
     else
         result = Format.redMask & ((color & 0xFF0000) >> -(char)r);
-    if ( g >= 0 )
+    if (g >= 0)
         result |= Format.greenMask & ((word)(color & 0xFF00) << g);
     else
         result |= Format.greenMask & ((color & 0xFF00) >> -(char)g);
-    if ( b >= 0 )
+    if (b >= 0)
         result |= Format.blueMask & ((unsigned char)color << b);
     else
         result |= Format.blueMask & ((dword)(unsigned char)color >> -(char)b);
@@ -276,12 +276,66 @@ ULONG SB_CBitmapCore::GetPixel(SLONG x, SLONG y)
         return 1;
     Uint8 bpp = lpDDSurface->format->BytesPerPixel;
     Uint8 bits = lpDDSurface->format->BitsPerPixel;
-    Uint8 *p = (Uint8 *)lpDDSurface->pixels + y * lpDDSurface->pitch + x * bpp;
+    Uint8* p = (Uint8*)lpDDSurface->pixels + y * lpDDSurface->pitch + x * bpp;
     dword result = *(Uint32*)p;
     if (SDL_MUSTLOCK(lpDDSurface))
         SDL_UnlockSurface(lpDDSurface);
     return result & (1 << bits) - 1;
 }
+
+Uint16 get_pixel16(SDL_Surface* surface, int x, int y)
+{
+    //Convert the pixels to 32 bit
+    Uint16* pixels = (Uint16*)surface->pixels;
+
+    //Get the requested pixel
+    return pixels[(y * surface->pitch / 2) + x];
+}
+
+void put_pixel16(SDL_Surface* surface, int x, int y, Uint16 pixel)
+{
+    //Convert the pixels to 32 bit
+    Uint16* pixels = (Uint16*)surface->pixels;
+
+    //Set the pixel
+    pixels[(y * surface->pitch / 2) + x] = pixel;
+}
+
+SDL_Surface* SB_CBitmapCore::GetFlippedSurface() {
+    if (flippedBufferSurface != nullptr)
+        return flippedBufferSurface;
+
+    flippedBufferSurface = SDL_CreateRGBSurfaceWithFormat(lpDDSurface->flags, lpDDSurface->w, lpDDSurface->h, lpDDSurface->format->BitsPerPixel, lpDDSurface->format->format);
+
+    if (SDL_MUSTLOCK(lpDDSurface)) {
+        //Lock the surface
+        SDL_LockSurface(lpDDSurface);
+        SDL_LockSurface(flippedBufferSurface);
+    }
+
+    for (int x = 0, rx = lpDDSurface->w - 1; x < lpDDSurface->w; x++, rx--) {
+        //Go through rows
+        for (int y = 0, ry = lpDDSurface->h - 1; y < lpDDSurface->h; y++, ry--) {
+            Uint16 pixel = get_pixel16(lpDDSurface, x, y);
+            put_pixel16(flippedBufferSurface, rx, y, pixel);
+        }
+    }
+
+    if (SDL_MUSTLOCK(lpDDSurface)) {
+        //Lock the surface
+        SDL_UnlockSurface(lpDDSurface);
+        SDL_UnlockSurface(flippedBufferSurface);
+    }
+
+    UINT32 key;
+    if (SDL_GetColorKey(lpDDSurface, &key) == 0)
+    {
+        SDL_SetColorKey(flippedBufferSurface, true, key);
+    }
+
+    return flippedBufferSurface;
+}
+
 
 ULONG SB_CBitmapCore::Blit(class SB_CBitmapCore* core, SLONG x, SLONG y, const RECT* pRect, unsigned short, ULONG)
 {
@@ -341,6 +395,8 @@ ULONG SB_CBitmapCore::Release()
 {
     if (lpDDSurface)
         SDL_FreeSurface(lpDDSurface);
+    if (flippedBufferSurface)
+        SDL_FreeSurface(flippedBufferSurface);
     if (lpTexture)
         SDL_DestroyTexture(lpTexture);
     return 0;
@@ -415,8 +471,10 @@ SLONG SB_CPrimaryBitmap::Flip()
 
 SLONG SB_CPrimaryBitmap::Present()
 {
-    if (lpDD)
-    {
+    if (lpDD) {
+        SDL_SetRenderDrawColor(lpDD, 0, 0, 0, 255);
+        SDL_RenderClear(lpDD);
+
         // Set the backbuffer as the render target
         if (SDL_SetRenderTarget(lpDD, NULL) < 0)
             return -1;
@@ -448,9 +506,9 @@ SLONG SB_CPrimaryBitmap::Create(SDL_Renderer** out, SDL_Window* Wnd, unsigned sh
 {
     Window = Wnd;
     lpDD = SDL_CreateRenderer(Window, -1, SDL_RENDERER_PRESENTVSYNC);
+
     if (lpDD)
     {
-        SDL_RenderSetLogicalSize(lpDD, w, h);
         Hdu.HercPrintf("Using hardware accelerated presentation");
         lpTexture = SDL_CreateTexture(lpDD, SDL_PIXELFORMAT_RGB565, SDL_TEXTUREACCESS_STREAMING, w, h);
         if (SDL_LockTextureToSurface(lpTexture, NULL, &lpDDSurface) < 0)
@@ -486,13 +544,15 @@ ULONG SB_CPrimaryBitmap::Release()
 
 SB_CBitmapKey::SB_CBitmapKey(class SB_CBitmapCore& core)
     : Surface(core.lpDDSurface)
-    , Bitmap(Surface->pixels)
-      , lPitch(Surface->pitch)
 {
-    SDL_LockSurface(Surface);
+    if(SDL_MUSTLOCK(Surface))
+        SDL_LockSurface(Surface);
+    Bitmap = Surface->pixels;
+    lPitch = Surface->pitch;
 }
 
 SB_CBitmapKey::~SB_CBitmapKey()
 {
-    SDL_UnlockSurface(Surface);
+    if (SDL_MUSTLOCK(Surface))
+        SDL_UnlockSurface(Surface);
 }

@@ -133,13 +133,15 @@ class BUFFER
                     //memswap(m, MemPointer, sizeof(T) * num);
                     for (SLONG i = 0; i < num; i++)
                     {
-                        T tmp(m[i]);
-                        m[i] = MemPointer[i];
-                        MemPointer[i] = tmp;
-                    }
-                    delete[] MemPointer;
+                        //use aligned char buffer to prevent destructor calls that crash the game
+                        alignas(T) unsigned char buf[sizeof(T)];
+                        T* tmp = new(buf) T;
 
+                        m[i] = MemPointer[i];
+                        MemPointer[i] = *tmp;
+                    }
                     DelPointer = m + ((DelPointer - MemPointer) / sizeof(T));
+                    delete[](MemPointer);
                 }
                 else
                 {
@@ -312,7 +314,7 @@ class TEAKFILE
             friend TEAKFILE& operator << (TEAKFILE& File, const BUFFER<T>& buffer)
             {
                 File << buffer.Size;
-                File << (buffer.DelPointer - buffer.MemPointer);
+                File << SLONG(buffer.DelPointer - buffer.MemPointer);
                 for (SLONG i = 0; i < buffer.Size; i++)
                     File << buffer.MemPointer[i];
                 return File;

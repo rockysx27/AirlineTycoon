@@ -162,7 +162,8 @@ void PLAYER::NetSynchronizeFlags (void)
                 << qPlayer.Stunned         << qPlayer.OfficeState     << qPlayer.Koffein
                 << qPlayer.NumFlights      << qPlayer.WalkSpeed
                 << qPlayer.WerbeBroschuere << qPlayer.TelephoneDown   << qPlayer.Presseerklaerung
-                << qPlayer.SecurityFlags   << qPlayer.PlayerStinking;
+                << qPlayer.SecurityFlags   << qPlayer.PlayerStinking
+                << qPlayer.RocketFlags     << qPlayer.LastRocketFlags;
         }
     }
 
@@ -208,7 +209,7 @@ void PLAYER::NetSynchronizePlanes (void)
         TEAKFILE Message;
         SLONG    c;
 
-        Message.Announce(64);
+        Message.Announce(1024);
 
         long count=0;
         for (c=0; c<4; c++)

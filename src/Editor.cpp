@@ -7,7 +7,16 @@
 #include "atnet.h"
 #include <string>
 #include <fstream>
+
+#if __cplusplus < 201703L // If the version of C++ is less than 17
+#include <experimental/filesystem>
+// It was still in the experimental:: namespace
+namespace fs = std::experimental::filesystem;
+#else
 #include <filesystem>
+namespace fs = std::filesystem;
+#endif
+
 #include <algorithm>
 
 #ifdef _DEBUG
@@ -731,7 +740,6 @@ CEditor::CEditor(BOOL bHandy, ULONG PlayerNum) : CStdRaum (bHandy, PlayerNum, "E
 
     Plane.Name = StandardTexte.GetS (TOKEN_MISC, 8210);
 
-    std::filesystem::create_directory (LPCSTR(AppPath+MyPlanePath.Left(MyPlanePath.GetLength()-3)));
     PlaneFilename = FullFilename ("data.plane", MyPlanePath);
     if (DoesFileExist (PlaneFilename)) Plane.Load(PlaneFilename);
 
@@ -870,6 +878,7 @@ void CEditor::OnPaint()
                         //else if (gPlaneBuilds[OtherParent].Shortname[0]=='R') OtherParent+=(5+8);
 
                         //Für alle eingebauten Planeparts:
+
                         for (d=0; d<(long)Plane.Parts.AnzEntries(); d++)
                             if (Plane.Parts.IsInAlbum(d))
                                 if (gPlanePartRelations[c].FromBuildIndex==GetPlaneBuildIndex(Plane.Parts[d].Shortname))
@@ -1036,13 +1045,13 @@ void CEditor::OnPaint()
                 RoomBm.PrintAt (bprintf(StandardTexte.GetS (TOKEN_MISC, 8200), weight), FontSmallBlack, TEC_FONT_LEFT, 480+cx, 20+cy, 640+cx, 200+cy);
                 if (passa>0)     RoomBm.PrintAt (bprintf(StandardTexte.GetS (TOKEN_MISC, 8201), passa, passa/10), FontSmallBlack, TEC_FONT_LEFT, 480+cx, 20+15+cy, 640+cx, 200+cy);
                 if (verbrauch>0) RoomBm.PrintAt (bprintf(StandardTexte.GetS (TOKEN_MISC, 8202), verbrauch), FontSmallBlack, TEC_FONT_LEFT, 480+cx, 20+30+cy, 640+cx, 200+cy);
-                if (noise!=0)    RoomBm.PrintAt (bprintf(CString(StandardTexte.GetS (TOKEN_MISC, 8204)), loudnesstext, abs(noise)), FontSmallBlack, TEC_FONT_LEFT, 480+cx, 20+45+cy, 640+cx, 200+cy);
-                RoomBm.PrintAt (bprintf(StandardTexte.GetS (TOKEN_MISC, 8206), wartungtext), FontSmallBlack, TEC_FONT_LEFT, 480+cx, 20+60+cy, 640+cx, 200+cy);
-                if (speed>0)     RoomBm.PrintAt (bprintf(StandardTexte.GetS (TOKEN_MISC, 8207), (CString)Einheiten[EINH_KMH].bString (speed)), FontSmallBlack, TEC_FONT_LEFT, 480+cx, 20+75+cy, 640+cx, 200+cy);
-                if (tank>0)      RoomBm.PrintAt (CString(StandardTexte.GetS (TOKEN_PLANE, 1008))+": "+(CString)Einheiten[EINH_L].bString (tank), FontSmallBlack, TEC_FONT_LEFT, 480+cx, 20+75+15+cy, 640+cx, 200+cy);
-                if (reichw>0)    RoomBm.PrintAt (CString(StandardTexte.GetS (TOKEN_PLANE, 1001))+": "+(CString)Einheiten[EINH_KM].bString (reichw), FontSmallBlack, TEC_FONT_LEFT, 480+cx, 20+75+30+cy, 640+cx, 200+cy);
+                if (noise!=0)    RoomBm.PrintAt (bprintf(CString(StandardTexte.GetS (TOKEN_MISC, 8204)), loudnesstext.c_str(), abs(noise)), FontSmallBlack, TEC_FONT_LEFT, 480+cx, 20+45+cy, 640+cx, 200+cy);
+                RoomBm.PrintAt (bprintf(StandardTexte.GetS (TOKEN_MISC, 8206), wartungtext.c_str()), FontSmallBlack, TEC_FONT_LEFT, 480+cx, 20+60+cy, 640+cx, 200+cy);
+                if (speed>0)     RoomBm.PrintAt (bprintf(StandardTexte.GetS (TOKEN_MISC, 8207), CString(Einheiten[EINH_KMH].bString(speed)).c_str()), FontSmallBlack, TEC_FONT_LEFT, 480+cx, 20+75+cy, 640+cx, 200+cy);
+                if (tank>0)      RoomBm.PrintAt (CString(StandardTexte.GetS (TOKEN_PLANE, 1008))+": "+ CString(Einheiten[EINH_L].bString (tank)).c_str(), FontSmallBlack, TEC_FONT_LEFT, 480+cx, 20+75+15+cy, 640+cx, 200+cy);
+                if (reichw>0)    RoomBm.PrintAt (CString(StandardTexte.GetS (TOKEN_PLANE, 1001))+": "+ CString(Einheiten[EINH_KM].bString (reichw)).c_str(), FontSmallBlack, TEC_FONT_LEFT, 480+cx, 20+75+30+cy, 640+cx, 200+cy);
                 //if (verbrauch2>0) RoomBm.PrintAt (bprintf("Verbrauch: %li l/100/100", verbrauch2), FontSmallBlack, TEC_FONT_LEFT, 480, 20+75+15, 640, 200);
-                RoomBm.PrintAt (bprintf(StandardTexte.GetS (TOKEN_MISC, 8203), (CString)Einheiten[EINH_DM].bString (cost)), FontSmallBlack, TEC_FONT_LEFT, 480+cx, 20+100+15+15+cy, 640+cx, 200+cy);
+                RoomBm.PrintAt (bprintf(StandardTexte.GetS (TOKEN_MISC, 8203), CString(Einheiten[EINH_DM].bString (cost)).c_str()), FontSmallBlack, TEC_FONT_LEFT, 480+cx, 20+100+15+15+cy, 640+cx, 200+cy);
             }
     }
 #define FontSmallBlack FontYellow
@@ -1053,18 +1062,19 @@ void CEditor::OnPaint()
         RoomBm.PrintAt (bprintf(StandardTexte.GetS (TOKEN_MISC, 8200), weight), FontSmallBlack, TEC_FONT_LEFT, 480, 20, 640, 200);
         if (passa>0)     RoomBm.PrintAt (bprintf(StandardTexte.GetS (TOKEN_MISC, 8201), passa, passa/10), FontSmallBlack, TEC_FONT_LEFT, 480, 20+15, 640, 200);
         if (verbrauch>0) RoomBm.PrintAt (bprintf(StandardTexte.GetS (TOKEN_MISC, 8202), verbrauch), FontSmallBlack, TEC_FONT_LEFT, 480, 20+30, 640, 200);
-        if (noise!=0)    RoomBm.PrintAt (bprintf(CString(StandardTexte.GetS (TOKEN_MISC, 8204)), loudnesstext, abs(noise)), FontSmallBlack, TEC_FONT_LEFT, 480, 20+45, 640, 200);
-        RoomBm.PrintAt (bprintf(StandardTexte.GetS (TOKEN_MISC, 8206), wartungtext), FontSmallBlack, TEC_FONT_LEFT, 480, 20+60, 640, 200);
-        if (speed>0)     RoomBm.PrintAt (bprintf(StandardTexte.GetS (TOKEN_MISC, 8207), (CString)Einheiten[EINH_KMH].bString (speed)), FontSmallBlack, TEC_FONT_LEFT, 480, 20+75, 640, 200);
-        if (tank>0)      RoomBm.PrintAt (CString(StandardTexte.GetS (TOKEN_PLANE, 1008))+": "+(CString)Einheiten[EINH_L].bString (tank), FontSmallBlack, TEC_FONT_LEFT, 480, 20+75+15, 640, 200);
-        if (reichw>0)    RoomBm.PrintAt (CString(StandardTexte.GetS (TOKEN_PLANE, 1001))+": "+(CString)Einheiten[EINH_KM].bString (reichw), FontSmallBlack, TEC_FONT_LEFT, 480, 20+75+30, 640, 200);
+        if (noise!=0)    RoomBm.PrintAt (bprintf(CString(StandardTexte.GetS (TOKEN_MISC, 8204)), loudnesstext.c_str(), abs(noise)), FontSmallBlack, TEC_FONT_LEFT, 480, 20+45, 640, 200);
+        RoomBm.PrintAt (bprintf(StandardTexte.GetS (TOKEN_MISC, 8206), wartungtext.c_str()), FontSmallBlack, TEC_FONT_LEFT, 480, 20+60, 640, 200);
+        if (speed>0)     RoomBm.PrintAt (bprintf(StandardTexte.GetS (TOKEN_MISC, 8207), CString(Einheiten[EINH_KMH].bString (speed)).c_str()), FontSmallBlack, TEC_FONT_LEFT, 480, 20+75, 640, 200);
+        if (tank>0)      RoomBm.PrintAt (CString(StandardTexte.GetS (TOKEN_PLANE, 1008))+": "+ CString(Einheiten[EINH_L].bString (tank)).c_str(), FontSmallBlack, TEC_FONT_LEFT, 480, 20+75+15, 640, 200);
+        if (reichw>0)    RoomBm.PrintAt (CString(StandardTexte.GetS (TOKEN_PLANE, 1001))+": "+ CString(Einheiten[EINH_KM].bString (reichw)).c_str(), FontSmallBlack, TEC_FONT_LEFT, 480, 20+75+30, 640, 200);
         //if (verbrauch2>0) RoomBm.PrintAt (bprintf("Verbrauch: %li l/100/100", verbrauch2), FontSmallBlack, TEC_FONT_LEFT, 480, 20+75+15, 640, 200);
-        RoomBm.PrintAt (bprintf(StandardTexte.GetS (TOKEN_MISC, 8203), (CString)Einheiten[EINH_DM].bString (cost)), FontSmallBlack, TEC_FONT_LEFT, 480, 20+100+15+15, 640, 200);
+        RoomBm.PrintAt (bprintf(StandardTexte.GetS (TOKEN_MISC, 8203), CString(Einheiten[EINH_DM].bString (cost)).c_str()), FontSmallBlack, TEC_FONT_LEFT, 480, 20+100+15+15, 640, 200);
 
         CString error = Plane.GetError();
         if (error!="") RoomBm.PrintAt (error, FontNormalRed, TEC_FONT_LEFT, 480, 20+125+15+15, 580, 300);
     }
 
+    //BROKEN:
     if (PartUnderCursor!="" && bCursorBlitted==false)   RoomBm.BlitFromT (PartBms[GetPlaneBuild(PartUnderCursor).BitmapIndex], GripAtPos);
     //if (PartUnderCursorB!="" && bCursorBlittedB==false) RoomBm.BlitFromT (PartBms[GetPlaneBuild(PartUnderCursorB).BitmapIndex], GripAtPosB);
 
@@ -1140,6 +1150,8 @@ void CEditor::OnPaint()
             }
         }
     }
+
+test:
 
     //Select Part Buttons:
     for (c=0; c<5; c++)
@@ -2236,9 +2248,12 @@ void CXPlane::operator = (const CXPlane &plane)
         f << plane;
         f.MemPointer = 0;
 
-        Clear();
+        if(this->Cost != -1){
+            Clear();
 
-        Parts.Repair (Parts.PlaneParts);
+            Parts.Repair (Parts.PlaneParts);
+        }
+
         Parts.PlaneParts.ReSize (100);
         f >> (*this);
     }

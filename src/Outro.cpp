@@ -1,4 +1,4 @@
-//============================================================================================
+﻿//============================================================================================
 // Outro.cpp : Der Render-Outro
 //============================================================================================
 #include "stdafx.h"
@@ -14,21 +14,21 @@ static char THIS_FILE[] = __FILE__;
 //--------------------------------------------------------------------------------------------
 //ULONG PlayerNum
 //--------------------------------------------------------------------------------------------
-COutro::COutro (BOOL bHandy, SLONG PlayerNum, CString SmackName) : CStdRaum (bHandy, PlayerNum, "", NULL)
+COutro::COutro(BOOL bHandy, SLONG PlayerNum, CString SmackName) : CStdRaum(bHandy, PlayerNum, "", NULL)
 {
-    RoomBm.ReSize (640, 480);
-    RoomBm.FillWith (0);
-    PrimaryBm.BlitFrom (RoomBm);
+    RoomBm.ReSize(640, 480);
+    RoomBm.FillWith(0);
+    PrimaryBm.BlitFrom(RoomBm);
 
-    FrameNum=0;
-    FrameNext=0;
+    FrameNum = 0;
+    FrameNext = 0;
 
-    StopMidi ();
+    StopMidi();
     gpSSE->DisableDS();
 
     gMouseStartup = TRUE;
 
-    pSmack = smk_open_file(FullFilename (SmackName, IntroPath), SMK_MODE_MEMORY);
+    pSmack = smk_open_file(FullFilename(SmackName, IntroPath), SMK_MODE_MEMORY);
     smk_enable_video(pSmack, true);
     smk_info_video(pSmack, &Width, &Height, &Scale);
     if (Scale != SMK_FLAG_Y_NONE)
@@ -68,7 +68,7 @@ COutro::COutro (BOOL bHandy, SLONG PlayerNum, CString SmackName) : CStdRaum (bHa
 }
 
 //--------------------------------------------------------------------------------------------
-//COutro-Fenster zerst�ren:
+//COutro-Fenster zerstören:
 //--------------------------------------------------------------------------------------------
 COutro::~COutro()
 {
@@ -79,10 +79,10 @@ COutro::~COutro()
     pSmack = NULL;
 
     gMouseStartup = FALSE;
-    pCursor->SetImage (gCursorBm.pBitmap);
+    pCursor->SetImage(gCursorBm.pBitmap);
 
     if (Sim.Options.OptionEnableDigi) gpSSE->EnableDS();
-    if (Sim.Options.OptionEnableMidi) NextMidi ();
+    if (Sim.Options.OptionMusicType != 0) NextMidi();
     SetMidiVolume(Sim.Options.OptionMusik);
 }
 
@@ -95,11 +95,11 @@ COutro::~COutro()
 void COutro::OnPaint()
 {
     //Die Standard Paint-Sachen kann der Basisraum erledigen
-    CStdRaum::OnPaint ();
+    CStdRaum::OnPaint();
 
     SDL_PauseAudioDevice(audioDevice, 0);
 
-    if (FrameNum++<2) PrimaryBm.BlitFrom (RoomBm);
+    if (FrameNum++ < 2) PrimaryBm.BlitFrom(RoomBm);
 
     if (timeGetTime() >= FrameNext && State == SMK_MORE)
     {
@@ -122,7 +122,7 @@ void COutro::OnPaint()
         FrameNext = timeGetTime() + (usf / 1000.0);
     }
 
-    PrimaryBm.BlitFrom (Bitmap, 320-Width/2, 240-Height/2);
+    PrimaryBm.BlitFrom(Bitmap, 320 - Width / 2, 240 - Height / 2);
 
     if (State != SMK_MORE)
         Sim.Gamestate = GAMESTATE_BOOT;
@@ -141,7 +141,7 @@ void COutro::OnLButtonDown(UINT, CPoint)
 //--------------------------------------------------------------------------------------------
 void COutro::OnRButtonDown(UINT, CPoint)
 {
-    DefaultOnRButtonDown ();
+    DefaultOnRButtonDown();
     Sim.Gamestate = GAMESTATE_BOOT;
 }
 
@@ -166,7 +166,7 @@ void COutro::OnMouseMove(UINT nFlags, CPoint point)
 //--------------------------------------------------------------------------------------------
 void COutro::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-    if (nChar==VK_ESCAPE)
+    if (nChar == VK_ESCAPE)
     {
         Sim.Gamestate = GAMESTATE_BOOT;
     }

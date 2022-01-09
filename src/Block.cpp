@@ -47,12 +47,12 @@ BLOCK::BLOCK ()
 //--------------------------------------------------------------------------------------------
 BLOCK::~BLOCK ()
 {
-    if (pGLibPicture && pGfxMain)
-    {
-        Bitmap.Destroy();
-        pGfxMain->ReleaseLib (pGLibPicture);
-        pGLibPicture = NULL;
-    }
+    //if (pGLibPicture && pGfxMain)
+    //{
+    //   Bitmap.Destroy();
+    //   pGfxMain->ReleaseLib (pGLibPicture);
+    //   pGLibPicture = NULL;
+    //}
 }
 
 //--------------------------------------------------------------------------------------------
@@ -88,6 +88,9 @@ void BLOCK::BlitAt (SBBM &RoomBm)
         }
         else
         {
+            if (!Bitmap.pBitmap) //safety net to prevent crashes
+                return;
+
             if (DoubleBlock)
             {
                 if (Phase<38)

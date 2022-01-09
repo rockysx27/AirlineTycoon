@@ -824,6 +824,9 @@ void CLaptop::OnPaint()
                     BLOCK &qBlock=qPlayer.Blocks[c];
 
                     qBlock.UpdateTip(PlayerNum, TRUE);
+
+                    qBlock.Refresh(PlayerNum, TRUE);
+
                     qBlock.BlitAt (RoomBm);
 
                     //Jump-Bms
@@ -1041,14 +1044,12 @@ void CLaptop::OnLButtonDown(UINT nFlags, CPoint point)
     //Test, ob Klick auf Block
     if (CurrentBlock!=-1)
     {
-        //Block ggf. nach vorne bringen:
-        while (CurrentBlock>1)
+        while (CurrentBlock > 1)
         {
-            Sim.Players.Players[PlayerNum].Blocks.Swap (CurrentBlock, CurrentBlock-1);
+            Sim.Players.Players[PlayerNum].Blocks.Swap(CurrentBlock, CurrentBlock - 1);
             CurrentBlock--;
             pBlock = &Sim.Players.Players[PlayerNum].Blocks[CurrentBlock];
         }
-
         BLOCK &qBlock = Sim.Players.Players[(SLONG)PlayerNum].Blocks[CurrentBlock];
 
         if (MouseClickArea==ROOM_LAPTOP && MouseClickId==100)
@@ -1200,6 +1201,20 @@ void CLaptop::OnLButtonDown(UINT nFlags, CPoint point)
             CurrentDragId = CurrentBlock;
             DragOffset    = gMousePosition - pBlock->ScreenPos;
         }
+
+        //Block ggf. nach vorne bringen:
+        //int b = CurrentBlock;
+        //  while (b>1)
+        //  {
+        //      //pBlock = &Sim.Players.Players[PlayerNum].Blocks[b];
+        //      //pBlock->Refresh(PlayerNum, TRUE);
+        //      Sim.Players.Players[PlayerNum].Blocks.Swap (b , b- 1);
+        //      b--;
+        //      //pBlock = &Sim.Players.Players[PlayerNum].Blocks[b];
+        //  }
+        //pBlock = &Sim.Players.Players[PlayerNum].Blocks[b];
+        //pBlock->Refresh(PlayerNum, TRUE);
+
     }//Ende: Test, ob Klick auf Block
     else if (MouseClickArea==ROOM_LAPTOP && MouseClickId==100)
     {

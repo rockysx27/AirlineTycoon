@@ -2874,7 +2874,7 @@ TEAKFILE &operator << (TEAKFILE &File, const SIM &Sim)
     File << SimDate           << Sim.Time       << Sim.Month;
     File << Sim.MonthDay      << Sim.QuitCountDown;
     File << Sim.TickerTime    << Sim.TimeSlice  << Sim.StartWeekday << Sim.Weekday;
-    File.Write ((UBYTE*)&Sim.StartTime, sizeof (Sim.StartTime));
+    File.Write ((UBYTE*)&Sim.StartTime, sizeof (4));//64Bit Size change!
 
     //Sonstiges:
     File.WriteTrap (100);
@@ -2990,7 +2990,7 @@ TEAKFILE &operator >> (TEAKFILE &File, SIM &Sim)
     File >> SimDate           >> Sim.Time       >> Sim.Month;
     File >> Sim.MonthDay      >> Sim.QuitCountDown;
     File >> Sim.TickerTime    >> Sim.TimeSlice  >> Sim.StartWeekday >> Sim.Weekday;
-    File.Read ((UBYTE*)&Sim.StartTime, sizeof (Sim.StartTime));
+    File.Read ((UBYTE*)&Sim.StartTime, 4); //sizeof (Sim.StartTime)
     Sim.Date=SimDate;
 
     //Sonstiges:
@@ -3835,6 +3835,9 @@ void SIM::AddHighscore (CString Name, DWORD UniqueGameId2, __int64 Score)
 //--------------------------------------------------------------------------------------------
 void SIM::SaveHighscores (void)
 {
+#ifdef _DEBUG
+    return; //Debug exit for better single installation multiplayer testing
+#endif
     CString  str;
     TEAKFILE OutputFile (AppPath+"misc\\xmlmap.fla", TEAKFILE_WRITE);
 
@@ -3926,12 +3929,16 @@ void COptions::ReadOptions (void)
     SLONG c;
     char Buffer[80];
 
-    CRegistryAccess reg(chRegKey);
+    CRegistryAccess reg (chRegKey);
+
+    //New Settings:
+    if (!reg.ReadRegistryKey(&OptionFullscreen))       OptionFullscreen = 0;
+    if (!reg.ReadRegistryKey(&OptionKeepAspectRatio))  OptionKeepAspectRatio = true;
 
     // Falls Setup nicht geladen wurde dann Standard-Parameter initialisieren
     if (!reg.ReadRegistryKey (&OptionPlanes))          OptionPlanes          = TRUE;
     if (!reg.ReadRegistryKey (&OptionPassengers))      OptionPassengers      = TRUE;
-    if (!reg.ReadRegistryKey (&OptionEnableMidi))      OptionEnableMidi      = TRUE;
+    if (!reg.ReadRegistryKey (&OptionMusicType))       OptionMusicType       = 2;
     if (!reg.ReadRegistryKey (&OptionEnableDigi))      OptionEnableDigi      = TRUE;
     if (!reg.ReadRegistryKey (&OptionMusik))           OptionMusik           = 3;
     if (!reg.ReadRegistryKey (&OptionMasterVolume))    OptionMasterVolume    = 7;
@@ -4098,11 +4105,13 @@ void COptions::WriteOptions (void)
     Sim.MaxDifficulty2 = MissionKeys2[Sim.MaxDifficulty2-DIFF_ADDON01];
     Sim.MaxDifficulty3 = MissionKeys3[Sim.MaxDifficulty3-DIFF_ATFS01];
 
-    CRegistryAccess reg(chRegKey);
+    CRegistryAccess reg (chRegKey);
 
+    reg.WriteRegistryKey (&OptionFullscreen);
+    reg.WriteRegistryKey (&OptionKeepAspectRatio);
     reg.WriteRegistryKey (&OptionPlanes);
     reg.WriteRegistryKey (&OptionPassengers);
-    reg.WriteRegistryKey (&OptionEnableMidi);
+    reg.WriteRegistryKey (&OptionMusicType);
     reg.WriteRegistryKey (&OptionEnableDigi);
     reg.WriteRegistryKey (&OptionMusik);
     reg.WriteRegistryKey (&OptionLoopMusik);

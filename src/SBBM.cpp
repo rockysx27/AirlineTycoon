@@ -34,7 +34,18 @@ __int64 GetIdFromString (CString Text)
 
 BOOL SBBM::ShiftUp (SLONG y)
 {
-    BlitPartFrom (*this, XY(0,0), XY(0,y), XY(Size.x,Size.y));
+    //the previous method was to draw onto yourself with blit
+    //tha (maybe) caused some crashes, so now we copy and then redraw
+    SDL_Surface *orig = this->pBitmap->GetSurface();
+    SDL_Surface *buffer = SDL_CreateRGBSurfaceWithFormat(0, Size.x, Size.y, orig->format->BitsPerPixel, orig->format->format);
+
+    SDL_BlitSurface(orig, NULL, buffer, NULL); //copy content from original to buffer
+
+    SDL_Rect src = { 0, 0, Size.x,Size.y };
+    SDL_Rect dst = { 0, -y, Size.x, Size.y };
+    SDL_BlitSurface(buffer, &src, orig, &dst); //redraw content to original
+
+    SDL_FreeSurface(buffer); //just a buffer, throw out
 
     for (SLONG cy=0; cy<y+4; cy++)
         Line (XY(0,Size.y-cy-1), XY(Size.x-1,Size.y-cy-1), dword(0));
@@ -272,6 +283,9 @@ BOOL  SBPRIMARYBM::BlitFromT (SBBM &TecBitmap, XY Target)
 {
     Bench.BlitTime.Start();
 
+    if(&TecBitmap == nullptr)
+        return false;
+
     if (TecBitmap.pBitmap)
         TecBitmap.pBitmap->BlitT (&PrimaryBm, Target.x, Target.y);
     if (TecBitmap.pHLObj)
@@ -346,7 +360,7 @@ BOOL SBPRIMARYBM::FlipBlitFromT (SBBM &TecBitmap, XY Target)
     SDL_Rect destRect = { pt.x, pt.y, srcRect.w, srcRect.h };
 
     // TODO: Mirror the blit
-    SDL_BlitSurface(TecBitmap.pBitmap->GetSurface(), &srcRect, PrimaryBm.GetSurface(), &destRect);
+    SDL_BlitSurface(TecBitmap.pBitmap->GetFlippedSurface(), &srcRect, PrimaryBm.GetSurface(), &destRect);
     // Clippen
     /*if (PrimaryBm.FastClip(PrimaryBm.GetClipRect(), &pt, &srcRect))
       DD_ERROR (PrimaryBm.GetSurface()->Blt (&destRect, TecBitmap.pBitmap->GetSurface(), &srcRect, DDBLT_DDFX | DDBLT_KEYSRC | DDBLT_WAIT, &DDBltFx));
@@ -786,7 +800,7 @@ void SBBMS::ReSize (GfxLib* gfxLibrary, const CString &graphicstr, SLONG Anzahl,
         }
     }
 
-    ReSize (gfxLibrary, graphicIds, flags);
+    ReSize(gfxLibrary, graphicIds, flags);
 }
 
 SBBMS::~SBBMS () {}

@@ -1,7 +1,12 @@
 #include "stdafx.h"
-#include "sblib.h"
+#include "SbLib.h"
 #include "network.h"
+#include "BitStream.h"
+#include "BaseNetworkType.hpp"
+#include "RAKNetNetwork.hpp"
+#include "ENetNetwork.hpp"
 
+#ifdef ENET_NETWORK
 SBNetwork::SBNetwork(bool)
     : mState(SBNETWORK_SESSION_FINISHED)
     , mHost(NULL)
@@ -52,11 +57,13 @@ SLONG SBNetwork::GetMessageCount()
         {
             if (info.hostID != mLocalID)
             {
-                /* Check if we already know about the session */
-                for (mSessionInfo.GetFirst(); !mSessionInfo.IsLast() &&
-                        mSessionInfo.GetLastAccessed().hostID != info.hostID; mSessionInfo.GetNext());
+                if(mSessionInfo.GetNumberOfElements() > 0){
+                    /* Check if we already know about the session */
+                    for (mSessionInfo.GetFirst(); !mSessionInfo.IsLast() &&
+                            mSessionInfo.GetLastAccessed().hostID != info.hostID; mSessionInfo.GetNext());
+                }
 
-                if (mSessionInfo.IsLast())
+                if (mSessionInfo.GetNumberOfElements() == 0 || mSessionInfo.IsLast())
                 {
                     info.address.host = address.host;
                     mSessionInfo.Add(info);
@@ -132,12 +139,14 @@ SLONG SBNetwork::GetMessageCount()
                     ENetPacket* packet = enet_packet_create (&dp, sizeof(DPPacket), ENET_PACKET_FLAG_RELIABLE);
                     mPackets.Add(packet);
 
-                    for (mPlayers.GetNext(); !mPlayers.IsLast(); mPlayers.GetNext())
-                    {
-                        if (mPlayers.GetLastAccessed().ID == player->ID)
+                    if(mPlayers.GetNumberOfElements() > 0){
+                        for (mPlayers.GetFirst(); !mPlayers.IsLast(); mPlayers.GetNext())
                         {
-                            mPlayers.RemoveLastAccessed();
-                            break;
+                            if (mPlayers.GetLastAccessed().ID == player->ID)
+                            {
+                                mPlayers.RemoveLastAccessed();
+                                break;
+                            }
                         }
                     }
                 }
@@ -213,20 +222,21 @@ bool SBNetwork::Connect(SBStr medium, char* host)
 void SBNetwork::DisConnect()
 {
     CloseSession();
-    mSessions.Clear();
-    mSessionInfo.Clear();
     enet_host_destroy(mHost);
     enet_deinitialize();
     mHost = NULL;
+    mSessions.Clear();
+    mSessionInfo.Clear();
 }
 
 bool SBNetwork::CreateSession(SBStr name, SBNetworkCreation* create)
 {
     SBSessionInfo info;
-    strcpy(info.sessionName, create->sessionName);
+    strcpy(info.sessionName, create->sessionName.c_str());
     info.hostID = mLocalID;
     info.address.host = ENET_HOST_ANY;
     info.address.port = 0xA113;
+    mSessionInfo.Clear();
     mSessionInfo.Add(info);
     mState = SBNETWORK_SESSION_MASTER;
     mSearchTime = enet_time_get();
@@ -286,7 +296,7 @@ bool SBNetwork::Send(BUFFER<UBYTE>& buffer, ULONG length, ULONG peerID, bool com
     if (peerID)
     {
         for (mPlayers.GetFirst(); !mPlayers.IsLast(); mPlayers.GetNext())
-            if (mPlayers.GetLastAccessed().ID == peerID)
+            if (mPlayers.GetLastAccessed().ID == peerID && mPlayers.GetLastAccessed().peer != NULL)
                 enet_peer_send (mPlayers.GetLastAccessed().peer, 0, packet);
 
         if (mPlayers.IsLast())
@@ -335,6 +345,7 @@ bool SBNetwork::JoinSession(SBStr session, SBStr nickname)
     player.ID = info->hostID;
     player.peer = enet_host_connect (mHost, &info->address, 2, mLocalID);
     player.peer->data = &mPlayers.Add(player);
+    enet_peer_timeout(player.peer, 100000,0,100000000);
     mMaster = player.peer;
     mState = SBNETWORK_SESSION_CLIENT;
     return enet_host_service (mHost, &event, 5000) > 0 &&
@@ -345,3 +356,151 @@ SBList<SBNetworkPlayer>* SBNetwork::GetAllPlayers()
 {
     return &mPlayers;
 }
+
+#endif
+
+#ifdef RAKNET_NETWORK
+
+SBNetwork::SBNetwork(bool)
+    : mState(SBNETWORK_IDLE)
+      , mType(){
+
+          mNetwork = nullptr;
+
+          mConnections.Add(ENET_TYPE);
+
+          mConnections.Add(RAKNET_TYPE_DIRECT_JOIN);
+          mConnections.Add(RAKNET_TYPE_DIRECT_HOST);
+          mConnections.Add(RAKNET_TYPE_NAT_JOIN);
+          mConnections.Add(RAKNET_TYPE_NAT_HOST);
+
+          SDL_Log("Started SBNetwork");
+      }
+
+SLONG SBNetwork::GetMessageCount() {
+    return mNetwork->GetMessageCount();
+}
+
+bool SBNetwork::Connect(SBStr) {
+    return false; //No longer used..
+}
+
+bool SBNetwork::Connect(SBStr, const char* ip) {
+    return mNetwork->Connect(ip);
+}
+
+void SBNetwork::DisConnect() {
+    if(mNetwork != nullptr) {
+        mNetwork->Disconnect();
+        delete mNetwork;
+        mNetwork = nullptr;
+    }
+}
+
+bool SBNetwork::CreateSession(SBStr name, SBNetworkCreation* settings) {
+    return mNetwork->CreateSession(settings);
+}
+
+void SBNetwork::CloseSession() {
+    mNetwork->CloseSession();
+}
+
+ULONG SBNetwork::GetLocalPlayerID() {
+    if(mNetwork == nullptr) {
+        return 0;
+    }
+
+    return mNetwork->GetLocalPlayerID();
+}
+
+SLONG SBNetwork::GetProviderID(char* name) {
+    if (strcmp(name, RAKNET_TYPE_DIRECT_JOIN) == 0) {
+        return SBNETWORK_RAKNET_DIRECT_JOIN;
+    }
+    if (strcmp(name, RAKNET_TYPE_DIRECT_HOST) == 0) {
+        return SBNETWORK_RAKNET_DIRECT_HOST;
+    }
+    if (strcmp(name, RAKNET_TYPE_NAT_JOIN) == 0) {
+        return SBNETWORK_RAKNET_NAT_JOIN;
+    }
+    if (strcmp(name, RAKNET_TYPE_NAT_HOST) == 0) {
+        return SBNETWORK_RAKNET_NAT_HOST;
+    }
+    if (strcmp(name, ENET_TYPE) == 0) {
+        return SBNETWORK_ENET;
+    }
+    return -1;
+}
+
+void SBNetwork::SetProvider(SBTypeEnum type) {
+    mType = type;
+    switch (type) {
+
+        case SBNETWORK_RAKNET_DIRECT_JOIN:
+        case SBNETWORK_RAKNET_DIRECT_HOST:
+        case SBNETWORK_RAKNET_NAT_HOST:
+        case SBNETWORK_RAKNET_NAT_JOIN:
+            mNetwork = new RAKNetNetwork();
+            break;
+        case SBNETWORK_ENET:
+            mNetwork = new ENetNetwork();
+            break;
+    }
+
+    mNetwork->Initialize();
+}
+
+bool SBNetwork::IsEnumSessionFinished() const {
+    return mNetwork->IsSessionFinished();
+}
+
+bool SBNetwork::IsInSession() const {
+    return mNetwork->IsInSession();
+}
+
+bool SBNetwork::IsInitialized() const {
+    return mNetwork != nullptr;
+}
+
+bool SBNetwork::Send(BUFFER<UBYTE>& buffer, ULONG length, ULONG peerId, bool compress) {
+    return mNetwork->Send(buffer, length, peerId, compress);
+}
+
+bool SBNetwork::Receive(UBYTE** buffer, ULONG& size) {
+    return mNetwork->Receive(buffer, size);
+}
+
+SBList<SBNetworkPlayer*>* SBNetwork::GetAllPlayers() {
+    return mNetwork->GetAllPlayers();
+}
+
+
+bool SBNetwork::JoinSession(const SBStr& name, SBStr user) {
+    if (mNetwork->IsServerSearchable()) {
+        return mNetwork->GetServerSearcher()->JoinSession(name, user);
+    }
+
+    return false;
+}
+
+SBList<SBStr>* SBNetwork::GetSessionListAsync() {
+    if (mNetwork->IsServerSearchable()) {
+        return mNetwork->GetServerSearcher()->GetSessionListAsync();
+    }
+
+    return nullptr;
+}
+
+bool SBNetwork::StartGetSessionListAsync() {
+    if (mNetwork->IsServerSearchable()) {
+        return mNetwork->GetServerSearcher()->StartGetSessionListAsync();
+    }
+
+    return false;
+}
+
+SBList<SBStr>* SBNetwork::GetConnectionList() {
+    return &mConnections;
+}
+
+#endif

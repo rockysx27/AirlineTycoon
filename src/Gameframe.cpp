@@ -110,8 +110,12 @@ void CheatSound (void)
 
 void MessagePump (void)
 {
+
+    SDL_StartTextInput();
+    bool help = SDL_IsTextInputActive();
     while (SDL_PollEvent(&FrameWnd->Mess))
         FrameWnd->ProcessEvent(FrameWnd->Mess);
+    help = SDL_IsTextInputActive();
 }
 
 //LPDIRECTDRAWSURFACE FrontSurf=NULL;
@@ -148,13 +152,58 @@ else Sleep(1000);
 }
 }*/
 
+void GameFrame::UpdateWindow() {
+    //windowed size:
+    int width = 640;
+    int height = 480;
+
+    SDL_DisplayMode DM;
+    SDL_GetDesktopDisplayMode(0, &DM);
+    int screenWidth = DM.w;
+    int screenHeight = DM.h;
+
+    switch (Sim.Options.OptionFullscreen)
+    {
+        case(0): //Fullscreen
+            SDL_SetWindowSize(m_hWnd, screenWidth, screenHeight);
+            SDL_SetWindowFullscreen(m_hWnd, SDL_TRUE);
+            break;
+        case(1): //Windowed
+            SDL_SetWindowFullscreen(m_hWnd, 0);
+            SDL_SetWindowResizable(m_hWnd, SDL_TRUE);
+            SDL_SetWindowBordered(m_hWnd, SDL_TRUE);
+            SDL_SetWindowSize(m_hWnd, width, height);
+            SDL_SetWindowPosition(m_hWnd, screenWidth/2 - width / 2, screenHeight/2 - height / 2);
+            break;
+        case(2): //Borderless Fullscreen
+            SDL_SetWindowFullscreen(m_hWnd, SDL_FALSE);
+            SDL_SetWindowResizable(m_hWnd, SDL_FALSE);
+            SDL_SetWindowBordered(m_hWnd, SDL_FALSE);
+            SDL_SetWindowPosition(m_hWnd, 0, 0);
+            SDL_SetWindowSize(m_hWnd, screenWidth, screenHeight);
+            break;
+    }
+
+    UpdateFrameSize();
+}
+
+void GameFrame::UpdateFrameSize()
+{
+    if (Sim.Options.OptionKeepAspectRatio) {
+        SDL_RenderSetLogicalSize(lpDD, 640, 480);
+    }
+    else {
+        int screenW, screenH;
+        SDL_GetWindowSize(m_hWnd, &screenW, &screenH);
+        SDL_RenderSetLogicalSize(lpDD, screenW, screenH);
+    }
+}
+
 //--------------------------------------------------------------------------------------------
 //Konstruktor:
 //--------------------------------------------------------------------------------------------
 GameFrame::GameFrame()
 {
-    CRect  rect (0,0,640,480);
-
     pGLibPause = NULL;
     PauseFade  = 0;
 
@@ -163,8 +212,37 @@ GameFrame::GameFrame()
     if (DetectCurrentDisplayResolution().x<=640 || DetectCurrentDisplayResolution().y<=480)
         bFullscreen=TRUE;
 
+    //Base backup screen size - only used in windowed mode
+    int width = 640;
+    int height = 480;
+
+    if(bFullscreen == false || Sim.Options.OptionFullscreen == 0 || Sim.Options.OptionFullscreen == 2){
+        SDL_DisplayMode DM;
+        SDL_GetDesktopDisplayMode(0, &DM);
+        width = DM.w;
+        height = DM.h;
+    }
+    CRect  rect(0, 0, width, height);
+
+    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
     SDL_SetHint(SDL_HINT_TOUCH_MOUSE_EVENTS, "1");
-    SDL_Window* h = SDL_CreateWindow("Airline Tycoon", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, rect.Width(), rect.Height(), bFullscreen ? SDL_WINDOW_FULLSCREEN : SDL_WINDOW_RESIZABLE);
+    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "2");
+    SDL_Window* h;
+
+    switch (Sim.Options.OptionFullscreen)
+    {
+        default:
+        case(0): //Fullscreen
+            h = SDL_CreateWindow("Airline Tycoon", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, rect.Width(), rect.Height(), SDL_WINDOW_FULLSCREEN);
+            break;
+        case(1): //Windowed
+            h = SDL_CreateWindow("Airline Tycoon", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, rect.Width(), rect.Height(), SDL_WINDOW_RESIZABLE);
+            break;
+        case(2): //Borderless Fullscreen
+            h = SDL_CreateWindow("Airline Tycoon", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, rect.Width(), rect.Height(), SDL_WINDOW_BORDERLESS);
+            break;
+    }
+
     if (!h)
     {
         MyMessageBox("ERROR", "CreateWindow failed");
@@ -188,23 +266,24 @@ GameFrame::GameFrame()
 
       SLONG x= DDCAPS_BLT ;
       SLONG y= DDCAPS_COLORKEY;*/
-
     PrimaryBm.ReSize (h, bFullscreen, XY(640,480));
-    PrimaryBm.ReSizePartB (h, bFullscreen, XY(640,480));
+    PrimaryBm.ReSizePartB (h, bFullscreen, XY(640, 480));
     pCursor=new SB_CCursor(&PrimaryBm.PrimaryBm);
     PrimaryBm.PrimaryBm.AssignCursor (pCursor);
 
     bitmapMain = new SB_CBitmapMain(lpDD);
 
     pGfxMain->LoadLib ((char*)(LPCTSTR)FullFilename ("glbasis.gli", GliPath),  &pGLibBasis, L_LOCMEM);
-    gCursorBm.ReSize (pGLibBasis, GFX_CURSOR, CREATE_VIDMEM);
-    gCursorLBm.ReSize (pGLibBasis, GFX_CURSORL, CREATE_VIDMEM);
-    gCursorRBm.ReSize (pGLibBasis, GFX_CURSORR, CREATE_VIDMEM);
-    gCursorHotBm.ReSize (pGLibBasis, GFX_CURSORH, CREATE_VIDMEM);
-    gCursorExitBms.ReSize (pGLibBasis, "EXIT01", 12, CREATE_VIDMEM);
-    gCursorMoveHBm.ReSize (pGLibBasis, GFX_CURSORV, CREATE_VIDMEM);
-    gCursorMoveVBm.ReSize (pGLibBasis, GFX_CURSORW, CREATE_VIDMEM);
-    gCursorSandBm.ReSize (pGLibBasis, GFX_CURSORS, CREATE_VIDMEM);
+    gCursorBm.ReSize(pGLibBasis, GFX_CURSOR, CREATE_VIDMEM);
+    gCursorLBm.ReSize(pGLibBasis, GFX_CURSORL, CREATE_VIDMEM);
+    gCursorRBm.ReSize(pGLibBasis, GFX_CURSORR, CREATE_VIDMEM);
+    gCursorHotBm.ReSize(pGLibBasis, GFX_CURSORH, CREATE_VIDMEM);
+    gCursorExitBms.ReSize(pGLibBasis, "EXIT01", 12, CREATE_VIDMEM);
+    gCursorMoveHBm.ReSize(pGLibBasis, GFX_CURSORV, CREATE_VIDMEM);
+    gCursorMoveVBm.ReSize(pGLibBasis, GFX_CURSORW, CREATE_VIDMEM);
+    gCursorSandBm.ReSize(pGLibBasis, GFX_CURSORS, CREATE_VIDMEM);
+    // MP: wizzardmaker:
+    // gCursorNoBm.ReSize (10,10);
     gCursorNoBm.ReSize (XY(10,10), CREATE_VIDMEM);
     gCursorNoBm.FillWith (0);
 
@@ -215,6 +294,8 @@ GameFrame::GameFrame()
         pCursor->SetImage (gCursorBm.pBitmap);
 
     ColorFX.ReInit (SB_COLORFX_FADE, 8, gCursorSandBm.pBitmap);
+
+    UpdateWindow();
 
     /*_beginthread (Copier, 0, NULL);
 
@@ -314,10 +395,44 @@ GameFrame::~GameFrame()
     if (m_hWnd)
     {
         SDL_DestroyWindow(m_hWnd);
-        m_hWnd=NULL;
+        m_hWnd = NULL;
     }
+
     bLeaveGameLoop=TRUE;
     Hdu.HercPrintf (0, "logging ends..");
+}
+
+void GameFrame::TranslatePointToGameSpace(CPoint* p) {
+    if(Sim.Options.OptionKeepAspectRatio)
+        return;
+
+    int screenW, screenH;
+    SDL_GetRendererOutputSize(SDL_GetRenderer(m_hWnd), &screenW, &screenH);
+    float x = p->x;
+    float y = p->y;
+    x /= screenW;
+    x *= 640;
+    y /= screenH;
+    y *= 480;
+
+    p->x = (LONG)x;
+    p->y = (LONG)y;
+}
+void GameFrame::TranslatePointToScreenSpace(int& x, int& y) {
+    if (Sim.Options.OptionKeepAspectRatio)
+        return;
+
+    int screenW, screenH;
+    SDL_GetRendererOutputSize(SDL_GetRenderer(m_hWnd), &screenW, &screenH);
+    float _x = x;
+    float _y = y;
+    _x /= 640;
+    _x *= screenW;
+    _y /= 480;
+    _y *= screenH;
+
+    x = (LONG)_x;
+    y = (LONG)_y;
 }
 
 void GameFrame::ProcessEvent(const SDL_Event& event)
@@ -334,15 +449,20 @@ void GameFrame::ProcessEvent(const SDL_Event& event)
                         Sim.Gamestate = GAMESTATE_QUIT;
                         bLeaveGameLoop = TRUE;
                     }
-                    else if (event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED)
+                    else if(event.window.event == SDL_WINDOWEVENT_RESIZED){
+                        if(Sim.Options.OptionKeepAspectRatio)
+                            SDL_RenderSetLogicalSize(lpDD, 640,480);
+                        else
+                            SDL_RenderSetLogicalSize(lpDD, event.window.data1, event.window.data2);
+                    }else if (event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED)
                     {
                         FrameWnd->OnActivateApp(TRUE, 0);
                         FrameWnd->OnSetCursor(NULL, HTCLIENT, 0);
                     }
                     else if (event.window.event == SDL_WINDOWEVENT_FOCUS_LOST)
                     {
-                        FrameWnd->OnActivateApp(FALSE, 0);
-                        FrameWnd->OnSetCursor(NULL, HTNOWHERE, 0);
+                        //FrameWnd->OnActivateApp(FALSE, 0);
+                        //FrameWnd->OnSetCursor(NULL, HTNOWHERE, 0);
                     }
                     else if (event.window.event == SDL_WINDOWEVENT_ENTER)
                         FrameWnd->OnSetCursor(NULL, HTCLIENT, 0);
@@ -353,28 +473,36 @@ void GameFrame::ProcessEvent(const SDL_Event& event)
             break;
         case SDL_MOUSEMOTION:
             {
-                FrameWnd->OnMouseMove(0, CPoint(event.motion.x, event.motion.y));
+                CPoint pos = CPoint(event.motion.x, event.motion.y);
+                TranslatePointToGameSpace(&pos);
+                FrameWnd->OnMouseMove(0, pos);
             }
+            break;
+        case SDL_TEXTINPUT:
+            FrameWnd->OnChar(event.text.text[0],
+                    0, 0);
+
+            FrameWnd->OnKeyDown(event.text.text[0], 0,0);
             break;
         case SDL_KEYDOWN:
             {
                 UINT nFlags = event.key.keysym.scancode | ((SDL_GetModState() & KMOD_LALT) << 5);
                 FrameWnd->OnKeyDown(toupper(event.key.keysym.sym), event.key.repeat, nFlags);
-                FrameWnd->OnChar(SDL_GetModState() & KMOD_SHIFT ? toupper(event.key.keysym.sym) : event.key.keysym.sym,
-                        event.key.repeat, nFlags);
             }
             break;
         case SDL_MOUSEBUTTONDOWN:
             {
+                CPoint pos = CPoint(event.button.x, event.button.y);
+                TranslatePointToGameSpace(&pos);
                 if (event.button.button == SDL_BUTTON_LEFT)
                 {
-                    if (event.button.clicks > 1)
-                        FrameWnd->OnLButtonDblClk(WM_LBUTTONDBLCLK, CPoint(event.button.x, event.button.y));
+                    if (event.button.clicks == 2)
+                        FrameWnd->OnLButtonDblClk(WM_LBUTTONDBLCLK, pos);
                     else
-                        FrameWnd->OnLButtonDown(WM_LBUTTONDOWN, CPoint(event.button.x, event.button.y));
+                        FrameWnd->OnLButtonDown(WM_LBUTTONDOWN, pos);
                 }
                 else if (event.button.button == SDL_BUTTON_RIGHT)
-                    FrameWnd->OnRButtonDown(WM_RBUTTONDOWN, CPoint(event.button.x, event.button.y));
+                    FrameWnd->OnRButtonDown(WM_RBUTTONDOWN, pos);
             }
             break;
         case SDL_KEYUP:
@@ -384,10 +512,12 @@ void GameFrame::ProcessEvent(const SDL_Event& event)
             break;
         case SDL_MOUSEBUTTONUP:
             {
+                CPoint pos = CPoint(event.button.x, event.button.y);
+                TranslatePointToGameSpace(&pos);
                 if (event.button.button == SDL_BUTTON_LEFT)
-                    FrameWnd->OnLButtonUp(WM_LBUTTONUP, CPoint(event.button.x, event.button.y));
+                    FrameWnd->OnLButtonUp(WM_LBUTTONUP, pos);
                 else if (event.button.button == SDL_BUTTON_RIGHT)
-                    FrameWnd->OnRButtonUp(WM_RBUTTONUP, CPoint(event.button.x, event.button.y));
+                    FrameWnd->OnRButtonUp(WM_RBUTTONUP, pos);
             }
             break;
     }
@@ -665,8 +795,10 @@ void GameFrame::OnPaint()
                         else if (MouseLook==CURSOR_RIGHT)  { pCursor->SetImage (gCursorRBm.pBitmap); MouseCursorOffset=XY(29,16); }
                         else if (MouseLook==CURSOR_MOVE_H) { pCursor->SetImage (gCursorMoveHBm.pBitmap); MouseCursorOffset=XY(16,0); }
                         else if (MouseLook==CURSOR_MOVE_V) { pCursor->SetImage (gCursorMoveVBm.pBitmap); MouseCursorOffset=XY(0,16); }
-
-                        pCursor->MoveImage(gMousePosition.x-MouseCursorOffset.x, gMousePosition.y-MouseCursorOffset.y);
+                        int _x = gMousePosition.x;
+                        int _y = gMousePosition.y;
+                        TranslatePointToScreenSpace(_x, _y);
+                        pCursor->MoveImage(_x -MouseCursorOffset.x, _y -MouseCursorOffset.y);
                     }
                 }
             }
@@ -842,8 +974,14 @@ void GameFrame::OnMouseMove(UINT nFlags, CPoint point)
 
     gKlackerPlanes.TimeSinceStart=0;
 
-    if (!gUseWindowsMouse)
-        if (bActive && pCursor && bNoQuickMouse==FALSE) pCursor->MoveImage(gMousePosition.x-MouseCursorOffset.x, gMousePosition.y-MouseCursorOffset.y);
+    if (!gUseWindowsMouse){
+        if (bActive && pCursor && bNoQuickMouse==FALSE){
+            int _x = gMousePosition.x;
+            int _y = gMousePosition.y;
+            FrameWnd->TranslatePointToScreenSpace(_x, _y);
+            pCursor->MoveImage(_x - MouseCursorOffset.x, _y - MouseCursorOffset.y);
+        }
+    }
 }
 
 void GameFrame::OnCaptureChanged (void*)
@@ -870,10 +1008,37 @@ void GameFrame::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
     static char TypeBuffer[30];   //Für Cheats
     long nTargetRoom=0;
 
+    if(nChar== VK_RETURN) {
+        if (Sim.localPlayer != -1 && Sim.Players.Players.AnzEntries() == 4 && Sim.Players.Players[Sim.localPlayer].LocationWin)
+        {
+            SLONG CurrentMenu = ((CStdRaum*)Sim.Players.Players[Sim.localPlayer].LocationWin)->CurrentMenu;
+
+            if (CurrentMenu == MENU_REQUEST || CurrentMenu == MENU_BROADCAST)
+            {
+                if (CurrentMenu == MENU_BROADCAST && strlen(((CStdRaum*)Sim.Players.Players[Sim.localPlayer].LocationWin)->Optionen[0]) == 0)
+                {
+                    ((CStdRaum*)Sim.Players.Players[Sim.localPlayer].LocationWin)->MenuStop();
+                }
+                else
+                {
+                    ::MouseClickPar1 = 1;
+                    ::MouseClickArea = -101;
+                    ::MouseClickId = MENU_REQUEST;
+                    ((CStdRaum*)Sim.Players.Players[Sim.localPlayer].LocationWin)->MenuLeftClick(XY(0, 0));
+                }
+            }
+            else if (CurrentMenu == MENU_NONE && Sim.Players.GetAnzHumanPlayers() > 1)
+            {
+                if (Sim.Time > 9 * 60000 && ((CStdRaum*)Sim.Players.Players[Sim.localPlayer].LocationWin)->IsDialogOpen() == 0)
+                    ((CStdRaum*)Sim.Players.Players[Sim.localPlayer].LocationWin)->MenuStart(MENU_BROADCAST);
+            }
+        }
+    }
+
     if (gLanguage==LANGUAGE_D || gLanguage==LANGUAGE_N)
     {
         // Deutsch, Niederländisch
-        switch (nChar)
+        switch (toupper(nChar))
         {
             case 'J': nTargetRoom = 'J'; break;
             case 'T': nTargetRoom = ROOM_REISEBUERO;  break;
@@ -902,7 +1067,7 @@ void GameFrame::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
     else if (gLanguage==LANGUAGE_O)
     {
         // Portugisisch
-        switch (nChar)
+        switch (toupper(nChar))
         {
             case 'J': nTargetRoom = 'J'; break;
             case 'T': nTargetRoom = ROOM_REISEBUERO;  break;
@@ -929,7 +1094,7 @@ void GameFrame::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
     else
     {
         // Englisch, Sonstige:
-        switch (nChar)
+        switch (toupper(nChar))
         {
             case 'J': nTargetRoom = 'J'; break;
             case 'T': nTargetRoom = ROOM_REISEBUERO;  break;
@@ -1447,7 +1612,7 @@ void GameFrame::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                 CheatBerater^=1;
                 CheatSound ();
 
-                Sim.SendChatBroadcast (bprintf (StandardTexte.GetS (TOKEN_MISC, 7010), Sim.Players.Players[Sim.localPlayer].NameX));
+                Sim.SendChatBroadcast (bprintf (StandardTexte.GetS (TOKEN_MISC, 7010), (LPCTSTR)Sim.Players.Players[Sim.localPlayer].NameX));
             }
         }
 
@@ -1525,7 +1690,7 @@ void GameFrame::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                 qPlayer.Money+=10000000;
                 CheatSound ();
 
-                Sim.SendChatBroadcast (bprintf (StandardTexte.GetS (TOKEN_MISC, 7011), Sim.Players.Players[Sim.localPlayer].NameX));
+                Sim.SendChatBroadcast (bprintf (StandardTexte.GetS (TOKEN_MISC, 7011), (LPCTSTR)Sim.Players.Players[Sim.localPlayer].NameX));
                 Sim.SendSimpleMessage (ATNET_CHEAT, NULL, Sim.localPlayer, 0);
             }
         }
@@ -1550,7 +1715,7 @@ void GameFrame::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                 qPlayer.Money+=1000000000;
                 CheatSound ();
 
-                Sim.SendChatBroadcast (bprintf (StandardTexte.GetS (TOKEN_MISC, 7011), Sim.Players.Players[Sim.localPlayer].NameX));
+                Sim.SendChatBroadcast (bprintf (StandardTexte.GetS (TOKEN_MISC, 7011), (LPCTSTR)Sim.Players.Players[Sim.localPlayer].NameX));
                 Sim.SendSimpleMessage (ATNET_CHEAT, NULL, Sim.localPlayer, 0);
             }
         }
@@ -1597,7 +1762,7 @@ void GameFrame::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 
                 CheatSound ();
 
-                Sim.SendChatBroadcast (bprintf (StandardTexte.GetS (TOKEN_MISC, 7015), Sim.Players.Players[Sim.localPlayer].NameX));
+                Sim.SendChatBroadcast (bprintf (StandardTexte.GetS (TOKEN_MISC, 7015), (LPCTSTR)Sim.Players.Players[Sim.localPlayer].NameX));
                 Sim.SendSimpleMessage (ATNET_CHEAT, NULL, Sim.localPlayer, 0);
             }
         }
@@ -1621,7 +1786,7 @@ void GameFrame::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 
                 CheatSound ();
 
-                Sim.SendChatBroadcast (bprintf (StandardTexte.GetS (TOKEN_MISC, 7016), Sim.Players.Players[Sim.localPlayer].NameX));
+                Sim.SendChatBroadcast (bprintf (StandardTexte.GetS (TOKEN_MISC, 7016), (LPCTSTR)Sim.Players.Players[Sim.localPlayer].NameX));
                 Sim.SendSimpleMessage (ATNET_CHEAT, NULL, Sim.localPlayer, 0);
             }
         }
@@ -1645,7 +1810,7 @@ void GameFrame::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                 qPlayer.ReformIcons ();
                 CheatSound ();
 
-                Sim.SendChatBroadcast (bprintf (StandardTexte.GetS (TOKEN_MISC, 7012), Sim.Players.Players[Sim.localPlayer].NameX));
+                Sim.SendChatBroadcast (bprintf (StandardTexte.GetS (TOKEN_MISC, 7012), (LPCTSTR)Sim.Players.Players[Sim.localPlayer].NameX));
             }
         }
 
@@ -1664,7 +1829,7 @@ void GameFrame::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                 qPlayer.Credit=0;
                 CheatSound ();
 
-                Sim.SendChatBroadcast (bprintf (StandardTexte.GetS (TOKEN_MISC, 7013), Sim.Players.Players[Sim.localPlayer].NameX));
+                Sim.SendChatBroadcast (bprintf (StandardTexte.GetS (TOKEN_MISC, 7013), (LPCTSTR)Sim.Players.Players[Sim.localPlayer].NameX));
                 Sim.SendSimpleMessage (ATNET_CHEAT, NULL, Sim.localPlayer, 1);
             }
         }
@@ -1683,7 +1848,7 @@ void GameFrame::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                 qPlayer.Image=1000;
                 CheatSound ();
 
-                Sim.SendChatBroadcast (bprintf (StandardTexte.GetS (TOKEN_MISC, 7014), Sim.Players.Players[Sim.localPlayer].NameX));
+                Sim.SendChatBroadcast (bprintf (StandardTexte.GetS (TOKEN_MISC, 7014), (LPCTSTR)Sim.Players.Players[Sim.localPlayer].NameX));
                 Sim.SendSimpleMessage (ATNET_CHEAT, NULL, Sim.localPlayer, 2);
             }
         }
@@ -2187,33 +2352,6 @@ void GameFrame::OnChar(UINT nChar, UINT, UINT)
                 {
                     switch (nChar)
                     {
-                        case VK_RETURN:
-                            if (Sim.localPlayer!=-1 && Sim.Players.Players.AnzEntries()==4 && Sim.Players.Players[Sim.localPlayer].LocationWin)
-                            {
-                                SLONG CurrentMenu = ((CStdRaum*)Sim.Players.Players[Sim.localPlayer].LocationWin)->CurrentMenu;
-
-                                if (CurrentMenu==MENU_REQUEST || CurrentMenu==MENU_BROADCAST)
-                                {
-                                    if (CurrentMenu==MENU_BROADCAST && strlen (((CStdRaum*)Sim.Players.Players[Sim.localPlayer].LocationWin)->Optionen[0])==0)
-                                    {
-                                        ((CStdRaum*)Sim.Players.Players[Sim.localPlayer].LocationWin)->MenuStop ();
-                                    }
-                                    else
-                                    {
-                                        ::MouseClickPar1 = 1;
-                                        ::MouseClickArea = -101;
-                                        ::MouseClickId   = MENU_REQUEST;
-                                        ((CStdRaum*)Sim.Players.Players[Sim.localPlayer].LocationWin)->MenuLeftClick (XY(0,0));
-                                    }
-                                }
-                                else if (CurrentMenu==MENU_NONE && Sim.Players.GetAnzHumanPlayers()>1)
-                                {
-                                    if (Sim.Time>9*60000 && ((CStdRaum*)Sim.Players.Players[Sim.localPlayer].LocationWin)->IsDialogOpen()==0)
-                                        ((CStdRaum*)Sim.Players.Players[Sim.localPlayer].LocationWin)->MenuStart (MENU_BROADCAST);
-                                }
-                            }
-                            break;
-
                         case '+':
                             Sim.InvalidateHint(HINT_GAMESPEED);
                             Sim.Players.Players[Sim.localPlayer].GameSpeed = (Sim.Players.Players[Sim.localPlayer].GameSpeed+1)%4;

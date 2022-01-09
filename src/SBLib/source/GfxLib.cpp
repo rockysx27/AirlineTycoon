@@ -110,6 +110,8 @@ GfxLib::GfxLib(void*, SDL_Renderer*, char* path, SLONG, SLONG, SLONG*)
             delete header;
         }
         SDL_RWclose(file);
+    }else {
+        SDL_Log(SDL_GetError());
     }
 }
 
@@ -211,7 +213,7 @@ class GfxLib* GfxLib::ReleaseSurface(__int64 name)
     std::map<__int64, SDL_Surface*>::iterator it = Surfaces.find(name);
     if (it != Surfaces.end())
     {
-        delete [] (char*)it->second->pixels;
+        delete[](char*)it->second->pixels;
         SDL_FreeSurface(it->second);
         Surfaces.erase(it);
     }
@@ -220,9 +222,12 @@ class GfxLib* GfxLib::ReleaseSurface(__int64 name)
 
 void GfxLib::Release()
 {
+    if(Surfaces.size() <= 0)
+        return;
+
     for (std::map<__int64, SDL_Surface*>::iterator it = Surfaces.begin(); it != Surfaces.end(); ++it)
     {
-        delete [](char*)it->second->pixels;
+        delete[](char*)it->second->pixels;
         SDL_FreeSurface(it->second);
     }
     Surfaces.clear();

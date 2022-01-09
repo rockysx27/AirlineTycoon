@@ -1,4 +1,4 @@
-//============================================================================================
+ï»¿//============================================================================================
 // Intro.cpp : Der Render-Intro
 //============================================================================================
 #include "stdafx.h"
@@ -17,29 +17,29 @@ extern SB_CColorFX ColorFX;
 //--------------------------------------------------------------------------------------------
 //ULONG PlayerNum
 //--------------------------------------------------------------------------------------------
-CIntro::CIntro (BOOL bHandy, SLONG PlayerNum) : CStdRaum (bHandy, PlayerNum, "", NULL)
+CIntro::CIntro(BOOL bHandy, SLONG PlayerNum) : CStdRaum(bHandy, PlayerNum, "", NULL)
 {
-    RoomBm.ReSize (640, 480);
-    RoomBm.FillWith (0);
-    PrimaryBm.BlitFrom (RoomBm);
+    RoomBm.ReSize(640, 480);
+    RoomBm.FillWith(0);
+    PrimaryBm.BlitFrom(RoomBm);
 
-    FrameNum        = 0;
-    FrameNext       = 0;
+    FrameNum = 0;
+    FrameNext = 0;
     bWasIntroPlayed = false;
 
-    StopMidi ();
+    StopMidi();
     gpSSE->DisableDS();
 
     gMouseStartup = TRUE;
 
-    pGfxMain->LoadLib ((char*)(LPCTSTR)FullFilename ("titel.gli", RoomPath), &pRoomLib, L_LOCMEM);
-    FadeFrom.ReSize (640,480);
-    FadeFrom.FillWith (0);
-    FadeTo.ReSize (pRoomLib, GFX_TITEL);
+    pGfxMain->LoadLib((char*)(LPCTSTR)FullFilename("titel.gli", RoomPath), &pRoomLib, L_LOCMEM);
+    FadeFrom.ReSize(640, 480);
+    FadeFrom.FillWith(0);
+    FadeTo.ReSize(pRoomLib, GFX_TITEL);
 
-    if (IntroPath.GetLength()!=0)
+    if (IntroPath.GetLength() != 0)
     {
-        pSmack = smk_open_file(FullFilename ("intro.smk", IntroPath), SMK_MODE_MEMORY);
+        pSmack = smk_open_file(FullFilename("intro.smk", IntroPath), SMK_MODE_MEMORY);
         smk_enable_video(pSmack, true);
 
         smk_info_video(pSmack, &Width, &Height, &Scale);
@@ -61,7 +61,7 @@ CIntro::CIntro (BOOL bHandy, SLONG PlayerNum) : CStdRaum (bHandy, PlayerNum, "",
         audioDevice = SDL_OpenAudioDevice(NULL, 0, &desired, NULL, 0);
         if (!audioDevice) Hdu.HercPrintf(SDL_GetError());
 
-        if (pSmack) bWasIntroPlayed=true;
+        if (pSmack) bWasIntroPlayed = true;
 
         State = smk_first(pSmack);
         Bitmap.ReSize(XY(Width, Height), CREATE_SYSMEM | CREATE_INDEXED);
@@ -79,8 +79,8 @@ CIntro::CIntro (BOOL bHandy, SLONG PlayerNum) : CStdRaum (bHandy, PlayerNum, "",
     }
     else
     {
-        audioDevice   = 0;
-        pSmack        = NULL;
+        audioDevice = 0;
+        pSmack = NULL;
         Sim.Gamestate = GAMESTATE_BOOT;
     }
 
@@ -89,7 +89,7 @@ CIntro::CIntro (BOOL bHandy, SLONG PlayerNum) : CStdRaum (bHandy, PlayerNum, "",
 }
 
 //--------------------------------------------------------------------------------------------
-//CIntro-Fenster zerstören:
+//CIntro-Fenster zerstï¿½ren:
 //--------------------------------------------------------------------------------------------
 CIntro::~CIntro()
 {
@@ -100,8 +100,8 @@ CIntro::~CIntro()
 
     if (pRoomLib && pGfxMain)
     {
-        pGfxMain->ReleaseLib (pRoomLib);
-        pRoomLib=NULL;
+        pGfxMain->ReleaseLib(pRoomLib);
+        pRoomLib = NULL;
     }
 
     if (audioDevice) SDL_CloseAudioDevice(audioDevice);
@@ -111,10 +111,10 @@ CIntro::~CIntro()
     pSmack = NULL;
 
     gMouseStartup = FALSE;
-    pCursor->SetImage (gCursorBm.pBitmap);
+    pCursor->SetImage(gCursorBm.pBitmap);
 
     if (Sim.Options.OptionEnableDigi) gpSSE->EnableDS();
-    if (Sim.Options.OptionEnableMidi) NextMidi ();
+    if (Sim.Options.OptionMusicType != 0) NextMidi();
     SetMidiVolume(Sim.Options.OptionMusik);
 }
 
@@ -126,10 +126,10 @@ CIntro::~CIntro()
 //--------------------------------------------------------------------------------------------
 void CIntro::OnPaint()
 {
-    if (FrameNum++<2) PrimaryBm.BlitFrom (RoomBm);
+    if (FrameNum++ < 2) PrimaryBm.BlitFrom(RoomBm);
 
     //Die Standard Paint-Sachen kann der Basisraum erledigen
-    CStdRaum::OnPaint ();
+    CStdRaum::OnPaint();
 
     SDL_PauseAudioDevice(audioDevice, 0);
 
@@ -156,17 +156,17 @@ void CIntro::OnPaint()
             FrameNext = timeGetTime() + (usf / 1000.0);
         }
 
-        PrimaryBm.BlitFrom (Bitmap, 320-Width/2, 240-Height/2);
+        PrimaryBm.BlitFrom(Bitmap, 320 - Width / 2, 240 - Height / 2);
 
         if (State != SMK_MORE)
         {
-            if (Sim.Options.OptionViewedIntro==0)
+            if (Sim.Options.OptionViewedIntro == 0)
             {
-                FadeFrom.BlitFrom (Bitmap, 320-Width/2, 240-Height/2);
+                FadeFrom.BlitFrom(Bitmap, 320 - Width / 2, 240 - Height / 2);
 
-                FadeCount=timeGetTime();
+                FadeCount = timeGetTime();
 
-                smk_close(pSmack); pSmack=0;
+                smk_close(pSmack); pSmack = 0;
             }
             else
                 Sim.Gamestate = GAMESTATE_BOOT;
@@ -174,16 +174,16 @@ void CIntro::OnPaint()
     }
     else
     {
-        if (timeGetTime()-FadeCount<1000)
+        if (timeGetTime() - FadeCount < 1000)
         {
-            SLONG Level=min(1000, timeGetTime()-FadeCount)*8/1000;
-            ColorFX.ApplyOn2 (Level, FadeTo.pBitmap, 8-Level, FadeFrom.pBitmap, &PrimaryBm.PrimaryBm);
+            SLONG Level = min(1000, timeGetTime() - FadeCount) * 8 / 1000;
+            ColorFX.ApplyOn2(Level, FadeTo.pBitmap, 8 - Level, FadeFrom.pBitmap, &PrimaryBm.PrimaryBm);
         }
         else
         {
-            PrimaryBm.BlitFrom (FadeTo);
+            PrimaryBm.BlitFrom(FadeTo);
 
-            if (timeGetTime()-FadeCount>3000)
+            if (timeGetTime() - FadeCount > 3000)
                 Sim.Gamestate = GAMESTATE_BOOT;
         }
     }
@@ -194,13 +194,13 @@ void CIntro::OnPaint()
 //--------------------------------------------------------------------------------------------
 void CIntro::OnLButtonDown(UINT, CPoint)
 {
-    if (pSmack && Sim.Options.OptionViewedIntro==0)
+    if (pSmack && Sim.Options.OptionViewedIntro == 0)
     {
-        FadeFrom.BlitFrom (Bitmap, 320-Width/2, 240-Height/2);
+        FadeFrom.BlitFrom(Bitmap, 320 - Width / 2, 240 - Height / 2);
 
-        FadeCount=timeGetTime();
+        FadeCount = timeGetTime();
 
-        smk_close(pSmack); pSmack=0;
+        smk_close(pSmack); pSmack = 0;
     }
     else
     {
@@ -213,15 +213,15 @@ void CIntro::OnLButtonDown(UINT, CPoint)
 //--------------------------------------------------------------------------------------------
 void CIntro::OnRButtonDown(UINT, CPoint)
 {
-    DefaultOnRButtonDown ();
+    DefaultOnRButtonDown();
 
-    if (pSmack && Sim.Options.OptionViewedIntro==0)
+    if (pSmack && Sim.Options.OptionViewedIntro == 0)
     {
-        FadeFrom.BlitFrom (Bitmap, 320-Width/2, 240-Height/2);
+        FadeFrom.BlitFrom(Bitmap, 320 - Width / 2, 240 - Height / 2);
 
-        FadeCount=timeGetTime();
+        FadeCount = timeGetTime();
 
-        smk_close(pSmack); pSmack=0;
+        smk_close(pSmack); pSmack = 0;
     }
     else
     {
@@ -250,15 +250,15 @@ void CIntro::OnMouseMove(UINT nFlags, CPoint point)
 //--------------------------------------------------------------------------------------------
 void CIntro::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-    if (nChar==VK_ESCAPE)
+    if (nChar == VK_ESCAPE)
     {
-        if (pSmack && Sim.Options.OptionViewedIntro==0)
+        if (pSmack && Sim.Options.OptionViewedIntro == 0)
         {
-            FadeFrom.BlitFrom (Bitmap, 320-Width/2, 240-Height/2);
+            FadeFrom.BlitFrom(Bitmap, 320 - Width / 2, 240 - Height / 2);
 
-            FadeCount=timeGetTime();
+            FadeCount = timeGetTime();
 
-            smk_close(pSmack); pSmack=0;
+            smk_close(pSmack); pSmack = 0;
         }
         else
         {

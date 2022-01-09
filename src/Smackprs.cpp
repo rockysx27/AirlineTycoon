@@ -1,5 +1,5 @@
-//============================================================================================
-// SmackPrs.cpp : Wrapper-Klasse für den Smacker für 16Bit Farben bei 8-Bit Videos:
+ï»¿//============================================================================================
+// SmackPrs.cpp : Wrapper-Klasse fï¿½r den Smacker fï¿½r 16Bit Farben bei 8-Bit Videos:
 //============================================================================================
 #include "stdafx.h"
 #include <smacker.h>
@@ -50,7 +50,7 @@ CSmack16::~CSmack16 ()
 }
 
 //--------------------------------------------------------------------------------------------
-//Öffnet ein Smacker-Filmchen:
+//ï¿½ffnet ein Smacker-Filmchen:
 //--------------------------------------------------------------------------------------------
 void CSmack16::Open (CString Filename)
 {
@@ -64,7 +64,7 @@ void CSmack16::Open (CString Filename)
 }
 
 //--------------------------------------------------------------------------------------------
-//Nächster Frame:
+//Nï¿½chster Frame:
 //--------------------------------------------------------------------------------------------
 BOOL CSmack16::Next (SBBM *pTargetBm)
 {
@@ -260,7 +260,7 @@ void CSmackerClip::ReSize (SLONG          ClipId,
 }
 
 //--------------------------------------------------------------------------------------------
-//Läßt die Person die nächste Silbe raussuchen:
+//Lï¿½ï¿½t die Person die nï¿½chste Silbe raussuchen:
 //--------------------------------------------------------------------------------------------
 void CSmackerClip::NextSyllable (void)
 {
@@ -291,7 +291,7 @@ void CSmackerClip::NextSyllable (void)
 }
 
 //--------------------------------------------------------------------------------------------
-//Läßt die Person die nächste Silbe sprechen:
+//Lï¿½ï¿½t die Person die nï¿½chste Silbe sprechen:
 //--------------------------------------------------------------------------------------------
 void CSmackerClip::PlaySyllable (void)
 {
@@ -343,7 +343,7 @@ void CSmackerPerson::SetSpeakFx (CString Filename)
 }
 
 //--------------------------------------------------------------------------------------------
-//Legt die Stimmung (Freizeit, Reden, Zuöhren) fest, in der man jemand haben will
+//Legt die Stimmung (Freizeit, Reden, Zuï¿½hren) fest, in der man jemand haben will
 //--------------------------------------------------------------------------------------------
 void CSmackerPerson::SetDesiredMood (SLONG DesiredMood, SLONG AcceptedMood1, SLONG AcceptedMood2)
 {
@@ -388,7 +388,7 @@ SLONG CSmackerPerson::GetFrame (void)
 }
 
 //--------------------------------------------------------------------------------------------
-//Beginnt den nächsten Clip, selbst wenn es verboten ist:
+//Beginnt den nï¿½chsten Clip, selbst wenn es verboten ist:
 //--------------------------------------------------------------------------------------------
 void CSmackerPerson::ForceNextClip (void)
 {
@@ -419,6 +419,7 @@ void CSmackerPerson::Pump (void)
 
         if (Clips[ActiveClip].pSmack!=NULL && ActiveClip!=-1)
         {
+            CalculatePalettemapper(smk_get_palette(Clips[ActiveClip].pSmack), Clips[ActiveClip].PaletteMapper);
             Bitmap.ReSize(XY(Clips[ActiveClip].Width, Clips[ActiveClip].Height), CREATE_INDEXED);
             SDL_SetPixelFormatPalette(Bitmap.pBitmap->GetPixelFormat(), Clips[ActiveClip].PaletteMapper);
             {
@@ -451,6 +452,7 @@ void CSmackerPerson::Pump (void)
         if (Clips[ActiveClip].pSmack==NULL)
             return;
 
+        CalculatePalettemapper(smk_get_palette(Clips[ActiveClip].pSmack), Clips[ActiveClip].PaletteMapper);
         Bitmap.ReSize (XY(Clips[ActiveClip].Width, Clips[ActiveClip].Height), CREATE_INDEXED);
         SDL_SetPixelFormatPalette(Bitmap.pBitmap->GetPixelFormat(), Clips[ActiveClip].PaletteMapper);
         {
@@ -482,6 +484,7 @@ void CSmackerPerson::Pump (void)
         if (timeGetTime() >= Clips[ActiveClip].FrameNext)
         {
             //Take the next frame:
+            CalculatePalettemapper(smk_get_palette(Clips[ActiveClip].pSmack), Clips[ActiveClip].PaletteMapper);
             Bitmap.ReSize (XY(Clips[ActiveClip].Width, Clips[ActiveClip].Height), CREATE_INDEXED);
             SDL_SetPixelFormatPalette(Bitmap.pBitmap->GetPixelFormat(), Clips[ActiveClip].PaletteMapper);
             {
@@ -490,7 +493,7 @@ void CSmackerPerson::Pump (void)
             }
             BitmapPos = Clips[ActiveClip].ScreenOffset;
 
-            //Variablenveränderung, während der Film läuft?
+            //Variablenverï¿½nderung, wï¿½hrend der Film lï¿½uft?
             if (Clips[ActiveClip].PostVar && (Clips[ActiveClip].PostOperation&SMACKER_CLIP_FRAME)) //Variablen-Messageing:
             {
                 if (Clips[ActiveClip].FrameNum >= ULONG(Clips[ActiveClip].PostOperation>>13) &&
@@ -584,7 +587,7 @@ void CSmackerPerson::NextClip (void)
         }
     }
 
-    //Erste Priorität hat immer eine "DecisionVar"
+    //Erste Prioritï¿½t hat immer eine "DecisionVar"
     if (Clips[ActiveClip].DecisionVar && Clips[ActiveClip].DecisionVar[0]!=-1)
     {
         ActiveClip = Clips[ActiveClip].DecisionVar[0];
@@ -626,7 +629,7 @@ void CSmackerPerson::NextClip (void)
 
             PropSum=rand()%PropSum;
 
-            //Alternative auswählten:
+            //Alternative auswï¿½hlten:
             for (c=0; c<Clips[ActiveClip].SuccessorIds.AnzEntries(); c++)
             {
                 PropSum-=(Clips[ActiveClip].SuccessorTokens[c*2+1]-'0');
@@ -678,7 +681,7 @@ void CSmackerPerson::NextClip (void)
             {
                 PropSum=rand()%PropSum;
 
-                //Alternative auswählten:
+                //Alternative auswï¿½hlten:
                 for (c=0; c<Clips[ActiveClip].SuccessorIds.AnzEntries(); c++)
                     if ((Clips[Clips[ActiveClip].SuccessorIds[c]].MoodId==DesiredMood ||
                                 Clips[Clips[ActiveClip].SuccessorIds[c]].MoodId==CurrentMood ||
@@ -706,7 +709,7 @@ void CSmackerPerson::NextClip (void)
             {
                 PropSum=rand()%PropSum;
 
-                //Alternative auswählten:
+                //Alternative auswï¿½hlten:
                 for (c=0; c<Clips[ActiveClip].SuccessorIds.AnzEntries(); c++)
                     if (Clips[Clips[ActiveClip].SuccessorIds[c]].MoodId==DesiredMood && Clips[ActiveClip].SuccessorTokens[c*2]!='S')
                     {
@@ -734,7 +737,7 @@ void CSmackerPerson::NextClip (void)
             {
                 PropSum=rand()%PropSum;
 
-                //Alternative auswählten:
+                //Alternative auswï¿½hlten:
                 for (c=0; c<Clips[ActiveClip].SuccessorIds.AnzEntries(); c++)
                     if ((Clips[Clips[ActiveClip].SuccessorIds[c]].MoodId==DesiredMood ||
                                 Clips[Clips[ActiveClip].SuccessorIds[c]].MoodId==CurrentMood ||
@@ -751,7 +754,7 @@ void CSmackerPerson::NextClip (void)
                     }
             }
 
-            //5. Unmöglich, rettet bei Bugs vor dem Absturz:
+            //5. Unmï¿½glich, rettet bei Bugs vor dem Absturz:
             //---------------------------------------------------------------------------
             PropSum=0; //Wahrscheinlichkeiten aufsummieren:
             for (c=0; c<Clips[ActiveClip].SuccessorIds.AnzEntries(); c++)
@@ -759,7 +762,7 @@ void CSmackerPerson::NextClip (void)
 
             PropSum=rand()%PropSum;
 
-            //Alternative auswählten:
+            //Alternative auswï¿½hlten:
             for (c=0; c<Clips[ActiveClip].SuccessorIds.AnzEntries(); c++)
             {
                 PropSum-=(Clips[ActiveClip].SuccessorTokens[c*2+1]-'0');
@@ -818,4 +821,3 @@ void CSmackerPerson::BlitAtT (SBBM &RoomBm)
 {
     BlitAtT (RoomBm, XY(0,0));
 }
-

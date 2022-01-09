@@ -10,6 +10,14 @@ class Options : public CStdRaum
     public:
         Options(BOOL bHandy, SLONG PlayerNum);
 
+    private:
+        BOOL          ChangedDisplay;
+        enum PAGE_TYPE : UBYTE {
+            GRAPHICS,
+            MUSIC,
+            SOUND,
+        };
+
         // Attributes
     public:
         BOOL           TimerFailure;
@@ -25,7 +33,7 @@ class Options : public CStdRaum
         CString         SavegameNames[12];
         BOOL            SavenamesValid[12];
         CString         SavegameInfos[12];
-        FBUFFER<SBBM>  *CursorBms;     //Die Eingabemarkierung
+        FBUFFER<SBBM>* CursorBms;     //Die Eingabemarkierung
         BOOL            BlinkState;
 
         SBFX            AmbientFX;
@@ -37,9 +45,9 @@ class Options : public CStdRaum
 
         // Operations
     public:
-        void ReloadBitmaps (void);
+        void ReloadBitmaps(void);
         void RefreshKlackerField(void);
-        void UpdateSavegameNames (void);
+        void UpdateSavegameNames(void);
 
         // Overrides
         // ClassWizard generated virtual function overrides
