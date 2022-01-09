@@ -1382,11 +1382,11 @@ void CLaptop::OnRButtonUp(UINT nFlags, CPoint point)
 //--------------------------------------------------------------------------------------------
 //Nachrichten weiterreichen:
 //--------------------------------------------------------------------------------------------
-void CLaptop::OnChar(UINT nChar, UINT a, UINT b) 
+void CLaptop::OnChar(UINT nChar, UINT a, UINT b)
 {
     CStdRaum::OnChar(nChar, a, b);
 }
-void CLaptop::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) 
+void CLaptop::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
     CStdRaum::OnKeyDown(nChar, nRepCnt, nFlags);
 }

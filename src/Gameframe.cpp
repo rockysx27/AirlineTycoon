@@ -184,7 +184,7 @@ GameFrame::GameFrame()
       Caps.dwSize = sizeof (Caps);
       Caps2.dwSize = sizeof (Caps2);
 
-      lpDD->GetCaps (&Caps, &Caps2); 
+      lpDD->GetCaps (&Caps, &Caps2);
 
       SLONG x= DDCAPS_BLT ;
       SLONG y= DDCAPS_COLORKEY;*/
@@ -424,7 +424,7 @@ void GameFrame::Invalidate(void)
 //--------------------------------------------------------------------------------------------
 void GameFrame::RePostMessage (CPoint Pos)
 {
-    CStdRaum *w;    
+    CStdRaum *w;
     SLONG     c;
 
     //An alle direkten Sub-Windows schicken:
@@ -432,7 +432,7 @@ void GameFrame::RePostMessage (CPoint Pos)
     {
         TopWin->ProcessEvent(Mess, Pos);
     }
-    else 
+    else
     {
         for (c=0; c<Sim.Players.AnzPlayers; c++)
         {
@@ -728,7 +728,7 @@ void GameFrame::OnPaint()
 //--------------------------------------------------------------------------------------------
 //GameFrame::OnEraseBkgnd(CDC* pDC):
 //--------------------------------------------------------------------------------------------
-BOOL GameFrame::OnEraseBkgnd(void* pDC) 
+BOOL GameFrame::OnEraseBkgnd(void* pDC)
 {
     ReferTo (pDC);
     return FALSE;
@@ -829,7 +829,7 @@ BOOL GameFrame::OnSetCursor(void* pWnd, UINT nHitTest, UINT message)
 //--------------------------------------------------------------------------------------------
 //void GameFrame::OnMouseMove(UINT nFlags, CPoint point):
 //--------------------------------------------------------------------------------------------
-void GameFrame::OnMouseMove(UINT nFlags, CPoint point) 
+void GameFrame::OnMouseMove(UINT nFlags, CPoint point)
 {
     gMousePosition = point;
 
@@ -865,7 +865,7 @@ BOOL GameFrame::OnHelpInfo (void*)
 //--------------------------------------------------------------------------------------------
 //void GameFrame::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags):
 //--------------------------------------------------------------------------------------------
-void GameFrame::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) 
+void GameFrame::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
     static char TypeBuffer[30];   //Für Cheats
     long nTargetRoom=0;
@@ -1410,7 +1410,7 @@ void GameFrame::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                 {
                     PERSON &qPerson = Sim.Persons[Index];
 
-                    if (qPlayer.GetRoom()==ROOM_AIRPORT) 
+                    if (qPlayer.GetRoom()==ROOM_AIRPORT)
                         if (qPlayer.LocationWin && !((CStdRaum*)qPlayer.LocationWin)->IsDialogOpen() && !((CStdRaum*)qPlayer.LocationWin)->MenuIsOpen())
                             if (qPerson.Dir!=8 && !Sim.bNetwork)
                                 bgWarp = TRUE;
@@ -2049,7 +2049,7 @@ void GameFrame::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
             /*Sim.Players.Players[(SLONG)2].DoRoutes   = 1;
             Sim.Players.Players[(SLONG)3].DoRoutes   = 1;
             Sim.Players.Players[(SLONG)2].Image      = 150;
-            Sim.Players.Players[(SLONG)3].Image      = 150;  
+            Sim.Players.Players[(SLONG)3].Image      = 150;
 
             qPlayer.ArabTrust = 5;
 
@@ -2117,7 +2117,7 @@ void GameFrame::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 //--------------------------------------------------------------------------------------------
 //void GameFrame::OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags):
 //--------------------------------------------------------------------------------------------
-void GameFrame::OnKeyUp(UINT, UINT, UINT) 
+void GameFrame::OnKeyUp(UINT, UINT, UINT)
 {
     RePostMessage (CPoint(0,0));
 }
@@ -2164,7 +2164,7 @@ void GameFrame::OnRButtonDown(UINT nFlags, CPoint point)
     RePostMessage (point);
     ReferTo (nFlags, point);
 }
-void GameFrame::OnRButtonUp(UINT nFlags, CPoint point) 
+void GameFrame::OnRButtonUp(UINT nFlags, CPoint point)
 {
     //Alles blockieren, wenn im Optionsmenü:
     if (nOptionsOpen && Sim.bNetwork && Sim.localPlayer < Sim.Players.Players.AnzEntries() && Sim.Players.Players[Sim.localPlayer].GetRoom() != ROOM_OPTIONS && Sim.Players.Players[Sim.localPlayer].GetRoom() != 0) return;
@@ -2176,7 +2176,7 @@ void GameFrame::OnRButtonUp(UINT nFlags, CPoint point)
 //--------------------------------------------------------------------------------------------
 //void GameFrame::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags):
 //--------------------------------------------------------------------------------------------
-void GameFrame::OnChar(UINT nChar, UINT, UINT) 
+void GameFrame::OnChar(UINT nChar, UINT, UINT)
 {
     gKlackerPlanes.TimeSinceStart=0;
 
@@ -2240,7 +2240,7 @@ void GameFrame::OnChar(UINT nChar, UINT, UINT)
 //--------------------------------------------------------------------------------------------
 //BOOL GameFrame::OnCommand(WPARAM wParam, LPARAM lParam):
 //--------------------------------------------------------------------------------------------
-BOOL GameFrame::OnCommand(WPARAM wParam, LPARAM lParam) 
+BOOL GameFrame::OnCommand(WPARAM wParam, LPARAM lParam)
 {
     return FALSE;
 }
@@ -2272,7 +2272,7 @@ void SetMouseLook (SLONG Look, SLONG TipId, SLONG ClickArea, SLONG ClickId, SLON
 }
 
 //--------------------------------------------------------------------------------------------
-//Aktiviert einen Tool-Tip wobei eine TextString übergeben wird. 
+//Aktiviert einen Tool-Tip wobei eine TextString übergeben wird.
 //--------------------------------------------------------------------------------------------
 void SetMouseLook (SLONG Look, SLONG TipId, const CString &Description, SLONG ClickArea, SLONG ClickId, SLONG ClickPar1, SLONG ClickPar2)
 {
@@ -2367,7 +2367,7 @@ void DefaultOnRButtonDown(void)
         if (Sim.Players.Players[c].Owner==0 && gMousePosition.IfIsWithin(Sim.Players.Players[c].WinP1,Sim.Players.Players[c].WinP2))
             Sim.Players.Players[c].Buttons |= 2;
 }
-void DefaultOnRButtonUp(void) 
+void DefaultOnRButtonUp(void)
 {
     gMouseRButton = FALSE;
 

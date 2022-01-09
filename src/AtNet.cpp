@@ -97,7 +97,7 @@ void DisplayBroadcastMessage (CString str, SLONG FromPlayer)
 
     TempBm.BlitFrom (gBroadcastBm);
     gBroadcastBm.ReSize (320, oldy+sy+10);
-    if (gBroadcastBm.Size.y!=TempBm.Size.y) 
+    if (gBroadcastBm.Size.y!=TempBm.Size.y)
     {
         SB_CBitmapKey Key(*XBubbleBms[9].pBitmap);
         gBroadcastBm.FillWith (*(UWORD*)Key.Bitmap);
@@ -1167,7 +1167,7 @@ void PumpNetwork (void)
                         SLONG RequestingPlayer;
 
                         //Ist Spieler bereit, einen Dialog zu beginnen?
-                        if (qPlayer.GetRoom()==ROOM_AIRPORT && !qPlayer.IsStuck && 
+                        if (qPlayer.GetRoom()==ROOM_AIRPORT && !qPlayer.IsStuck &&
                                 pRaum && pRaum->MenuIsOpen()==FALSE && pRaum->IsDialogOpen()==FALSE)
                         {
                             PERSON &qPerson = Sim.Persons.Persons[(SLONG)Sim.Persons.GetPlayerIndex(Sim.localPlayer)];

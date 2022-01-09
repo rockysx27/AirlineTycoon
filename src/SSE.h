@@ -93,7 +93,7 @@ typedef struct _DigitalData
     word			state;
     bool			fNoStop;
     dword			time;
-} DigitalData;	
+} DigitalData;
 
 typedef struct _FXData
 {
@@ -411,7 +411,7 @@ class MIDI : public MUSIC
 /*class DIGIMUSIC : public DIGITAL,public MUSIC
   {
   friend SSE;
-  friend unsigned int WINAPI HandleNotifications(void * lParam); 
+  friend unsigned int WINAPI HandleNotifications(void * lParam);
   friend unsigned int WINAPI CompatiblePlay(LPVOID ptr);
   friend unsigned int WINAPI CompatibilityCheck(LPVOID ptr);
 

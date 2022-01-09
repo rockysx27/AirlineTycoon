@@ -49,7 +49,7 @@ class CStdRaum
         void      *pTipOriginBm2;        //Die Tip-Bitmap; sie gehört einem Raum
         XY         TipPos;
 
-        //Optionale & Dialog-Attribute:   
+        //Optionale & Dialog-Attribute:
     protected:
         BOOL       UsingHandy;           //Verwendet er das Handy?
         BOOL       Ferngespraech;        //Ist es ein Ferngespräch?

@@ -111,7 +111,7 @@ do_findcd_main:
       exit(-1);
 
       goto do_findcd_main;
-      }*/ 
+      }*/
 
     if (1==0)
 #else
@@ -127,7 +127,7 @@ do_findcd:
                                 "Bitte legen Sie die Deluxe CD ein.\n\n"
                                 "Veuillez insérer le CD de Deluxe.\n\n" , "Airline Tycoon : Error!",  MB_RETRYCANCEL)==IDCANCEL)
                         exit(-1);
-                } 
+                }
 #endif
                 gCDPath    = str;
                 gCDFound   = TRUE;
@@ -160,7 +160,7 @@ do_findcd:
                     "CD wurde nicht gefunden! Bitte legen Sie eine Demo-CD mit Airline Tycoon Deluxe in das CD-Rom Laufwerk ein.\n\n"
                     "CD non trouvé ! Inserez s'il vous plait le CD dans votre lecteur de CD-Rom.", "Airline Tycoon : Error!",  MB_RETRYCANCEL)==IDCANCEL)
             exit(-1);
-    } 
+    }
 
     gCDPath=str;
     gCDFound=TRUE;

@@ -165,7 +165,7 @@ void CWerbung::OnPaint()
         {
             NewTip = (gMousePosition.y-(MenuPos.y+25))/13 + MenuPage;
 
-            if (NewTip>=0 && NewTip<MenuDataTable.LineIndex.AnzEntries() && 
+            if (NewTip>=0 && NewTip<MenuDataTable.LineIndex.AnzEntries() &&
                     qPlayer.RentRouten.RentRouten.AnzEntries()>(MenuDataTable.LineIndex[NewTip]) &&
                     qPlayer.RentRouten.RentRouten[MenuDataTable.LineIndex[NewTip]].Rang)
             {

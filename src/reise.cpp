@@ -417,7 +417,7 @@ void CReisebuero::OnLButtonDown(UINT nFlags, CPoint point)
                     break;
                 }
             }
-        }   
+        }
     }
     CStdRaum::OnLButtonDown(nFlags, point);
 }

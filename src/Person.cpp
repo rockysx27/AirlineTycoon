@@ -76,7 +76,7 @@ void CLANS::ReInit (const CString &TabFilename)
             TeakStrRemoveEndingCodes (Line, "\xd\xa\x1a\r");
 
             //Tabellenzeile hinzufügen:
-            if (ShadowPass==0) 
+            if (ShadowPass==0)
             {
                 Id=(*this).GetUniqueId();
                 (*this)+=Id;
@@ -757,7 +757,7 @@ PERSON::PERSON (UBYTE ClanId, XY Position, UBYTE Reason, UBYTE FlightAirline, SL
 
     //Die Person ist aus einem bestimmten Grund am Flughafen. Und daraus ergibt sich ein
     switch (PERSON::Reason)  //Sekundärziel
-    {            
+    {
         case 0:
             if (Clans[(SLONG)ClanId].Type<CLAN_PLAYER1 || Clans[(SLONG)ClanId].Type>CLAN_PLAYER4)
                 DebugBreak();
@@ -1522,7 +1522,7 @@ waiting_again:
                                             //Koffer erzeugen:
                                             Sim.PersonQueue.AddPerson (
                                                     Clans.GetSuitcaseId(-qClan.HasSuitcase),
-                                                    Airport.GetRandomTypedRune (RUNE_CREATE_SUITCASE, 0, false, &PersonalRandWalk), 
+                                                    Airport.GetRandomTypedRune (RUNE_CREATE_SUITCASE, 0, false, &PersonalRandWalk),
                                                     REASON_SUITCASE_EXIT,
                                                     0,
                                                     0,
@@ -2248,7 +2248,7 @@ void PERSON::DoOnePlayerStep (void)
                             }
                             StatePar=0; qPlayer.ExRoom=0;
                         }
-                        else 
+                        else
                         {
                             Target.x=Position.x;
                             Target.y=Position.y+22+Upfloor*5000;   //New (Network)
@@ -2491,7 +2491,7 @@ void PERSON::DoOnePlayerStep (void)
                     SLONG Room = RunePar;
                     if (Room) Target = Airport.GetRandomTypedRune (RUNE_2SHOP, (UBYTE)Room)+XY(0,22);
                 }
-                else 
+                else
                 {
                     SLONG Room = RunePar;
                     if (Room) Target = Airport.GetRandomTypedRune (RUNE_2SHOP, (UBYTE)Room)+XY(-44, 0);
@@ -2836,7 +2836,7 @@ void PERSON::PersonReachedTarget (void)
                             //Koffer erzeugen:
                             Sim.PersonQueue.AddPerson (
                                     Clans.GetSuitcaseId(Clans[(SLONG)ClanId].HasSuitcase),
-                                    Position-XY(0,22), 
+                                    Position-XY(0,22),
                                     REASON_SUITCASE_EXIT,
                                     0,
                                     0,

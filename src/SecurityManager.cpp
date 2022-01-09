@@ -227,14 +227,14 @@ long SecurityManager::CalculateChecksum( unsigned char *lpMem, long size )
     unsigned long  crc;
 
     // preload shift register, per CRC-32 spec
-    crc = 0xffffffff;       
+    crc = 0xffffffff;
 
     // Compute
     for (p = lpMem; size > 0; ++p, --size)
         crc = (crc << 8) ^ crc32_table[(crc >> 24) ^ *p];
 
     // transmit complement, per CRC-32 spec
-    return ~crc;            
+    return ~crc;
 }
 
 // This function will perform the decryption of a function using the VXD
@@ -261,7 +261,7 @@ bool SecurityManager::StupidCDCheck( char driveLetter, char *expectedCDName )
     // Create root name structure
     sprintf( root, "%c:\\", driveLetter );
 
-    // Get drive characteristic to see 
+    // Get drive characteristic to see
     value = GetDriveType( root );
 
     // Try to guess my dear cracker
@@ -374,7 +374,7 @@ unsigned char * SecurityManager::DecompressData(unsigned char *lpData, unsigned 
     return writebuffer;
 }
 
-void SecurityManager::Decode(void)	
+void SecurityManager::Decode(void)
 {
     int  i, j, k, r, c;
     unsigned int  flags;

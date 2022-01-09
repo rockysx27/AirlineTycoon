@@ -109,7 +109,7 @@ SLONG gTimerCorrection=0;                         //Is it necessary to adapt the
 // 132518462572847204-810542742871364297  21.4.98-23.4.98 : Intern; Person in den USA (Buzz Software)
 // 227419893784723849-827418324729347824  23.4.98-26.4.98 : Intern; Jan Sjovall
 // 423764298736123753-423987205843284902  26.4.98-30.4.98 : Intern; Pressetour
-// 789427184592174332-204502824319384324  30.4.98-12.5.98 : Intern; 
+// 789427184592174332-204502824319384324  30.4.98-12.5.98 : Intern;
 // 921364237861692844-987412312764239874  12.5.98-13.5.98 : Intern; Interplay
 // 342197861237648912-423412786123612394  13.5.98-18.5.98 : Intern;
 // 987243896123742334-423984724987650954  18.5.98- 5.6.98 : Intern; Bomico
@@ -263,7 +263,7 @@ int main(int argc, char* argv[])
     char* pDecodeBack = ( char * ) ReadableAnsiToUChar( ( char * ) pEncoded2, strlen( pEncoded2 ) + 1 );
     char* pDecodeBack2 = ( char * ) ReadableAnsiToUChar( ( char * ) pDecodeBack , strlen( pDecodeBack  ) + 1 );
 
-    const char* pText2 = "DMCPRCZ5F5Y3D4XV1OHFY4B3HLIQJBP4LIS6STCBSQUUOKL3KSONUPTOGF2BZLXGAZGXEYLSORUW3CIHIR1W3Z3SMVXW3IGOHMAAAAIJL6STTMVMQFBKDYBGC5VP5MMWV5QJQ";   
+    const char* pText2 = "DMCPRCZ5F5Y3D4XV1OHFY4B3HLIQJBP4LIS6STCBSQUUOKL3KSONUPTOGF2BZLXGAZGXEYLSORUW3CIHIR1W3Z3SMVXW3IGOHMAAAAIJL6STTMVMQFBKDYBGC5VP5MMWV5QJQ";
     char* pDecodeBack3 = ( char * ) ReadableAnsiToUChar( ( char * ) pText2, strlen( pText2 ) );
 
     delete [] pEncoded;
@@ -443,16 +443,16 @@ BOOL CTakeOffApp::InitInstance(int argc, char* argv[])
     gMouseStartup   = TRUE;
 
     //Die Standardsprachen:
-    //#define LANGUAGE_D       0             //D-Deutsch, inklusive              
-    //#define LANGUAGE_E       1             //E-Englisch, bezahlt               
-    //#define LANGUAGE_F       2             //F-Französisch, bezahlt            
+    //#define LANGUAGE_D       0             //D-Deutsch, inklusive
+    //#define LANGUAGE_E       1             //E-Englisch, bezahlt
+    //#define LANGUAGE_F       2             //F-Französisch, bezahlt
     //#define LANGUAGE_T       3             //T-Taiwanesisch, gilt als englische
-    //#define LANGUAGE_P       4             //P-Polnisch, inklusive             
-    //#define LANGUAGE_N       5             //N-Niederländisch, bezahlt         
-    //#define LANGUAGE_I       6             //I-Italienisch, bezahlt            
-    //#define LANGUAGE_S       7             //S-Spanisch, bezahlt               
-    //#define LANGUAGE_O       8             //O-Portugisisch, bezahlt           
-    //#define LANGUAGE_B       9             //B-Brasiliasnisch, nicht von mir   
+    //#define LANGUAGE_P       4             //P-Polnisch, inklusive
+    //#define LANGUAGE_N       5             //N-Niederländisch, bezahlt
+    //#define LANGUAGE_I       6             //I-Italienisch, bezahlt
+    //#define LANGUAGE_S       7             //S-Spanisch, bezahlt
+    //#define LANGUAGE_O       8             //O-Portugisisch, bezahlt
+    //#define LANGUAGE_B       9             //B-Brasiliasnisch, nicht von mir
     //#define LANGUAGE_1      10             //J-Tschechisch
     //#define LANGUAGE_2      11             //K-noch frei
     //#define LANGUAGE_3      12             //L-noch frei
@@ -965,26 +965,26 @@ void CTakeOffApp::GameLoop(void*)
             {
                 //New Game -> Abfragen für Spielmodus:
                 CStdRaum *TmpWin = TopWin; TopWin=NULL;
-                delete TmpWin; 
+                delete TmpWin;
 
                 Sim.Gamestate = GAMESTATE_INIT | GAMESTATE_WORKING;
                 TopWin = new NewGamePopup(FALSE, 0);
             }
             else if (Sim.Gamestate==(GAMESTATE_CREDITS))
             {
-                CStdRaum *TmpWin = TopWin; TopWin=NULL; delete TmpWin; 
+                CStdRaum *TmpWin = TopWin; TopWin=NULL; delete TmpWin;
                 Sim.Gamestate = GAMESTATE_INIT | GAMESTATE_WORKING;
                 TopWin = new CCredits(FALSE, 0);
             }
             else if (Sim.Gamestate==(GAMESTATE_OPTIONS))
             {
-                CStdRaum *TmpWin = TopWin; TopWin=NULL; delete TmpWin; 
+                CStdRaum *TmpWin = TopWin; TopWin=NULL; delete TmpWin;
                 Sim.Gamestate = GAMESTATE_INIT | GAMESTATE_WORKING;
                 TopWin = new Options(FALSE, 0);
             }
             else if (Sim.Gamestate==GAMESTATE_INTRO)
             {
-                CStdRaum *TmpWin = TopWin; TopWin=NULL; delete TmpWin; 
+                CStdRaum *TmpWin = TopWin; TopWin=NULL; delete TmpWin;
                 Sim.Gamestate = GAMESTATE_INTRO | GAMESTATE_WORKING;
                 TopWin = new CIntro(FALSE, 0);
             }
@@ -1004,7 +1004,7 @@ void CTakeOffApp::GameLoop(void*)
                     }
                 }
 
-                CStdRaum *TmpWin = TopWin; TopWin=NULL; delete TmpWin; 
+                CStdRaum *TmpWin = TopWin; TopWin=NULL; delete TmpWin;
                 Sim.Gamestate |= GAMESTATE_WORKING;
 
                 if ((Sim.Gamestate & (~GAMESTATE_WORKING))==GAMESTATE_OUTRO)
@@ -1016,7 +1016,7 @@ void CTakeOffApp::GameLoop(void*)
             {
                 //Das Spielfenster mit Flughafensicht
                 CStdRaum *TmpWin = TopWin; TopWin=NULL;
-                delete TmpWin; 
+                delete TmpWin;
 
                 if (gLoadGameNumber>-1)
                     Sim.LoadGame (gLoadGameNumber-1);
@@ -1443,7 +1443,7 @@ void CTakeOffApp::GameLoop(void*)
                                                 if (Sim.RoomBusy[qPlayer.Locations[d]&255]>0)
                                                     Sim.RoomBusy[qPlayer.Locations[d]&255]--;
 
-                                                if (qPlayer.LocationWin) 
+                                                if (qPlayer.LocationWin)
                                                 {
                                                     JustLeftRoom=TRUE;
                                                     if (Sim.Options.OptionBlenden && qPlayer.Locations[d]!=ROOM_LAPTOP && (Sim.GetHour()>9 || Sim.Date==0))
@@ -1481,7 +1481,7 @@ void CTakeOffApp::GameLoop(void*)
 
                                             if (qPlayer.Locations[d] & ROOM_ENTERING)
                                             {
-                                                if (qPlayer.LocationWin) 
+                                                if (qPlayer.LocationWin)
                                                 {
                                                     if (!JustLeftRoom && Sim.Options.OptionBlenden && qPlayer.Locations[d]!=ROOM_LAPTOP && qPlayer.Locations[d]!=ROOM_GLOBE && (Sim.GetHour()>9 || Sim.Date==0))
                                                     {
@@ -2120,7 +2120,7 @@ BOOL InitDirectX (void)
 //--------------------------------------------------------------------------------------------
 //Ruft das Help-File auf:
 //--------------------------------------------------------------------------------------------
-void CTakeOffApp::WinHelp(DWORD, UINT) 
+void CTakeOffApp::WinHelp(DWORD, UINT)
 {
     ToolTipState=FALSE;
 

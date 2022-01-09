@@ -92,7 +92,7 @@ COutro::~COutro()
 //--------------------------------------------------------------------------------------------
 // void COutro::OnPaint():
 //--------------------------------------------------------------------------------------------
-void COutro::OnPaint() 
+void COutro::OnPaint()
 {
     //Die Standard Paint-Sachen kann der Basisraum erledigen
     CStdRaum::OnPaint ();
@@ -131,7 +131,7 @@ void COutro::OnPaint()
 //--------------------------------------------------------------------------------------------
 //void COutro::OnLButtonDown(UINT nFlags, CPoint point)
 //--------------------------------------------------------------------------------------------
-void COutro::OnLButtonDown(UINT, CPoint) 
+void COutro::OnLButtonDown(UINT, CPoint)
 {
     Sim.Gamestate = GAMESTATE_BOOT;
 }
@@ -139,7 +139,7 @@ void COutro::OnLButtonDown(UINT, CPoint)
 //--------------------------------------------------------------------------------------------
 // void COutro::OnRButtonDown(UINT nFlags, CPoint point):
 //--------------------------------------------------------------------------------------------
-void COutro::OnRButtonDown(UINT, CPoint) 
+void COutro::OnRButtonDown(UINT, CPoint)
 {
     DefaultOnRButtonDown ();
     Sim.Gamestate = GAMESTATE_BOOT;
@@ -148,7 +148,7 @@ void COutro::OnRButtonDown(UINT, CPoint)
 //--------------------------------------------------------------------------------------------
 //BOOL CStdRaum::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message) : AG:
 //--------------------------------------------------------------------------------------------
-BOOL COutro::OnSetCursor(void* pWnd, UINT nHitTest, UINT message) 
+BOOL COutro::OnSetCursor(void* pWnd, UINT nHitTest, UINT message)
 {
     return (FrameWnd->OnSetCursor(pWnd, nHitTest, message));
 }
@@ -156,7 +156,7 @@ BOOL COutro::OnSetCursor(void* pWnd, UINT nHitTest, UINT message)
 //--------------------------------------------------------------------------------------------
 //void CStdRaum::OnMouseMove(UINT nFlags, CPoint point): AG:
 //--------------------------------------------------------------------------------------------
-void COutro::OnMouseMove(UINT nFlags, CPoint point) 
+void COutro::OnMouseMove(UINT nFlags, CPoint point)
 {
     FrameWnd->OnMouseMove(nFlags, point);
 }

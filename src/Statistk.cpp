@@ -257,7 +257,7 @@ CStatistik::~CStatistik()
 //--------------------------------------------------------------------------------------------
 //void CStatistik::OnPaint()
 //--------------------------------------------------------------------------------------------
-void CStatistik::OnPaint() 
+void CStatistik::OnPaint()
 {
     SLONG  c;
     SBBM  *ExitBm=NULL;
@@ -973,7 +973,7 @@ void CStatistik::OnLButtonDown(UINT nFlags, CPoint point)
 //--------------------------------------------------------------------------------------------
 //void CStatistik::OnRButtonDown(UINT nFlags, CPoint point)
 //--------------------------------------------------------------------------------------------
-void CStatistik::OnRButtonDown(UINT nFlags, CPoint point) 
+void CStatistik::OnRButtonDown(UINT nFlags, CPoint point)
 {
     DefaultOnRButtonDown ();
 

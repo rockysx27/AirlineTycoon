@@ -560,7 +560,7 @@ void CPlane::DoOneStep (SLONG PlayerNum)
                             //Personen brauchen nicht mehr warten, sondern können das Flugzeug stürmen:
                             for (c=Sim.Persons.AnzEntries()-1; c>=0; c--)
                             {
-                                if (Sim.Persons.IsInAlbum(c) && 
+                                if (Sim.Persons.IsInAlbum(c) &&
                                         ((Sim.Persons[c].State & (~PERSON_WAITFLAG) & (~PERSON_BROWSEFLAG))==PERSON_WAITING || (Sim.Persons[c].State & (~PERSON_WAITFLAG) & (~PERSON_BROWSEFLAG))==PERSON_SITWAITING) &&
                                         Sim.Persons[c].GetFlugplanEintrag()->Gate == Gate)
                                 {
@@ -1090,7 +1090,7 @@ BOOL CPlane::CanBeSold (void)
     SLONG c;
 
     for (c=Flugplan.Flug.AnzEntries()-1; c>=0; c--)
-    {   
+    {
         if (Flugplan.Flug[c].ObjectType==1 || Flugplan.Flug[c].ObjectType==2 || Flugplan.Flug[c].ObjectType==4)
             if (Flugplan.Flug[c].Landedate>Sim.Date || (Flugplan.Flug[c].Landedate==Sim.Date && Flugplan.Flug[c].Landezeit>Sim.GetHour()-2))
             {

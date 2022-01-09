@@ -22,9 +22,9 @@ class Options : public CStdRaum
 
         SLONG           CursorX;
         SLONG           CursorY;
-        CString         SavegameNames[12]; 
+        CString         SavegameNames[12];
         BOOL            SavenamesValid[12];
-        CString         SavegameInfos[12]; 
+        CString         SavegameInfos[12];
         FBUFFER<SBBM>  *CursorBms;     //Die Eingabemarkierung
         BOOL            BlinkState;
 

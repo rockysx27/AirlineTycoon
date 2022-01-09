@@ -25,7 +25,7 @@ static const char FileId[] = "Edit";
 
 CPlaneParts gPlaneParts;
 
-CPlaneBuild gPlaneBuilds[37]= 
+CPlaneBuild gPlaneBuilds[37]=
 {            // Id    Shortname Cost  Weight  Power, Noise, Wartung, Passag., Verbrauch, BmIdx zPos
     CPlaneBuild (1000, "B1", 10000000, 40000,  0,     0,     -15,     140,    0,         0,    10000),
     CPlaneBuild (1001, "B2", 40000000, 90000,  0,     -5,    0,       600,    0,         1,    10000),
@@ -1282,7 +1282,7 @@ void CEditor::DoLButtonWork (UINT nFlags, CPoint point)
     if (MouseClickId==501) sel_m = (sel_m+1+NUM_PLANE_MOT)%NUM_PLANE_MOT;
     if (MouseClickId==505) PartUnderCursor = bprintf("M%li", 1+sel_m);
 
-    if (MouseClickId==105 || MouseClickId==205 || MouseClickId==305 || MouseClickId==405 || MouseClickId==505) 
+    if (MouseClickId==105 || MouseClickId==205 || MouseClickId==305 || MouseClickId==405 || MouseClickId==505)
         DragDropMode=true;
 
     //Delete, new:
@@ -1376,9 +1376,9 @@ void CEditor::DoLButtonWork (UINT nFlags, CPoint point)
 }
 
 //--------------------------------------------------------------------------------------------
-//OnLButtonUp(UINT nFlags, CPoint point) 
+//OnLButtonUp(UINT nFlags, CPoint point)
 //--------------------------------------------------------------------------------------------
-void CEditor::OnLButtonUp(UINT, CPoint point) 
+void CEditor::OnLButtonUp(UINT, CPoint point)
 {
     if (!IsDialogOpen() && !MenuIsOpen())
     {
@@ -1537,7 +1537,7 @@ void CEditor::OnRButtonDown(UINT nFlags, CPoint point)
                 long c, MouseClickId=0;
 
                 for (c=0; c<5; c++)
-                    if (gMousePosition.IfIsWithin ( 27+c*127,363,101+c*127,436)) 
+                    if (gMousePosition.IfIsWithin ( 27+c*127,363,101+c*127,436))
                         MouseClickId=c*100+105;
 
                 if (MouseClickId==105 && Plane.Parts.GetNumUsed()>1)

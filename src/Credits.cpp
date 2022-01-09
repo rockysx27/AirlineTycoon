@@ -83,7 +83,7 @@ void CCredits::ReloadBitmap(void)
 //--------------------------------------------------------------------------------------------
 //CCredits::OnPaint
 //--------------------------------------------------------------------------------------------
-void CCredits::OnPaint() 
+void CCredits::OnPaint()
 {
     SLONG c;
     SLONG Time = timeGetTime();
@@ -114,7 +114,7 @@ void CCredits::OnPaint()
 //--------------------------------------------------------------------------------------------
 //CCredits::OnLButtonDown
 //--------------------------------------------------------------------------------------------
-void CCredits::OnLButtonDown(UINT, CPoint) 
+void CCredits::OnLButtonDown(UINT, CPoint)
 {
     //"Abbrechen"
     Sim.Gamestate = GAMESTATE_BOOT;
@@ -123,7 +123,7 @@ void CCredits::OnLButtonDown(UINT, CPoint)
 //--------------------------------------------------------------------------------------------
 //CCredits::OnRButtonDown
 //--------------------------------------------------------------------------------------------
-void CCredits::OnRButtonDown(UINT, CPoint) 
+void CCredits::OnRButtonDown(UINT, CPoint)
 {
     DefaultOnRButtonDown ();
 
@@ -134,7 +134,7 @@ void CCredits::OnRButtonDown(UINT, CPoint)
 //--------------------------------------------------------------------------------------------
 //CCredits::OnTimer
 //--------------------------------------------------------------------------------------------
-void CCredits::OnTimer(UINT) 
+void CCredits::OnTimer(UINT)
 {
     ScrollPos++;
 
@@ -151,7 +151,7 @@ void CCredits::OnTimer(UINT)
 //--------------------------------------------------------------------------------------------
 //CCredits::OnChar
 //--------------------------------------------------------------------------------------------
-void CCredits::OnChar(UINT key, UINT, UINT) 
+void CCredits::OnChar(UINT key, UINT, UINT)
 {
     //"Abbrechen"
     if (key!=VK_CONTROL) Sim.Gamestate = GAMESTATE_BOOT;
@@ -160,7 +160,7 @@ void CCredits::OnChar(UINT key, UINT, UINT)
 //--------------------------------------------------------------------------------------------
 //CCredits::OnKeyDown
 //--------------------------------------------------------------------------------------------
-void CCredits::OnKeyDown(UINT key, UINT, UINT) 
+void CCredits::OnKeyDown(UINT key, UINT, UINT)
 {
     //"Abbrechen"
     if (key!=VK_CONTROL) Sim.Gamestate = GAMESTATE_BOOT;
@@ -169,7 +169,7 @@ void CCredits::OnKeyDown(UINT key, UINT, UINT)
 //--------------------------------------------------------------------------------------------
 //BOOL CStdRaum::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message) : AG:
 //--------------------------------------------------------------------------------------------
-BOOL CCredits::OnSetCursor(void* pWnd, UINT nHitTest, UINT message) 
+BOOL CCredits::OnSetCursor(void* pWnd, UINT nHitTest, UINT message)
 {
     return (FrameWnd->OnSetCursor(pWnd, nHitTest, message));
 }
@@ -177,7 +177,7 @@ BOOL CCredits::OnSetCursor(void* pWnd, UINT nHitTest, UINT message)
 //--------------------------------------------------------------------------------------------
 //void CStdRaum::OnMouseMove(UINT nFlags, CPoint point): AG:
 //--------------------------------------------------------------------------------------------
-void CCredits::OnMouseMove(UINT nFlags, CPoint point) 
+void CCredits::OnMouseMove(UINT nFlags, CPoint point)
 {
     FrameWnd->OnMouseMove(nFlags, point);
 }

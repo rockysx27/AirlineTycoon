@@ -389,12 +389,12 @@ void CFrachtRaum::OnLButtonDown(UINT nFlags, CPoint point)
                     //Für den Statistikscreen:
                     qPlayer.Statistiken[STAT_FRACHTEN].AddAtPastDay (0, 1);
 
-                    gFrachten.Fracht[c].Praemie=-1000;   
+                    gFrachten.Fracht[c].Praemie=-1000;
                     qPlayer.NetUpdateTook (3, c);
                     break;
                 }
             }
-        }   
+        }
     }
 
     CStdRaum::OnLButtonDown(nFlags, point);

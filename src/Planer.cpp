@@ -194,14 +194,14 @@ CPlaner::CPlaner(BOOL bHandy, ULONG PlayerNum, UWORD &EarthAlpha, BOOL IsLaptop)
                     qBlock.Index=1;
                     qBlock.Page=0;
                 }
-            }     
+            }
 
             //Städtedetail? Zurückschalten:
             if (qBlock.BlockType==1 && qBlock.Index!=1)
             {
                 qBlock.Index=1;
                 qBlock.Page=0;
-            }     
+            }
 
             if (qBlock.DoubleBlock)
             {
@@ -345,8 +345,8 @@ void CPlaner::PaintGlobeRoutes (void)
     for (c=0; c<(SLONG)Sim.Players.Players[(SLONG)PlayerNum].Blocks.AnzEntries(); c++)
     {
         if (IsLaptop!=0 || FensterVisible)
-            if (Sim.Players.Players[(SLONG)PlayerNum].Blocks.IsInAlbum(c) && 
-                    (c==0) == (IsLaptop==0) && 
+            if (Sim.Players.Players[(SLONG)PlayerNum].Blocks.IsInAlbum(c) &&
+                    (c==0) == (IsLaptop==0) &&
                     Sim.Players.Players[(SLONG)PlayerNum].Blocks[c].Index!=1 &&
                     Sim.Players.Players[(SLONG)PlayerNum].Blocks[c].BlockType==2)
             {
@@ -1275,7 +1275,7 @@ void CPlaner::DoPollingStuff (void)
             {
                 SLONG Index = (ClientPosB.y-128)/13;
 
-                if (Sim.Players.Players[Index+(PlayerNum<=Index)].IsOut==0 && 
+                if (Sim.Players.Players[Index+(PlayerNum<=Index)].IsOut==0 &&
                         Sim.Players.Players[Index+(PlayerNum<=Index)].RentRouten.RentRouten[(SLONG)Routen(pBlock->SelectedIdB)].Rang)
                 {
                     CheckCursorHighlight (ClientPosB, CRect (2, (ClientPosB.y-128)/13*13+128-2, 172, (ClientPosB.y-128)/13*13+128-2+14), ColorOfFontBlack);
@@ -1472,8 +1472,8 @@ void CPlaner::DoPostPaintPollingStuff (XY FlightPlanPos)
                 /*switch ((ClientPosB.y-40)/13)
                   {
                   case 0:
-                  qRRoute.Ticketpreis+=10; 
-                  pRRoute->Ticketpreis+=10; 
+                  qRRoute.Ticketpreis+=10;
+                  pRRoute->Ticketpreis+=10;
                   Limit (SLONG(0), qRRoute.Ticketpreis, SLONG(Cost*16/10*10));
                   qPlayer.UpdateTicketpreise (pBlock->SelectedIdB, qRRoute.Ticketpreis, qRRoute.TicketpreisFC);
                   qPlayer.UpdateTicketpreise (SelectedIdB2, pRRoute->Ticketpreis, pRRoute->TicketpreisFC);
@@ -1484,7 +1484,7 @@ void CPlaner::DoPostPaintPollingStuff (XY FlightPlanPos)
 
                   case 1:
                   qRRoute.Ticketpreis-=10;
-                  pRRoute->Ticketpreis-=10; 
+                  pRRoute->Ticketpreis-=10;
                   Limit (SLONG(0), qRRoute.Ticketpreis, SLONG(Cost*16/10*10));
                   qPlayer.UpdateTicketpreise (pBlock->SelectedIdB, qRRoute.Ticketpreis, qRRoute.TicketpreisFC);
                   qPlayer.UpdateTicketpreise (SelectedIdB2, pRRoute->Ticketpreis, pRRoute->TicketpreisFC);
@@ -1731,9 +1731,9 @@ void CPlaner::HandleLButtonDown (void)
                 {
                     if (CurrentPostItType==2 && qPlayer.Auftraege[CurrentPostItId].InPlan!=0)
                     {
-                        if (qPlayer.Auftraege[CurrentPostItId].InPlan==-1) 
+                        if (qPlayer.Auftraege[CurrentPostItId].InPlan==-1)
                             qPlayer.Messages.AddMessage (BERATERTYP_GIRL, StandardTexte.GetS (TOKEN_ADVICE, 2311), MESSAGE_COMMENT);
-                        else if (qPlayer.Auftraege[CurrentPostItId].InPlan==1) 
+                        else if (qPlayer.Auftraege[CurrentPostItId].InPlan==1)
                             qPlayer.Messages.AddMessage (BERATERTYP_GIRL, StandardTexte.GetS (TOKEN_ADVICE, 2312), MESSAGE_COMMENT);
                     }
                     else
@@ -1916,9 +1916,9 @@ void CPlaner::HandleLButtonDown (void)
                     {
                         if (CurrentPostItType==2 && qPlayer.Auftraege[CurrentPostItId].InPlan!=0)
                         {
-                            if (qPlayer.Auftraege[CurrentPostItId].InPlan==-1) 
+                            if (qPlayer.Auftraege[CurrentPostItId].InPlan==-1)
                                 qPlayer.Messages.AddMessage (BERATERTYP_GIRL, StandardTexte.GetS (TOKEN_ADVICE, 2311), MESSAGE_COMMENT);
-                            else if (qPlayer.Auftraege[CurrentPostItId].InPlan==1) 
+                            else if (qPlayer.Auftraege[CurrentPostItId].InPlan==1)
                                 qPlayer.Messages.AddMessage (BERATERTYP_GIRL, StandardTexte.GetS (TOKEN_ADVICE, 2312), MESSAGE_COMMENT);
                         }
                         else
@@ -2205,7 +2205,7 @@ void CPlaner::HandleLButtonDown (void)
                                 TookUnderCursorWithThisClick=TRUE;
                                 PaintPostIt ();
                             }
-                            /*else  
+                            /*else
                               {
                               qPlayer.Messages.AddMessage (BERATERTYP_GIRL, bprintf (StandardTexte.GetS (TOKEN_ADVICE, 2300), (LPCTSTR)PlaneName));
                               } */
@@ -2276,7 +2276,7 @@ void CPlaner::HandleLButtonDown (void)
                 CRentRoute &qRRoute  = qPlayer.RentRouten.RentRouten[(SLONG)Routen(pBlock->SelectedIdB)];
                 SLONG Index = (ClientPosB.y-128)/13;
 
-                if (Sim.Players.Players[Index+(PlayerNum<=Index)].IsOut==0 && 
+                if (Sim.Players.Players[Index+(PlayerNum<=Index)].IsOut==0 &&
                         Sim.Players.Players[Index+(PlayerNum<=Index)].RentRouten.RentRouten[(SLONG)Routen(pBlock->SelectedIdB)].Rang)
                 {
                     qRRoute.Ticketpreis   = Sim.Players.Players[Index+(PlayerNum<=Index)].RentRouten.RentRouten[(SLONG)Routen(pBlock->SelectedIdB)].Ticketpreis;
@@ -2498,9 +2498,9 @@ void CPlaner::HandleLButtonUp (void)
                     {
                         if (CurrentPostItType==2 && qPlayer.Auftraege[CurrentPostItId].InPlan!=0)
                         {
-                            if (qPlayer.Auftraege[CurrentPostItId].InPlan==-1) 
+                            if (qPlayer.Auftraege[CurrentPostItId].InPlan==-1)
                                 qPlayer.Messages.AddMessage (BERATERTYP_GIRL, StandardTexte.GetS (TOKEN_ADVICE, 2311), MESSAGE_COMMENT);
-                            else if (qPlayer.Auftraege[CurrentPostItId].InPlan==1) 
+                            else if (qPlayer.Auftraege[CurrentPostItId].InPlan==1)
                                 qPlayer.Messages.AddMessage (BERATERTYP_GIRL, StandardTexte.GetS (TOKEN_ADVICE, 2312), MESSAGE_COMMENT);
                         }
                         else

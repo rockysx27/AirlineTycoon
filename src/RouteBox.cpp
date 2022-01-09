@@ -299,7 +299,7 @@ void CRouteBox::OnPaint()
                 }
 
         //Berater:
-        if (CurrentTipIndex!=-1 && 
+        if (CurrentTipIndex!=-1 &&
                 (gMousePosition.IfIsWithin (461,14+15,461+171,14+15+ListSize*13-1) || (gMousePosition.IfIsWithin (17,27,434,295) && !gMousePosition.IfIsWithin (9,268,200,434) && !gMousePosition.IfIsWithin (230,254,361,387))))
         {
             if (CurrentTip!=LastTip)
@@ -612,7 +612,7 @@ void CRouteBox::UpdateDataTable (void)
             }
             break;
     }
-    RoutePageMax = (Table.AnzRows-1)/ListSize+1; 
+    RoutePageMax = (Table.AnzRows-1)/ListSize+1;
     RepaintList ();
 }
 

@@ -44,12 +44,12 @@
 #define	HARDCODED_CHECKSUM	0x20202020
 
 // Constant for the Checksum code
-#define CRC32_POLY 0x04c11db7     
+#define CRC32_POLY 0x04c11db7
 
 // Constant for the decrunching code
 #define N		 4096	/* size of ring buffer */
 #define F		   18	/* upper limit for match_length */
-#define THRESHOLD	2 
+#define THRESHOLD	2
 #define READCHAR(x)		x = readbuffer[ readpos++ ]
 #define WRITECHAR(x)	writebuffer[ writepos++ ] = x
 #define DRIVE_CDROM 5
@@ -128,7 +128,7 @@ typedef unsigned long	word32;	/* 32 bit */
 // Define the getcode function
 long	GetCode( char * );
 
-class SecurityManager  
+class SecurityManager
 {
     public:
         SecurityManager( char *, long, long );

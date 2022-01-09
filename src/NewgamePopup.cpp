@@ -257,7 +257,7 @@ void NewGamePopup::Konstruktor (BOOL bHandy, SLONG PlayerNum)
         Airport.UpdateStaticDoorImage ();
         Airport.CreateGateMapper();
         return;
-    } 
+    }
 
     PlayerBms.ReSize (pRoomLib, "PLAYER0", 8);
     HakenBm.ReSize (pRoomLib, "HAKEN");
@@ -497,7 +497,7 @@ void NewGamePopup::RefreshKlackerField(void)
             KlackerTafel.PrintAt (1, 10, StandardTexte.GetS (TOKEN_NEWGAME, 505)); //Intro
             KlackerTafel.PrintAt (1, 11, StandardTexte.GetS (TOKEN_NEWGAME, 508)); //Credits
 
-            if (gSpawnOnly) 
+            if (gSpawnOnly)
             {
                 KlackerTafel.LineDisabled[2]=true;
                 KlackerTafel.LineDisabled[3]=true;
@@ -524,7 +524,7 @@ void NewGamePopup::RefreshKlackerField(void)
             KlackerTafel.PrintAt (1, 11, StandardTexte.GetS (TOKEN_NEWGAME, 508)); //Credits
             KlackerTafel.PrintAt (1, 12, StandardTexte.GetS (TOKEN_NEWGAME, 509)); //Highscores
 
-            if (gSpawnOnly) 
+            if (gSpawnOnly)
             {
                 KlackerTafel.LineDisabled[2]=true;
                 KlackerTafel.LineDisabled[3]=true;
@@ -839,7 +839,7 @@ void NewGamePopup::CheckNames (void)
 //--------------------------------------------------------------------------------------------
 //NewGamePopup::OnPaint
 //--------------------------------------------------------------------------------------------
-void NewGamePopup::OnPaint() 
+void NewGamePopup::OnPaint()
 {
     static SLONG x, y, py; x++;
 
@@ -1148,7 +1148,7 @@ void NewGamePopup::OnPaint()
 //--------------------------------------------------------------------------------------------
 //NewGamePopup::OnLButtonDown
 //--------------------------------------------------------------------------------------------
-void NewGamePopup::OnLButtonDown(UINT nFlags, CPoint point) 
+void NewGamePopup::OnLButtonDown(UINT nFlags, CPoint point)
 {
     SLONG Line=(gMousePosition.y-63)/22;
     SLONG Column=(gMousePosition.x-128)/16;
@@ -1858,7 +1858,7 @@ again_heimatflughafen:
 //--------------------------------------------------------------------------------------------
 //NewGamePopup::OnRButtonDown
 //--------------------------------------------------------------------------------------------
-void NewGamePopup::OnRButtonDown(UINT nFlags, CPoint point) 
+void NewGamePopup::OnRButtonDown(UINT nFlags, CPoint point)
 {
     if (MenuIsOpen())
     {
@@ -1879,7 +1879,7 @@ void NewGamePopup::OnRButtonDown(UINT nFlags, CPoint point)
 //--------------------------------------------------------------------------------------------
 //NewGamePopup::OnTimer
 //--------------------------------------------------------------------------------------------
-void NewGamePopup::OnTimer(UINT nIDEvent) 
+void NewGamePopup::OnTimer(UINT nIDEvent)
 {
     SLONG c, l;
     static int counter=0;
@@ -1908,7 +1908,7 @@ void NewGamePopup::OnTimer(UINT nIDEvent)
                         break;
 
                     case ATNET_PUSHNAMES:
-                        Message >> Sim.UniqueGameId >> gNetworkSavegameLoading; 
+                        Message >> Sim.UniqueGameId >> gNetworkSavegameLoading;
                         Message >> Sim.Players.Players[(SLONG)0].Name >> Sim.Players.Players[(SLONG)1].Name
                             >> Sim.Players.Players[(SLONG)2].Name >> Sim.Players.Players[(SLONG)3].Name
                             >> Sim.Players.Players[(SLONG)0].NetworkID >> Sim.Players.Players[(SLONG)1].NetworkID
@@ -1926,7 +1926,7 @@ void NewGamePopup::OnTimer(UINT nIDEvent)
                             Message >> SenderID;
 
                             for (c=AnzHumanPlayers=0; c<4; c++)
-                                if (Sim.Players.Players[c].Owner==0 || Sim.Players.Players[c].Owner==2) 
+                                if (Sim.Players.Players[c].Owner==0 || Sim.Players.Players[c].Owner==2)
                                     AnzHumanPlayers++;
 
                             if (AnzHumanPlayers>=4)
@@ -2300,7 +2300,7 @@ void NewGamePopup::OnTimer(UINT nIDEvent)
 //--------------------------------------------------------------------------------------------
 //NewGamePopup::OnChar
 //--------------------------------------------------------------------------------------------
-void NewGamePopup::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags) 
+void NewGamePopup::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
     if (MenuIsOpen())
         CStdRaum::OnChar (nChar, nRepCnt, nFlags);
@@ -2353,7 +2353,7 @@ void NewGamePopup::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 //--------------------------------------------------------------------------------------------
 //NewGamePopup::OnKeyDown
 //--------------------------------------------------------------------------------------------
-void NewGamePopup::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) 
+void NewGamePopup::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
     if (MenuIsOpen())
         CStdRaum::OnKeyDown (nChar, nRepCnt, nFlags);
@@ -2452,7 +2452,7 @@ void NewGamePopup::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 //--------------------------------------------------------------------------------------------
 //BOOL CStdRaum::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message) : AG:
 //--------------------------------------------------------------------------------------------
-BOOL NewGamePopup::OnSetCursor(void* pWnd, UINT nHitTest, UINT message) 
+BOOL NewGamePopup::OnSetCursor(void* pWnd, UINT nHitTest, UINT message)
 {
     return (FrameWnd->OnSetCursor(pWnd, nHitTest, message));
 }
@@ -2460,7 +2460,7 @@ BOOL NewGamePopup::OnSetCursor(void* pWnd, UINT nHitTest, UINT message)
 //--------------------------------------------------------------------------------------------
 //void CStdRaum::OnMouseMove(UINT nFlags, CPoint point): AG:
 //--------------------------------------------------------------------------------------------
-void NewGamePopup::OnMouseMove(UINT nFlags, CPoint point) 
+void NewGamePopup::OnMouseMove(UINT nFlags, CPoint point)
 {
     FrameWnd->OnMouseMove(nFlags, point);
 }

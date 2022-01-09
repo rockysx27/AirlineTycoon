@@ -286,7 +286,7 @@ void Options::RefreshKlackerField(void)
 //--------------------------------------------------------------------------------------------
 // void Options::OnPaint():
 //--------------------------------------------------------------------------------------------
-void Options::OnPaint() 
+void Options::OnPaint()
 {
     static SLONG x, y, py; x++;
     static SLONG LastLine=-1;
@@ -451,7 +451,7 @@ void Options::OnPaint()
 //--------------------------------------------------------------------------------------------
 //void Options::OnLButtonDown(UINT nFlags, CPoint point)
 //--------------------------------------------------------------------------------------------
-void Options::OnLButtonDown(UINT nFlags, CPoint point) 
+void Options::OnLButtonDown(UINT nFlags, CPoint point)
 {
     if (CursorY!=-1 && PageNum!=6) return;
 
@@ -504,7 +504,7 @@ void Options::OnLButtonDown(UINT nFlags, CPoint point)
                 if (Line==4)
                 {
                     Sim.Options.OptionBlenden^=1;
-                    if (Sim.Options.OptionBlenden) 
+                    if (Sim.Options.OptionBlenden)
                     {
                         gBlendState=-2;
                         if (FrameWnd) FrameWnd->PrepareFade();
@@ -709,7 +709,7 @@ void Options::OnLButtonDown(UINT nFlags, CPoint point)
 //--------------------------------------------------------------------------------------------
 // void Options::OnRButtonDown(UINT nFlags, CPoint point):
 //--------------------------------------------------------------------------------------------
-void Options::OnRButtonDown(UINT, CPoint point) 
+void Options::OnRButtonDown(UINT, CPoint point)
 {
     DefaultOnRButtonDown ();
 
@@ -766,7 +766,7 @@ void Options::OnRButtonDown(UINT, CPoint point)
 //--------------------------------------------------------------------------------------------
 // void Options::OnTimer(UINT nIDEvent):
 //--------------------------------------------------------------------------------------------
-void Options::OnTimer(UINT nIDEvent) 
+void Options::OnTimer(UINT nIDEvent)
 {
     //Mit 10 FPS die Anzeige rotieren lassen:
     if (nIDEvent==1) KlackerTafel.Klack();

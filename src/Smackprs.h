@@ -81,7 +81,7 @@ class CSmackerClip
 
         SLONG        LastFrame;
 
-        SBFX              SoundFx;        
+        SBFX              SoundFx;
         SLONG             NumSoundFx;     //Anzahl der Soundeffekte
         CUnrepeatedRandom SoundRandom;    //Wenn es mehrere Soundeffekte gibt
         DWORD             TickerNext;     //Zu diesem Zeitpunkt muﬂ das n‰chste Sample gestartet werden
@@ -174,4 +174,4 @@ class CSmackerPerson
         void  Pump (void);
         void  BlitAtT (SBBM &RoomBm);
         void  BlitAtT (SBBM &RoomBm, XY Offset);
-};    
+};

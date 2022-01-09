@@ -124,7 +124,7 @@ CIntro::~CIntro()
 //--------------------------------------------------------------------------------------------
 // void CIntro::OnPaint():
 //--------------------------------------------------------------------------------------------
-void CIntro::OnPaint() 
+void CIntro::OnPaint()
 {
     if (FrameNum++<2) PrimaryBm.BlitFrom (RoomBm);
 
@@ -192,7 +192,7 @@ void CIntro::OnPaint()
 //--------------------------------------------------------------------------------------------
 //void CIntro::OnLButtonDown(UINT nFlags, CPoint point)
 //--------------------------------------------------------------------------------------------
-void CIntro::OnLButtonDown(UINT, CPoint) 
+void CIntro::OnLButtonDown(UINT, CPoint)
 {
     if (pSmack && Sim.Options.OptionViewedIntro==0)
     {
@@ -211,7 +211,7 @@ void CIntro::OnLButtonDown(UINT, CPoint)
 //--------------------------------------------------------------------------------------------
 // void CIntro::OnRButtonDown(UINT nFlags, CPoint point):
 //--------------------------------------------------------------------------------------------
-void CIntro::OnRButtonDown(UINT, CPoint) 
+void CIntro::OnRButtonDown(UINT, CPoint)
 {
     DefaultOnRButtonDown ();
 
@@ -232,7 +232,7 @@ void CIntro::OnRButtonDown(UINT, CPoint)
 //--------------------------------------------------------------------------------------------
 //BOOL CStdRaum::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message) : AG:
 //--------------------------------------------------------------------------------------------
-BOOL CIntro::OnSetCursor(void* pWnd, UINT nHitTest, UINT message) 
+BOOL CIntro::OnSetCursor(void* pWnd, UINT nHitTest, UINT message)
 {
     return (FrameWnd->OnSetCursor(pWnd, nHitTest, message));
 }
@@ -240,7 +240,7 @@ BOOL CIntro::OnSetCursor(void* pWnd, UINT nHitTest, UINT message)
 //--------------------------------------------------------------------------------------------
 //void CStdRaum::OnMouseMove(UINT nFlags, CPoint point): AG:
 //--------------------------------------------------------------------------------------------
-void CIntro::OnMouseMove(UINT nFlags, CPoint point) 
+void CIntro::OnMouseMove(UINT nFlags, CPoint point)
 {
     FrameWnd->OnMouseMove(nFlags, point);
 }

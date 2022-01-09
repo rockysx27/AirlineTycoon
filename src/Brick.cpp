@@ -362,7 +362,7 @@ void BRICKS::ReInit (const CString &TabFilename)
 
                 *(strchr (TimePointer[AnzTimePointer], ':'))=0;
             }
-            else 
+            else
                 (*this)[Id].WaitTimes[AnzTimePointer] = 1;
 
             (*this)[Id].WaitSum += (*this)[Id].WaitTimes[AnzTimePointer];
