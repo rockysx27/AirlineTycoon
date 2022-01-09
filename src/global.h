@@ -219,7 +219,7 @@ extern BUFFER<BUFFER_UBYTE>    GlobeLight;
 extern BUFFER<SLONG>           GlobeMapperY;
 extern BUFFER<UWORD>           GlobeMixTab;
 extern BUFFER<XY>              GlobeWindows;
-       
+
 //--------------------------------------------------------------------------------------------
 //Der Klacker-Font:
 //--------------------------------------------------------------------------------------------

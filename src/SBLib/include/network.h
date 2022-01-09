@@ -61,39 +61,39 @@ struct SBSessionInfo
 
 class SBNetwork
 {
-public:
-    SBNetwork(bool);
+    public:
+        SBNetwork(bool);
 
-    SLONG GetMessageCount();
-    bool Connect(SBStr);
-    bool Connect(SBStr, char*);
-    void DisConnect();
-    bool CreateSession(SBStr, SBNetworkCreation*);
-    void CloseSession();
-    ULONG GetLocalPlayerID();
-    SBList<SBStr>* GetConnectionList();
-    SBList<SBStr>* GetSessionListAsync();
-    bool StartGetSessionListAsync();
-    SLONG GetProviderID(char*);
-    bool IsEnumSessionFinished();
-    bool IsInSession();
-    bool Send(BUFFER<UBYTE>&, ULONG, ULONG, bool);
-    bool Receive(UBYTE**, ULONG&);
-    bool JoinSession(SBStr, SBStr);
-    SBList<SBNetworkPlayer>* GetAllPlayers();
+        SLONG GetMessageCount();
+        bool Connect(SBStr);
+        bool Connect(SBStr, char*);
+        void DisConnect();
+        bool CreateSession(SBStr, SBNetworkCreation*);
+        void CloseSession();
+        ULONG GetLocalPlayerID();
+        SBList<SBStr>* GetConnectionList();
+        SBList<SBStr>* GetSessionListAsync();
+        bool StartGetSessionListAsync();
+        SLONG GetProviderID(char*);
+        bool IsEnumSessionFinished();
+        bool IsInSession();
+        bool Send(BUFFER<UBYTE>&, ULONG, ULONG, bool);
+        bool Receive(UBYTE**, ULONG&);
+        bool JoinSession(SBStr, SBStr);
+        SBList<SBNetworkPlayer>* GetAllPlayers();
 
-private:
-    SBSessionEnum mState;
-    ULONG mLocalID;
-    SBList<SBStr> mConnections;
-    SBList<SBStr> mSessions;
-    SBList<SBSessionInfo> mSessionInfo;
-    SBList<SBNetworkPlayer> mPlayers;
+    private:
+        SBSessionEnum mState;
+        ULONG mLocalID;
+        SBList<SBStr> mConnections;
+        SBList<SBStr> mSessions;
+        SBList<SBSessionInfo> mSessionInfo;
+        SBList<SBNetworkPlayer> mPlayers;
 
-    unsigned int mSearchTime;
-    ENetAddress mServer;
-    ENetHost* mHost;
-    ENetPeer* mMaster;
-    ENetSocket mSocket;
-    SBList<ENetPacket*> mPackets;
+        unsigned int mSearchTime;
+        ENetAddress mServer;
+        ENetHost* mHost;
+        ENetPeer* mMaster;
+        ENetSocket mSocket;
+        SBList<ENetPacket*> mPackets;
 };

@@ -39,7 +39,7 @@ void GetDXVersion(LPDWORD pdwDXVersion, LPDWORD pdwDXPlatform);
 
 void test (void)
 {
-   CSystemCheckup sc (CHECKUP_ALL | CHECKUP_WRITE, "f:\\setup.exe");
+    CSystemCheckup sc (CHECKUP_ALL | CHECKUP_WRITE, "f:\\setup.exe");
 }
 
 //--------------------------------------------------------------------------------------------
@@ -47,30 +47,30 @@ void test (void)
 //--------------------------------------------------------------------------------------------
 BOOL IsPentiumOrBetter (void)
 {
-   SYSTEM_INFO SystemInfo;
+    SYSTEM_INFO SystemInfo;
 
-   GetSystemInfo (&SystemInfo);
+    GetSystemInfo (&SystemInfo);
 
-   if (SystemInfo.wProcessorArchitecture!=PROCESSOR_ARCHITECTURE_INTEL) return (FALSE);
+    if (SystemInfo.wProcessorArchitecture!=PROCESSOR_ARCHITECTURE_INTEL) return (FALSE);
 
-   //Methode 1: alt
-   if (SystemInfo.dwProcessorType==PROCESSOR_INTEL_386) return (FALSE);
-   if (SystemInfo.dwProcessorType==PROCESSOR_INTEL_486) return (FALSE);
-   if (SystemInfo.dwProcessorType==PROCESSOR_INTEL_PENTIUM) return (TRUE);
-   if (SystemInfo.dwProcessorType==686) return (TRUE);
-   if (SystemInfo.dwProcessorType==786) return (TRUE);
-   if (SystemInfo.dwProcessorType==886) return (TRUE);
+    //Methode 1: alt
+    if (SystemInfo.dwProcessorType==PROCESSOR_INTEL_386) return (FALSE);
+    if (SystemInfo.dwProcessorType==PROCESSOR_INTEL_486) return (FALSE);
+    if (SystemInfo.dwProcessorType==PROCESSOR_INTEL_PENTIUM) return (TRUE);
+    if (SystemInfo.dwProcessorType==686) return (TRUE);
+    if (SystemInfo.dwProcessorType==786) return (TRUE);
+    if (SystemInfo.dwProcessorType==886) return (TRUE);
 
-   //Methode 2: neu, für Windows NT
-   if (SystemInfo.wProcessorLevel==3) return (FALSE);    //386er
-   if (SystemInfo.wProcessorLevel==4) return (FALSE);    //486er
-   if (SystemInfo.wProcessorLevel==5) return (TRUE);     //586er
+    //Methode 2: neu, für Windows NT
+    if (SystemInfo.wProcessorLevel==3) return (FALSE);    //386er
+    if (SystemInfo.wProcessorLevel==4) return (FALSE);    //486er
+    if (SystemInfo.wProcessorLevel==5) return (TRUE);     //586er
 
-   //Letzer Versuch: Vielleicht ein Pentium-Nachfolger?
-   if (SystemInfo.wProcessorLevel>5 && SystemInfo.wProcessorLevel<10) return (TRUE);     //586er
+    //Letzer Versuch: Vielleicht ein Pentium-Nachfolger?
+    if (SystemInfo.wProcessorLevel>5 && SystemInfo.wProcessorLevel<10) return (TRUE);     //586er
 
-   //Konnte nicht erkannt werden:
-   return FALSE;
+    //Konnte nicht erkannt werden:
+    return FALSE;
 }
 #endif
 
@@ -81,7 +81,7 @@ BOOL IsPentiumOrBetter (void)
 //--------------------------------------------------------------------------------------------
 CRegistryAccess::CRegistryAccess ()
 {
-   hKey = NULL;
+    hKey = NULL;
 }
 
 //--------------------------------------------------------------------------------------------
@@ -89,8 +89,8 @@ CRegistryAccess::CRegistryAccess ()
 //--------------------------------------------------------------------------------------------
 CRegistryAccess::CRegistryAccess (CString RegistryPath)
 {
-   hKey = NULL;
-   Open (RegistryPath);
+    hKey = NULL;
+    Open (RegistryPath);
 }
 
 //--------------------------------------------------------------------------------------------
@@ -98,21 +98,21 @@ CRegistryAccess::CRegistryAccess (CString RegistryPath)
 //--------------------------------------------------------------------------------------------
 bool CRegistryAccess::Open (CString RegistryPath)
 {
-   Close ();   //Alten Zugriff schließen
+    Close ();   //Alten Zugriff schließen
 
-   DWORD dwDisposition;
+    DWORD dwDisposition;
 
 #if USE_JSON
-   CString PerfPath = GetPerfPath();
-   hKey = json_load_file(PerfPath + "AT.json", 0, NULL);
-   if (!hKey)
-       hKey = json_object();
-   return IsOpen();
+    CString PerfPath = GetPerfPath();
+    hKey = json_load_file(PerfPath + "AT.json", 0, NULL);
+    if (!hKey)
+        hKey = json_object();
+    return IsOpen();
 #else
-   if (ERROR_SUCCESS == RegCreateKeyEx(HKEY_CURRENT_USER, RegistryPath, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &hKey, &dwDisposition))
-      return (1); //Erfolg
-   else
-      return (0); //Geht nicht
+    if (ERROR_SUCCESS == RegCreateKeyEx(HKEY_CURRENT_USER, RegistryPath, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &hKey, &dwDisposition))
+        return (1); //Erfolg
+    else
+        return (0); //Geht nicht
 #endif
 }
 
@@ -121,7 +121,7 @@ bool CRegistryAccess::Open (CString RegistryPath)
 //--------------------------------------------------------------------------------------------
 CRegistryAccess::~CRegistryAccess ()
 {
-   Close();
+    Close();
 }
 
 //--------------------------------------------------------------------------------------------
@@ -129,17 +129,17 @@ CRegistryAccess::~CRegistryAccess ()
 //--------------------------------------------------------------------------------------------
 void CRegistryAccess::Close (void)
 {
-   if (hKey)
-   {
+    if (hKey)
+    {
 #if USE_JSON
-      CString PerfPath = GetPerfPath();
-      json_dump_file(hKey, PerfPath + "AT.json", 0);
-      json_decref(hKey);
+        CString PerfPath = GetPerfPath();
+        json_dump_file(hKey, PerfPath + "AT.json", 0);
+        json_decref(hKey);
 #else
-      RegCloseKey(hKey);
+        RegCloseKey(hKey);
 #endif
-      hKey=NULL;
-   }
+        hKey=NULL;
+    }
 }
 
 //--------------------------------------------------------------------------------------------
@@ -147,7 +147,7 @@ void CRegistryAccess::Close (void)
 //--------------------------------------------------------------------------------------------
 bool CRegistryAccess::IsOpen (void)
 {
-   return (hKey!=NULL);
+    return (hKey!=NULL);
 }
 
 //--------------------------------------------------------------------------------------------
@@ -155,63 +155,63 @@ bool CRegistryAccess::IsOpen (void)
 //--------------------------------------------------------------------------------------------
 bool CRegistryAccess::WriteRegistryKeyEx (const char *Text, CString EntryName)
 {
-   if (!hKey) return (0);
+    if (!hKey) return (0);
 
 #if USE_JSON
-   return (json_object_set_new(hKey, EntryName, json_string(Text)) > 0);
+    return (json_object_set_new(hKey, EntryName, json_string(Text)) > 0);
 #else
-   return (ERROR_SUCCESS == RegSetValueEx (hKey, EntryName, 0, REG_SZ, (UBYTE*)Text, strlen(Text)+1));
+    return (ERROR_SUCCESS == RegSetValueEx (hKey, EntryName, 0, REG_SZ, (UBYTE*)Text, strlen(Text)+1));
 #endif
 }
 bool CRegistryAccess::WriteRegistryKeyEx (const BOOL *Bool, CString EntryName)
 {
-   if (!hKey) return (0);
+    if (!hKey) return (0);
 
 #if USE_JSON
-   return (json_object_set_new(hKey, EntryName, json_boolean(*Bool)) > 0);
+    return (json_object_set_new(hKey, EntryName, json_boolean(*Bool)) > 0);
 #else
-   char *Temp = new char [500];
+    char *Temp = new char [500];
 
-   sprintf (Temp, "%li", (long)*Bool);
+    sprintf (Temp, "%li", (long)*Bool);
 
-   bool rc=WriteRegistryKeyEx (Temp, EntryName);
+    bool rc=WriteRegistryKeyEx (Temp, EntryName);
 
-   delete [] Temp;
-   return (rc);
+    delete [] Temp;
+    return (rc);
 #endif
 }
 bool CRegistryAccess::WriteRegistryKeyEx (const long *Long, CString EntryName)
 {
-   if (!hKey) return (0);
+    if (!hKey) return (0);
 
 #if USE_JSON
-   return (json_object_set_new(hKey, EntryName, json_integer(*Long)) > 0);
+    return (json_object_set_new(hKey, EntryName, json_integer(*Long)) > 0);
 #else
-   char *Temp = new char [500];
+    char *Temp = new char [500];
 
-   sprintf (Temp, "%li", *Long);
+    sprintf (Temp, "%li", *Long);
 
-   bool rc=WriteRegistryKeyEx (Temp, EntryName);
+    bool rc=WriteRegistryKeyEx (Temp, EntryName);
 
-   delete [] Temp;
-   return (rc);
+    delete [] Temp;
+    return (rc);
 #endif
 }
 bool CRegistryAccess::WriteRegistryKeyEx (const double *Double, CString EntryName)
 {
-   if (!hKey) return (0);
+    if (!hKey) return (0);
 
 #if USE_JSON
-   return (json_object_set_new(hKey, EntryName, json_real(*Double)) > 0);
+    return (json_object_set_new(hKey, EntryName, json_real(*Double)) > 0);
 #else
-   char *Temp = new char [500];
+    char *Temp = new char [500];
 
-   sprintf (Temp, "%f", *Double);
+    sprintf (Temp, "%f", *Double);
 
-   bool rc=WriteRegistryKeyEx (Temp, EntryName);
+    bool rc=WriteRegistryKeyEx (Temp, EntryName);
 
-   delete [] Temp;
-   return (rc);
+    delete [] Temp;
+    return (rc);
 #endif
 }
 
@@ -220,80 +220,80 @@ bool CRegistryAccess::WriteRegistryKeyEx (const double *Double, CString EntryNam
 //--------------------------------------------------------------------------------------------
 bool CRegistryAccess::ReadRegistryKeyEx (char *Text, CString EntryName)
 {
-   if (!hKey) return (0);
+    if (!hKey) return (0);
 
 #if USE_JSON
-   json_t* Entry = json_object_get(hKey, EntryName);
-   if (!Entry || !json_is_string(Entry))
-      return false;
-   return (snprintf(Text, json_string_length(Entry), "%s", json_string_value(Entry)) >= 0);
+    json_t* Entry = json_object_get(hKey, EntryName);
+    if (!Entry || !json_is_string(Entry))
+        return false;
+    return (snprintf(Text, json_string_length(Entry), "%s", json_string_value(Entry)) >= 0);
 #else
-   unsigned long TempSize=500;
+    unsigned long TempSize=500;
 
-   return (ERROR_SUCCESS == RegQueryValueEx (hKey, EntryName, NULL, NULL, (UBYTE*)Text, &TempSize));
+    return (ERROR_SUCCESS == RegQueryValueEx (hKey, EntryName, NULL, NULL, (UBYTE*)Text, &TempSize));
 #endif
 }
 bool CRegistryAccess::ReadRegistryKeyEx (BOOL *Bool, CString EntryName)
 {
-   if (!hKey) return (0);
+    if (!hKey) return (0);
 
 #if USE_JSON
-   json_t* Entry = json_object_get(hKey, EntryName);
-   if (!Entry || !json_is_boolean(Entry))
-      return false;
+    json_t* Entry = json_object_get(hKey, EntryName);
+    if (!Entry || !json_is_boolean(Entry))
+        return false;
 
-   *Bool = json_boolean_value(Entry);
-   return true;
+    *Bool = json_boolean_value(Entry);
+    return true;
 #else
-   char *Temp = new char [500];
-   bool  rc   = ReadRegistryKeyEx (Temp, EntryName);
+    char *Temp = new char [500];
+    bool  rc   = ReadRegistryKeyEx (Temp, EntryName);
 
-   if (rc) *Bool = (BOOL)atoi (Temp);
+    if (rc) *Bool = (BOOL)atoi (Temp);
 
-   delete [] Temp;
-   return (rc);
+    delete [] Temp;
+    return (rc);
 #endif
 }
 bool CRegistryAccess::ReadRegistryKeyEx (long *Long, CString EntryName)
 {
-   if (!hKey) return (0);
+    if (!hKey) return (0);
 
 #if USE_JSON
-   json_t* Entry = json_object_get(hKey, EntryName);
-   if (!Entry || !json_is_integer(Entry))
-       return false;
+    json_t* Entry = json_object_get(hKey, EntryName);
+    if (!Entry || !json_is_integer(Entry))
+        return false;
 
-   *Long = json_integer_value(Entry);
-   return true;
+    *Long = json_integer_value(Entry);
+    return true;
 #else
-   char *Temp = new char [500];
-   bool  rc   = ReadRegistryKeyEx (Temp, EntryName);
+    char *Temp = new char [500];
+    bool  rc   = ReadRegistryKeyEx (Temp, EntryName);
 
-   if (rc) *Long = atoi (Temp);
+    if (rc) *Long = atoi (Temp);
 
-   delete [] Temp;
-   return (rc);
+    delete [] Temp;
+    return (rc);
 #endif
 }
 bool CRegistryAccess::ReadRegistryKeyEx (double *Double, CString EntryName)
 {
-   if (!hKey) return (0);
+    if (!hKey) return (0);
 
 #if USE_JSON
-   json_t* Entry = json_object_get(hKey, EntryName);
-   if (!Entry || !json_is_real(Entry))
-       return false;
+    json_t* Entry = json_object_get(hKey, EntryName);
+    if (!Entry || !json_is_real(Entry))
+        return false;
 
-   *Double = json_real_value(Entry);
-   return true;
+    *Double = json_real_value(Entry);
+    return true;
 #else
-   char *Temp = new char [500];
-   bool  rc   = ReadRegistryKeyEx (Temp, EntryName);
+    char *Temp = new char [500];
+    bool  rc   = ReadRegistryKeyEx (Temp, EntryName);
 
-   if (rc) *Double = atof (Temp);
+    if (rc) *Double = atof (Temp);
 
-   delete [] Temp;
-   return (rc);
+    delete [] Temp;
+    return (rc);
 #endif
 }
 #ifdef SYSTEM_CHECKUP
@@ -304,10 +304,10 @@ bool CRegistryAccess::ReadRegistryKeyEx (double *Double, CString EntryName)
 //--------------------------------------------------------------------------------------------
 CSystemCheckup::CSystemCheckup (long Flags, CString CDFile)
 {
-   memset (this, 0, sizeof(*this));
-   CheckupVersion = CHECKUP_VERSION;
+    memset (this, 0, sizeof(*this));
+    CheckupVersion = CHECKUP_VERSION;
 
-   Checkup (Flags, CDFile);
+    Checkup (Flags, CDFile);
 }
 
 //--------------------------------------------------------------------------------------------
@@ -315,115 +315,115 @@ CSystemCheckup::CSystemCheckup (long Flags, CString CDFile)
 //--------------------------------------------------------------------------------------------
 void CSystemCheckup::Checkup (long Flags, CString CDFile)
 {
-   //Das, was wir holen wollen, als noch nicht geholt markieren:
-   CheckupFlags = CheckupFlags & (~Flags);
+    //Das, was wir holen wollen, als noch nicht geholt markieren:
+    CheckupFlags = CheckupFlags & (~Flags);
 
-   //Alte Daten aus der Registry laden:
-   if (Flags & CHECKUP_READ)
-   {
-      char RegName[100];
+    //Alte Daten aus der Registry laden:
+    if (Flags & CHECKUP_READ)
+    {
+        char RegName[100];
 
-      sprintf (RegName, CHECKUP_REGISTRY_PATH, CheckupVersion);
+        sprintf (RegName, CHECKUP_REGISTRY_PATH, CheckupVersion);
 
-      CRegistryAccess reg;
+        CRegistryAccess reg;
 
-      if (reg.Open (RegName))
-      {
-         if (Flags & CHECKUP_CD)
-            if (reg.ReadRegistryKey (&KBSec) &&
-                reg.ReadRegistryKey (&Faktor))
-               CheckupFlags |= CHECKUP_CD;
+        if (reg.Open (RegName))
+        {
+            if (Flags & CHECKUP_CD)
+                if (reg.ReadRegistryKey (&KBSec) &&
+                        reg.ReadRegistryKey (&Faktor))
+                    CheckupFlags |= CHECKUP_CD;
 
-         if (Flags & CHECKUP_CD)
-            if (reg.ReadRegistryKey (&PlatformID) &&
-                reg.ReadRegistryKey (&OSMajorVersion) &&
-                reg.ReadRegistryKey (&OSMinorVersion) &&
-                reg.ReadRegistryKey (&OSBuild))
-               CheckupFlags |= CHECKUP_OS;
+            if (Flags & CHECKUP_CD)
+                if (reg.ReadRegistryKey (&PlatformID) &&
+                        reg.ReadRegistryKey (&OSMajorVersion) &&
+                        reg.ReadRegistryKey (&OSMinorVersion) &&
+                        reg.ReadRegistryKey (&OSBuild))
+                    CheckupFlags |= CHECKUP_OS;
 
-         if (Flags & CHECKUP_CPU)
-            if (reg.ReadRegistryKey (&bMMX) &&
-                reg.ReadRegistryKey (&bCoprozessor) &&
-                reg.ReadRegistryKey (&Megahertz))
-               CheckupFlags |= CHECKUP_CPU;
+            if (Flags & CHECKUP_CPU)
+                if (reg.ReadRegistryKey (&bMMX) &&
+                        reg.ReadRegistryKey (&bCoprozessor) &&
+                        reg.ReadRegistryKey (&Megahertz))
+                    CheckupFlags |= CHECKUP_CPU;
 
-         if (Flags & CHECKUP_RAM)
-            if (reg.ReadRegistryKey (&RealMB) &&
-                reg.ReadRegistryKey (&VirtualMB) &&
-                reg.ReadRegistryKey (&VgaRamMB))
-               CheckupFlags |= CHECKUP_RAM;
+            if (Flags & CHECKUP_RAM)
+                if (reg.ReadRegistryKey (&RealMB) &&
+                        reg.ReadRegistryKey (&VirtualMB) &&
+                        reg.ReadRegistryKey (&VgaRamMB))
+                    CheckupFlags |= CHECKUP_RAM;
 
-         if (Flags & CHECKUP_DIRECTX)
-            if (reg.ReadRegistryKey (&bDXInstalled) &&
-                reg.ReadRegistryKey (&DXVersion) &&
-                reg.ReadRegistryKey (&bMidi) &&
-                reg.ReadRegistryKey (&bWave) &&
-                reg.ReadRegistryKey (&b3D) &&
-                reg.ReadRegistryKey (&bAlpha) &&
-                reg.ReadRegistryKey (&bZBuffer))
-               CheckupFlags |= CHECKUP_DIRECTX;
-      }
-   }
+            if (Flags & CHECKUP_DIRECTX)
+                if (reg.ReadRegistryKey (&bDXInstalled) &&
+                        reg.ReadRegistryKey (&DXVersion) &&
+                        reg.ReadRegistryKey (&bMidi) &&
+                        reg.ReadRegistryKey (&bWave) &&
+                        reg.ReadRegistryKey (&b3D) &&
+                        reg.ReadRegistryKey (&bAlpha) &&
+                        reg.ReadRegistryKey (&bZBuffer))
+                    CheckupFlags |= CHECKUP_DIRECTX;
+        }
+    }
 
-   //Alles, was der benutzer haben will (und was noch nicht aus der Registry geladen
-   //wurde), jetzt ermitteln:
-   if ((Flags & CHECKUP_CD) && !(CheckupFlags & CHECKUP_CD)) CheckupCD (CDFile);
-   if ((Flags & CHECKUP_OS) && !(CheckupFlags & CHECKUP_OS)) CheckupOS ();
-   if ((Flags & CHECKUP_CPU) && !(CheckupFlags & CHECKUP_CPU)) CheckupCPU ();
-   if ((Flags & CHECKUP_RAM) && !(CheckupFlags & CHECKUP_RAM)) CheckupRAM ();
-   if ((Flags & CHECKUP_DIRECTX) && !(CheckupFlags & CHECKUP_DIRECTX)) CheckupDirectX ();
+    //Alles, was der benutzer haben will (und was noch nicht aus der Registry geladen
+    //wurde), jetzt ermitteln:
+    if ((Flags & CHECKUP_CD) && !(CheckupFlags & CHECKUP_CD)) CheckupCD (CDFile);
+    if ((Flags & CHECKUP_OS) && !(CheckupFlags & CHECKUP_OS)) CheckupOS ();
+    if ((Flags & CHECKUP_CPU) && !(CheckupFlags & CHECKUP_CPU)) CheckupCPU ();
+    if ((Flags & CHECKUP_RAM) && !(CheckupFlags & CHECKUP_RAM)) CheckupRAM ();
+    if ((Flags & CHECKUP_DIRECTX) && !(CheckupFlags & CHECKUP_DIRECTX)) CheckupDirectX ();
 
-   //Ergebnis ggf. in der Registry speichern:
-   if (Flags & CHECKUP_WRITE)
-   {
-      char RegName[100];
+    //Ergebnis ggf. in der Registry speichern:
+    if (Flags & CHECKUP_WRITE)
+    {
+        char RegName[100];
 
-      sprintf (RegName, CHECKUP_REGISTRY_PATH, CheckupVersion);
+        sprintf (RegName, CHECKUP_REGISTRY_PATH, CheckupVersion);
 
-      CRegistryAccess reg;
+        CRegistryAccess reg;
 
-      if (reg.Open (RegName))
-      {
-         if (CheckupFlags & CHECKUP_CD)
-         {
-            reg.WriteRegistryKey (&KBSec);
-            reg.WriteRegistryKey (&Faktor);
-         }
+        if (reg.Open (RegName))
+        {
+            if (CheckupFlags & CHECKUP_CD)
+            {
+                reg.WriteRegistryKey (&KBSec);
+                reg.WriteRegistryKey (&Faktor);
+            }
 
-         if (CheckupFlags & CHECKUP_OS)
-         {
-            reg.WriteRegistryKey (&PlatformID);
-            reg.WriteRegistryKey (&OSMajorVersion);
-            reg.WriteRegistryKey (&OSMinorVersion);
-            reg.WriteRegistryKey (&OSBuild);
-         }
+            if (CheckupFlags & CHECKUP_OS)
+            {
+                reg.WriteRegistryKey (&PlatformID);
+                reg.WriteRegistryKey (&OSMajorVersion);
+                reg.WriteRegistryKey (&OSMinorVersion);
+                reg.WriteRegistryKey (&OSBuild);
+            }
 
-         if (CheckupFlags & CHECKUP_CPU)
-         {
-            reg.WriteRegistryKey (&bMMX);
-            reg.WriteRegistryKey (&bCoprozessor);
-            reg.WriteRegistryKey (&Megahertz);
-         }
+            if (CheckupFlags & CHECKUP_CPU)
+            {
+                reg.WriteRegistryKey (&bMMX);
+                reg.WriteRegistryKey (&bCoprozessor);
+                reg.WriteRegistryKey (&Megahertz);
+            }
 
-         if (CheckupFlags & CHECKUP_RAM)
-         {
-            reg.WriteRegistryKey (&RealMB);
-            reg.WriteRegistryKey (&VirtualMB);
-            reg.WriteRegistryKey (&VgaRamMB);
-         }
+            if (CheckupFlags & CHECKUP_RAM)
+            {
+                reg.WriteRegistryKey (&RealMB);
+                reg.WriteRegistryKey (&VirtualMB);
+                reg.WriteRegistryKey (&VgaRamMB);
+            }
 
-         if (CheckupFlags & CHECKUP_DIRECTX)
-         {
-            reg.WriteRegistryKey (&bDXInstalled);
-            reg.WriteRegistryKey (&DXVersion);
-            reg.WriteRegistryKey (&bMidi);
-            reg.WriteRegistryKey (&bWave);
-            reg.WriteRegistryKey (&b3D);
-            reg.WriteRegistryKey (&bAlpha);
-            reg.WriteRegistryKey (&bZBuffer);
-         }
-      }
-   }
+            if (CheckupFlags & CHECKUP_DIRECTX)
+            {
+                reg.WriteRegistryKey (&bDXInstalled);
+                reg.WriteRegistryKey (&DXVersion);
+                reg.WriteRegistryKey (&bMidi);
+                reg.WriteRegistryKey (&bWave);
+                reg.WriteRegistryKey (&b3D);
+                reg.WriteRegistryKey (&bAlpha);
+                reg.WriteRegistryKey (&bZBuffer);
+            }
+        }
+    }
 }
 
 //--------------------------------------------------------------------------------------------
@@ -431,46 +431,46 @@ void CSystemCheckup::Checkup (long Flags, CString CDFile)
 //--------------------------------------------------------------------------------------------
 void CSystemCheckup::CheckupCD (const CString &CDFile)
 {
-   DWORD SectorsPerCluster;
-   DWORD BytesPerSector;
-   DWORD NumberOfFreeClusters;
-   DWORD TotalNumberOfClusters;
-   char  RootPath[] = "x:\\";
+    DWORD SectorsPerCluster;
+    DWORD BytesPerSector;
+    DWORD NumberOfFreeClusters;
+    DWORD TotalNumberOfClusters;
+    char  RootPath[] = "x:\\";
 
-   RootPath[0]=CDFile.GetAt(0);
+    RootPath[0]=CDFile.GetAt(0);
 
-   if (!GetDiskFreeSpace (RootPath, &SectorsPerCluster, &BytesPerSector, &NumberOfFreeClusters, &TotalNumberOfClusters))
-      return;
+    if (!GetDiskFreeSpace (RootPath, &SectorsPerCluster, &BytesPerSector, &NumberOfFreeClusters, &TotalNumberOfClusters))
+        return;
 
-   long  BufferSize = (300000/BytesPerSector+1)*BytesPerSector;
-   char *buffer = new char[BufferSize];
-   DWORD Dummy;
+    long  BufferSize = (300000/BytesPerSector+1)*BytesPerSector;
+    char *buffer = new char[BufferSize];
+    DWORD Dummy;
 
-   HANDLE hFile = CreateFile (CDFile, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL|FILE_FLAG_NO_BUFFERING, NULL);
+    HANDLE hFile = CreateFile (CDFile, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL|FILE_FLAG_NO_BUFFERING, NULL);
 
-   if (hFile==INVALID_HANDLE_VALUE)
-   {
-      delete [] buffer;
-      return;
-   }
+    if (hFile==INVALID_HANDLE_VALUE)
+    {
+        delete [] buffer;
+        return;
+    }
 
-   ReadFile (hFile, buffer, BytesPerSector, &Dummy, NULL);
+    ReadFile (hFile, buffer, BytesPerSector, &Dummy, NULL);
 
-   DWORD Time = GetTickCount();
-   ReadFile (hFile, buffer, BufferSize, &Dummy, NULL);
-   Time = GetTickCount() - Time;
+    DWORD Time = GetTickCount();
+    ReadFile (hFile, buffer, BufferSize, &Dummy, NULL);
+    Time = GetTickCount() - Time;
 
-   CloseHandle (hFile);
+    CloseHandle (hFile);
 
-   delete [] buffer;
+    delete [] buffer;
 
-   if (Time>0)
-   {
-      KBSec  = BufferSize / Time;
-      Faktor = BufferSize * 2000.0 / 300000 / Time;
-   }
+    if (Time>0)
+    {
+        KBSec  = BufferSize / Time;
+        Faktor = BufferSize * 2000.0 / 300000 / Time;
+    }
 
-   CheckupFlags |= CHECKUP_CD;
+    CheckupFlags |= CHECKUP_CD;
 }
 
 //--------------------------------------------------------------------------------------------
@@ -478,45 +478,45 @@ void CSystemCheckup::CheckupCD (const CString &CDFile)
 //--------------------------------------------------------------------------------------------
 void CSystemCheckup::CheckupCPU (void)
 {
-   if (IsPentiumOrBetter())
-   {
-      //------------------------------------------------------------
-      //Die CPU-Geschwindigkeit messen:
-      //-------------------------------------------
-      __int64 Stamp = Read64TimeStampCounter();
+    if (IsPentiumOrBetter())
+    {
+        //------------------------------------------------------------
+        //Die CPU-Geschwindigkeit messen:
+        //-------------------------------------------
+        __int64 Stamp = Read64TimeStampCounter();
 
-      //Eine halbe Sekunde warten:
-      Sleep (500);
+        //Eine halbe Sekunde warten:
+        Sleep (500);
 
-      Stamp=Read64TimeStampCounter()-Stamp;
+        Stamp=Read64TimeStampCounter()-Stamp;
 
-      Megahertz=Stamp*2/1000.0/1000.0;
+        Megahertz=Stamp*2/1000.0/1000.0;
 
-      //------------------------------------------------------------
-      //Haben wir einen MMX?
-      //-------------------------------------------
-      unsigned long CpuIdResult;
+        //------------------------------------------------------------
+        //Haben wir einen MMX?
+        //-------------------------------------------
+        unsigned long CpuIdResult;
 
-      __asm
-      {
-         mov    eax, 1
-         _emit  0x0F
-         _emit  0xA2  //CPUID
+        __asm
+        {
+            mov    eax, 1
+                _emit  0x0F
+                _emit  0xA2  //CPUID
 
-         mov    CpuIdResult, edx
-      }
+                mov    CpuIdResult, edx
+        }
 
-      bMMX         = ((CpuIdResult & (2<<23))!=0);
-      bCoprozessor = ((CpuIdResult & (2<<0))!=0);
-   }
-   else
-   {
-      Megahertz    = 33;
-      bMMX         = 0;
-      bCoprozessor = 0;
-   }
+        bMMX         = ((CpuIdResult & (2<<23))!=0);
+        bCoprozessor = ((CpuIdResult & (2<<0))!=0);
+    }
+    else
+    {
+        Megahertz    = 33;
+        bMMX         = 0;
+        bCoprozessor = 0;
+    }
 
-   CheckupFlags |= CHECKUP_CPU;
+    CheckupFlags |= CHECKUP_CPU;
 }
 
 //--------------------------------------------------------------------------------------------
@@ -524,21 +524,21 @@ void CSystemCheckup::CheckupCPU (void)
 //--------------------------------------------------------------------------------------------
 void CSystemCheckup::CheckupOS (void)
 {
-   OSVERSIONINFO osvi;
+    OSVERSIONINFO osvi;
 
-   memset(&osvi, 0, sizeof(OSVERSIONINFO));
-   osvi.dwOSVersionInfoSize = sizeof (OSVERSIONINFO);
-   GetVersionEx (&osvi);
+    memset(&osvi, 0, sizeof(OSVERSIONINFO));
+    osvi.dwOSVersionInfoSize = sizeof (OSVERSIONINFO);
+    GetVersionEx (&osvi);
 
-   if (osvi.dwPlatformId == VER_PLATFORM_WIN32s)        PlatformID=CHECK_PLATFORM_WIN31;
-   if (osvi.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS) PlatformID=CHECK_PLATFORM_WIN95;
-   if (osvi.dwPlatformId == VER_PLATFORM_WIN32_NT)      PlatformID=CHECK_PLATFORM_WINNT;
+    if (osvi.dwPlatformId == VER_PLATFORM_WIN32s)        PlatformID=CHECK_PLATFORM_WIN31;
+    if (osvi.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS) PlatformID=CHECK_PLATFORM_WIN95;
+    if (osvi.dwPlatformId == VER_PLATFORM_WIN32_NT)      PlatformID=CHECK_PLATFORM_WINNT;
 
-   OSMajorVersion = osvi.dwMajorVersion;
-   OSMinorVersion = osvi.dwMinorVersion;
-   OSBuild        = osvi.dwBuildNumber & 0xFFFF;
+    OSMajorVersion = osvi.dwMajorVersion;
+    OSMinorVersion = osvi.dwMinorVersion;
+    OSBuild        = osvi.dwBuildNumber & 0xFFFF;
 
-   CheckupFlags |= CHECKUP_OS;
+    CheckupFlags |= CHECKUP_OS;
 }
 
 //--------------------------------------------------------------------------------------------
@@ -546,55 +546,55 @@ void CSystemCheckup::CheckupOS (void)
 //--------------------------------------------------------------------------------------------
 void CSystemCheckup::CheckupRAM (void)
 {
-   //------------------------------------------------------------
-   //Speicher vom System:
-   //------------------------------------------------------------
-   MEMORYSTATUS MemoryStatus;
+    //------------------------------------------------------------
+    //Speicher vom System:
+    //------------------------------------------------------------
+    MEMORYSTATUS MemoryStatus;
 
-   MemoryStatus.dwLength=sizeof (MEMORYSTATUS);
+    MemoryStatus.dwLength=sizeof (MEMORYSTATUS);
 
-   GlobalMemoryStatus (&MemoryStatus);
+    GlobalMemoryStatus (&MemoryStatus);
 
-   //Daten übertragen:
-   RealMB    = ((MemoryStatus.dwTotalPhys-1) / 1024 / 1024)+1;
-   VirtualMB = MemoryStatus.dwTotalPageFile / 1024 / 1024;
+    //Daten übertragen:
+    RealMB    = ((MemoryStatus.dwTotalPhys-1) / 1024 / 1024)+1;
+    VirtualMB = MemoryStatus.dwTotalPageFile / 1024 / 1024;
 
-   //------------------------------------------------------------
-   //Speicher von der VGA-karte:
-   //------------------------------------------------------------
-   LPDIRECTDRAW  lpDD;
-   LPDIRECTDRAW2 lpDD2;
+    //------------------------------------------------------------
+    //Speicher von der VGA-karte:
+    //------------------------------------------------------------
+    LPDIRECTDRAW  lpDD;
+    LPDIRECTDRAW2 lpDD2;
 
-   if (!FAILED (DirectDrawCreate(NULL, &lpDD, NULL)))
-   {
-      if (!FAILED(lpDD->QueryInterface(IID_IDirectDraw2, (LPVOID *)&lpDD2)))
-      {
-         DWORD   AvailMemory;
-         DDSCAPS Caps;
-         DWORD   Dummy;
+    if (!FAILED (DirectDrawCreate(NULL, &lpDD, NULL)))
+    {
+        if (!FAILED(lpDD->QueryInterface(IID_IDirectDraw2, (LPVOID *)&lpDD2)))
+        {
+            DWORD   AvailMemory;
+            DDSCAPS Caps;
+            DWORD   Dummy;
 
-         Caps.dwCaps = DDSCAPS_VIDEOMEMORY;
+            Caps.dwCaps = DDSCAPS_VIDEOMEMORY;
 
-         if (!FAILED(lpDD2->GetAvailableVidMem (&Caps, &Dummy, &AvailMemory)))
-         {
-            DDSURFACEDESC DDSurfaceDesc;
-
-            ZeroMemory (&DDSurfaceDesc, sizeof (DDSurfaceDesc));
-            DDSurfaceDesc.dwSize = sizeof (DDSurfaceDesc);
-
-            if (!FAILED (lpDD2->GetDisplayMode(&DDSurfaceDesc)))
+            if (!FAILED(lpDD2->GetAvailableVidMem (&Caps, &Dummy, &AvailMemory)))
             {
-               VgaRamMB = AvailMemory + DDSurfaceDesc.dwHeight*DDSurfaceDesc.lPitch;
+                DDSURFACEDESC DDSurfaceDesc;
 
-               VgaRamMB = (((VgaRamMB/1024)+512) / 1024);
+                ZeroMemory (&DDSurfaceDesc, sizeof (DDSurfaceDesc));
+                DDSurfaceDesc.dwSize = sizeof (DDSurfaceDesc);
+
+                if (!FAILED (lpDD2->GetDisplayMode(&DDSurfaceDesc)))
+                {
+                    VgaRamMB = AvailMemory + DDSurfaceDesc.dwHeight*DDSurfaceDesc.lPitch;
+
+                    VgaRamMB = (((VgaRamMB/1024)+512) / 1024);
+                }
             }
-         }
-         lpDD2->Release();
-      }
-      lpDD->Release();
-   }
+            lpDD2->Release();
+        }
+        lpDD->Release();
+    }
 
-   CheckupFlags |= CHECKUP_RAM;
+    CheckupFlags |= CHECKUP_RAM;
 }
 
 //--------------------------------------------------------------------------------------------
@@ -602,75 +602,75 @@ void CSystemCheckup::CheckupRAM (void)
 //--------------------------------------------------------------------------------------------
 void CSystemCheckup::CheckupDirectX (void)
 {
-   LPDIRECTDRAW lpDD;
-   DWORD        Platform;
-   DWORD        Version;
+    LPDIRECTDRAW lpDD;
+    DWORD        Platform;
+    DWORD        Version;
 
-   //------------------------------------------------------------
-   //Haben wir DirectX?
-   //------------------------------------------------------------
-   HRESULT ddrval = DirectDrawCreate(NULL, &lpDD, NULL);
-   if (ddrval == DD_OK)
-   {
-       lpDD->Release ();
-       bDXInstalled=TRUE;
-   }
-   else bDXInstalled=FALSE;
+    //------------------------------------------------------------
+    //Haben wir DirectX?
+    //------------------------------------------------------------
+    HRESULT ddrval = DirectDrawCreate(NULL, &lpDD, NULL);
+    if (ddrval == DD_OK)
+    {
+        lpDD->Release ();
+        bDXInstalled=TRUE;
+    }
+    else bDXInstalled=FALSE;
 
-   //------------------------------------------------------------
-   //Welche DirectX-Version?
-   //------------------------------------------------------------
-   GetDXVersion (&Version, &Platform);
-   DXVersion=Version/256;
+    //------------------------------------------------------------
+    //Welche DirectX-Version?
+    //------------------------------------------------------------
+    GetDXVersion (&Version, &Platform);
+    DXVersion=Version/256;
 
-   if (Platform==0 || Version==0) bDXInstalled=FALSE;
+    if (Platform==0 || Version==0) bDXInstalled=FALSE;
 
-   //------------------------------------------------------------
-   //Haben wir Midi?
-   //------------------------------------------------------------
-   bMidi=midiOutGetNumDevs()>0;
+    //------------------------------------------------------------
+    //Haben wir Midi?
+    //------------------------------------------------------------
+    bMidi=midiOutGetNumDevs()>0;
 
-   //------------------------------------------------------------
-   //Können wir WAV's wiedergeben?
-   //------------------------------------------------------------
-   LPDIRECTSOUND lpDS;
+    //------------------------------------------------------------
+    //Können wir WAV's wiedergeben?
+    //------------------------------------------------------------
+    LPDIRECTSOUND lpDS;
 
-   HRESULT dsval = DirectSoundCreate (NULL, &lpDS, NULL);
+    HRESULT dsval = DirectSoundCreate (NULL, &lpDS, NULL);
 
-   if (dsval==DS_OK)
-   {
-      bWave=TRUE;
-      lpDS->Release();
-   }
-   else bWave=FALSE;
+    if (dsval==DS_OK)
+    {
+        bWave=TRUE;
+        lpDS->Release();
+    }
+    else bWave=FALSE;
 
-   //------------------------------------------------------------
-   //Haben wir Hardware-Support für 3d-Befehle?
-   //------------------------------------------------------------
-   DDCAPS  Caps;
+    //------------------------------------------------------------
+    //Haben wir Hardware-Support für 3d-Befehle?
+    //------------------------------------------------------------
+    DDCAPS  Caps;
 
-   ddrval = DirectDrawCreate (NULL, &lpDD, NULL);
-   if (ddrval == DD_OK)
-   {
-      memset (&Caps, 0, sizeof (Caps));
-      Caps.dwSize = sizeof (Caps);
+    ddrval = DirectDrawCreate (NULL, &lpDD, NULL);
+    if (ddrval == DD_OK)
+    {
+        memset (&Caps, 0, sizeof (Caps));
+        Caps.dwSize = sizeof (Caps);
 
-      lpDD->GetCaps (&Caps, NULL); 
-   
-      b3D      = (Caps.dwCaps & DDCAPS_3D)!=0;
-      bAlpha   = (Caps.dwCaps & DDCAPS_ALPHA)!=0;
-      bZBuffer = (Caps.dwCaps & DDCAPS_ZBLTS)!=0;
+        lpDD->GetCaps (&Caps, NULL); 
 
-      lpDD->Release ();
-   }
-   else
-   {
-      b3D      = FALSE;
-      bAlpha   = FALSE;
-      bZBuffer = FALSE;
-   }
+        b3D      = (Caps.dwCaps & DDCAPS_3D)!=0;
+        bAlpha   = (Caps.dwCaps & DDCAPS_ALPHA)!=0;
+        bZBuffer = (Caps.dwCaps & DDCAPS_ZBLTS)!=0;
 
-   CheckupFlags |= CHECKUP_DIRECTX;
+        lpDD->Release ();
+    }
+    else
+    {
+        b3D      = FALSE;
+        bAlpha   = FALSE;
+        bZBuffer = FALSE;
+    }
+
+    CheckupFlags |= CHECKUP_DIRECTX;
 }
 
 //--------------------------------------------------------------------------------------------
@@ -678,8 +678,8 @@ void CSystemCheckup::CheckupDirectX (void)
 //--------------------------------------------------------------------------------------------
 void GetDXVersion(LPDWORD pdwDXVersion, LPDWORD pdwDXPlatform)
 {
-   typedef HRESULT (WINAPI *DIRECTDRAWCREATE)(GUID *, LPDIRECTDRAW *, IUnknown *);
-   typedef HRESULT (WINAPI *DIRECTINPUTCREATE)(HINSTANCE, DWORD, LPDIRECTINPUT *, IUnknown *);
+    typedef HRESULT (WINAPI *DIRECTDRAWCREATE)(GUID *, LPDIRECTDRAW *, IUnknown *);
+    typedef HRESULT (WINAPI *DIRECTINPUTCREATE)(HINSTANCE, DWORD, LPDIRECTINPUT *, IUnknown *);
 
     HRESULT		    hr;
     HINSTANCE		    DDHinst = 0;
@@ -698,29 +698,29 @@ void GetDXVersion(LPDWORD pdwDXVersion, LPDWORD pdwDXPlatform)
     osVer.dwOSVersionInfoSize = sizeof(osVer);
     if (!GetVersionEx(&osVer))
     {
-	*pdwDXVersion = 0;
-	*pdwDXPlatform = 0;
-	return;
+        *pdwDXVersion = 0;
+        *pdwDXPlatform = 0;
+        return;
     }
 
     if (osVer.dwPlatformId == VER_PLATFORM_WIN32_NT)
     {
-	*pdwDXPlatform = VER_PLATFORM_WIN32_NT;
-	/*
-	 * NT is easy... NT 4.0 is DX2, 4.0 SP3 is DX3, 5.0 is DX5
-	 * and no DX on earlier versions.
-	 */
-	if (osVer.dwMajorVersion < 4)
-	{
-	    *pdwDXPlatform = 0;	//No DX on NT3.51 or earlier
-	    return;
-	}
-	if (osVer.dwMajorVersion == 4)
-	{
-	    /*
-	     * NT4 up to SP2 is DX2, and SP3 onwards is DX3, so we are at least DX2
-	     */
-	    *pdwDXVersion = 0x200;
+        *pdwDXPlatform = VER_PLATFORM_WIN32_NT;
+        /*
+         * NT is easy... NT 4.0 is DX2, 4.0 SP3 is DX3, 5.0 is DX5
+         * and no DX on earlier versions.
+         */
+        if (osVer.dwMajorVersion < 4)
+        {
+            *pdwDXPlatform = 0;	//No DX on NT3.51 or earlier
+            return;
+        }
+        if (osVer.dwMajorVersion == 4)
+        {
+            /*
+             * NT4 up to SP2 is DX2, and SP3 onwards is DX3, so we are at least DX2
+             */
+            *pdwDXVersion = 0x200;
 
             /*
              * We're not supposed to be able to tell which SP we're on, so check for dinput
@@ -732,11 +732,11 @@ void GetDXVersion(LPDWORD pdwDXVersion, LPDWORD pdwDXPlatform)
                  * No DInput... must be DX2 on NT 4 pre-SP3
                  */
                 OutputDebugString("Couldn't LoadLibrary DInput\r\n");
-	        return;
+                return;
             }
 
             DirectInputCreate = (DIRECTINPUTCREATE)
-                                    GetProcAddress(DIHinst, "DirectInputCreateA");
+                GetProcAddress(DIHinst, "DirectInputCreateA");
             FreeLibrary(DIHinst);
 
             if (DirectInputCreate == 0) 
@@ -745,20 +745,20 @@ void GetDXVersion(LPDWORD pdwDXVersion, LPDWORD pdwDXPlatform)
                  * No DInput... must be pre-SP3 DX2
                  */
                 OutputDebugString("Couldn't GetProcAddress DInputCreate\r\n");
-	        return;
+                return;
             }
 
-	    /*
-	     * It must be NT4, DX2
-	     */
-	    *pdwDXVersion = 0x300; //DX3 on NT4 SP3 or higher
-	    return;
-	}
-	/*
-	 * Else it's NT5 or higher, and it's DX5a or higher:
-	 */
-	*pdwDXVersion = 0x501; //DX5a on NT5
-	return;
+            /*
+             * It must be NT4, DX2
+             */
+            *pdwDXVersion = 0x300; //DX3 on NT4 SP3 or higher
+            return;
+        }
+        /*
+         * Else it's NT5 or higher, and it's DX5a or higher:
+         */
+        *pdwDXVersion = 0x501; //DX5a on NT5
+        return;
     }
 
     /*
@@ -771,8 +771,8 @@ void GetDXVersion(LPDWORD pdwDXVersion, LPDWORD pdwDXPlatform)
      */
     if ( (osVer.dwBuildNumber & 0xffff) > 1353) //Check for higher than developer release
     {
-	*pdwDXVersion = 0x501; //DX5a on Memphis or higher
-	return;
+        *pdwDXVersion = 0x501; //DX5a on Memphis or higher
+        return;
     }
 
     /*
@@ -782,34 +782,34 @@ void GetDXVersion(LPDWORD pdwDXVersion, LPDWORD pdwDXPlatform)
     DDHinst = LoadLibrary("DDRAW.DLL");
     if (DDHinst == 0) 
     {
-	*pdwDXVersion = 0;
-	*pdwDXPlatform = 0;
-	FreeLibrary(DDHinst);
-	return;
+        *pdwDXVersion = 0;
+        *pdwDXPlatform = 0;
+        FreeLibrary(DDHinst);
+        return;
     }
 
     /*
      *  See if we can create the DirectDraw object.
      */
     DirectDrawCreate = (DIRECTDRAWCREATE)
-                            GetProcAddress(DDHinst, "DirectDrawCreate");
+        GetProcAddress(DDHinst, "DirectDrawCreate");
     if (DirectDrawCreate == 0) 
     {
-	*pdwDXVersion = 0;
-	*pdwDXPlatform = 0;
-	FreeLibrary(DDHinst);
+        *pdwDXVersion = 0;
+        *pdwDXPlatform = 0;
+        FreeLibrary(DDHinst);
         OutputDebugString("Couldn't LoadLibrary DDraw\r\n");
-	return;
+        return;
     }
 
     hr = DirectDrawCreate(NULL, &pDDraw, NULL);
     if (FAILED(hr)) 
     {
-	*pdwDXVersion = 0;
-	*pdwDXPlatform = 0;
-	FreeLibrary(DDHinst);
+        *pdwDXVersion = 0;
+        *pdwDXPlatform = 0;
+        FreeLibrary(DDHinst);
         OutputDebugString("Couldn't create DDraw\r\n");
-	return;
+        return;
     }
 
     /*
@@ -823,13 +823,13 @@ void GetDXVersion(LPDWORD pdwDXVersion, LPDWORD pdwDXPlatform)
     hr = pDDraw->QueryInterface(IID_IDirectDraw2, (LPVOID *)&pDDraw2);
     if (FAILED(hr)) 
     {
-	/*
-	 * No IDirectDraw2 exists... must be DX1
-	 */
-	pDDraw->Release();
-	FreeLibrary(DDHinst);
+        /*
+         * No IDirectDraw2 exists... must be DX1
+         */
+        pDDraw->Release();
+        FreeLibrary(DDHinst);
         OutputDebugString("Couldn't QI DDraw2\r\n");
-	return;
+        return;
     }
     /*
      * IDirectDraw2 exists. We must be at least DX2
@@ -847,13 +847,13 @@ void GetDXVersion(LPDWORD pdwDXVersion, LPDWORD pdwDXPlatform)
          * No DInput... must be DX2
          */
         OutputDebugString("Couldn't LoadLibrary DInput\r\n");
-	pDDraw->Release();
-	FreeLibrary(DDHinst);
-	return;
+        pDDraw->Release();
+        FreeLibrary(DDHinst);
+        return;
     }
 
     DirectInputCreate = (DIRECTINPUTCREATE)
-                            GetProcAddress(DIHinst, "DirectInputCreateA");
+        GetProcAddress(DIHinst, "DirectInputCreateA");
     FreeLibrary(DIHinst);
 
     if (DirectInputCreate == 0) 
@@ -861,10 +861,10 @@ void GetDXVersion(LPDWORD pdwDXVersion, LPDWORD pdwDXPlatform)
         /*
          * No DInput... must be DX2
          */
-	FreeLibrary(DDHinst);
-	pDDraw->Release();
+        FreeLibrary(DDHinst);
+        pDDraw->Release();
         OutputDebugString("Couldn't GetProcAddress DInputCreate\r\n");
-	return;
+        return;
     }
 
     /*
@@ -890,27 +890,27 @@ void GetDXVersion(LPDWORD pdwDXVersion, LPDWORD pdwDXPlatform)
     hr = pDDraw->SetCooperativeLevel(NULL,DDSCL_NORMAL);
     if (FAILED(hr)) 
     {
-	/*
-	 * Failure. This means DDraw isn't properly installed.
-	 */
-	pDDraw->Release();
-	FreeLibrary(DDHinst);
-	*pdwDXVersion = 0;
+        /*
+         * Failure. This means DDraw isn't properly installed.
+         */
+        pDDraw->Release();
+        FreeLibrary(DDHinst);
+        *pdwDXVersion = 0;
         OutputDebugString("Couldn't Set coop level\r\n");
-	return;
+        return;
     }
 
     hr = pDDraw->CreateSurface(&desc, &pSurf, NULL);
     if (FAILED(hr)) 
     {
-	/*
-	 * Failure. This means DDraw isn't properly installed.
-	 */
-	pDDraw->Release();
-	FreeLibrary(DDHinst);
-	*pdwDXVersion = 0;
+        /*
+         * Failure. This means DDraw isn't properly installed.
+         */
+        pDDraw->Release();
+        FreeLibrary(DDHinst);
+        *pdwDXVersion = 0;
         OutputDebugString("Couldn't CreateSurface\r\n");
-	return;
+        return;
     }
 
     /*

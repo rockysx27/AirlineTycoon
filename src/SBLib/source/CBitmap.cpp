@@ -98,7 +98,7 @@ ULONG SB_CBitmapCore::Line(SLONG x1, SLONG y1, SLONG x2, SLONG y2, SB_Hardwareco
         dword color = (dword)hwcolor;
         SDL_GetColorKey(lpDDSurface, &key);
         SDL_SetRenderDrawColor(lpDD, (color & 0xFF0000) >> 16, (color & 0xFF00) >> 8, color & 0xFF,
-            color == key ? SDL_ALPHA_TRANSPARENT : SDL_ALPHA_OPAQUE);
+                color == key ? SDL_ALPHA_TRANSPARENT : SDL_ALPHA_OPAQUE);
         SDL_RenderDrawLine(lpDD, x1, y1, x2, y2);
     }
 
@@ -194,8 +194,8 @@ void SB_CBitmapCore::SetClipRect(const RECT* pRect)
 
 void SB_CBitmapCore::SetClipRect(const CRect& rect)
 {
-   SDL_Rect clip = { rect.left, rect.top, rect.Width(), rect.Height() };
-   SDL_SetClipRect(lpDDSurface, &clip);
+    SDL_Rect clip = { rect.left, rect.top, rect.Width(), rect.Height() };
+    SDL_SetClipRect(lpDDSurface, &clip);
 }
 
 SB_Hardwarecolor SB_CBitmapCore::GetHardwarecolor(ULONG color)
@@ -239,7 +239,7 @@ ULONG SB_CBitmapCore::Clear(SB_Hardwarecolor hwcolor, const RECT* pRect)
         dword key;
         SDL_GetColorKey(lpDDSurface, &key);
         SDL_SetRenderDrawColor(lpDD, (color & 0xFF0000) >> 16, (color & 0xFF00) >> 8, color & 0xFF,
-            color == key ? SDL_ALPHA_TRANSPARENT : SDL_ALPHA_OPAQUE);
+                color == key ? SDL_ALPHA_TRANSPARENT : SDL_ALPHA_OPAQUE);
     }
 
     if (pRect)
@@ -356,31 +356,31 @@ SB_CPrimaryBitmap::~SB_CPrimaryBitmap()
 
 bool SB_CPrimaryBitmap::FastClip(CRect clipRect, POINT* pPoint, RECT* pRect)
 {
-   POINT offset;
-   offset.x = 0;
-   if (pRect->top <= 0)
-      offset.y = 0;
-   else
-      offset.y = pRect->top;
-   if (offset.x || offset.y)
-      OffsetRect(pRect, -offset.x, -offset.y);
-   if (pRect->right + pPoint->x >= clipRect.right)
-      pRect->right = clipRect.right - pPoint->x;
-   if (pPoint->x < clipRect.left)
-   {
-      pRect->left += clipRect.left - pPoint->x;
-      pPoint->x = clipRect.left;
-   }
-   if (pRect->bottom + pPoint->y > clipRect.bottom)
-      pRect->bottom = clipRect.bottom - pPoint->y;
-   if (pPoint->y < clipRect.top)
-   {
-      pRect->top += clipRect.top - pPoint->y;
-      pPoint->y = clipRect.top;
-   }
-   if (offset.x || offset.y)
-      OffsetRect(pRect, offset.x, offset.y);
-   return pRect->right - pRect->left > 0 && pRect->bottom - pRect->top > 0;
+    POINT offset;
+    offset.x = 0;
+    if (pRect->top <= 0)
+        offset.y = 0;
+    else
+        offset.y = pRect->top;
+    if (offset.x || offset.y)
+        OffsetRect(pRect, -offset.x, -offset.y);
+    if (pRect->right + pPoint->x >= clipRect.right)
+        pRect->right = clipRect.right - pPoint->x;
+    if (pPoint->x < clipRect.left)
+    {
+        pRect->left += clipRect.left - pPoint->x;
+        pPoint->x = clipRect.left;
+    }
+    if (pRect->bottom + pPoint->y > clipRect.bottom)
+        pRect->bottom = clipRect.bottom - pPoint->y;
+    if (pPoint->y < clipRect.top)
+    {
+        pRect->top += clipRect.top - pPoint->y;
+        pPoint->y = clipRect.top;
+    }
+    if (offset.x || offset.y)
+        OffsetRect(pRect, offset.x, offset.y);
+    return pRect->right - pRect->left > 0 && pRect->bottom - pRect->top > 0;
 }
 
 SLONG SB_CPrimaryBitmap::Flip()
@@ -487,7 +487,7 @@ ULONG SB_CPrimaryBitmap::Release()
 SB_CBitmapKey::SB_CBitmapKey(class SB_CBitmapCore& core)
     : Surface(core.lpDDSurface)
     , Bitmap(Surface->pixels)
-    , lPitch(Surface->pitch)
+      , lPitch(Surface->pitch)
 {
     SDL_LockSurface(Surface);
 }
