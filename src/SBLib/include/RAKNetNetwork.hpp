@@ -3,22 +3,24 @@
 #include "network.h"
 #include "RakPeerInterface.h"
 #include "RakNetTypes.h"
-#include "RAKNetRoomCallbacks.hpp"
-#include "rooms-plugin/RoomsPlugin.h"
-#include "SbLib.h"
+#include "rooms-plugin\RoomsPlugin.h"
 
 #define RAKNET_TYPE_DIRECT_JOIN "Direct-IP  Join"
 #define RAKNET_TYPE_DIRECT_HOST "Direct-IP  Host"
 #define RAKNET_TYPE_NAT_HOST "RAKNet NAT Host"
 #define RAKNET_TYPE_NAT_JOIN "RAKNet NAT Join"
 
+constexpr auto MASTER_SERVER_GAME_ID = "ATD";
 constexpr auto MASTER_SERVER_PORT = 60013;
+constexpr auto MASTER_NAT_SERVER_PORT = 60014;
 constexpr auto MASTER_SERVER_ADDRESS = "127.0.0.1";
 
 #pragma pack(push, 1)
 namespace RakNet {
 class NatPunchthroughClient;
 }
+
+class RAKNetRoomCallbacks;
 
 struct RAKNetworkPeer {
     BYTE netID;
@@ -58,6 +60,8 @@ class RAKNetNetwork : public BaseNetworkType, public IServerSearchable {
 
     // Server Searchable:
 
+    void LoginMasterServer();
+    void RetrieveRoomList();
     SBList<SBStr> *GetSessionListAsync() override;
     bool StartGetSessionListAsync() override;
     bool JoinSession(const SBStr &sessionName, SBStr nickname) override;
@@ -76,11 +80,14 @@ class RAKNetNetwork : public BaseNetworkType, public IServerSearchable {
     RakNet::NatPunchthroughClient *mNATPlugin = nullptr;
     bool isNATMode = false;
 
+    SBStr *test = nullptr;
+
     SBList<RakNet::Packet *> mPackets;
 
-    RakNet::RoomsPlugin *mRoomsPluginClient{};
-    RakNet::RakPeerInterface *mServerBrowserPeer{};
-    RAKNetRoomCallbacks mRoomCallbacks;
+    RakNet::RoomsPlugin *mRoomsPluginClient = nullptr;
+    RakNet::RakPeerInterface *mServerBrowserPeer = nullptr;
+    RAKNetRoomCallbacks *mRoomCallbacks;
+    bool mIsConnectingToMaster = false;
 
     /// <summary>
     /// Starts to retrieve a list of clients that are connected to the specified master server
@@ -89,6 +96,12 @@ class RAKNetNetwork : public BaseNetworkType, public IServerSearchable {
     /// <param name="serverGuid">The GUID of the master server</param>
     void RequestHostedClients(RakNet::RakNetGUID serverGuid);
 
+    /// <summary>
+    /// Connects blocking to the master server and on successful connection will attempt a login with the username
+    /// </summary>
+    /// <returns>true - on success, otherwise false</returns>
+    bool ConnectToMasterServer();
+
     // Server Search network elements:
-    RakNet::RakPeerInterface *mRoomClient{};
+    RakNet::RakPeerInterface *mRoomClient = nullptr;
 };
