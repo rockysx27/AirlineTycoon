@@ -490,6 +490,10 @@ void CStdRaum::ProcessEvent(const SDL_Event &event, const CPoint &position) {
         // OnChar(upper ? toupper(test) : event.key.keysym.sym,
         //   event.key.repeat, nFlags);
     } break;
+    case SDL_KEYUP: {
+        UINT nFlags = event.key.keysym.scancode | ((SDL_GetModState() & KMOD_LALT) << 5);
+        OnKeyUp(KeycodeToUpper(event.key.keysym.sym), event.key.repeat, nFlags);
+    } break;
     case SDL_MOUSEBUTTONDOWN: {
         if (event.button.button == SDL_BUTTON_LEFT) {
             if (event.button.clicks == 2) {
