@@ -41,7 +41,8 @@ struct SBNetworkPeer {
 
 enum SBSessionEnum { SBNETWORK_SESSION_DEFAULT, SBNETWORK_SESSION_SEARCHING, SBNETWORK_SESSION_MASTER, SBNETWORK_SESSION_CLIENT, SBNETWORK_SESSION_FINISHED };
 
-enum SBTypeEnum {
+enum SBProviderEnum
+{
     SBNETWORK_ENET,
 };
 
@@ -87,7 +88,7 @@ class SBNetwork {
     SBList<SBSessionInfo> mSessionInfo;
     SBList<SBNetworkPlayer> mPlayers;
 
-    SBTypeEnum mType;
+    SBProviderEnum mType;
     unsigned int mSearchTime;
     ENetAddress mServer;
     ENetHost *mHost;
@@ -117,11 +118,13 @@ class SBNetwork {
     bool CreateSession(const SBStr &, SBNetworkCreation *);
     void CloseSession();
     ULONG GetLocalPlayerID();
-    SBList<SBStr> *GetConnectionList();
-    SBList<SBStr> *GetSessionListAsync();
+    SBList<SBStr>* GetConnectionList();
+    SBList<std::shared_ptr<SBStr>>* GetSessionListAsync();
     bool StartGetSessionListAsync();
-    static SLONG GetProviderID(char *);
-    void SetProvider(SBTypeEnum);
+    static SBProviderEnum GetProviderID(char*);
+    SBProviderEnum GetSelectedProviderID() const;
+    SBCapabilitiesFlags GetSelectedProviderCapabilities() const;
+    void SetProvider(SBProviderEnum);
     bool IsEnumSessionFinished() const;
     bool IsInSession() const;
     bool IsInitialized() const;
@@ -134,9 +137,9 @@ class SBNetwork {
     SBList<SBStr> mConnections;
 
     SBMultiplayerStateEnum mState;
-
-    BaseNetworkType *mNetwork;
-    SBTypeEnum mType;
+	
+	BaseNetworkType *mNetwork;
+    SBProviderEnum mType;
 };
 
 #endif

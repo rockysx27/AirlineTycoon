@@ -308,15 +308,17 @@ void RoomQuery::Serialize(bool writeToBitstream, RakNet::BitStream *bitStream) {
     }
 }
 // ----------------------------  RoomCreationParameters  ----------------------------
-void NetworkedRoomCreationParameters::Serialize(bool writeToBitstream, RakNet::BitStream *bitStream) {
-    slots.Serialize(writeToBitstream, bitStream);
-    bitStream->Serialize(writeToBitstream, hiddenFromSearches);
-    bitStream->Serialize(writeToBitstream, destroyOnModeratorLeave);
-    bitStream->Serialize(writeToBitstream, autoLockReadyStatus);
-    bitStream->Serialize(writeToBitstream, inviteToRoomPermission);
-    bitStream->Serialize(writeToBitstream, inviteToSpectatorSlotPermission);
-    bitStream->Serialize(writeToBitstream, clearInvitesOnNewModerator);
-    bitStream->Serialize(writeToBitstream, roomName);
+void NetworkedRoomCreationParameters::Serialize(bool writeToBitstream, RakNet::BitStream *bitStream)
+{
+	slots.Serialize(writeToBitstream, bitStream);
+	bitStream->Serialize(writeToBitstream,hiddenFromSearches);
+	bitStream->Serialize(writeToBitstream,destroyOnModeratorLeave);
+	bitStream->Serialize(writeToBitstream,autoLockReadyStatus);
+	bitStream->Serialize(writeToBitstream,inviteToRoomPermission);
+	bitStream->Serialize(writeToBitstream,inviteToSpectatorSlotPermission);
+	bitStream->Serialize(writeToBitstream,clearInvitesOnNewModerator);
+	bitStream->Serialize(writeToBitstream,roomName);
+	bitStream->Serialize(writeToBitstream,password);
 }
 
 const char *NetworkedRoomCreationParameters::SendInvitePermissionToEnum(SendInvitePermission e) {

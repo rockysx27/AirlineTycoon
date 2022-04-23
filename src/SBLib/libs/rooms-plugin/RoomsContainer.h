@@ -160,32 +160,27 @@ struct RoomMemberDescriptor {
     void Serialize(bool writeToBitstream, RakNet::BitStream *bitStream);
 };
 
-struct NetworkedRoomCreationParameters {
-    NetworkedRoomCreationParameters() {
-        hiddenFromSearches = false;
-        destroyOnModeratorLeave = false;
-        autoLockReadyStatus = false;
-        inviteToRoomPermission = INVITE_MODE_ANYONE_CAN_INVITE;
-        inviteToSpectatorSlotPermission = INVITE_MODE_ANYONE_CAN_INVITE;
-        clearInvitesOnNewModerator = false;
-    }
-    // Checked by Validate
-    Slots slots;
-    bool hiddenFromSearches;
-    bool destroyOnModeratorLeave;
-    bool autoLockReadyStatus; // When everyone is ready and (the room is full or the room is locked), don't allow users to set unready.
-    enum SendInvitePermission {
-        INVITE_MODE_ANYONE_CAN_INVITE,
-        INVITE_MODE_MODERATOR_CAN_INVITE,
-        INVITE_MODE_PUBLIC_SLOTS_CAN_INVITE,
-        INVITE_MODE_RESERVED_SLOTS_CAN_INVITE,
-        INVITE_MODE_SPECTATOR_SLOTS_CAN_INVITE,
-        INVITE_MODE_MODERATOR_OR_PUBLIC_SLOTS_CAN_INVITE,
-        INVITE_MODE_MODERATOR_OR_PUBLIC_OR_RESERVED_SLOTS_CAN_INVITE,
-    } inviteToRoomPermission,
-        inviteToSpectatorSlotPermission;
-    bool clearInvitesOnNewModerator; // Leave or change
-    RakNet::RakString roomName;
+struct NetworkedRoomCreationParameters
+{
+	NetworkedRoomCreationParameters() {hiddenFromSearches=false; destroyOnModeratorLeave=false; autoLockReadyStatus=false; inviteToRoomPermission=INVITE_MODE_ANYONE_CAN_INVITE; inviteToSpectatorSlotPermission=INVITE_MODE_ANYONE_CAN_INVITE; clearInvitesOnNewModerator=false;}
+	// Checked by Validate
+	Slots slots;
+	bool hiddenFromSearches;
+	bool destroyOnModeratorLeave;
+	bool autoLockReadyStatus; // When everyone is ready and (the room is full or the room is locked), don't allow users to set unready.
+	enum SendInvitePermission
+	{
+		INVITE_MODE_ANYONE_CAN_INVITE,
+		INVITE_MODE_MODERATOR_CAN_INVITE,
+		INVITE_MODE_PUBLIC_SLOTS_CAN_INVITE,
+		INVITE_MODE_RESERVED_SLOTS_CAN_INVITE,
+		INVITE_MODE_SPECTATOR_SLOTS_CAN_INVITE,
+		INVITE_MODE_MODERATOR_OR_PUBLIC_SLOTS_CAN_INVITE,
+		INVITE_MODE_MODERATOR_OR_PUBLIC_OR_RESERVED_SLOTS_CAN_INVITE,
+	} inviteToRoomPermission, inviteToSpectatorSlotPermission;
+	bool clearInvitesOnNewModerator; // Leave or change
+	RakNet::RakString roomName;
+	RakNet::RakString password;
 
     void Serialize(bool writeToBitstream, RakNet::BitStream *bitStream);
     static const char *SendInvitePermissionToEnum(SendInvitePermission e);

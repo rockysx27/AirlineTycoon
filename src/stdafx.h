@@ -18,6 +18,7 @@
 #include "stdstring.h"
 typedef CStdStringA CString;
 #include "defines.h"
+#include "helper.h"
 
 #include "TeakLibW.h"
 #include "sbl.h"

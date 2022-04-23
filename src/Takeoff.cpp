@@ -1974,6 +1974,7 @@ void CTakeOffApp::GameLoop(void * /*unused*/) {
             } else {
                 RefreshNeccessary = TRUE;
                 Sim.TickerTime = AtGetTime() >> 5;
+                PumpBroadcastBitmap(true);
             } // Not In Game ==> Always refresh
 
             // Bildschirm neu zeichnen:

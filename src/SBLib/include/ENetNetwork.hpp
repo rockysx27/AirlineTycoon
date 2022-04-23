@@ -32,33 +32,37 @@ struct ENetSessionInfo : SBSessionInfo {
 };
 
 class ENetNetwork : public BaseNetworkType, public IServerSearchable {
-  public:
-    ENetNetwork();
-    ~ENetNetwork() override;
-    void Initialize() override;
-    SLONG GetMessageCount() override;
-    bool Connect(const char *host) override;
-    void Disconnect() override;
-    bool CreateSession(SBNetworkCreation *sessionSettings) override;
-    void CloseSession() override;
-    ULONG GetLocalPlayerID() override;
-    bool IsSessionFinished() override;
-    bool IsInSession() override;
-    bool Send(BUFFER<UBYTE> &buffer, ULONG length, ULONG peerID, bool compression) override;
-    bool Receive(UBYTE **buffer, ULONG &length) override;
-    SBList<SBNetworkPlayer *> *GetAllPlayers() override;
-    bool IsServerSearchable() override;
-    IServerSearchable *GetServerSearcher() override;
+public:
+	ENetNetwork();
+	~ENetNetwork() override;
+	void Initialize() override;
+	SLONG GetMessageCount() override;
+	bool Connect(const char* address) override;
+	void Disconnect() override;
+	bool CreateSession(SBNetworkCreation* sessionSettings) override;
+	void CloseSession() override;
+	ULONG GetLocalPlayerID() override;
+	bool IsSessionFinished() override;
+	bool IsInSession() override;
+	bool Send(BUFFER<UBYTE>& buffer, ULONG length, ULONG peerID, bool compression) override;
+	bool Receive(UBYTE** buffer, ULONG& length) override;
+	SBList<SBNetworkPlayer*>* GetAllPlayers() override;
+	SBCapabilitiesFlags GetCapabilities() override;
+	bool IsServerSearchable() override;
+	IServerSearchable* GetServerSearcher() override;
 
-    // IServerSearchable:
-    SBList<SBStr> *GetSessionListAsync() override;
-    bool StartGetSessionListAsync() override;
-    bool JoinSession(const SBStr &, SBStr) override;
-
-  private:
-    ENetAddress mServer;
-    ENetHost *mHost;
-    ENetPeer *mMaster;
-    ENetSocket mSocket;
-    SBList<ENetPacket *> mPackets;
+	//IServerSearchable:
+	SBList<std::shared_ptr<SBStr>>* GetSessionListAsync() override;
+	bool StartGetSessionListAsync() override;
+	bool JoinSession(const SBStr&, SBStr) override;
+private:
+	ENetAddress mServer;
+	ENetHost* mHost;
+	ENetPeer* mMaster;
+	ENetSocket mSocket;
+	SBList<ENetPacket*> mPackets;
+	
+	SBList<std::shared_ptr<SBStr>> mSessions;
+	SBList<SBSessionInfo*> mSessionInfo;
+	unsigned int mSearchTime = 0;
 };

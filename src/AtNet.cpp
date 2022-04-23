@@ -97,9 +97,8 @@ void DisplayBroadcastMessage(CString str, SLONG FromPlayer) {
     SLONG oldy = 0;
     SLONG offy = 0;
 
-    if (Sim.bNetwork == 0) {
-        return;
-    }
+   //if (!Sim.bNetwork)
+   //   return;
 
     if (FromPlayer != Sim.localPlayer) {
         static SLONG LastTime = 0;
@@ -115,9 +114,9 @@ void DisplayBroadcastMessage(CString str, SLONG FromPlayer) {
         str = Sim.Players.Players[FromPlayer].NameX + ": " + str;
     }
 
-    sy = gBroadcastBm.TryPrintAt(str, FontSmallBlack, TEC_FONT_LEFT, XY(10, 10), XY(320, 1000));
-    oldy = gBroadcastBm.Size.y;
-    offy = gBroadcastBm.Size.y;
+   sy   = gBroadcastBm.TryPrintAt (str.c_str(), FontSmallBlack, TEC_FONT_LEFT, XY(10, 10), XY(320, 1000));
+   oldy = gBroadcastBm.Size.y;
+   offy = gBroadcastBm.Size.y;
 
     if (oldy < 10) {
         oldy = 10;
@@ -150,7 +149,7 @@ void DisplayBroadcastMessage(CString str, SLONG FromPlayer) {
         gBroadcastBm.BlitFrom(TempBm, 0, -(TempBm.Size.y - 220));
     }
 
-    gBroadcastTimeout = 60;
+   gBroadcastTimeout = 600;
 }
 
 //--------------------------------------------------------------------------------------------
@@ -158,10 +157,11 @@ void DisplayBroadcastMessage(CString str, SLONG FromPlayer) {
 //  bJustForEmergency : if true, then this call will only be used it this function hasn't been
 //                      called normally for half a second
 //--------------------------------------------------------------------------------------------
-void PumpBroadcastBitmap(bool bJustForEmergency) {
-    if ((Sim.bNetwork == 0) && gBroadcastBm.Size.y == 0) {
-        return;
-    }
+void PumpBroadcastBitmap (bool bJustForEmergency)
+{
+   if (gBroadcastBm.Size.y==0) {
+      return;
+   }
 
     static SLONG LastTimeCalled = 0;
 
