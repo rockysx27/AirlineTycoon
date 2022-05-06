@@ -1763,8 +1763,8 @@ void GameFrame::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) {
         }
 
         // NOTFAIR
-        if (TypeBuffer[19] == 'N' && TypeBuffer[20] == 'O' && TypeBuffer[21] == 'T' && TypeBuffer[22] == 'F' && TypeBuffer[23] == 'A' &&
-            TypeBuffer[24] == 'I' && TypeBuffer[25] == 'R') {
+        if (TypeBuffer[23] == 'N' && TypeBuffer[24] == 'O' && TypeBuffer[25] == 'T' && TypeBuffer[26] == 'F' && TypeBuffer[27] == 'A' &&
+            TypeBuffer[28] == 'I' && TypeBuffer[29] == 'R') {
             if ((Sim.bAllowCheating != 0) || (Sim.bNetwork == 0)) {
                 Sim.bCheatedSession = 1;
 
