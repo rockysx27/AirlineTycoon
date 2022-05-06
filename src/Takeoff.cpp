@@ -221,7 +221,7 @@ BOOL CTakeOffApp::InitInstance(int argc, char *argv[]) {
     //#define LANGUAGE_10     19             //V-noch frei
 
     DoAppPath();
-    gLanguage = LANGUAGE_E;
+    gLanguage = LANGUAGE_D;
     std::ifstream ifil = std::ifstream(AppPath + "misc/sabbel.dat");
     if (ifil.is_open()) {
         ifil.read(reinterpret_cast<char *>(&gLanguage), sizeof(gLanguage));
@@ -2200,7 +2200,7 @@ void CTakeOffApp::LadeWeitereStandardTexte() {
 
     StandardTexte.UpdateText(TOKEN_EXPERT, 3404, "E::OrdersD::Auftr\xE4ge");
     StandardTexte.AddText(TOKEN_EXPERT, 10000, "E::Kerosine for planeD::Kerosinkauf Flugzeug");
-    StandardTexte.AddText(TOKEN_EXPERT, 10001, "E::Kerosine for stock::Kerosinkauf Vorrat");
+    StandardTexte.AddText(TOKEN_EXPERT, 10001, "E::Kerosine for stockD::Kerosinkauf Vorrat");
     StandardTexte.AddText(TOKEN_EXPERT, 10002, "E::Meals for passengersD::Essen f\xFCr Passagiere");
     StandardTexte.AddText(TOKEN_EXPERT, 10003, "E::Plane rework\r\ncargo/passengersD::Flugzeugumr\xFCstung\r\nFracht/Passagiere");
     StandardTexte.AddText(TOKEN_EXPERT, 10004, "E::Current loansD::Aktuelle Kredite");
@@ -2234,10 +2234,10 @@ void CTakeOffApp::LadeWeitereStandardTexte() {
     StandardTexte.AddText(TOKEN_EXPERT, 10031, "E::Buying of routesD::Kauf von Routen");
     StandardTexte.AddText(TOKEN_EXPERT, 10032, "E::Buying of gatesD::Kauf von Gates");
     StandardTexte.AddText(TOKEN_EXPERT, 10033, "E::Kerosene tanksD::Kerosintanks");
-    StandardTexte.AddText(TOKEN_EXPERT, 10034, "E::Branch office\r\nrental feesD::Mieten für\r\nNiederlassungen");
-    StandardTexte.AddText(TOKEN_EXPERT, 10035, "E::Route rental feesD::Mieten für Routen");
-    StandardTexte.AddText(TOKEN_EXPERT, 10036, "E::Credit interestD::HabenZinsen");
-    StandardTexte.AddText(TOKEN_EXPERT, 10037, "E::Debit interestD::SollZinsen");
+    StandardTexte.AddText(TOKEN_EXPERT, 10034, "E::Branch office\r\nrental feesD::Mieten f\xFCr\r\nNiederlassungen");
+    StandardTexte.AddText(TOKEN_EXPERT, 10035, "E::Route rental feesD::Mieten f\xFCr Routen");
+    StandardTexte.AddText(TOKEN_EXPERT, 10036, "E::Credit interestD::Habenzinsen");
+    StandardTexte.AddText(TOKEN_EXPERT, 10037, "E::Debit interestD::Sollzinsen");
     StandardTexte.AddText(TOKEN_EXPERT, 10038, "E::Dividend receivedD::Dividende erhalten");
     StandardTexte.AddText(TOKEN_EXPERT, 10039, "E::Dividend paidD::Dividende gezahlt");
 
@@ -2297,7 +2297,7 @@ void CTakeOffApp::LadeWeitereStandardTexte() {
         DialogTexte.UpdateText(TOKEN_ARAB, 691+i, bprintf("[[P1\\MA\\141]]%li St\xFC""ck (=%%s \x80)", tmpList[i]));
     }*/
     for (SLONG i = 0; i < 4; ++i) {
-        DialogTexte.UpdateText(TOKEN_ARAB, 900+i, bprintf("E::[[P1\\AA\\900]]I will take the one with %li gallons (\x24 %li).D::[[P1\\AA\\900]]Ich nehme den mit %lil (%li \x80).", TankSize[i], TankPrice[i]));
+        DialogTexte.UpdateText(TOKEN_ARAB, 900+i, bprintf("E::[[P1\\AA\\900]]I will take the one with %li gallons (\x24 %li).D::[[P1\\AA\\900]]Ich nehme den mit %lil (%li \x80).", TankSize[i], TankPrice[i], TankSize[i], TankPrice[i]));
     }
 
     StandardTexte.AddText(TOKEN_JOBS, 2003, "E::Route advisorD::Routenberaterin");
