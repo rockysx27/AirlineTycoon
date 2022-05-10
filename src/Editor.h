@@ -28,6 +28,8 @@ class CPlanePartRelation {
     const char *RulesOutSlots; // Und diese Slots werden blockiert
 
   public:
+    CPlanePartRelation() = default;
+
     CPlanePartRelation(SLONG _Id, ULONG _FromBuildIndex, ULONG _ToBuildIndex, XY _Offset2d, XY _Offset3d, SLONG _Note1, SLONG _Note2, SLONG _Note3, SLONG _zAdd,
                        SLONG _Noise, const char *_Slot, const char *_RulesOutSlots) {
         Id = _Id;
@@ -115,6 +117,8 @@ class CPlaneBuilds : public ALBUM_V<CPlaneBuild> {
 class CEditor : public CStdRaum {
     // Construction
   public:
+    static void generateStaticData();
+
     CEditor(BOOL bHandy, ULONG PlayerNum);
 
     // Data
