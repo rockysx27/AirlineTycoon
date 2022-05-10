@@ -351,10 +351,10 @@ CTafelData TafelData;
 CAuftraege LastMinuteAuftraege;           // Die hängen gerade aus
 CAuftraege ReisebueroAuftraege;           // Die hängen gerade aus
 CFrachten gFrachten;                      // Die Frachtaufträge
-CAuftraege AuslandsAuftraege[MAX_CITIES]; // Aus dem Ausland
-SLONG AuslandsRefill[MAX_CITIES];         // Aus dem Ausland
-CFrachten AuslandsFrachten[MAX_CITIES];   // Aus dem Ausland
-SLONG AuslandsFRefill[MAX_CITIES];        // Aus dem Ausland
+std::vector<CAuftraege> AuslandsAuftraege; // Aus dem Ausland
+std::vector<SLONG> AuslandsRefill;         // Aus dem Ausland
+std::vector<CFrachten> AuslandsFrachten;   // Aus dem Ausland
+std::vector<SLONG> AuslandsFRefill;        // Aus dem Ausland
 
 //--------------------------------------------------------------------------------------------
 // Die Soundeffekte:
