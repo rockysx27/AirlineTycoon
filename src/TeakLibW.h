@@ -16,7 +16,7 @@ extern const char *ExcNotImplemented;
 extern const char *ExcOutOfMem;
 extern const char *ExcStrangeMem;
 
-#define FNL 0, 0
+#define FNL __FILE__, __LINE__
 
 extern const char *ExcAlbumInsert;
 extern const char *ExcAlbumFind;

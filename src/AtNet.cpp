@@ -226,6 +226,7 @@ void PumpNetwork() {
             ULONG Par2 = 0;
 
             Message >> MessageType;
+            AT_Log_I("Net", "Received net event: %s", Translate_ATNET(MessageType));
 
             switch (MessageType) {
             case ATNET_SETSPEED:

@@ -5,6 +5,8 @@
 #include "AtNet.h"
 #include "BotHelper.h"
 
+#define AT_Log(a,...) AT_Log_I("Schedule", a, __VA_ARGS__)
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE

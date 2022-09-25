@@ -279,6 +279,7 @@ void NewGamePopup::Konstruktor(BOOL /*bHandy*/, SLONG /*PlayerNum*/) {
     VersionFont.Load(lpDD, const_cast<char *>((LPCTSTR)FullFilename("stat_1.mcf", MiscPath)));
 
     SDL_ShowWindow(FrameWnd->m_hWnd);
+    SDL_GetWindowSurface(FrameWnd->m_hWnd);
     SDL_UpdateWindowSurface(FrameWnd->m_hWnd);
 
 #ifdef BETA_TIME_LIMIT
@@ -1816,7 +1817,7 @@ void NewGamePopup::OnLButtonDown(UINT nFlags, CPoint point) {
             // Weiter:
             else if (GridPos.IfIsWithin(17, 15, 24, 15) && (pNetworkSessions != nullptr) && pNetworkSessions->GetNumberOfElements() > 0) {
                 const std::shared_ptr<SBStr> sessionName = pNetworkSessions->Get(Selection + 1); // add ref counter so that the retrieval of a new session list doesn't throw away our string mid call
-				if (gNetwork.JoinSession(*sessionName, SBStr("somename"))) {
+                if (gNetwork.JoinSession(*sessionName, SBStr("somename"))) {
                     hprintf("This computer is client.");
 
                     NewgameWantsToLoad = FALSE;
@@ -1957,7 +1958,7 @@ void NewGamePopup::OnLButtonDown(UINT nFlags, CPoint point) {
                 SIM::SendSimpleMessage(ATNET_WANNALEAVE, 0, gNetwork.GetLocalPlayerID());
                 gNetwork.CloseSession();
                 SBCapabilitiesFlags caps = gNetwork.GetSelectedProviderCapabilities();
-				if ((caps & SBCapabilitiesFlags::SBNETWORK_HAS_SERVER_BROWSER) == SBCapabilitiesFlags::SBNETWORK_HAS_SERVER_BROWSER) {
+                if ((caps & SBCapabilitiesFlags::SBNETWORK_HAS_SERVER_BROWSER) == SBCapabilitiesFlags::SBNETWORK_HAS_SERVER_BROWSER) {
                     gNetworkSavegameLoading = -1;
                     PageNum = PAGE_TYPE::MULTIPLAYER_SELECT_NETWORK;
                     RefreshKlackerField();
@@ -2016,6 +2017,8 @@ void NewGamePopup::CheckNetEvents() {
                 ULONG Par1 = 0;
                 ULONG Par2 = 0;
                 Message >> MessageType;
+
+                AT_Log_I("Net", "Received net event: %s", Translate_ATNET(MessageType));
 
                 switch (MessageType) {
                 case ATNET_ENTERNAME:
@@ -2659,6 +2662,7 @@ void NewGamePopup::PushName(SLONG n) {
 //--------------------------------------------------------------------------------------------
 bool SIM::SendMemFile(TEAKFILE &file, ULONG target, bool useCompression) {
     useCompression = false;
+    AT_Log_I("Net", "Send Event: %s TO: %x", Translate_ATNET((file.MemBuffer[3] << 24) | (file.MemBuffer[2] << 16) | (file.MemBuffer[1] << 8) | (file.MemBuffer[0])), target);
 
     if (((Sim.bNetwork != 0) || (bNetworkUnderway != 0)) && gNetwork.IsInSession()) {
         return gNetwork.Send(file.MemBuffer, file.MemBufferUsed, target, useCompression);

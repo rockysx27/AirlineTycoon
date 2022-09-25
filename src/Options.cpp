@@ -50,7 +50,7 @@ Options::Options(BOOL bHandy, SLONG PlayerNum) : CStdRaum(bHandy, PlayerNum, "st
     DurchsagenFX.ReInit("opt_hinw.raw");
     ClickFx.ReInit("change.raw");
 
-    Hdu.HercPrintf(0, "stat_1.mcf");
+    AT_Log_Generic("Loaded font: stat_1.mcf");
     VersionFont.Load(lpDD, const_cast<char *>((LPCTSTR)FullFilename("stat_1.mcf", MiscPath)));
 
     Options::PageNum = 1;
@@ -75,6 +75,7 @@ Options::Options(BOOL bHandy, SLONG PlayerNum) : CStdRaum(bHandy, PlayerNum, "st
     RefreshKlackerField();
 
     SDL_ShowWindow(FrameWnd->m_hWnd);
+    SDL_GetWindowSurface(FrameWnd->m_hWnd);
     SDL_UpdateWindowSurface(FrameWnd->m_hWnd);
 
     // Create a timer to 'klacker'

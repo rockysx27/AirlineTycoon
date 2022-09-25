@@ -1,5 +1,8 @@
 #include "stdafx.h"
 
+#include <filesystem>
+namespace fs = std::filesystem;
+
 const char *ExcOpen = "Can't open %s!";
 const char *ExcRead = "Can't read %s!";
 const char *ExcWrite = "Can't write %s!";
@@ -214,15 +217,13 @@ bool CRLEReader::Read(BYTE *buffer, SLONG size, bool decode) {
 }
 
 BOOL DoesFileExist(char const *path) {
-    SDL_RWops *ctx = SDL_RWFromFile(path, "rb");
-    if (ctx != nullptr) {
-        SDL_RWclose(ctx);
-        return 1;
+    if(fs::exists(path)) {
+        return true;
     }
 #ifdef _DEBUG
     hprintf("TeakFile.cpp: File not found: %s", path);
 #endif
-    return 0;
+    return false;
 }
 
 BUFFER_V<BYTE> LoadCompleteFile(char const *path) {

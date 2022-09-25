@@ -18,8 +18,40 @@ HDU::HDU() : Log(nullptr) {
     BUFFER_V<char> path(strlen(base) + strlen(file) + 1);
     strcpy(path.data(), base);
     strcat(path.data(), file);
-    // Log = fopen(path.data(), "w");
-    Log = stdout;
+    Log = fopen(path.data(), "w");
+   
+    SDL_LogOutputFunction defaultOut;
+    SDL_LogGetOutputFunction(&defaultOut, nullptr);
+
+#ifdef _DEBUG
+    SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
+#endif
+
+    auto func = [](void* userdata, int category, SDL_LogPriority priority, const char* message) {
+        char* finalMessage = const_cast<char*>(message);
+
+        bool modified = false;
+        if (strstr(message, "||") == nullptr) {
+            const unsigned long long size = strlen(message) + strlen("Misc || ") + 1;
+            finalMessage = new char[size]{};
+            sprintf_s(finalMessage, size, "Misc || %s", message);
+            modified = true;
+        }
+
+        SDL_LogOutputFunction func = (SDL_LogOutputFunction)(userdata);
+        func(userdata, category, priority, finalMessage);
+
+        if(Hdu.Log){
+            fprintf(Hdu.Log, "%s\n", finalMessage);
+            fflush(Hdu.Log);
+        }
+
+        if(modified)
+            delete[] finalMessage;
+    };
+
+    SDL_LogSetOutputFunction(func, defaultOut);
+
     SDL_free(base);
 }
 
@@ -38,11 +70,9 @@ void HDU::HercPrintf(SLONG /*unused*/, const char *format, ...) {
     }
     va_list args;
     va_start(args, format);
-    vfprintf(Log, format, args);
+    //vfprintf(Log, format, args);
     V_AT_Log_I("Herc", format, args);
     va_end(args);
-    fprintf(Log, "\n");
-    fflush(Log);
 }
 
 void HDU::HercPrintf(const char *format, ...) {
@@ -51,11 +81,9 @@ void HDU::HercPrintf(const char *format, ...) {
     }
     va_list args;
     va_start(args, format);
-    vfprintf(Log, format, args);
+    //vfprintf(Log, format, args);
     V_AT_Log_I("Herc", format, args);
     va_end(args);
-    fprintf(Log, "\n");
-    fflush(Log);
 }
 
 void HDU::HercPrintfRed(const char *format, ...) {
