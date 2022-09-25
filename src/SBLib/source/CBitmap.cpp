@@ -225,13 +225,11 @@ ULONG SB_CBitmapCore::Clear(SB_Hardwarecolor hwcolor, const RECT *pRect) {
     auto color = (dword)hwcolor;
 
     if (lpTexture != nullptr) {
-        if (SDL_SetRenderTarget(lpDD, lpTexture) < 0) {
-            return 1;
-        }
-
-        dword key = 0;
-        SDL_GetColorKey(lpDDSurface, &key);
-        SDL_SetRenderDrawColor(lpDD, (color & 0xFF0000) >> 16, (color & 0xFF00) >> 8, color & 0xFF, color == key ? SDL_ALPHA_TRANSPARENT : SDL_ALPHA_OPAQUE);
+        SDL_Surface *surface = new SDL_Surface();
+        SDL_LockTextureToSurface(lpTexture, nullptr, &surface);
+        SDL_FillRect(surface, nullptr, hwcolor);
+        SDL_UnlockTexture(lpTexture);
+        return 0;
     }
 
     if (pRect != nullptr) {
@@ -337,17 +335,29 @@ SDL_Surface *SB_CBitmapCore::GetFlippedSurface() {
 }
 
 ULONG SB_CBitmapCore::Blit(class SB_CBitmapCore *core, SLONG x, SLONG y) {
+    if (!lpDDSurface || !core->lpDDSurface) {
+        return 0;
+    }
+
     SDL_Rect dst = {x, y, Size.x, Size.y};
     return SDL_BlitSurface(lpDDSurface, nullptr, core->lpDDSurface, &dst);
 }
 
 ULONG SB_CBitmapCore::Blit(class SB_CBitmapCore *core, SLONG x, SLONG y, const CRect &rect) {
+    if (!lpDDSurface || !core->lpDDSurface) {
+        return 0;
+    }
+
     SDL_Rect src = {rect.left, rect.top, rect.Width(), rect.Height()};
     SDL_Rect dst = {x, y, rect.Width(), rect.Height()};
     return SDL_BlitSurface(lpDDSurface, &src, core->lpDDSurface, &dst);
 }
 
 ULONG SB_CBitmapCore::BlitFast(class SB_CBitmapCore *core, SLONG x, SLONG y) {
+    if (!lpDDSurface) {
+        return 0;
+    }
+
     // Ignore source color key
     Uint32 key = 0;
     int result = SDL_GetColorKey(lpDDSurface, &key);
@@ -366,6 +376,10 @@ ULONG SB_CBitmapCore::BlitFast(class SB_CBitmapCore *core, SLONG x, SLONG y) {
 }
 
 ULONG SB_CBitmapCore::BlitFast(class SB_CBitmapCore *core, SLONG x, SLONG y, const CRect &rect) {
+    if (!lpDDSurface) {
+        return 0;
+    }
+
     // Ignore source color key
     Uint32 key = 0;
     int result = SDL_GetColorKey(lpDDSurface, &key);
