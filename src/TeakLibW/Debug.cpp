@@ -14,7 +14,7 @@ HDU Hdu;
 
 HDU::HDU() : Log(nullptr) {
     char *base = SDL_GetBasePath();
-    const char *file = "debug.log";
+    const char *file = "debug.txt";
     BUFFER_V<char> path(strlen(base) + strlen(file) + 1);
     strcpy(path.data(), base);
     strcat(path.data(), file);

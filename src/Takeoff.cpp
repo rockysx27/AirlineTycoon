@@ -45,14 +45,13 @@
 
 #include "AtNet.h"
 #include "SbLib.h"
-#include "network.h"
 extern SBNetwork gNetwork;
 
 #include <filesystem>
 #include <fstream>
 
-#ifdef WIN32
-#include <DbgHelp.h>
+#ifdef SENTRY
+#include "sentry.h"
 #endif
 
 CHLPool HLPool;
@@ -96,21 +95,25 @@ SLONG gTimerCorrection = 0; // Is it necessary to adapt the local clock to the s
 char *UCharToReadableAnsi(const unsigned char *pData, unsigned uLen);
 unsigned char *ReadableAnsiToUChar(const char *pData, unsigned uLen);
 
-#ifdef WIN32
-int __cdecl CrtDbgHook(int nReportType, char *szMsg, int *pnRet) {
-    return TRUE; // Return true - Abort,Retry,Ignore dialog will *not* be displayed
-    // return FALSE; // Return false - Abort,Retry,Ignore dialog *will be displayed*
-}
-#endif
-
 #ifdef __cplusplus
 extern "C"
 #endif
-    int
-    main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
 
-#ifdef WIN32
-    _CrtSetReportHook2(_CRT_RPTHOOK_INSTALL, CrtDbgHook);
+#ifdef SENTRY
+    sentry_options_t* options = sentry_options_new();
+    sentry_options_set_dsn(options, "https://6c9b29cfe559442b98417942e221250d@o4503905572225024.ingest.sentry.io/4503905573797888");
+    // This is also the default-path. For further information and recommendations:
+    // https://docs.sentry.io/platforms/native/configuration/options/#database-path
+    sentry_options_set_database_path(options, ".sentry-native");
+    sentry_options_set_release(options, VersionString);
+    sentry_options_set_debug(options, 0);
+    sentry_options_add_attachment(options, "debug.txt");
+    sentry_options_set_on_crash(options, [] (const sentry_ucontext_t* uctx, sentry_value_t event, void* closure) {
+		    MessageBoxA(nullptr, "Airline Tycoon experienced an unexpected exception\nCrash information is being send to sentry...", "Airline Tycoon Deluxe Crash Handler", MB_OK);
+    		return event;
+	    }, nullptr);
+    sentry_init(options);
 #endif
 
     /*if (!run_regression()) {
