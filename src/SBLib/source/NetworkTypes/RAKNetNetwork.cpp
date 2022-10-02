@@ -663,7 +663,7 @@ void WriteStringToBitStream(const char* myString, RakNet::BitStream* output) {
 
 
 RakString username;
-RakString baseName = "WizzardMaker";
+RakString baseName = "DefaultUser";
 void RAKNetNetwork::LoginMasterServer() {
     
     const int64_t id = rand();
