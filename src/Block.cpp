@@ -571,12 +571,29 @@ void BLOCK::LinkeSeiteIndex(XY TitleArea, XY ClientArea) {
 
             // Add additional information to plane list
             PLAYER &qPlayer = Sim.Players.Players[PlayerNum];
-            CPlane& qPlane = qPlayer.Planes[c];
-            // check if plane name is correct, some are mixed up
-            if (qPlayer.Planes[c].Name == Table.Values[0 + c * Table.AnzColums])
-            {
-                Bitmap.PrintAt(bprintf("%li (%li)", qPlane.MaxPassagiere, qPlane.MaxPassagiereFC), FontSmallGrey, TEC_FONT_LEFT, ClientArea + XY(70, (c - Page) * 26 + 10), Bitmap.Size);
-                Bitmap.PrintAt(Einheiten[EINH_KM].bString(qPlane.ptReichweite), FontSmallGrey, TEC_FONT_LEFT, ClientArea + XY(123, (c - Page) * 26 + 10), Bitmap.Size);
+            for (SLONG i = 0; i < (SLONG)qPlayer.Planes.AnzEntries(); i++) {
+                if (qPlayer.Planes.IsInAlbum(i)) {
+                    CPlane& qPlane = qPlayer.Planes[i];
+
+                    // check if plane name is correct, some are mixed up
+                    if (qPlane.Name == Table.Values[0 + c * Table.AnzColums])
+                    {
+
+                        XY left = ClientArea + XY(110, (c - Page) * 26);
+                        XY right = ClientArea + XY(143, (c - Page) * 26 + 10);
+
+                        if(BlockTypeB == 6) {
+                            //Freight
+                            Bitmap.PrintAt(Einheiten[EINH_T].bString(qPlane.ptPassagiere / 10), FontSmallGrey, TEC_FONT_RIGHT, left, right);
+                        }else if(BlockTypeB == 4) { //Routes
+                            Bitmap.PrintAt(bprintf("(%li/%li)", qPlane.MaxPassagiere, qPlane.MaxPassagiereFC), FontSmallGrey, TEC_FONT_RIGHT, left, right);
+                        }else{
+                            Bitmap.PrintAt(bprintf("(%li)", qPlane.MaxPassagiere + qPlane.MaxPassagiereFC), FontSmallGrey, TEC_FONT_RIGHT, left, right);
+                        }
+                        Bitmap.PrintAt(Einheiten[EINH_KM].bString(qPlane.ptReichweite), FontSmallGrey, TEC_FONT_LEFT, ClientArea + XY(123, (c - Page) * 26 + 10), Bitmap.Size);
+                        break;
+                    }
+                }
             }
         }
         break;
