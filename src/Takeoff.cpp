@@ -135,9 +135,12 @@ int main(int argc, char *argv[]) {
 
     theApp.InitInstance(argc, argv);
 
+#ifdef SENTRY
     if (!disableSentry) {
         sentry_close();
     }
+#endif
+
     
     return 0;
 }
