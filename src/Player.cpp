@@ -4240,6 +4240,10 @@ void PLAYER::RobotExecuteAction() {
                             SLONG VonCity = 0;
                             SLONG VonZeit = 0;
 
+                            if((Planes[c].ptPassagiere / 10) <= 0) {
+                                continue;
+                            }
+
                             for (level = 0; level <= 2; level++) {
                                 VonCity = Planes[c].Flugplan.StartCity;
                                 VonZeit = Sim.GetHour() + 2;
@@ -5166,6 +5170,10 @@ void PLAYER::RobotExecuteAction() {
                     SLONG e = 0;
                     SLONG VonCity = 0;
                     SLONG VonZeit = 0;
+
+                    if((Planes[c].ptPassagiere / 10) <= 0) {
+                        continue;
+                    }
 
                     for (level = 0; level <= 2; level++) {
                         VonCity = Planes[c].Flugplan.StartCity;
