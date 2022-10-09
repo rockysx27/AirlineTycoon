@@ -21,12 +21,6 @@ SLONG NewgameWantsToLoad = FALSE;
 SLONG NewgameToOptions = FALSE;
 SLONG gNetworkSavegameLoading = -1; // Komm-Variable, über die der Options-Screen mitteilt, welcher Spielstand für's Netzwerk geladen werden soll
 
-#ifdef _DEBUG
-char VersionString[] = "VERSION 1.5.1 DEBUG"; // (pre-release; build 100)";
-#else
-char VersionString[] = "VERSION 1.5.1 PRE-RELEASE"; // (pre-release; build 100)";
-#endif
-
 extern SLONG gLoadGameNumber;
 extern BOOL gSpawnOnly;
 

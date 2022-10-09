@@ -118,6 +118,12 @@ inline bool operator!=(const CPoint &lhs, const CPoint &rhs) { return !(lhs == r
 #define FEMALE 0
 #define MALE 1
 
+#ifdef _DEBUG
+constexpr char VersionString[] = "VERSION 1.5.2 DEBUG";
+#else
+constexpr char VersionString[] = "VERSION 1.5.2 PRE-RELEASE";
+#endif
+
 // Generelles
 #define CUSTOMERS_PER_PERSON  5  // Eine Person (Bildschirm) repräsentiert 10 Kunden
 #define CUSTOMERS_PER_PERSONB 15 // Wenn schon 100 an Bord sind, geht es hiermit weiter

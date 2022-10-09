@@ -63,7 +63,6 @@ static char THIS_FILE[] = __FILE__;
 
 void Unvideo(const CString &Filename, const CString &TargetFilename);
 
-extern char VersionString[];
 extern SLONG bCAbendOpen;
 extern SLONG SkipPlaneCalculation;
 extern SLONG TankSize[];
