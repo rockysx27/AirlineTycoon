@@ -104,8 +104,8 @@ ULONG CPlaneTypes::GetRandomExistingType(TEAKRAND *pRand) {
 
     for (c = Anz = 0; c < AnzEntries(); c++) {
         if (IsInAlbum(c) != 0) {
-            if ((*this)[c].FirstMissions < Sim.Difficulty ||
-                (((*this)[c].FirstMissions == Sim.Difficulty || Sim.Difficulty == -1) && (*this)[c].FirstDay <= Sim.Date)) {
+            const CPlaneType &plane = (*this)[c];
+            if (plane.FirstMissions < Sim.Difficulty || ((plane.FirstMissions == Sim.Difficulty || Sim.Difficulty == -1) && plane.FirstDay <= Sim.Date)) {
                 Anz++;
             }
         }
@@ -119,8 +119,8 @@ ULONG CPlaneTypes::GetRandomExistingType(TEAKRAND *pRand) {
 
     for (c = 0; c < AnzEntries(); c++) {
         if (IsInAlbum(c) != 0) {
-            if ((*this)[c].FirstMissions < Sim.Difficulty ||
-                (((*this)[c].FirstMissions == Sim.Difficulty || Sim.Difficulty == -1) && (*this)[c].FirstDay <= Sim.Date)) {
+            const CPlaneType &plane = (*this)[c];
+            if (plane.FirstMissions < Sim.Difficulty || ((plane.FirstMissions == Sim.Difficulty || Sim.Difficulty == -1) && plane.FirstDay <= Sim.Date)) {
                 rnd--;
                 if (rnd == 0) {
                     return (GetIdFromIndex(c));

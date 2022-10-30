@@ -605,7 +605,7 @@ SLONG MIDI::Load(const char *file) {
     }
 
     if (_music == nullptr) {
-        printf("Could not load music: %s\n", _musicData.file.c_str());
+        AT_Log_Generic("Could not load music: %s\n", _musicData.file.c_str());
     }
 
     _musicData.pSSE->_playingMusicObj = this;

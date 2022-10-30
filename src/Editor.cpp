@@ -8,6 +8,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <sstream>
 
 #if __cplusplus < 201703L // If the version of C++ is less than 17
 #include <experimental/filesystem>

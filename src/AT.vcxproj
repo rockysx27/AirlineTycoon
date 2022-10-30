@@ -266,8 +266,6 @@
     </ClCompile>
     <ClCompile Include="PNet.cpp">
     </ClCompile>
-    <ClCompile Include="Protect.cpp">
-    </ClCompile>
     <ClCompile Include="reise.cpp">
     </ClCompile>
     <ClCompile Include="Ricks.cpp">
@@ -283,8 +281,6 @@
     <ClCompile Include="Schedule.cpp">
     </ClCompile>
     <ClCompile Include="Security.cpp">
-    </ClCompile>
-    <ClCompile Include="SecurityManager.cpp">
     </ClCompile>
     <ClCompile Include="Sim.cpp">
     </ClCompile>

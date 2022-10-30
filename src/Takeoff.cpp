@@ -97,8 +97,8 @@ unsigned char *ReadableAnsiToUChar(const char *pData, unsigned uLen);
 #ifdef __cplusplus
 extern "C"
 #endif
-int main(int argc, char *argv[]) {
 
+int main(int argc, char *argv[]) {
 #ifdef SENTRY
     const bool disableSentry = DoesFileExist("no-sentry");
 
@@ -2106,32 +2106,32 @@ void CTakeOffApp::GameLoop(void * /*unused*/) {
 }
 
 #ifdef DEBUG
-void CTakeOffApp::CheckSystem(void) {
-    for (SLONG c = 0; c < Sim.Players.AnzPlayers; c++) {
-        static SLONG Emergency = 0;
-
-        if (Emergency == 0) {
-            for (SLONG d = 0; d < Sim.Players.Players[c].Letters.Letters.AnzEntries(); d++) {
-                if ((*(ULONG *)&Sim.Players.Players[c].Letters.Letters[d].Subject) == NULL)
-                    Emergency = TRUE;
-                if ((*(ULONG *)&Sim.Players.Players[c].Letters.Letters[d].Letter) == NULL)
-                    Emergency = TRUE;
-                if ((*(ULONG *)&Sim.Players.Players[c].Letters.Letters[d].Absender) == NULL)
-                    Emergency = TRUE;
-            }
-
-            for (SLONG d = 0; d < Sim.Players.Players[c].Statistiken.AnzEntries(); d++) {
-                if (Sim.Players.Players[c].Statistiken[d].Days.AnzEntries() == 0)
-                    Emergency = TRUE;
-                if (Sim.Players.Players[c].Statistiken[d].Months.AnzEntries() == 0)
-                    Emergency = TRUE;
-            }
-
-            if (Emergency)
-                DebugBreak();
-        }
-    }
-}
+//void CTakeOffApp::CheckSystem(void) {
+//    for (SLONG c = 0; c < Sim.Players.AnzPlayers; c++) {
+//        static SLONG Emergency = 0;
+//
+//        if (Emergency == 0) {
+//            for (SLONG d = 0; d < Sim.Players.Players[c].Letters.Letters.AnzEntries(); d++) {
+//                if ((*(ULONG *)&Sim.Players.Players[c].Letters.Letters[d].Subject) == NULL)
+//                    Emergency = TRUE;
+//                if ((*(ULONG *)&Sim.Players.Players[c].Letters.Letters[d].Letter) == NULL)
+//                    Emergency = TRUE;
+//                if ((*(ULONG *)&Sim.Players.Players[c].Letters.Letters[d].Absender) == NULL)
+//                    Emergency = TRUE;
+//            }
+//
+//            for (SLONG d = 0; d < Sim.Players.Players[c].Statistiken.AnzEntries(); d++) {
+//                if (Sim.Players.Players[c].Statistiken[d].Days.AnzEntries() == 0)
+//                    Emergency = TRUE;
+//                if (Sim.Players.Players[c].Statistiken[d].Months.AnzEntries() == 0)
+//                    Emergency = TRUE;
+//            }
+//
+//            if (Emergency)
+//                DebugBreak();
+//        }
+//    }
+//}
 #endif
 
 //--------------------------------------------------------------------------------------------

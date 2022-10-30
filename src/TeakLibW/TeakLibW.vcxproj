@@ -126,6 +126,7 @@
     <ClCompile Include="Math.cpp" />
     <ClCompile Include="TeakFile.cpp" />
     <ClCompile Include="TeakStr.cpp" />
+    <ClCompile Include="Test.cpp" />
     <ClCompile Include="TextRes.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

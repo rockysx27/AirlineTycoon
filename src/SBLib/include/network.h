@@ -51,8 +51,7 @@ enum SBSessionEnum
     SBNETWORK_SESSION_FINISHED
 };
 
-enum SBProviderEnum
-{
+enum SBProviderEnum {
     SBNETWORK_ENET,
 };
 
@@ -104,10 +103,10 @@ private:
     SBProviderEnum mType;
     unsigned int mSearchTime;
     ENetAddress mServer;
-    ENetHost* mHost;
-    ENetPeer* mMaster;
+    ENetHost *mHost;
+    ENetPeer *mMaster;
     ENetSocket mSocket;
-    SBList<ENetPacket*> mPackets;
+    SBList<ENetPacket *> mPackets;
 };
 
 #endif
@@ -130,32 +129,32 @@ public:
 
     SLONG GetMessageCount();
     bool Connect(SBStr);
-    bool Connect(SBStr, const char*);
+    bool Connect(SBStr, const char *);
     void DisConnect();
-    bool CreateSession(SBStr, SBNetworkCreation*);
+    bool CreateSession(SBStr, SBNetworkCreation *);
     void CloseSession();
     ULONG GetLocalPlayerID();
-    SBList<SBStr>* GetConnectionList();
-    SBList<std::shared_ptr<SBStr>>* GetSessionListAsync();
+    SBList<SBStr> *GetConnectionList();
+    SBList<std::shared_ptr<SBStr>> *GetSessionListAsync();
     bool StartGetSessionListAsync();
-    static SBProviderEnum GetProviderID(char*);
+    static SBProviderEnum GetProviderID(char *);
     SBProviderEnum GetSelectedProviderID() const;
     SBCapabilitiesFlags GetSelectedProviderCapabilities() const;
     void SetProvider(SBProviderEnum);
     bool IsEnumSessionFinished() const;
     bool IsInSession() const;
-	bool IsInitialized() const;
-    bool Send(BUFFER<UBYTE>&, ULONG, ULONG, bool);
-    bool Receive(UBYTE**, ULONG&);
-    bool JoinSession(const SBStr&, SBStr);
-    SBList<SBNetworkPlayer*>* GetAllPlayers();
+    bool IsInitialized() const;
+    bool Send(BUFFER<UBYTE> &, ULONG, ULONG, bool);
+    bool Receive(UBYTE **, ULONG &);
+    bool JoinSession(const SBStr &, SBStr);
+    SBList<SBNetworkPlayer *> *GetAllPlayers();
 
 private:
     SBList<SBStr> mConnections;
 
     SBMultiplayerStateEnum mState;
-	
-	BaseNetworkType *mNetwork;
+
+    BaseNetworkType *mNetwork;
     SBProviderEnum mType;
 };
 

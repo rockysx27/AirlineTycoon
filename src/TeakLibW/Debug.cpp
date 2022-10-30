@@ -18,8 +18,10 @@ HDU::HDU() : Log(nullptr) {
     BUFFER_V<char> path(strlen(base) + strlen(file) + 1);
     strcpy(path.data(), base);
     strcat(path.data(), file);
-    Log = fopen(path.data(), "w");
-   
+    // Log = fopen(path.data(), "w");
+    Log = stdout;
+    SDL_free(base);
+
     SDL_LogOutputFunction defaultOut;
     SDL_LogGetOutputFunction(&defaultOut, nullptr);
 
@@ -38,21 +40,21 @@ HDU::HDU() : Log(nullptr) {
             modified = true;
         }
 
-        SDL_LogOutputFunction func = (SDL_LogOutputFunction)(userdata);
-        func(userdata, category, priority, finalMessage);
+        // TODO:
+        // const auto func = static_cast<SDL_LogOutputFunction>(userdata);
+        // func(userdata, category, priority, finalMessage);
 
         if(Hdu.Log){
             fprintf(Hdu.Log, "%s\n", finalMessage);
             fflush(Hdu.Log);
         }
 
-        if(modified)
+        if(modified) {
             delete[] finalMessage;
+        }
     };
 
     SDL_LogSetOutputFunction(func, &defaultOut);
-
-    SDL_free(base);
 }
 
 HDU::~HDU() { Close(); }
