@@ -2,6 +2,7 @@
 // Route.cpp : Routinen zum verwalten der Flugrouten (CRoute, CRouten)
 //============================================================================================
 #include "stdafx.h"
+#include <sstream>
 
 SLONG ReadLine(BUFFER_V<UBYTE> &Buffer, SLONG BufferStart, char *Line, SLONG LineLength);
 
@@ -92,8 +93,29 @@ void CRouten::ReInit(const CString &TabFilename, bool bNoDoublettes) {
         SLONG HelperEbene = atoi(strtok(Line.getData(), TabSeparator));
         CString Helper1 = strtok(nullptr, TabSeparator);
         CString Helper2 = strtok(nullptr, TabSeparator);
-        ULONG VonCity = Cities.GetIdFromName(const_cast<char *>((LPCTSTR)KorrigiereUmlaute(Helper1)));
-        ULONG NachCity = Cities.GetIdFromName(const_cast<char *>((LPCTSTR)KorrigiereUmlaute(Helper2)));
+
+        ULONG VonCity;
+        ULONG NachCity;
+
+        std::stringstream errorStr;
+        errorStr << "Tried to create route between " << Helper1 << " and " << Helper2 << ", but a city was not found: ";
+        try {
+            VonCity = Cities.GetIdFromName(KorrigiereUmlaute(Helper1).c_str());
+        } catch (std::runtime_error&) {
+            errorStr << Helper1;
+            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "AT Exception", errorStr.str().c_str(), nullptr);
+
+            throw;
+        }
+
+        try {
+            NachCity = Cities.GetIdFromName(KorrigiereUmlaute(Helper2).c_str());
+        } catch (std::runtime_error&) {
+            errorStr << Helper2;
+            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "AT Exception", errorStr.str().c_str(), nullptr);
+
+            throw;
+        }
 
         // Looking for doubles (may be turned off for compatibility)
         bool skip = false;
