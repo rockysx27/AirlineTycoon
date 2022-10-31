@@ -205,14 +205,8 @@
     <ClCompile Include="PNet.cpp">
       <Filter>Source Files\Logic</Filter>
     </ClCompile>
-    <ClCompile Include="Protect.cpp">
-      <Filter>Source Files\Old</Filter>
-    </ClCompile>
     <ClCompile Include="SBBM.cpp">
       <Filter>Source Files\GFX</Filter>
-    </ClCompile>
-    <ClCompile Include="SecurityManager.cpp">
-      <Filter>Source Files\Old</Filter>
     </ClCompile>
     <ClCompile Include="Sim.cpp">
       <Filter>Source Files\Logic</Filter>
