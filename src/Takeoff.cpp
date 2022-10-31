@@ -133,10 +133,11 @@ int main(int argc, char *argv[]) {
     }
 #endif
 
-    /*if (!run_regression()) {
+#ifdef TEST
+    if (!run_regression()) {
         hprintf("Regression test failed!");
         return 1;
-    }*/
+    }
     {
         TEAKRAND rnd;
         hprintf("Rnd: %u %u %u %u %u", rnd.Rand(), rnd.Rand(), rnd.Rand(), rnd.Rand(), rnd.Rand());
@@ -145,6 +146,7 @@ int main(int argc, char *argv[]) {
         TEAKRAND rnd(seed);
         hprintf("Rnd(%d): %u %u %u %u %u", seed, rnd.Rand(), rnd.Rand(), rnd.Rand(), rnd.Rand(), rnd.Rand());
     }
+#endif
 
     theApp.InitInstance(argc, argv);
 
