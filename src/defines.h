@@ -143,11 +143,11 @@ constexpr char VersionString[] = "VERSION 1.5.2 PRE-RELEASE";
 #define MAX_BRICKS 340
 #define MAX_CITIES 300
 #define MAX_CLANS 90
-#define MAX_SPECIALS 128 // Zahl der Gates, Rooms, Check-Ins
-#define MAX_ROUTES 600   // Zahl der vordefinierten Flugrouten
+#define MAX_SPECIALS 128  // Zahl der Gates, Rooms, Check-Ins
+#define MAX_ROUTES 1500   // Zahl der vordefinierten Flugrouten
 #define MAX_PNAMES1 200
 #define MAX_PNAMES2 100
-#define MAX_WORKERS 350 // Maximale Zahl der Angestellten
+#define MAX_WORKERS 350   // Maximale Zahl der Angestellten
 
 // Sprache:
 #define LANGUAGE_D 0   // D-Deutsch
