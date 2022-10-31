@@ -18,8 +18,8 @@ HDU::HDU() : Log(nullptr) {
     BUFFER_V<char> path(strlen(base) + strlen(file) + 1);
     strcpy(path.data(), base);
     strcat(path.data(), file);
-    // Log = fopen(path.data(), "w");
-    Log = stdout;
+    Log = fopen(path.data(), "w");
+    //Log = stdout;
     SDL_free(base);
 
     SDL_LogOutputFunction defaultOut;
@@ -137,14 +137,14 @@ SLONG TeakLibW_Exception(char *file, SLONG line, const char *format, ...) {
     va_start(args, format);
     vsprintf(buffer, format, args);
     va_end(args);
-    // MessageBeep(0);
-    // MessageBeep(0x30u);
+
     Hdu.HercPrintf(1, "====================================================================");
     Hdu.HercPrintf(0, "Exception in File %s, Line %li:", file, line);
     Hdu.HercPrintf(0, buffer);
     Hdu.HercPrintf(1, "====================================================================");
     Hdu.HercPrintf(0, "C++ Exception thrown. Program will probably be terminated.");
-    Hdu.Close();
+
     // DebugBreak();
+
     throw std::runtime_error(buffer);
 }
