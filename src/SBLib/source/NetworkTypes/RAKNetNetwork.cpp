@@ -322,8 +322,8 @@ bool RAKNetNetwork::CreateSession(SBNetworkCreation *create) {
         // allowed flow skip!
     case SBCreationFlags::SBNETWORK_CREATE_NONE:
     default: // No need for a NAT server if the user chose it
-        SocketDescriptor tmp(SERVER_PORT, "");
-        mMaster->Startup(4, &tmp, 1);
+        SocketDescriptor sd = SocketDescriptor(SERVER_PORT, "");
+        mMaster->Startup(4, &sd, 1);
         AT_Log("CREATE SESSION: DIRECT. Our GUID: '%s' and our SystemAddress: '%s'", mMaster->GetMyGUID().ToString(),
                mMaster->GetSystemAddressFromGuid(mMaster->GetMyGUID()).ToString());
         mMaster->SetMaximumIncomingConnections(4);
