@@ -10,6 +10,7 @@
 #define _WINSOCKAPI_ /* Prevent inclusion of winsock.h in windows.h */
 #include <Windows.h>
 #endif
+#include <memory>
 #include <math.h>
 #include <SDL.h>
 #include <SDL_ttf.h>
