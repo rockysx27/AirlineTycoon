@@ -40,9 +40,8 @@ HDU::HDU() : Log(nullptr) {
             modified = true;
         }
 
-        // TODO:
-        // const auto func = static_cast<SDL_LogOutputFunction>(userdata);
-        // func(userdata, category, priority, finalMessage);
+        const SDL_LogOutputFunction func = reinterpret_cast<SDL_LogOutputFunction>(userdata);
+        func(userdata, category, priority, finalMessage);
 
         if(Hdu.Log){
             fprintf(Hdu.Log, "%s\n", finalMessage);
@@ -54,7 +53,7 @@ HDU::HDU() : Log(nullptr) {
         }
     };
 
-    SDL_LogSetOutputFunction(func, &defaultOut);
+    SDL_LogSetOutputFunction(func, reinterpret_cast<void*>(defaultOut));
 }
 
 HDU::~HDU() { Close(); }
