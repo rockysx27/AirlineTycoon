@@ -111,7 +111,7 @@ inline bool operator!=(const CPoint &lhs, const CPoint &rhs) { return !(lhs == r
 
 #define START_NAME_MAP(name) static const char* Translate_##name(unsigned long value, bool withDescription = false) { switch (value) {
 #define DEFINE_NAME_ENTRY(name, desc) case name: return withDescription ? #name " - " desc : #name;
-#define END_NAME_MAP  default: return "unknown";}return "unknown";}
+#define END_NAME_MAP  default: return "--";}return "unknown";}
 
 
 // Was wohl:
