@@ -104,7 +104,7 @@
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
     </ProjectReference>
     <PostBuildEvent>
-      <Command>xcopy "$(SolutionDir)BUILD\AT\$(Configuration)\AT.exe" "$(SolutionDir)BUILD\Deployment\AT.exe" /Y /-I</Command>
+      <Command>copy "$(SolutionDir)BUILD\AT\$(Configuration)\AT.exe" "$(SolutionDir)BUILD\Deployment\AT.exe"</Command>
       <Message>Copying AT.exe to Deployment folder</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
