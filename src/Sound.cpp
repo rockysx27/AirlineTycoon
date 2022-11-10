@@ -5,6 +5,8 @@
 #include "Synthese.h"
 #include <filesystem>
 
+#define AT_Log(...) AT_Log_I("Sound", __VA_ARGS__)
+
 #ifdef _DEBUG
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
@@ -16,18 +18,6 @@ static SLONG AudioMode = 0;
 
 extern FILE *pSoundLogFile;
 extern SLONG SoundLogFileStartTime;
-
-class CDebugEntryExit {
-  private:
-    CString Text;
-
-  public:
-    explicit CDebugEntryExit(const CString &t) {
-        Text = t;
-        hprintf("Entry: %s", (LPCTSTR)Text);
-    }
-    ~CDebugEntryExit() { hprintf("Exit:  %s", (LPCTSTR)Text); }
-};
 
 SLONG CUnrepeatedRandom::Rand(SLONG Min, SLONG Max) {
     while (true) {
@@ -141,13 +131,25 @@ CString GetSpeechFilename(const CString &String, SLONG Index, CString *pTextFoll
 BOOL CreateSpeechSBFX(const CString &String, SBFX *pFx, SLONG PlayerNum, BOOL *bAnyMissing) {
     CString str;
     CString path;
-#ifdef WIN32
-    CString suffix = ".raw";
-    auto sep = '\\';
-#else
-    CString suffix = ".ogg";
-    auto sep = std::filesystem::path::preferred_separator;
-#endif
+
+    static bool useOgg = false;
+    static bool checked = false;
+
+    if (!checked) {
+        checked = true;
+
+        useOgg = DoesFileExist("voice/aa/100.ogg"); //test dummy file to check for ogg files
+        AT_Log("Decided to use %s for voice files", useOgg ? ".ogg" : ".raw");
+    }
+
+    CString suffix;
+    if (useOgg) {
+        suffix = ".ogg";
+    } else {
+        suffix = ".raw";
+    }
+
+    char sep = std::filesystem::path::preferred_separator;
     CString TextFollows;
     BUFFER_V<SBFX *> Effects(50);
     SLONG c = 0;
