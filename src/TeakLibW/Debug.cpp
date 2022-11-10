@@ -143,7 +143,5 @@ SLONG TeakLibW_Exception(char *file, SLONG line, const char *format, ...) {
     Hdu.HercPrintf(1, "====================================================================");
     Hdu.HercPrintf(0, "C++ Exception thrown. Program will probably be terminated.");
 
-    // DebugBreak();
-
-    throw std::runtime_error(buffer);
+    throw TeakLibException(buffer);
 }

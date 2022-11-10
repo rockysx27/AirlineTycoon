@@ -1444,3 +1444,10 @@ template <typename T> class ALBUM_V {
     std::unordered_map<ULONG, SLONG> Hash;
     CString Name;
 };
+
+class TeakLibException final : public std::runtime_error {
+  public:
+    explicit TeakLibException(const std::string &_Message) : runtime_error(_Message) {}
+
+    explicit TeakLibException(const char *_Message) : runtime_error(_Message) {}
+};
