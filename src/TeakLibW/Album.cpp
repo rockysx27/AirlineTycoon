@@ -42,7 +42,7 @@ void TeakAlbumRemoveT(BUFFER<ULONG> &ids, ULONG anz, CString const &name, ULONG 
         ids[id] = 0;
         return;
     }
-    TeakLibW_Exception(nullptr, 0, ExcAlbumDelete, name.c_str());
+    TeakLibW_Exception(FNL, ExcAlbumDelete, name.c_str());
 }
 
 void TeakAlbumRefresh(BUFFER<ULONG> &ids, ULONG anz) {
@@ -68,7 +68,7 @@ SLONG TeakAlbumSearchT(BUFFER<ULONG> &ids, ULONG anz, CString const &name, ULONG
     } else if (ids.AnzEntries() > id && (ids[id] != 0U)) {
         return id;
     }
-    TeakLibW_Exception(nullptr, 0, ExcAlbumFind, name.c_str());
+    TeakLibW_Exception(FNL, ExcAlbumFind, name.c_str());
     return 0;
 }
 
@@ -82,7 +82,7 @@ SLONG TeakAlbumXIdSearchT(BUFFER<ULONG> &ids, ULONG anz, CString const &name, XI
         return id.Index;
     }
     if (ids[id.Index] >= 0x1000000U) {
-        TeakLibW_Exception(nullptr, 0, ExcXIDUnrecoverable, name.c_str());
+        TeakLibW_Exception(FNL, ExcXIDUnrecoverable, name.c_str());
         return 0;
     }
 
@@ -112,7 +112,7 @@ ULONG TeakAlbumAddT(BUFFER<ULONG> &ids, ULONG anz, CString const &name, ULONG id
             return id;
         }
     }
-    TeakLibW_Exception(nullptr, 0, ExcAlbumInsert, name.c_str());
+    TeakLibW_Exception(FNL, ExcAlbumInsert, name.c_str());
     return 0;
 }
 
@@ -124,7 +124,7 @@ ULONG TeakAlbumFrontAddT(BUFFER<ULONG> &ids, ULONG anz, CString const &name, ULO
             return id;
         }
     }
-    TeakLibW_Exception(nullptr, 0, ExcAlbumInsert, name.c_str());
+    TeakLibW_Exception(FNL, ExcAlbumInsert, name.c_str());
     return 0;
 }
 
@@ -154,7 +154,7 @@ ULONG TeakAlbumRandom(BUFFER<ULONG> &ids, ULONG anz, CString const &name, TEAKRA
     TeakAlbumRefresh(ids, anz);
     ULONG used = TeakAlbumGetNumUsed(ids, anz);
     if (used == 0U) {
-        TeakLibW_Exception(nullptr, 0, ExcAlbumFind, name.c_str());
+        TeakLibW_Exception(FNL, ExcAlbumFind, name.c_str());
     }
 
     SLONG target = random != nullptr ? random->Rand(used) : rand() % 5;
@@ -164,6 +164,6 @@ ULONG TeakAlbumRandom(BUFFER<ULONG> &ids, ULONG anz, CString const &name, TEAKRA
             return ids[i];
         }
     }
-    TeakLibW_Exception(nullptr, 0, ExcAlbumFind, name.c_str());
+    TeakLibW_Exception(FNL, ExcAlbumFind, name.c_str());
     return 0;
 }

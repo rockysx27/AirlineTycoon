@@ -66,7 +66,7 @@ void TEXTRES::Open(char const *source, void *cached) {
         auto FileBuffer = LoadCompleteFile(source);
         char *String = new char[0x400U];
         if (String == nullptr) {
-            TeakLibW_Exception(nullptr, 0, ExcOutOfMem);
+            TeakLibW_Exception(FNL, ExcOutOfMem);
         }
 
         SLONG AnzStrings = 0;
@@ -140,14 +140,14 @@ void TEXTRES::Open(char const *source, void *cached) {
                     AnzStrings += strlen(String + 2) + 1;
                 } else {
                     if (AnzEntries >= Entries.AnzEntries()) {
-                        TeakLibW_Exception(nullptr, 0, ExcImpossible, "");
+                        TeakLibW_Exception(FNL, ExcImpossible, "");
                     }
                     Entries[AnzEntries].Group = Group;
                     Entries[AnzEntries].Id = Identifier;
                     Entries[AnzEntries].Text = Strings.getData() + AnzStrings;
                     strcpy(Entries[AnzEntries].Text, String + 2);
                     if (strlen(String + 2) + AnzStrings >= Strings.AnzEntries()) {
-                        TeakLibW_Exception(nullptr, 0, ExcImpossible, "");
+                        TeakLibW_Exception(FNL, ExcImpossible, "");
                     }
                     AnzStrings += strlen(String + 2) + 1;
                 }
@@ -173,7 +173,7 @@ char *TEXTRES::GetP(ULONG group, ULONG id) {
     }
 
     if (text == nullptr) {
-        TeakLibW_Exception(nullptr, 0, ExcTextResNotFound, group, id);
+        TeakLibW_Exception(FNL, ExcTextResNotFound, group, id);
         return nullptr;
     }
 
@@ -188,7 +188,7 @@ char *TEXTRES::GetS(ULONG group, ULONG id) {
     LanguageSpecifyString(str);
     if (strlen(str) > 0x3FF) {
         delete[] str;
-        TeakLibW_Exception(nullptr, 0, ExcTextResStaticOverflow, group, id);
+        TeakLibW_Exception(FNL, ExcTextResStaticOverflow, group, id);
     }
     static char buffer[0x3FF];
     strcpy(buffer, str);
@@ -220,7 +220,7 @@ void TEXTRES::UpdateText(const char *groupId, ULONG id, const char *newText) {
     }
 
     if (!found) {
-        TeakLibW_Exception(nullptr, 0, ExcTextResNotFound, group, id);
+        TeakLibW_Exception(FNL, ExcTextResNotFound, group, id);
         return;
     }
 
