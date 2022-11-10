@@ -26,8 +26,7 @@ DWORD GetKey();
 void InitPathVars() {
     gSpawnOnly = FALSE;
 
-    CString prefix;
-#ifndef WIN32
+    CString prefix = "";
     if (gLanguage == LANGUAGE_D) {
         prefix = "de\\";
     } else if (gLanguage == LANGUAGE_E) {
@@ -35,7 +34,11 @@ void InitPathVars() {
     } else if (gLanguage == LANGUAGE_F) {
         prefix = "fr\\";
     }
-#endif
+
+    // fallback check
+    if (!DoesDirectoryExist(prefix)) {
+        prefix = "";
+    }
 
     ExcelPath = prefix + "data\\%s";
     GliPath = prefix + "gli\\%s";

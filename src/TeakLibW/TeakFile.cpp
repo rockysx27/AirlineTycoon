@@ -217,11 +217,26 @@ bool CRLEReader::Read(BYTE *buffer, SLONG size, bool decode) {
 }
 
 BOOL DoesFileExist(char const *path) {
-    if(fs::exists(path)) {
+    if (fs::exists(path)) {
         return true;
     }
 #ifdef _DEBUG
-    hprintf("TeakFile.cpp: File not found: %s", path);
+    AT_Log_Generic("TeakFile.cpp: File not found: %s", path);
+#endif
+    return 0;
+}
+
+BOOL DoesDirectoryExist(char const *path) {
+    std::string str(path);
+    while(!str.empty() && str[str.length() - 1] == '\\') {
+        str.resize(str.length() - 1);
+    }
+    if (fs::is_directory(str)) {
+        return true;
+    }
+
+#ifdef _DEBUG
+    AT_Log_Generic("TeakFile.cpp: File not found: %s", path);
 #endif
     return false;
 }

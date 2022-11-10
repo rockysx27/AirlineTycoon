@@ -1048,6 +1048,7 @@ template <typename T> class ALBUM {
 };
 
 extern BOOL DoesFileExist(char const *);
+extern BOOL DoesDirectoryExist(char const *path);
 extern BUFFER_V<BYTE> LoadCompleteFile(char const *);
 extern SLONG CalcInertiaVelocity(SLONG, SLONG);
 extern SLONG Calc1nSum(SLONG);
