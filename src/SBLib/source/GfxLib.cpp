@@ -65,6 +65,10 @@ GfxMain::~GfxMain() {
 }
 
 SLONG GfxMain::LoadLib(char *path, class GfxLib **out, SLONG /*unused*/) {
+    if(!DoesFileExist(path)) {
+        TeakLibW_Exception(FNL, "Can't open %s!", path);    
+    }
+
     Libs.emplace_back(this, nullptr, path, 0, 0, nullptr);
     *out = &Libs.back();
     // hprintf("MP: GfxMain list size: %d", Libs.size());

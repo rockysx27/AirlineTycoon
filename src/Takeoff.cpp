@@ -444,8 +444,17 @@ BOOL CTakeOffApp::InitInstance(int argc, char *argv[]) {
         GfxLib *pRoomLib2 = nullptr;
         SBBM TitleBitmap;
 
-        pGfxMain->LoadLib(const_cast<char *>((LPCTSTR)FullFilename("titel.gli", RoomPath)), &pRoomLib, L_LOCMEM);
-        pGfxMain->LoadLib(const_cast<char *>((LPCTSTR)FullFilename("titel2.gli", RoomPath)), &pRoomLib2, L_LOCMEM);
+        try {
+            pGfxMain->LoadLib(const_cast<char *>((LPCTSTR)FullFilename("titel.gli", RoomPath)), &pRoomLib, L_LOCMEM);
+        } catch (TeakLibException &e) {
+            AT_Log_I("Did not find titel.gli, trying to continue", e.what());
+        }
+
+        try {
+            pGfxMain->LoadLib(const_cast<char *>((LPCTSTR)FullFilename("titel2.gli", RoomPath)), &pRoomLib2, L_LOCMEM);
+        } catch (TeakLibException &e) {
+            AT_Log_I("Did not find titel2.gli, trying to continue", e.what());
+        }
 
         if (Sim.Options.OptionDigiSound == TRUE) {
             InitSoundSystem(FrameWnd->m_hWnd);

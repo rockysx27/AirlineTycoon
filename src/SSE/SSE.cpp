@@ -330,6 +330,10 @@ SLONG FX::Load(const char *file) {
         Free();
     }
 
+    if (!DoesFileExist(file)) {
+        TeakLibW_Exception(FNL, "File %s not found", file);
+    }
+
     _digitalData.file = file;
     isRaw = true;
     auto len = strlen(file);
