@@ -3,6 +3,8 @@
 #include <filesystem>
 namespace fs = std::filesystem;
 
+#define AT_Log(...) AT_Log_I("TeakFile", __VA_ARGS__)
+
 const char *ExcOpen = "Can't open %s!";
 const char *ExcRead = "Can't read %s!";
 const char *ExcWrite = "Can't write %s!";
@@ -154,7 +156,7 @@ void CRLEReader::SaveAsPlainText() {
     if (Read(buffer.getData(), buffer.AnzEntries(), true)) {
         char fn[255];
         snprintf(fn, 255, "%s.txt", Path);
-        hprintf("Write to %s", fn);
+        AT_Log("Saving RL encoded file to %s", fn);
 
         // TEAKFILE file(fn, TEAKFILE_WRITE);
         FILE *fp = fopen(fn, "w");
@@ -221,7 +223,7 @@ BOOL DoesFileExist(char const *path) {
         return true;
     }
 #ifdef _DEBUG
-    AT_Log_Generic("TeakFile.cpp: File not found: %s", path);
+    AT_Log("File not found: %s", path);
 #endif
     return 0;
 }
@@ -236,7 +238,7 @@ BOOL DoesDirectoryExist(char const *path) {
     }
 
 #ifdef _DEBUG
-    AT_Log_Generic("TeakFile.cpp: File not found: %s", path);
+    AT_Log("Directory not found: %s", path);
 #endif
     return false;
 }
