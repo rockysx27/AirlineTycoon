@@ -66,7 +66,13 @@ BOOL IsRoomBusy(UWORD RoomId, SLONG ExceptPlayer);
 BOOL EarthProjectize(const XY &NaturalPos, UWORD EarthAlpha, XY *PixelPos);
 BOOL EarthProjectize(const FXY &NaturalPos, UWORD EarthAlpha, XY *PixelPos);
 SLONG AddToNthDigit(SLONG Value, SLONG Digit, SLONG Add);
-void MyMessageBox(LPCTSTR Title, LPCTSTR String, ...);
+
+#define MESSAGEBOX_ERROR SDL_MESSAGEBOX_ERROR
+#define MESSAGEBOX_INFO SDL_MESSAGEBOX_INFORMATION
+void SimpleMessageBox(ULONG Type, LPCTSTR Title, LPCTSTR String, ...);
+int AbortMessageBox(ULONG Type, LPCTSTR Title, LPCTSTR String, ...);
+
+
 DOUBLE GetFrameRate(void);
 CString ConvertDate2String(UWORD Date);
 UWORD ConvertString2Date(char *String);

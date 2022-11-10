@@ -335,10 +335,29 @@ SLONG AddToNthDigit(SLONG Value, SLONG Digit, SLONG Add) {
     return (Value);
 }
 
+int CustomMessageBox(ULONG Type, LPCTSTR Title, char Buffer[256], const SDL_MessageBoxButtonData Buttons[], int buttonCount) {
+    const SDL_MessageBoxColorScheme ColorScheme = {{ /* .colors (.r, .g, .b) */
+        /* [SDL_MESSAGEBOX_COLOR_BACKGROUND] */
+        {255, 0, 0},
+        /* [SDL_MESSAGEBOX_COLOR_TEXT] */
+        {0, 255, 0},
+        /* [SDL_MESSAGEBOX_COLOR_BUTTON_BORDER] */
+        {255, 255, 0},
+        /* [SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND] */
+        {0, 0, 255},
+        /* [SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED] */
+        {255, 0, 255}}};
+    const SDL_MessageBoxData Data = {Type, nullptr, Title, Buffer, buttonCount, Buttons, &ColorScheme};
+    int buttonId = 0;
+    SDL_ShowMessageBox(&Data, &buttonId);
+
+    return buttonId;
+}
+
 //--------------------------------------------------------------------------------------------
 // Im Mess-Age (oder war's Message?) Zeitalter braucht man einfache Nachrichten (für Fehler)
 //--------------------------------------------------------------------------------------------
-void MyMessageBox(LPCTSTR Title, LPCTSTR String, ...) {
+void SimpleMessageBox(ULONG Type, LPCTSTR Title, LPCTSTR String, ...) {
     char Buffer[256];
 
     // Hilfskonstruktion für beliebige viele Argumente deklarieren:
@@ -353,20 +372,28 @@ void MyMessageBox(LPCTSTR Title, LPCTSTR String, ...) {
     // Daten bereinigen:
     va_end(Vars);
 
-    const SDL_MessageBoxButtonData Buttons[] = {{/* .flags, .buttonid, .text */ 0, 0, "OK"}};
-    const SDL_MessageBoxColorScheme ColorScheme = {{/* .colors (.r, .g, .b) */
-                                                    /* [SDL_MESSAGEBOX_COLOR_BACKGROUND] */
-                                                    {255, 0, 0},
-                                                    /* [SDL_MESSAGEBOX_COLOR_TEXT] */
-                                                    {0, 255, 0},
-                                                    /* [SDL_MESSAGEBOX_COLOR_BUTTON_BORDER] */
-                                                    {255, 255, 0},
-                                                    /* [SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND] */
-                                                    {0, 0, 255},
-                                                    /* [SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED] */
-                                                    {255, 0, 255}}};
-    const SDL_MessageBoxData Data = {SDL_MESSAGEBOX_INFORMATION, nullptr, Title, Buffer, SDL_arraysize(Buttons), Buttons, &ColorScheme};
-    SDL_ShowMessageBox(&Data, nullptr);
+    const SDL_MessageBoxButtonData Buttons[] = {{/* .flags, .buttonid, .text */ SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 0, "OK"}};
+    CustomMessageBox(Type, Title, Buffer, Buttons, 1);
+}
+
+int AbortMessageBox(ULONG Type, LPCTSTR Title, LPCTSTR String, ...) {
+    char Buffer[256];
+
+    // Hilfskonstruktion für beliebige viele Argumente deklarieren:
+    va_list Vars;
+
+    // Tabelle initialisieren:
+    va_start(Vars, String);
+
+    // Die gesammten Parameter "reinvestieren":
+    vsnprintf(Buffer, sizeof(Buffer), const_cast<char *>(String), Vars);
+
+    // Daten bereinigen:
+    va_end(Vars);
+
+    const SDL_MessageBoxButtonData Buttons[] = {{/* .flags, .buttonid, .text */ SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 0, "OK"},
+                                                {/* .flags, .buttonid, .text */ SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 1, "Abort"}};
+    return CustomMessageBox(Type, Title, Buffer, Buttons, 2);
 }
 
 //--------------------------------------------------------------------------------------------

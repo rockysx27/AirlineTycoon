@@ -45,6 +45,7 @@
 
 #include "AtNet.h"
 #include "SbLib.h"
+class TeakLibException;
 extern SBNetwork gNetwork;
 
 #include <filesystem>
@@ -102,28 +103,33 @@ int main(int argc, char *argv[]) {
 #ifdef SENTRY
     const bool disableSentry = DoesFileExist("no-sentry");
 
-    if(!disableSentry){
-	    sentry_options_t* options = sentry_options_new();
-	    sentry_options_set_dsn(options, "https://6c9b29cfe559442b98417942e221250d@o4503905572225024.ingest.sentry.io/4503905573797888");
-	    // This is also the default-path. For further information and recommendations:
-	    // https://docs.sentry.io/platforms/native/configuration/options/#database-path
-	    sentry_options_set_database_path(options, ".sentry-native");
-	    sentry_options_set_release(options, VersionString);
-	    sentry_options_set_debug(options, 0);
-	    sentry_options_add_attachment(options, "debug.txt");
+    if (!disableSentry) {
+        sentry_options_t* options = sentry_options_new();
+        sentry_options_set_dsn(options, "https://6c9b29cfe559442b98417942e221250d@o4503905572225024.ingest.sentry.io/4503905573797888");
+        // This is also the default-path. For further information and recommendations:
+        // https://docs.sentry.io/platforms/native/configuration/options/#database-path
+        sentry_options_set_database_path(options, ".sentry-native");
+        sentry_options_set_release(options, VersionString);
+        sentry_options_set_debug(options, 0);
+        sentry_options_add_attachment(options, "debug.txt");
 
         srand(time(nullptr));
-        int crashId = rand() % 1000 + rand()%1000 * 1000;
+        int crashId = rand() % 1000 + rand() % 1000 * 1000;
 
-	    sentry_options_set_on_crash(options, [] (const sentry_ucontext_t* uctx, sentry_value_t event, void* closure) {
-				const std::string id = std::to_string(*(int*)closure);
-				const std::string msg = std::string("Airline Tycoon experienced an unexpected exception\nCrash information is being send to sentry...\nCustom Crash ID is: ") + id;
-                AT_Log_I("CRASH", msg);
-                std::filesystem::copy_file("debug.txt", std::string("crash-") + id + std::string(".txt"));
-			    MessageBoxA(nullptr, msg.c_str(), "Airline Tycoon Deluxe Crash Handler", MB_OK);
-    			return event;
-		    }, &crashId);
-	    sentry_init(options);
+        sentry_options_set_on_crash(
+            options,
+            [](const sentry_ucontext_t *uctx, sentry_value_t event, void *closure) -> sentry_value_t {
+            const std::string id = std::to_string(*(int*)closure);
+            const std::string msg = std::string("Airline Tycoon experienced an unexpected exception\nPress OK to send crash information to sentry\nPress Abort to not send the crash to sentry\n\nCustom Crash ID is: ") + id;
+            AT_Log_I("CRASH", msg);
+            std::filesystem::copy_file("debug.txt", "crash-" + id + ".txt");
+            if (AbortMessageBox(MESSAGEBOX_ERROR, "Airline Tycoon Deluxe Crash Handler", msg.c_str(), nullptr)) {
+                return sentry_value_new_null(); // Skip
+            }
+
+            return event;
+        }, &crashId);
+        sentry_init(options);
 
         const sentry_value_t crumbId = sentry_value_new_breadcrumb("default", "");
         sentry_value_set_by_key(crumbId, "category", sentry_value_new_string("Custom Crash ID"));
@@ -161,7 +167,6 @@ int main(int argc, char *argv[]) {
     }
 #endif
 
-    
     return 0;
 }
 

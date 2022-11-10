@@ -97,24 +97,17 @@ void CRouten::ReInit(const CString &TabFilename, bool bNoDoublettes) {
         ULONG VonCity;
         ULONG NachCity;
 
-        std::stringstream errorStr;
-        errorStr << "Tried to create route between " << Helper1 << " and " << Helper2 << ", but a city was not found: ";
+        const char *errorStr = "Tried to create route between %s and %s, but a city was not found: %s";
         try {
             VonCity = Cities.GetIdFromName(KorrigiereUmlaute(Helper1).c_str());
         } catch (std::runtime_error&) {
-            errorStr << Helper1;
-            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "AT Exception", errorStr.str().c_str(), nullptr);
-
-            throw;
+            TeakLibW_Exception(FNL, errorStr, Helper1.c_str(), Helper2.c_str(), Helper1.c_str());
         }
 
         try {
             NachCity = Cities.GetIdFromName(KorrigiereUmlaute(Helper2).c_str());
-        } catch (std::runtime_error&) {
-            errorStr << Helper2;
-            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "AT Exception", errorStr.str().c_str(), nullptr);
-
-            throw;
+        } catch (std::runtime_error &) {
+            TeakLibW_Exception(FNL, errorStr, Helper1.c_str(), Helper2.c_str(), Helper2.c_str());
         }
 
         // Looking for doubles (may be turned off for compatibility)
