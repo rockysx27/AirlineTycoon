@@ -109,7 +109,7 @@ inline bool operator==(const CPoint &lhs, const CPoint &rhs) { return lhs.x == r
 
 inline bool operator!=(const CPoint &lhs, const CPoint &rhs) { return !(lhs == rhs); }
 
-#define START_NAME_MAP(name) static const char* Translate_##name(unsigned long value, bool withDescription = false) { switch (value) {
+#define START_NAME_MAP(name) static constexpr const char* Translate_##name(unsigned long value, bool withDescription = false) { switch (value) {
 #define DEFINE_NAME_ENTRY(name, desc) case name: return withDescription ? #name " - " desc : #name;
 #define END_NAME_MAP  default: return "--";}return "unknown";}
 
@@ -616,6 +616,22 @@ END_NAME_MAP
 #define BERATERTYP_SICHERHEIT 9
 #define WORKER_PILOT 10
 #define WORKER_STEWARDESS 11
+
+START_NAME_MAP(WORKER_TYPE)
+    DEFINE_NAME_ENTRY(BERATERTYP_GIRL, )
+    DEFINE_NAME_ENTRY(BERATERTYP_PERSONAL, )
+    DEFINE_NAME_ENTRY(BERATERTYP_KEROSIN, )
+    DEFINE_NAME_ENTRY(BERATERTYP_ROUTE, )
+    DEFINE_NAME_ENTRY(BERATERTYP_AUFTRAG, )
+    DEFINE_NAME_ENTRY(BERATERTYP_GELD, )
+    DEFINE_NAME_ENTRY(BERATERTYP_INFO, )
+    DEFINE_NAME_ENTRY(BERATERTYP_FLUGZEUG, )
+    DEFINE_NAME_ENTRY(BERATERTYP_FITNESS, )
+    DEFINE_NAME_ENTRY(BERATERTYP_SICHERHEIT, )
+    DEFINE_NAME_ENTRY(WORKER_PILOT, )
+    DEFINE_NAME_ENTRY(WORKER_STEWARDESS, )
+END_NAME_MAP
+
 
 // Wo befindet sich ein Worker?
 #define WORKER_RESERVE 100 // Ist in der stillen Reserve

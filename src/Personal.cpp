@@ -6,6 +6,8 @@
 #include "StdAfx.h"
 #include "glpers.h"
 
+#define AT_Log(...) AT_Log_I("Personal", __VA_ARGS__)
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -434,7 +436,7 @@ void CWorkers::NewDay() {
         if (Workers[c].Employer == WORKER_RESERVE || Workers[c].Employer == WORKER_JOBLESS) {
             if (Workers[c].TimeInPool >= 7) {
                 Workers[c].Employer = WORKER_EXPIRED;
-                // hprintf("Removing %s from pool", (const char *)Workers[c].Name);
+                AT_Log("Removing %s from pool", (const char *)Workers[c].Name);
             } else if (Workers[c].TimeInPool >= 0) {
                 Workers[c].TimeInPool++;
             }
@@ -671,8 +673,8 @@ SLONG CWorkers::AddToPool(SLONG typ, TEAKRAND &LocalRand, SLONG zielAnzahlKompet
         }
     }
 
-    // hprintf("Num expired workers: %li (Typ: %li)", nExpired, typ);
-    // hprintf("Num competent workers: %li / %li (Typ: %li)", anzKompetent, anz, typ);
+    AT_Log("Number of expired workers: %li (Typ: %s)", nExpired, Translate_WORKER_TYPE(typ));
+    AT_Log("Number of competent workers: %li / %li (Typ: %s)", anzKompetent, anz, Translate_WORKER_TYPE(typ));
 
     if (anzKompetent < zielAnzahlKompetent) {
         // Zielwert ist 80 kompetente Leute, aber generiere nie mehr als 10 pro Tag
@@ -702,9 +704,9 @@ SLONG CWorkers::AddToPool(SLONG typ, TEAKRAND &LocalRand, SLONG zielAnzahlKompet
             }
 
             if (isNew != 0) {
-                // hprintf("Adding new worker: %s (Typ: %li)", (const char *)Workers[c].Name, Workers[c].Typ);
+                AT_Log("Adding new worker: %s (Typ: %s)", (const char *)Workers[c].Name, Translate_WORKER_TYPE(Workers[c].Typ));
             } else {
-                // hprintf("Replacing expired worker: %s (Typ: %li)", (const char *)Workers[c].Name, Workers[c].Typ);
+                AT_Log("Replacing expired worker: %s (Typ: %s)", (const char *)Workers[c].Name, Translate_WORKER_TYPE(Workers[c].Typ));
                 --nExpired;
             }
 
@@ -716,7 +718,7 @@ SLONG CWorkers::AddToPool(SLONG typ, TEAKRAND &LocalRand, SLONG zielAnzahlKompet
 void CWorkers::CheckShortageAndSort() {
     TEAKRAND LocalRand(Sim.Date + Sim.StartTime);
 
-    // hprintf("Worker pool size: %li", Workers.AnzEntries());
+    AT_Log("Worker pool size: %li", Workers.AnzEntries());
 
     SLONG nExpired = 0;
     for (SLONG i = BERATERTYP_PERSONAL; i <= BERATERTYP_SICHERHEIT; i++) {
@@ -727,13 +729,13 @@ void CWorkers::CheckShortageAndSort() {
 
     std::sort(Workers.begin(), Workers.end());
 
-    // hprintf("Still %li expired Workers in pool", nExpired);
+    AT_Log("Still %li expired workers in pool", nExpired);
     if (nExpired > 100) {
         SLONG i = Workers.AnzEntries() - 1;
         while (Workers[i].Employer == WORKER_EXPIRED) {
             --i;
         }
-        // hprintf("Shrinking pool from %li to %li", Workers.AnzEntries(), i + 1);
+        AT_Log("Shrinking worker pool from %li to %li", Workers.AnzEntries(), i + 1);
         Workers.ReSize(i + 1);
     }
 }
