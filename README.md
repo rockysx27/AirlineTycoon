@@ -1,8 +1,14 @@
 # AirlineTycoon
 
 This repository aims to complete the partial source code that is provided as a free bonus in the GOG release
-of Airline Tycoon Deluxe. To run it you'll need the game assets from the either the First Class, Evolution or
+of Airline Tycoon Deluxe.
+
+To run it you'll need the game assets from the either the First Class, Evolution or
 Deluxe edition of the game. You can purchase these assets from GOG.com: https://www.gog.com/game/airline_tycoon_deluxe
+
+## Major Additions
+- Native Linux support
+- Dedicated server browser and NAT-punchthrough multiplayer (open source server at: https://github.com/WizzardMaker/ATDMasterServer)
 
 ## License
 
@@ -10,13 +16,6 @@ The code in the repository is licensed under the terms included in the GOG relea
 only be used for non-commercial purposes and remains property of BFG.
 
 It is therefore *not* open-source in the free software sense, for more information refer to the License.txt.
-
-## What works?
-
-The singleplayer game is fully playable without issues. Network multiplayer support has been reimplemented using
-ENet and alternatively using RakNet instead of DirectPlay and might behave differently than the original.
-
-The game can also be played on Linux.
 
 ## Building
 
@@ -26,7 +25,64 @@ Before building remember to clone the submodules:
 git submodule update --init
 ```
 
-More build instructions will follow soon.
+### Windows
+The project can be build with Visual Studio.
+
+#### Dependencies
+These dependencies need to be downloaded separately:
+```ps
+cd cmake
+# SDL2, SDL2-Mixer, SDL2-TTF, SDL2-Image
+wget "https://github.com/libsdl-org/SDL_ttf/releases/download/release-2.20.1/SDL2_ttf-devel-2.20.1-VC.zip" -outfile "sdl2-ttf.zip"
+wget "https://github.com/libsdl-org/SDL_mixer/releases/download/release-2.6.2/SDL2_mixer-devel-2.6.2-VC.zip" -outfile "sdl2-mixer.zip"
+wget "https://github.com/libsdl-org/SDL_image/releases/download/release-2.6.2/SDL2_image-devel-2.6.2-VC.zip" -outfile "sdl2-image.zip"
+wget "https://github.com/libsdl-org/SDL/releases/download/release-2.24.2/SDL2-devel-2.24.2-VC.zip" -outfile "sdl2.zip"
+```
+Extract the content of those zips to a folder structure like this:
+```
+cmake/
+    sdl2/
+        include/*
+        lib/*
+        ...
+    sdl2-image/
+        include/*
+        lib/*
+        ...
+    ...
+```
+
+The visual studio project files also need to be created for the enet dependency. Use the "Developer Command Prompt for VS 2022" or "Developer Powershell for VS 2022" and create the project files like this:
+```ps
+# Go to root of repo...
+cd libs/enet
+cmake .
+```
+
+You have to change the build output path of enet to point to `$(SolutionDir)BUILD\enet\$(Configuration)\enet.lib`
+
+#### Building
+To build the application, open the project solution with Visual Studio, select your configuration and then build like any other VS project.
+
+### Linux
+The project hast to be build with cmake/make
+
+#### Dependencies
+Download the SDL dependencies like this:
+```sh
+apt-get install libsdl2-dev
+apt-get install libsdl2-image-dev
+apt-get install libsdl2-mixer-dev
+apt-get install libsdl2-ttf-dev
+```
+
+Make sure that SDL2 is at least version 2.10
+
+#### Building (WIP)
+1. Prepare the cmake environment `cmake .`
+2. Build the project with `make`
+
+----
 
 ## Changes
 
