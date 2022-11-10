@@ -140,6 +140,8 @@ CRLEReader::CRLEReader(const char *path) : Ctx(nullptr), SeqLength(0), SeqUsed(0
 
 CRLEReader::~CRLEReader() { Close(); }
 
+bool CRLEReader::AlwaysSaveAsPlainText = false;
+
 bool CRLEReader::Close() {
     if (Ctx == nullptr) {
         return false;
@@ -250,9 +252,9 @@ BUFFER_V<BYTE> LoadCompleteFile(char const *path) {
         return buffer;
     }
 
-    if (reader.getIsRLE()) {
-        CRLEReader konverter(path);
-        konverter.SaveAsPlainText();
+    if (reader.getIsRLE() && CRLEReader::AlwaysSaveAsPlainText) {
+        CRLEReader converter(path);
+        converter.SaveAsPlainText();
     }
 
     return buffer;

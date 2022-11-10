@@ -58,6 +58,9 @@ PRINTF_ATTR(2, 3) inline void SDL_PRINTF_VARARG_FUNC(2) AT_Log_I(const std::stri
 
 #define AT_Log_Generic(...) AT_Log_I("Generic", __VA_ARGS__)
 
+//Example AT_Log implementation:
+//#define AT_Log(...) AT_Log_I("EXAMPLE", __VA_ARGS__)
+
 template <typename T> inline void Limit(T min, T &value, T max) {
     if (value < min)
         value = min;
@@ -497,6 +500,9 @@ class CRLEReader {
 
     bool getIsRLE() { return IsRLE; }
     void SaveAsPlainText();
+
+    static void TogglePlainTextSaving(bool enabled) { AlwaysSaveAsPlainText = enabled; }
+    static bool AlwaysSaveAsPlainText;
 
   private:
     SDL_RWops *Ctx;

@@ -351,6 +351,9 @@ BOOL CTakeOffApp::InitInstance(int argc, char *argv[]) {
         if (stricmp(Argument, "/window") == 0) {
             bFullscreen = FALSE;
         }
+        if (stricmp(Argument, "/savedata") == 0) {
+            CRLEReader::TogglePlainTextSaving(true);
+        }
         // if (stricmp (Argument, "/windowed")==0) bFullscreen = FALSE;
 
         if (stricmp(Argument, "/novgaram") == 0) {
