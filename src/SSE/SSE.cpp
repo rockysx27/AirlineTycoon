@@ -6,6 +6,7 @@
 #include <SDL_mixer.h>
 
 #include <algorithm>
+#include <filesystem>
 #include <vector>
 
 #define AT_Log(...) AT_Log_I("Sound", __VA_ARGS__)
@@ -621,7 +622,10 @@ SLONG MIDI::Load(const char *file) {
         _music = Mix_LoadMUS(_musicData.file.c_str());
         // Some versions ship with ogg music as well, use it as a fall-back
     } else if (_mode == 2) {
-        _musicData.file.replace(_musicData.file.size() - 3, 3, "ogg");
+        std::filesystem::path p(_musicData.file);
+        std::string fn = p.filename().stem().string();
+        std::transform(fn.begin(), fn.end(), fn.begin(), ::tolower);
+        _musicData.file = p.parent_path() / (fn + ".ogg");
         _music = Mix_LoadMUS(_musicData.file.c_str());
     }
 
