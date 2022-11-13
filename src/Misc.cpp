@@ -526,6 +526,29 @@ CString FullFilename(const CString &Filename, const CString &PathString) {
         rc.Format(AppPath + path, (const char *)Filename);
     }
 
+    std::filesystem::path p((const char *)rc);
+    if (!exists(p) && exists(p.parent_path())) {
+        /* resolve case-insensitively */
+        CString found;
+        for (std::filesystem::directory_entry e : std::filesystem::directory_iterator(p.parent_path())) {
+            if (!e.exists()) {
+                continue;
+            }
+            int cmp = stricmp(e.path().filename().c_str(), (const char *)Filename);
+            if (cmp != 0) {
+                continue;
+            }
+            if (found.GetLength() != 0) {
+                found.clear();
+                break;
+            }
+            found = e.path().string();
+        }
+        if (found.GetLength() != 0) {
+            rc = found;
+        }
+    }
+
     return (rc);
 }
 
@@ -534,23 +557,10 @@ CString FullFilename(const CString &Filename, const CString &PathString) {
 //--------------------------------------------------------------------------------------------
 CString FullFilename(const CString &Filename, const CString &PathString, SLONG Num) {
     CString tmp;
-    CString path;
-    CString rc;
 
     tmp.Format((const char *)Filename, Num);
 
-    path = PathString;
-    if (std::filesystem::path::preferred_separator != '\\') {
-        path.Replace('\\', std::filesystem::path::preferred_separator);
-    }
-
-    if (path[1] == ':') {
-        rc.Format(path, tmp);
-    } else {
-        rc.Format(AppPath + path, tmp);
-    }
-
-    return (rc);
+    return FullFilename(tmp, PathString);
 }
 
 //--------------------------------------------------------------------------------------------
