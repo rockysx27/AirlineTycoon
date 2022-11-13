@@ -283,15 +283,9 @@ void InitGlobeMapper() {
     SBBM TmpBm(10, 10);
 
     PALETTE EarthPal;
-#ifdef WIN32
-    EarthPal.RefreshPalFromLbm(const_cast<char *>((LPCTSTR)FullFilename("earthall.lbm", GliPath)));
-    TECBM ShadeBm(const_cast<char *>((LPCTSTR)FullFilename("shade.pcx", GliPath)), SYSRAMBM);
-#else
-    EarthPal.RefreshPalFromTga(const_cast<char *>((LPCTSTR)FullFilename("earthall.tga", GliPath)));
-    TECBM ShadeBm(const_cast<char *>((LPCTSTR)FullFilename("shade.tga", GliPath)), SYSRAMBM);
-#endif
+    EarthPal.RefreshPalFrom((LPCTSTR)FullFilename("EarthAll.lbm", GliPath), NULL, (LPCTSTR)FullFilename("EarthAll.tga", GliPath));
 
-    GlobeMixTab.ReSize(256 * 64);
+    TECBM ShadeBm(NULL, (LPCTSTR)FullFilename("shade.pcx", GliPath), (LPCTSTR)FullFilename("shade.tga", GliPath), SYSRAMBM);
 
     for (x = 0; x < 256; x++) {
         for (y = 0; y < 64; y++) {
