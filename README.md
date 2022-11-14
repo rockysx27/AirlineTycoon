@@ -64,24 +64,21 @@ You have to change the build output path of enet to point to `$(SolutionDir)BUIL
 #### Building
 To build the application, open the project solution with Visual Studio, select your configuration and then build like any other VS project.
 
-### Linux
-The project hast to be build with cmake/make
+SDL2 needs to be at least version 2.0.12
 
-#### Dependencies
-Download the SDL dependencies like this:
-```sh
-apt-get install libsdl2-dev
-apt-get install libsdl2-image-dev
-apt-get install libsdl2-mixer-dev
-apt-get install libsdl2-ttf-dev
-```
+### Linux x86 
+(AMD64 only with MultiArch for i686)
 
-Make sure that SDL2 is at least version 2.10
+##Fedora AMD64
+sudo dnf install jansson-devel.i686 SDL2*-devel.i686
 
-#### Building (WIP)
-1. Prepare the cmake environment `cmake .`
-2. Build the project with `make`
+##Ubuntu x64
+sudo apt-get install libjansson-dev:i386 libsdl2*-dev:i386
 
+#Building on AMD64
+mkdir build
+cd build
+cmake -DCMAKE_TOOLCHAIN_FILE=../Toolchain-i686.cmake ..
 ----
 
 ## Changes
