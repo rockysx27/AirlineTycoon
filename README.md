@@ -69,16 +69,17 @@ SDL2 needs to be at least version 2.0.12
 ### Linux x86 
 (AMD64 only with MultiArch for i686)
 
-##Fedora AMD64
+###### Fedora AMD64
 sudo dnf install jansson-devel.i686 SDL2*-devel.i686
 
-##Ubuntu x64
+###### Ubuntu x64
 sudo apt-get install libjansson-dev:i386 libsdl2*-dev:i386
 
-#Building on AMD64
+##### Building on AMD64
 mkdir build
 cd build
 cmake -DCMAKE_TOOLCHAIN_FILE=../Toolchain-i686.cmake ..
+
 ----
 
 ## Changes

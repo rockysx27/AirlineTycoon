@@ -2398,7 +2398,7 @@ void NewGamePopup::OnTimer(UINT nIDEvent) {
         if (gHostIP != ".") {
             // lpDD->FlipToGDISurface ();
 
-            switch (SBProviderEnum id = SBNetwork::GetProviderID(const_cast<char *>((LPCTSTR)pNetworkConnections->Get(NetMediumMapper[Selection] + 1)))) {
+            switch (SBNetwork::GetProviderID(const_cast<char *>((LPCTSTR)pNetworkConnections->Get(NetMediumMapper[Selection] + 1)))) {
             case (SBProviderEnum::SBNETWORK_RAKNET_DIRECT_JOIN):
                 if (gNetwork.Connect(pNetworkConnections->Get(NetMediumMapper[Selection] + 1), const_cast<char *>((LPCTSTR)gHostIP))) {
 

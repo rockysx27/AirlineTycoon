@@ -335,24 +335,7 @@ SLONG AddToNthDigit(SLONG Value, SLONG Digit, SLONG Add) {
     return (Value);
 }
 
-int CustomMessageBox(ULONG Type, LPCTSTR Title, char Buffer[256], const SDL_MessageBoxButtonData Buttons[], int buttonCount) {
-    const SDL_MessageBoxColorScheme ColorScheme = {{ /* .colors (.r, .g, .b) */
-        /* [SDL_MESSAGEBOX_COLOR_BACKGROUND] */
-        {255, 0, 0},
-        /* [SDL_MESSAGEBOX_COLOR_TEXT] */
-        {0, 255, 0},
-        /* [SDL_MESSAGEBOX_COLOR_BUTTON_BORDER] */
-        {255, 255, 0},
-        /* [SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND] */
-        {0, 0, 255},
-        /* [SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED] */
-        {255, 0, 255}}};
-    const SDL_MessageBoxData Data = {Type, nullptr, Title, Buffer, buttonCount, Buttons, &ColorScheme};
-    int buttonId = 0;
-    SDL_ShowMessageBox(&Data, &buttonId);
-
-    return buttonId;
-}
+int CustomMessageBox(ULONG, LPCTSTR, char *, const SDL_MessageBoxButtonData *, int);
 
 //--------------------------------------------------------------------------------------------
 // Im Mess-Age (oder war's Message?) Zeitalter braucht man einfache Nachrichten (für Fehler)
@@ -395,6 +378,26 @@ int AbortMessageBox(ULONG Type, LPCTSTR Title, LPCTSTR String, ...) {
                                                 {/* .flags, .buttonid, .text */ SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 1, "Abort"}};
     return CustomMessageBox(Type, Title, Buffer, Buttons, 2);
 }
+
+int CustomMessageBox(ULONG Type, LPCTSTR Title, char Buffer[256], const SDL_MessageBoxButtonData Buttons[], int buttonCount) {
+    const SDL_MessageBoxColorScheme ColorScheme = {{/* .colors (.r, .g, .b) */
+                                                    /* [SDL_MESSAGEBOX_COLOR_BACKGROUND] */
+                                                    {255, 0, 0},
+                                                    /* [SDL_MESSAGEBOX_COLOR_TEXT] */
+                                                    {0, 255, 0},
+                                                    /* [SDL_MESSAGEBOX_COLOR_BUTTON_BORDER] */
+                                                    {255, 255, 0},
+                                                    /* [SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND] */
+                                                    {0, 0, 255},
+                                                    /* [SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED] */
+                                                    {255, 0, 255}}};
+    const SDL_MessageBoxData Data = {Type, nullptr, Title, Buffer, buttonCount, Buttons, &ColorScheme};
+    int buttonId = 0;
+    SDL_ShowMessageBox(&Data, &buttonId);
+
+    return buttonId;
+}
+
 
 //--------------------------------------------------------------------------------------------
 // Berechnet das interne Datum aus "3-12-1994", "1/11/1992", "1.1.1900", ..

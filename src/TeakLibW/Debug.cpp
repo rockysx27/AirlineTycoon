@@ -130,7 +130,7 @@ void HDU::HercPrintfGreen(const char *format, ...) {
 
 void here(char *file, SLONG line) { Hdu.HercPrintf(0, "Here in %s, line %li", file, line); }
 
-SLONG TeakLibW_Exception(char *file, SLONG line, const char *format, ...) {
+SLONG TeakLibW_Exception(const char *file, SLONG line, const char *format, ...) {
     char buffer[128];
     va_list args;
     va_start(args, format);

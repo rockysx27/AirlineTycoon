@@ -25,7 +25,7 @@ extern const char *ExcXIDUnrecoverable;
 extern const char *ExcAlbumNotConsistent;
 extern const char *ExcAlbumInvalidArg;
 
-extern SLONG TeakLibW_Exception(char *, SLONG, const char *, ...);
+extern SLONG TeakLibW_Exception(const char *, SLONG, const char *, ...);
 extern char *TeakStrRemoveCppComment(char *);
 extern char *TeakStrRemoveEndingCodes(char *, char const *);
 extern unsigned char GerToLower(unsigned char);
