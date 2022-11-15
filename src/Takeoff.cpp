@@ -463,35 +463,37 @@ BOOL CTakeOffApp::InitInstance(int argc, char *argv[]) {
             InitSoundSystem(FrameWnd->m_hWnd);
         }
 
-        if (Sim.Options.OptionViewedIntro == 0 && IntroPath.GetLength() != 0) {
-            Sim.Gamestate = GAMESTATE_INTRO | GAMESTATE_WORKING;
-            TopWin = new CIntro(FALSE, 0);
-            TitleBitmap.ReSize(pRoomLib, GFX_TITEL);
+        if(pRoomLib != nullptr) {
+            if (Sim.Options.OptionViewedIntro == 0 && IntroPath.GetLength() != 0) {
+                Sim.Gamestate = GAMESTATE_INTRO | GAMESTATE_WORKING;
+                TopWin = new CIntro(FALSE, 0);
+                TitleBitmap.ReSize(pRoomLib, GFX_TITEL);
 
-            while (Sim.Gamestate != GAMESTATE_BOOT) {
-                FrameWnd->Invalidate();
-                MessagePump();
-                SDL_Delay(10);
+                while (Sim.Gamestate != GAMESTATE_BOOT) {
+                    FrameWnd->Invalidate();
+                    MessagePump();
+                    SDL_Delay(10);
+                }
+
+                delete TopWin;
+                TopWin = nullptr;
+            } else {
+                TitleBitmap.ReSize(pRoomLib, GFX_SPELLOGO);
             }
 
-            delete TopWin;
-            TopWin = nullptr;
-        } else {
-            TitleBitmap.ReSize(pRoomLib, GFX_SPELLOGO);
+            PrimaryBm.BlitFrom(TitleBitmap);
+            gMousePosition = XY(600, 440);
+            FrameWnd->Invalidate();
+            MessagePump();
+            PrimaryBm.BlitFrom(TitleBitmap);
+            gMousePosition = XY(600, 440);
+            FrameWnd->Invalidate();
+            MessagePump();
+            PrimaryBm.BlitFrom(TitleBitmap);
+            gMousePosition = XY(600, 440);
+            FrameWnd->Invalidate();
+            MessagePump();
         }
-
-        PrimaryBm.BlitFrom(TitleBitmap);
-        gMousePosition = XY(600, 440);
-        FrameWnd->Invalidate();
-        MessagePump();
-        PrimaryBm.BlitFrom(TitleBitmap);
-        gMousePosition = XY(600, 440);
-        FrameWnd->Invalidate();
-        MessagePump();
-        PrimaryBm.BlitFrom(TitleBitmap);
-        gMousePosition = XY(600, 440);
-        FrameWnd->Invalidate();
-        MessagePump();
 
         if (gLanguage == LANGUAGE_N)
             LOADING_TEXT("Karakters worden opgestart...")
@@ -589,19 +591,21 @@ BOOL CTakeOffApp::InitInstance(int argc, char *argv[]) {
         else
             LOADING_TEXT("Initializing screen...");
 
-        TitleBitmap.ReSize(pRoomLib, GFX_TITEL);
-        PrimaryBm.BlitFrom(TitleBitmap);
-        gMousePosition = XY(600, 440);
-        FrameWnd->Invalidate();
-        MessagePump();
-        PrimaryBm.BlitFrom(TitleBitmap);
-        gMousePosition = XY(600, 440);
-        FrameWnd->Invalidate();
-        MessagePump();
-        PrimaryBm.BlitFrom(TitleBitmap);
-        gMousePosition = XY(600, 440);
-        FrameWnd->Invalidate();
-        MessagePump();
+        if(pRoomLib != nullptr) {
+            TitleBitmap.ReSize(pRoomLib, GFX_TITEL);
+            PrimaryBm.BlitFrom(TitleBitmap);
+            gMousePosition = XY(600, 440);
+            FrameWnd->Invalidate();
+            MessagePump();
+            PrimaryBm.BlitFrom(TitleBitmap);
+            gMousePosition = XY(600, 440);
+            FrameWnd->Invalidate();
+            MessagePump();
+            PrimaryBm.BlitFrom(TitleBitmap);
+            gMousePosition = XY(600, 440);
+            FrameWnd->Invalidate();
+            MessagePump();
+        }
 
         if (gLanguage == LANGUAGE_N)
             LOADING_TEXT("Zoekt midi-apparaat...")
