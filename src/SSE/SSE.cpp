@@ -331,7 +331,7 @@ SLONG FX::Load(const char *file) {
     }
 
     if (!DoesFileExist(file)) {
-        TeakLibW_Exception(FNL, "File %s not found", file);
+        AT_Log_I("Sound", "File %s not found", file);
     }
 
     _digitalData.file = file;
