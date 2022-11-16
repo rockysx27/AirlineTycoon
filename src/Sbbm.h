@@ -6,6 +6,7 @@
 #define sbbm_h
 
 #include "HLine.h"
+#include <utility>
 
 //--------------------------------------------------------------------------------------------
 // Liest den aktuellen Taktzyklenzähler der CPU
