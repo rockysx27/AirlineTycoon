@@ -1456,4 +1456,8 @@ class TeakLibException final : public std::runtime_error {
     explicit TeakLibException(const std::string &_Message) : runtime_error(_Message) {}
 
     explicit TeakLibException(const char *_Message) : runtime_error(_Message) {}
+
+    void caught() {
+        AT_Log_I("Herc", "Exception was correctly handled");
+    }
 };
