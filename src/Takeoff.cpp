@@ -964,6 +964,9 @@ void CTakeOffApp::GameLoop(void * /*unused*/) {
                         Sim.Players.Players[Sim.localPlayer].GameSpeed = 5;
                     } else {
                         if (Sim.Difficulty == DIFF_TUTORIAL) {
+                            for (c = 0; c < Sim.Players.AnzPlayers; c++) {
+                                Sim.Players.Players[c].Blocks.ClearAlbum();
+                            }
                             Sim.IsTutorial = TRUE;
                         }
                         MouseWait++;
