@@ -278,7 +278,9 @@ TEAKFILE &operator>>(TEAKFILE &File, CRentRoute &r) {
     File >> r.Auslastung >> r.Image >> r.Miete;
     File >> r.Ticketpreis >> r.TicketpreisFC >> r.TageMitVerlust >> r.TageMitGering;
     File >> r.RoutenAuslastung >> r.HeuteBefoerdert >> r.AuslastungFC;
-    File >> r.WocheBefoerdert;
+    if (SaveVersionSub >= 200) {
+        File >> r.WocheBefoerdert;
+    }
     File >> r.RoutenAuslastungBot >> r.AuslastungBot >> r.AuslastungFirstClassBot;
 
     return (File);

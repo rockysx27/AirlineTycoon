@@ -115,6 +115,12 @@ void TEAKFILE::SetPosition(SLONG pos) const {
     }
 }
 
+void TEAKFILE::Skip(SLONG size) const {
+    if (SDL_RWseek(Ctx, size, RW_SEEK_CUR) < 0) {
+        TeakLibW_Exception(nullptr, 0, ExcSeek, Path, size);
+    }
+}
+
 void TEAKFILE::Announce(SLONG size) { MemBuffer.ReSize(size); }
 
 CRLEReader::CRLEReader(const char *path) : Ctx(nullptr), SeqLength(0), SeqUsed(0), IsSeq(false), Sequence(), IsRLE(false), Size(0), Key(0), Path(path) {

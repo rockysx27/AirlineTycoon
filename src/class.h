@@ -146,14 +146,9 @@ class /**/ SValue {
 
     __int64 GetSum(void);
 
-    friend TEAKFILE &operator<<(TEAKFILE &File, const SValue &Value) {
-        File << Value.Days;
-        return (File);
-    }
-    friend TEAKFILE &operator>>(TEAKFILE &File, SValue &Value) {
-        File >> Value.Days;
-        return (File);
-    }
+    friend TEAKFILE &operator<<(TEAKFILE &File, const SValue &Value);
+
+    friend TEAKFILE &operator>>(TEAKFILE &File, SValue &Value);
 
     friend class CTakeOffApp;
 };

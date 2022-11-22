@@ -14,6 +14,9 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+extern SLONG SaveVersion;
+extern SLONG SaveVersionSub;
+
 SLONG ReadLine(BUFFER_V<UBYTE> &Buffer, SLONG BufferStart, char *Line, SLONG LineLength);
 
 //--------------------------------------------------------------------------------------------
@@ -969,7 +972,10 @@ TEAKFILE &operator>>(TEAKFILE &File, CWorker &Worker) {
     File >> Worker.PlaneId;
     File >> Worker.Happyness;
     File >> Worker.WarnedToday;
-    File >> Worker.TimeInPool;
+
+    if (SaveVersionSub >= 200) {
+        File >> Worker.TimeInPool;
+    }
 
     return (File);
 }

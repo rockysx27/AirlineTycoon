@@ -12,6 +12,9 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+extern SLONG SaveVersion;
+extern SLONG SaveVersionSub;
+
 //--------------------------------------------------------------------------------------------
 // Die Bank wird eröffnet:
 //--------------------------------------------------------------------------------------------
@@ -469,6 +472,21 @@ TEAKFILE &operator<<(TEAKFILE &File, const CBilanz &Bilanz) {
 // Lädt einen Bilanzdatensatz:
 //--------------------------------------------------------------------------------------------
 TEAKFILE &operator>>(TEAKFILE &File, CBilanz &Bilanz) {
+    if (SaveVersionSub < 200) {
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wundefined-reinterpret-cast"
+#define COMP(x) (reinterpret_cast<SLONG &>(x))
+        File >> COMP(Bilanz.HabenZinsen) >> COMP(Bilanz.Tickets) >> COMP(Bilanz.Auftraege);
+        File >> COMP(Bilanz.HabenRendite) >> COMP(Bilanz.SollRendite);
+        File >> COMP(Bilanz.SollZinsen) >> COMP(Bilanz.KerosinGespart) >> COMP(Bilanz.Personal);
+        File >> COMP(Bilanz.Vertragsstrafen) >> COMP(Bilanz.Wartung) >> COMP(Bilanz.Gatemiete);
+        File >> COMP(Bilanz.Citymiete) >> COMP(Bilanz.Routenmiete);
+#pragma GCC diagnostic pop
+
+        return (File);
+    }
+
     File >> Bilanz.Tickets >> Bilanz.Auftraege >> Bilanz.FrachtAuftraege >> Bilanz.KerosinVorrat;
     File >> Bilanz.KerosinFlug >> Bilanz.Essen >> Bilanz.Vertragsstrafen;
     File >> Bilanz.Wartung >> Bilanz.FlugzeugUmbau >> Bilanz.Personal;

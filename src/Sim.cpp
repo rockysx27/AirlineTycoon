@@ -55,7 +55,7 @@ void CalcPlayerMaximums(bool bForce);
 
 // Daten des aktuellen Savegames beim laden:
 SLONG SaveVersion = 1;
-SLONG SaveVersionSub = 107;
+SLONG SaveVersionSub = 200;
 
 // Öffnungszeiten:
 extern SLONG timeDutyOpen;
@@ -2841,7 +2841,11 @@ TEAKFILE &operator>>(TEAKFILE &File, SIM &Sim) {
     File.Read(reinterpret_cast<UBYTE *>(&Sim.StatfGraphVisible), sizeof(Sim.StatfGraphVisible));
     File >> Sim.Statgroup >> Sim.Statdays >> Sim.StatnewDays >> Sim.DropDownPosY;
     File >> Sim.StatplayerMask;
-    File >> Sim.StatiArray;
+    if (SaveVersionSub >= 200) {
+        File >> Sim.StatiArray;
+    } else {
+        File.Skip(3 * 16 * sizeof(bool));
+    }
 
     // Der maximale Schwierigkeitsgrad;
     File.ReadTrap(100);
@@ -4207,3 +4211,20 @@ void SValue::NewDay() {
 // Gibt die Summe aus dem letzten Monat aus:
 //--------------------------------------------------------------------------------------------
 __int64 SValue::GetSum() { return std::accumulate(Days.begin(), Days.end(), 0); }
+
+
+TEAKFILE &operator<<(TEAKFILE &File, const SValue &Value) {
+    File << Value.Days;
+    return (File);
+}
+
+TEAKFILE & operator>>(TEAKFILE &File, SValue &Value) {
+    File >> Value.Days;
+
+    if (SaveVersionSub < 200) {
+        BUFFER_V<__int64> _months;
+        File >> _months;
+    }
+
+    return (File);
+}

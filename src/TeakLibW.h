@@ -272,7 +272,7 @@ class TEAKFILE {
     void WriteTrap(SLONG) const;
     void SetPasswort(char *);
     void SetPosition(SLONG) const;
-    void Skip(SLONG);
+    void Skip(SLONG size) const;
     void Write(const unsigned char *, SLONG);
     void WriteLine(char *);
     void Announce(SLONG);
@@ -1332,6 +1332,7 @@ template <typename T> class ALBUM_V {
 
         File >> size;
         File >> filler;
+        buffer.ReSize(size);
 #ifdef DEBUG_ALBUM
         assert(buffer.AnzEntries() == size);
 #endif

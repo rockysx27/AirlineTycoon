@@ -7137,7 +7137,16 @@ TEAKFILE &operator>>(TEAKFILE &File, PLAYER &Player) {
     File >> Player.Airline >> Player.AirlineX >> Player.Abk;
     File >> Player.Owner >> Player.Logo >> Player.Money;
     File >> Player.MoneyPast >> Player.Credit;
-    File >> Player.Image >> Player.KerosinQuali >> Player.KerosinKind;
+
+    File >> Player.Image;
+    if (SaveVersionSub >= 200) {
+        File >> Player.KerosinQuali;
+    }else {
+        File.Skip(sizeof(SLONG)); // old SLONG BadKerosin
+        Player.KerosinQuali = 0;
+    }
+    File >> Player.KerosinKind;
+
     File >> Player.Tank >> Player.TankOpen >> Player.TankInhalt;
     File >> Player.TankPreis >> Player.GameSpeed >> Player.ArabTrust;
     File >> Player.ArabMode >> Player.ArabOpfer >> Player.ArabHints;
@@ -7170,6 +7179,11 @@ TEAKFILE &operator>>(TEAKFILE &File, PLAYER &Player) {
                     File >> Player.NumMiles >> Player.NumServicePoints;
                     File >> Player.bWasInMuseumToday >> Player.bHasPlanesUpgradedToday;
                     File >> Player.BotLevel;
+                    if (SaveVersionSub >= 200) {
+                        File >> Player.bHasPlanesUpgradedToday;
+                    }else {
+                        Player.bHasPlanesUpgradedToday = FALSE;
+                    }
                     File >> Player.NumOrderFlights >> Player.NumOrderFlightsToday;
                     File >> Player.NumOrderFlightsToday2 >> Player.IsStuck;
 
@@ -7217,7 +7231,20 @@ TEAKFILE &operator>>(TEAKFILE &File, PLAYER &Player) {
     File >> Player.DisplayPlanes;
 
     // Größere Daten:
-    File >> Player.Planes >> Player.Auftraege >> Player.Gates;
+    File >> Player.Planes >> Player.Auftraege;
+    if (SaveVersionSub >= 200) {
+        File >> Player.Gates;
+    } else { // Shift to a buffer makes this neccessary
+        File >> Player.Gates.Gates;
+        UBYTE gates[24 * 7]{};
+
+        File.Read(gates, 24 * 7);
+        for (int i = 0; i < 24*7; i++) {
+            Player.Gates.Auslastung[i] = gates[i];
+        }
+
+        File >> Player.Gates.NumRented;
+    }
     File >> Player.Items >> Player.RentCities >> Player.RentRouten;
     File >> Player.CursorPos >> Player.History >> Player.Blocks;
     File >> Player.Messages >> Player.Letters;
@@ -7235,8 +7262,10 @@ TEAKFILE &operator>>(TEAKFILE &File, PLAYER &Player) {
     }
 
     // Aktien & Geld:
-    File >> Player.Bilanz >> Player.BilanzGestern >> Player.BilanzGesamt;
-    File >> Player.BilanzWoche;
+    File >> Player.Bilanz >> Player.BilanzGestern;
+    if (SaveVersionSub >= 200) {
+        File >> Player.BilanzGesamt >> Player.BilanzWoche;
+    }
     File >> Player.SollZins >> Player.HabenZins;
     File >> Player.MaxAktien;
     File >> Player.AnzAktien >> Player.Dividende >> Player.TrustedDividende;
@@ -7302,7 +7331,9 @@ TEAKFILE &operator>>(TEAKFILE &File, PLAYER &Player) {
     File >> Player.Sympathie >> Player.DoRoutes >> Player.SavesForPlane;
     File >> Player.WantToDoRoutes;
     File >> Player.BuyBigPlane >> Player.SavesForRocket;
-    File >> Player.TargetedPlayer;
+    if (SaveVersionSub >= 200) {
+        File >> Player.TargetedPlayer;
+    }
     File >> Player.PlayerDialog >> Player.PlayerDialogState;
     File >> Player.CalledPlayer >> Player.BoredOfPlayer;
     File >> Player.IsTalking >> Player.IsWalking2Player;
