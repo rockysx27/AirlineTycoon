@@ -1193,7 +1193,7 @@ class /**/ BLOCK {
   public:
     BLOCK() = default;
 
-    void LoadLib(const CString &LibName);
+    void LoadCityPhotoLib(CITY &city);
     void BlitAt(SBBM &RoomBm);
     void UpdateTip(SLONG PlayerNum = -1, BOOL StyleType = -1);
     void UpdatePageSize(void);

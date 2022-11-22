@@ -1649,12 +1649,8 @@ void CPlaner::HandleLButtonDown() {
                     pBlock->Page = 0;
                     pBlock->SelectedId = pBlock->Table.LineIndex[TableCursor];
 
-                    try {
-                        pBlock->LoadLib(Cities[pBlock->SelectedId].PhotoName);
-                    }catch(TeakLibException &e) {
-                        e.caught();
-                        //Just show no image
-                    }
+                    pBlock->LoadCityPhotoLib(Cities[pBlock->SelectedId]);
+
                     EarthTargetAlpha = UWORD((Cities[pBlock->SelectedId].GlobusPosition.x + 170) * (3200 / 18) - 16000 + 1300);
 
                     pBlock->RefreshData(PlayerNum);

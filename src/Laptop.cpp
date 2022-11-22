@@ -1509,7 +1509,9 @@ void CLaptop::QuickJump(SLONG par) {
             case 1:
                 pBlock->AnzPages = 1 + Cities[pBlock->SelectedId].AnzTexts + Cities[pBlock->SelectedId].AnzPhotos;
                 EarthTargetAlpha = UWORD((Cities[pBlock->SelectedId].GlobusPosition.x + 170) * (3200 / 18) - 16000 + 1300);
-                pBlock->LoadLib(Cities[pBlock->SelectedId].PhotoName);
+
+                pBlock->LoadCityPhotoLib(Cities[pBlock->SelectedId]);
+
                 break;
 
                 // Flugzeug-Details:

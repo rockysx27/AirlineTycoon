@@ -215,18 +215,24 @@ void BLOCK::BlitAt(SBBM &RoomBm) {
 //--------------------------------------------------------------------------------------------
 // Eine Lib für den Block laden:
 //--------------------------------------------------------------------------------------------
-void BLOCK::LoadLib(const CString &LibName) {
+void BLOCK::LoadCityPhotoLib(CITY &city) {
     if ((pGLibPicture != nullptr) && (pGfxMain != nullptr)) {
         Bitmap.Destroy();
         pGfxMain->ReleaseLib(pGLibPicture);
         pGLibPicture = nullptr;
     }
 
-    if (LibName.GetLength() > 0) {
-        if (StyleType == 0) { // Globus/Filofax
-            pGfxMain->LoadLib(const_cast<char *>((LPCTSTR)FullFilename(LibName + ".gli", GliPath)), &pGLibPicture, L_LOCMEM);
-        } else { // Laptop
-            pGfxMain->LoadLib(const_cast<char *>((LPCTSTR)FullFilename(LibName + ".glj", GliPath)), &pGLibPicture, L_LOCMEM);
+    if (city.PhotoName.GetLength() > 0) {
+        try {
+            if (StyleType == 0) { // Globus/Filofax
+                pGfxMain->LoadLib(const_cast<char *>((LPCTSTR)FullFilename(city.PhotoName + ".gli", GliPath)), &pGLibPicture, L_LOCMEM);
+            } else { // Laptop
+                pGfxMain->LoadLib(const_cast<char *>((LPCTSTR)FullFilename(city.PhotoName + ".glj", GliPath)), &pGLibPicture, L_LOCMEM);
+            }
+        } catch (TeakLibException &e) {
+            // Just show no image and remove photo pages
+            e.caught();
+            city.AnzPhotos = 0;
         }
     }
 }
@@ -649,7 +655,7 @@ void BLOCK::LinkeSeiteInhalt(XY TitleArea, XY ClientArea) {
         } else if (Page - 1 < Cities[SelectedId].AnzTexts) {
             Bitmap.PrintAt(StandardTexte.GetS(TOKEN_CITY, Cities[SelectedId].TextRes + Page - 1), FontSmallBlack, TEC_FONT_LEFT, ClientArea + XY(0, 1),
                            ClientArea + XY(172, 168));
-        } else {
+        } else if (pGLibPicture != nullptr) {
             CString tmp = Cities[SelectedId].PhotoName;
             tmp.SetAt(tmp.GetLength() - 1, char(tmp[tmp.GetLength() - 1] + (Page - Cities[SelectedId].AnzTexts - 1)));
 

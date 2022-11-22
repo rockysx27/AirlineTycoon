@@ -696,7 +696,7 @@ void CGlobe::OnLButtonDown(UINT nFlags, CPoint point) {
                         }
 
                         if (qBlock.Index == 0 && pBlock->BlockType == 1) {
-                            pBlock->LoadLib(Cities[pBlock->SelectedId].PhotoName);
+                            pBlock->LoadCityPhotoLib(Cities[pBlock->SelectedId]);
                         }
                         qBlock.Refresh(PlayerNum, IsLaptop);
                     }
