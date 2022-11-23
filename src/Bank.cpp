@@ -473,7 +473,7 @@ TEAKFILE &operator<<(TEAKFILE &File, const CBilanz &Bilanz) {
 //--------------------------------------------------------------------------------------------
 TEAKFILE &operator>>(TEAKFILE &File, CBilanz &Bilanz) {
     if (SaveVersionSub < 200) {
-
+        // old save version used SLONG and not long long
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wundefined-reinterpret-cast"
 #define COMP(x) (reinterpret_cast<SLONG &>(x))

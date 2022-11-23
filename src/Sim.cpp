@@ -55,7 +55,7 @@ void CalcPlayerMaximums(bool bForce);
 
 // Daten des aktuellen Savegames beim laden:
 SLONG SaveVersion = 1;
-SLONG SaveVersionSub = 200;
+SLONG SaveVersionSub = 202;
 
 // Öffnungszeiten:
 extern SLONG timeDutyOpen;
@@ -3199,7 +3199,7 @@ void SIM::SaveGame(SLONG Number, const CString &Name) const {
     SLONG NumSaveGameCities = Cities.AnzEntries();
 
     SaveVersion = 1;
-    SaveVersionSub = 107; // Version 1.104
+    SaveVersionSub = 202; // Version 1.6.1
 
     std::filesystem::create_directory(LPCTSTR(AppPath + SavegamePath.Left(SavegamePath.GetLength() - 3)));
 
