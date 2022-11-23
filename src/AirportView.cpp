@@ -1170,11 +1170,13 @@ void AirportView::OnPaint() {
                                 if (BrickId == AbflugIndex || BrickId == AbflugIndex2) {
                                     SLONG phase = 0;
 
-                                    if ((Sim.Players.Players[Airport.GateMapper[static_cast<SLONG>(qBuild.Par)]].SecurityFlags & (1 << 8)) != 0U) {
-                                        phase = 1;
-                                    }
-                                    if ((Sim.Players.Players[Airport.GateMapper[static_cast<SLONG>(qBuild.Par)]].SecurityFlags & (1 << 10)) != 0U) {
-                                        phase = 2;
+                                    if (static_cast<SLONG>(qBuild.Par) >= 0) { // ignore unclaimed gates
+                                        if ((Sim.Players.Players[Airport.GateMapper[static_cast<SLONG>(qBuild.Par)]].SecurityFlags & (1 << 8)) != 0U) {
+                                            phase = 1;
+                                        }
+                                        if ((Sim.Players.Players[Airport.GateMapper[static_cast<SLONG>(qBuild.Par)]].SecurityFlags & (1 << 10)) != 0U) {
+                                            phase = 2;
+                                        }
                                     }
                                     Bricks[BrickId].BlitAt(PrimaryBm, 0, qBuild.ScreenPos - ViewPos + WinP1, phase);
                                 } else {

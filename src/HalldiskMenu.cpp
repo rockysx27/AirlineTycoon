@@ -246,6 +246,7 @@ void HallDiskMenu::OnLButtonDown(UINT /*nFlags*/, CPoint point) {
 void HallDiskMenu::OnRButtonDown(UINT /*nFlags*/, CPoint /*point*/) {
     // ReferTo (nFlags);
     // ReferTo (point);
+    this->OnClose();
 }
 
 //--------------------------------------------------------------------------------------------

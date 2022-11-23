@@ -335,7 +335,7 @@ class SBPRIMARYBM {
     void Flip(SLONG WindowX, SLONG WindowsY, BOOL ShowFPS = FALSE) { Flip(XY(WindowX, WindowsY), ShowFPS); }
     void Flip(XY WindowPos, BOOL ShowFPS = FALSE);
     BOOL IsFullscreen(void) { return (Fullscreen); }
-    dword Clear(dword color = 0) { return (PrimaryBm.Clear((SB_Hardwarecolor)color)); }
+    dword Clear(dword color = 0);
 
     // Blit Services:
     BOOL BlitFrom(SBBM &TecBitmap) { return (BlitFrom(TecBitmap, XY(0l, 0l))); }

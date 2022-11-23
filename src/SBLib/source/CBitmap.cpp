@@ -100,16 +100,21 @@ void SB_CBitmapCore::SetColorKey(ULONG key) { SDL_SetColorKey(lpDDSurface, SDL_T
 
 ULONG SB_CBitmapCore::Line(SLONG x1, SLONG y1, SLONG x2, SLONG y2, SB_Hardwarecolor hwcolor) {
     if (lpTexture != nullptr) {
-        if (SDL_SetRenderTarget(lpDD, lpTexture) < 0) {
-            return 1;
-        }
+        int access = 0;
+        SDL_QueryTexture(lpTexture, nullptr, &access, nullptr, nullptr);
+        if (access == SDL_TEXTUREACCESS_TARGET) {
+            if (SDL_SetRenderTarget(lpDD, lpTexture) < 0) {
+                return 1;
+            }
 
-        dword key = 0;
-        auto color = (dword)hwcolor;
-        SDL_GetColorKey(lpDDSurface, &key);
-        SDL_SetRenderDrawColor(lpDD, (color & 0xFF0000) >> 16, (color & 0xFF00) >> 8, color & 0xFF, color == key ? SDL_ALPHA_TRANSPARENT : SDL_ALPHA_OPAQUE);
-        SDL_RenderDrawLine(lpDD, x1, y1, x2, y2);
-        return 0;
+            dword key = 0;
+            auto color = (dword)hwcolor;
+            SDL_GetColorKey(lpDDSurface, &key);
+            SDL_SetRenderDrawColor(lpDD, (color & 0xFF0000) >> 16, (color & 0xFF00) >> 8, color & 0xFF,
+                                   color == key ? SDL_ALPHA_TRANSPARENT : SDL_ALPHA_OPAQUE);
+            SDL_RenderDrawLine(lpDD, x1, y1, x2, y2);
+            return 0;
+        }
     }
 
     // Bresenham's Line Algorithm

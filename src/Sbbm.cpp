@@ -676,6 +676,10 @@ void SBPRIMARYBM::Flip(XY WindowPos, BOOL /*ShowFPS*/) {
     }
 }
 
+dword SBPRIMARYBM::Clear(dword color) {    
+    return SDL_FillRect(PrimaryBm.GetSurface(), nullptr, color);
+}
+
 void SBBMS::ReSize(GfxLib *gfxLibrary, __int64 graphicID, ...) {
     SLONG count = 0;
     __int64 i = graphicID;
