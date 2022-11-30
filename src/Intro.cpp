@@ -53,11 +53,11 @@ CIntro::CIntro(BOOL bHandy, SLONG PlayerNum) : CStdRaum(bHandy, PlayerNum, "", 0
         smk_enable_audio(pSmack, 0, 1U);
         smk_info_audio(pSmack, &tracks, channels, depth, rate);
 
-        SDL_AudioSpec desired;
+        SDL_AudioSpec desired{};
         desired.freq = rate[0];
         desired.format = SDL_AUDIO_MASK_SIGNED | (depth[0] & SDL_AUDIO_MASK_BITSIZE);
         desired.channels = channels[0];
-        desired.samples = 2048;
+        desired.samples = 512;
         desired.callback = nullptr;
         desired.userdata = nullptr;
         audioDevice = SDL_OpenAudioDevice(nullptr, 0, &desired, nullptr, 0);
@@ -82,12 +82,13 @@ CIntro::CIntro(BOOL bHandy, SLONG PlayerNum) : CStdRaum(bHandy, PlayerNum, "", 0
         }
         CalculatePalettemapper(smk_get_palette(pSmack), Bitmap.pBitmap->GetPixelFormat()->palette);
         SDL_QueueAudio(audioDevice, smk_get_audio(pSmack, 0), smk_get_audio_size(pSmack, 0));
-        State = smk_next(pSmack);
     } else {
         audioDevice = 0;
         pSmack = nullptr;
         Sim.Gamestate = GAMESTATE_BOOT;
     }
+
+    SDL_PauseAudioDevice(audioDevice, 0);
 
     SDL_ShowWindow(FrameWnd->m_hWnd);
     SDL_UpdateWindowSurface(FrameWnd->m_hWnd);
@@ -145,12 +146,10 @@ void CIntro::OnPaint() {
     // Die Standard Paint-Sachen kann der Basisraum erledigen
     CStdRaum::OnPaint();
 
-    SDL_PauseAudioDevice(audioDevice, 0);
-
     if (pSmack != nullptr) {
         if (AtGetTime() >= FrameNext && State == SMK_MORE) {
             // Take the next frame:
-            Bitmap.ReSize(XY(Width, Height), CREATE_SYSMEM | CREATE_INDEXED);
+            //Bitmap.ReSize(XY(Width, Height), CREATE_SYSMEM | CREATE_INDEXED);
             {
                 // Copy video frame with line-doubling if needed
                 SB_CBitmapKey Key(*Bitmap.pBitmap);
@@ -161,12 +160,13 @@ void CIntro::OnPaint() {
                 }
             }
             CalculatePalettemapper(smk_get_palette(pSmack), Bitmap.pBitmap->GetPixelFormat()->palette);
-            SDL_QueueAudio(audioDevice, smk_get_audio(pSmack, 0), smk_get_audio_size(pSmack, 0));
+
             State = smk_next(pSmack);
+            SDL_QueueAudio(audioDevice, smk_get_audio(pSmack, 0), smk_get_audio_size(pSmack, 0));
 
             DOUBLE usf = NAN;
             smk_info_all(pSmack, nullptr, nullptr, &usf);
-            FrameNext = AtGetTime() + (usf / 1000.0);
+            FrameNext = AtGetTime() + static_cast<DWORD>(usf / 1000.0);
         }
 
         PrimaryBm.BlitFrom(Bitmap, 320 - Width / 2, 240 - Height / 2);
