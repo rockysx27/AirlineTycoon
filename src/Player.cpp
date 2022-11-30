@@ -632,9 +632,9 @@ void PLAYER::EnterRoom(SLONG RoomNum, bool bDontBroadcast) {
 //--------------------------------------------------------------------------------------------
 // Adds a new part to a rocket
 //--------------------------------------------------------------------------------------------
-void PLAYER::AddRocketPart(SLONG rocketPart, SLONG /*price*/) {
+void PLAYER::AddRocketPart(SLONG rocketPart, SLONG price) {
     RocketFlags |= rocketPart;
-    this->ChangeMoney(-RocketPrices[0], 3400, "");
+    this->ChangeMoney(-price, 3400, "");
 
     // Synchronize to other players
     NetSynchronizeFlags();
