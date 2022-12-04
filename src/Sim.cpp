@@ -3002,6 +3002,10 @@ BOOL SIM::LoadGame(SLONG Number) {
 
     if (SaveVersionSub >= 104) {
         InputFile >> NumSaveGameCities;
+
+        if (SaveVersionSub >= 200 && NumSaveGameCities != Cities.AnzEntries()) {
+            TeakLibW_Exception(FNL, "Incorrect City count in savegame: %d (savegame) vs. %d (/data)", NumSaveGameCities, Cities.AnzEntries());
+        }
     }
 
     // Das Spielgerüst:
