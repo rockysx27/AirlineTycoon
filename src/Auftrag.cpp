@@ -203,7 +203,7 @@ CAuftrag::CAuftrag(char *VonCity, char *NachCity, ULONG Personen, UWORD Date) {
 }
 
 //--------------------------------------------------------------------------------------------
-// Legt Städte fest: (AreaType: 0=Europa-Europa, 1=Region-gleicher Region, 2=alles
+// Legt Städte fest: (AreaType: 0=Region-gleicher Region, 1=Europa-Europa, 2=alles
 //--------------------------------------------------------------------------------------------
 void CAuftrag::RandomCities(SLONG AreaType, SLONG HomeCity, TEAKRAND *pRandom) {
     SLONG TimeOut = 0;
@@ -839,7 +839,6 @@ TEAKFILE &operator>>(TEAKFILE &File, CAuftrag &Auftrag) {
 // Fügt eine Reihe von neuen Aufträgen ein:
 //============================================================================================
 void CAuftraege::FillForLastMinute() {
-
     CalcPlayerMaximums();
 
     ReSize(6); // ex:10
@@ -1102,10 +1101,9 @@ void CAuftraege::RefillForAusland(SLONG CityNum, SLONG Minimum) {
 // Returns the number of open Order flights which are due today:
 //--------------------------------------------------------------------------------------------
 SLONG CAuftraege::GetNumDueToday() {
-    SLONG c = 0;
     SLONG Anz = 0;
 
-    for (c = 0; c < AnzEntries(); c++) {
+    for (SLONG c = 0; c < AnzEntries(); c++) {
         if ((IsInAlbum(c) != 0) && at(c).BisDate >= Sim.Date) {
             if (at(c).InPlan == 0 && at(c).BisDate == Sim.Date) {
                 Anz++;
@@ -1120,10 +1118,9 @@ SLONG CAuftraege::GetNumDueToday() {
 // Returns the number of open Order flights which still need to be done:
 //--------------------------------------------------------------------------------------------
 SLONG CAuftraege::GetNumOpen() {
-    SLONG c = 0;
     SLONG Anz = 0;
 
-    for (c = 0; c < AnzEntries(); c++) {
+    for (SLONG c = 0; c < AnzEntries(); c++) {
         if ((IsInAlbum(c) != 0) && at(c).BisDate >= Sim.Date) {
             if (at(c).InPlan == 0) {
                 Anz++;
