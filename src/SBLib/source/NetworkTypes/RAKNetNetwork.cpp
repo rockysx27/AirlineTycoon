@@ -286,7 +286,7 @@ void RAKNetNetwork::Disconnect() {
     mSessionInfo = nullptr;
 
     CloseSession();
-    if (mMaster) {
+    if (mMaster && mHost) {
         mMaster->CloseConnection(*mHost, true);
         mMaster->Shutdown(500);
     }
