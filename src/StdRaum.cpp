@@ -3048,13 +3048,13 @@ void CStdRaum::PostPaint() {
         } else {
             Rand++;
         }
+    }
 
-        if (gBroadcastBm.Size.y > 10) {
-            ColorFX.BlitWhiteTrans(TRUE, gBroadcastBm.pBitmap, &PrimaryBm.PrimaryBm, XY(10, 10));
-        } else if (gBroadcastBm.Size.y > 0) {
-            ColorFX.BlitWhiteTrans(TRUE, gBroadcastBm.pBitmap, &PrimaryBm.PrimaryBm,
-                                   XY(10 - (10 - gBroadcastBm.Size.y) * 20, 10 + (10 - gBroadcastBm.Size.y) * 5));
-        }
+    if (gBroadcastBm.Size.y > 10) {
+        ColorFX.BlitWhiteTrans(TRUE, gBroadcastBm.pBitmap, &PrimaryBm.PrimaryBm, XY(10, 10));
+    } else if (gBroadcastBm.Size.y > 0) {
+        ColorFX.BlitWhiteTrans(TRUE, gBroadcastBm.pBitmap, &PrimaryBm.PrimaryBm,
+                               XY(10 - (10 - gBroadcastBm.Size.y) * 20, 10 + (10 - gBroadcastBm.Size.y) * 5));
     }
 
     Rand = 0;
