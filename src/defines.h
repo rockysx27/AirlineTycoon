@@ -1,4 +1,5 @@
 #pragma once
+#include "Res/resource.h"
 //============================================================================================
 // Defines.h - globale Konstanten:
 //============================================================================================
@@ -118,11 +119,7 @@ inline bool operator!=(const CPoint &lhs, const CPoint &rhs) { return !(lhs == r
 #define FEMALE 0
 #define MALE 1
 
-#ifdef _DEBUG
-constexpr char VersionString[] = "VERSION 1.6.1 DEBUG";
-#else
-constexpr char VersionString[] = "VERSION 1.6.1 PRE-RELEASE";
-#endif
+constexpr char VersionString[] = FILE_VERSION_STRING;
 
 // Generelles
 #define CUSTOMERS_PER_PERSON  5  // Eine Person (Bildschirm) repräsentiert 10 Kunden
