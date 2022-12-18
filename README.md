@@ -29,28 +29,7 @@ git submodule update --init
 The project can be build with Visual Studio.
 
 #### Dependencies
-These dependencies need to be downloaded separately:
-```ps
-cd cmake
-# SDL2, SDL2-Mixer, SDL2-TTF, SDL2-Image
-wget "https://github.com/libsdl-org/SDL_ttf/releases/download/release-2.20.1/SDL2_ttf-devel-2.20.1-VC.zip" -outfile "sdl2-ttf.zip"
-wget "https://github.com/libsdl-org/SDL_mixer/releases/download/release-2.6.2/SDL2_mixer-devel-2.6.2-VC.zip" -outfile "sdl2-mixer.zip"
-wget "https://github.com/libsdl-org/SDL_image/releases/download/release-2.6.2/SDL2_image-devel-2.6.2-VC.zip" -outfile "sdl2-image.zip"
-wget "https://github.com/libsdl-org/SDL/releases/download/release-2.24.2/SDL2-devel-2.24.2-VC.zip" -outfile "sdl2.zip"
-```
-Extract the content of those zips to a folder structure like this:
-```
-cmake/
-    sdl2/
-        include/*
-        lib/*
-        ...
-    sdl2-image/
-        include/*
-        lib/*
-        ...
-    ...
-```
+This project relies on SDL2, instructions for downloading those dependencies can be found in `\cmake\README.md`
 
 The visual studio project files also need to be created for the enet dependency. Use the "Developer Command Prompt for VS 2022" or "Developer Powershell for VS 2022" and create the project files like this:
 ```ps
@@ -66,6 +45,8 @@ To build the application, open the project solution with Visual Studio, select y
 
 SDL2 needs to be at least version 2.0.12
 
+----
+
 ### Linux x86 
 (AMD64 only with MultiArch for i686)
 
@@ -80,7 +61,6 @@ mkdir build
 cd build
 cmake -DCMAKE_TOOLCHAIN_FILE=../Toolchain-i686.cmake ..
 
-----
 
 ## Changes
 
