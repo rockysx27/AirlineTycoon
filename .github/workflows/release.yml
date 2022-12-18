@@ -43,12 +43,14 @@ jobs:
     - name: Combine Dependencies
       shell: pwsh
       run: |
+        mkdir .\dependencies\
         Get-ChildItem -Path ./libs/ -Include *.dll,*.exe -Recurse | Copy-Item -Destination .\dependencies\
         Get-ChildItem -Path ./cmake/ -Include *.dll -Recurse | Where-Object {$_.FullName -match "x64"} | Copy-Item -Destination .\dependencies\
         Compress-Archive -Path .\dependencies\* -DestinationPath dependencies.zip
 
     - name: Release
       uses: softprops/action-gh-release@v1
+      with:
         files: |
           dependencies.zip
           BUILD/AT/Release/AT.exe
