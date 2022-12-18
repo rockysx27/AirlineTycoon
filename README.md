@@ -31,14 +31,7 @@ The project can be build with Visual Studio.
 #### Dependencies
 This project relies on SDL2, instructions for downloading those dependencies can be found in `\cmake\README.md`
 
-The visual studio project files also need to be created for the enet dependency. Use the "Developer Command Prompt for VS 2022" or "Developer Powershell for VS 2022" and create the project files like this:
-```ps
-# Go to root of repo...
-cd libs/enet
-cmake .
-```
-
-You have to change the build output path of enet to point to `$(SolutionDir)BUILD\enet\$(Configuration)\enet.lib`
+enet should work out of the box when the git repository was correctly cloned (with submodules)
 
 #### Building
 To build the application, open the project solution with Visual Studio, select your configuration and then build like any other VS project.
