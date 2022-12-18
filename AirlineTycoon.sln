@@ -23,11 +23,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SSE", "src\SSE\SSE.vcxproj"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TeakLibW", "src\TeakLibW\TeakLibW.vcxproj", "{454F153F-B61F-31E2-9984-2745E3971ECB}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "enet", "libs\enet\enet.vcxproj", "{B898D422-B378-3905-8236-44CFE0782E95}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "enet", "libs\enet.vcxproj", "{B898D422-B378-3905-8236-44CFE0782E95}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libsmacker", "libs\libsmacker\libsmacker.vcxproj", "{4AA2C8BF-0465-3DBE-98E0-5FE3CE95A284}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libsmacker", "libs\libsmacker.vcxproj", "{4AA2C8BF-0465-3DBE-98E0-5FE3CE95A284}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "raknet", "libs\raknet\raknet.vcxproj", "{C06FE35D-C5BE-37AE-B585-F88B766AA89A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "raknet", "libs\raknet.vcxproj", "{C06FE35D-C5BE-37AE-B585-F88B766AA89A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Networking", "Networking", "{3273922C-1AB5-4A80-B8E7-FAF4983D2941}"
 EndProject
