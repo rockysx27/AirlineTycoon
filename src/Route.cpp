@@ -5,6 +5,7 @@
 #include <sstream>
 
 SLONG ReadLine(BUFFER_V<UBYTE> &Buffer, SLONG BufferStart, char *Line, SLONG LineLength);
+SLONG CountLines(BUFFER_V<UBYTE> &Buffer, SLONG BufferStart);
 
 // Daten des aktuellen Savegames beim laden:
 extern SLONG SaveVersion;
@@ -78,8 +79,10 @@ void CRouten::ReInit(const CString &TabFilename, bool bNoDoublettes) {
     // Die erste Zeile einlesen
     FileP = ReadLine(FileData, FileP, Line.getData(), 300);
 
+    SLONG routes = CountLines(FileData, FileP) * 2; //2x for "to" and "back"
+
     ReSize(0);
-    ReSize(MAX_ROUTES);
+    ReSize(routes);
 
     while (true) {
         if (FileP >= FileData.AnzEntries()) {
@@ -156,7 +159,9 @@ void CRouten::ReInitExtend(const CString &TabFilename) {
     // Die erste Zeile einlesen
     FileP = ReadLine(FileData, FileP, Line.getData(), 300);
 
-    ReSize(MAX_ROUTES);
+    SLONG routes = CountLines(FileData, FileP) * 2;
+
+    ReSize(routes);
     auto NumUsed = GetNumUsed();
 
     while (true) {

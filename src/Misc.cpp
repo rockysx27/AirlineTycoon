@@ -51,6 +51,23 @@ SLONG ReadLine(BUFFER_V<UBYTE> &Buffer, SLONG BufferStart, char *Line, SLONG Lin
 }
 
 //--------------------------------------------------------------------------------------------
+// Zählt alle Zeilen in einem Buffer
+//--------------------------------------------------------------------------------------------
+SLONG CountLines(BUFFER_V<UBYTE> &Buffer, SLONG BufferStart) {
+    SLONG count = 0;
+
+    for (SLONG c = BufferStart; c < Buffer.AnzEntries(); c++) {
+        if (Buffer[c] == 13 || Buffer[c] == 10 || Buffer[c] == 26) {
+            if (c + 1 >= Buffer.AnzEntries() || (Buffer[c + 1] != 13 && Buffer[c + 1] != 10 && Buffer[c + 1] != 26)) {
+                count++;
+            }
+        }
+    }
+
+    return count;
+}
+
+//--------------------------------------------------------------------------------------------
 // Gibt die Anzahl der gesetzten Bits zurück: (Bitte ein Bit.... Hahaha!)
 //--------------------------------------------------------------------------------------------
 SLONG GetAnzBits(ULONG Flags) {

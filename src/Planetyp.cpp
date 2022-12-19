@@ -16,6 +16,7 @@ extern SLONG ElektronikCosts[];
 extern SLONG SicherheitCosts[];
 
 SLONG ReadLine(BUFFER_V<UBYTE> &Buffer, SLONG BufferStart, char *Line, SLONG LineLength);
+SLONG CountLines(BUFFER_V<UBYTE> &Buffer, SLONG BufferStart);
 
 // Daten des aktuellen Savegames beim laden:
 extern SLONG SaveVersion;
@@ -46,7 +47,9 @@ void CPlaneTypes::ReInit(const CString &TabFilename) {
     // Die erste Zeile einlesen
     FileP = ReadLine(FileData, FileP, Line.getData(), 800);
 
-    PlaneTypes.ReSize(MAX_PLANETYPES);
+    SLONG planes = CountLines(FileData, FileP);
+
+    PlaneTypes.ReSize(planes);
 
     while (true) {
         if (FileP >= FileData.AnzEntries()) {
