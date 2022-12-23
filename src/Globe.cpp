@@ -357,7 +357,7 @@ void CGlobe::OnPaint() {
         ///////////////////////////////////////////////////////////////////////////////////////////
         //// Mouse evaluation                                                                  ////
         ///////////////////////////////////////////////////////////////////////////////////////////
-
+        
         // Is Cursor over Block?
         CurrentBlock = -1;
         IsInClientArea = FALSE;
@@ -373,7 +373,7 @@ void CGlobe::OnPaint() {
 
                     CurrentBlockPos = gMousePosition - pBlock->ScreenPos;
 
-                    if (CurrentBlockPos.IfIsWithin(48, 72, 48 + 172, 72 + 150)) {
+                    if (CurrentBlockPos.IfIsWithin(48, 72, 48 + 172, 72 + 170)) {
                         IsInClientArea = TRUE;
                         ClientPos = CurrentBlockPos - XY(48, 72);
                         ReferenceCursorPos = gMousePosition;
@@ -381,7 +381,7 @@ void CGlobe::OnPaint() {
                         IsInClientArea = FALSE;
                     }
 
-                    if (CurrentBlockPos.IfIsWithin(48 + 232, 72, 48 + 172 + 232, 72 + 150)) {
+                    if (CurrentBlockPos.IfIsWithin(48 + 232, 72, 48 + 172 + 232, 72 + 170)) {
                         IsInClientAreaB = TRUE;
                         ClientPosB = CurrentBlockPos - XY(48 + 232, 72);
                         ReferenceCursorPos = gMousePosition;

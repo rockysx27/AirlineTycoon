@@ -966,7 +966,7 @@ void CPlaner::DoPollingStuff() {
 
     // Reguläre Plane/City/.. Tips für die Listen
     if ((IsInClientArea != 0) && (pBlock != nullptr) && (pBlock->IsTopWindow != 0) && pBlock->Index == 1) {
-        if (pBlock->BlockType != 2 && ClientPos.IfIsWithin(0, 0, 174, 150) && ClientPos.y / 13 + pBlock->Page < pBlock->Table.AnzRows &&
+        if (pBlock->BlockType != 2 && ClientPos.IfIsWithin(0, 0, 174, 168) && ClientPos.y / 13 + pBlock->Page < pBlock->Table.AnzRows &&
             (qPlayer.Buttons & 1) == 0) {
             SLONG TipType = 0;
             UWORD HighlightColor = ColorOfFontBlack;
@@ -989,7 +989,7 @@ void CPlaner::DoPollingStuff() {
             if (TipType != 0) {
                 pBlock->SetTip(TIP_NONE, TipType, pBlock->Table.LineIndex[ClientPos.y / 13 + pBlock->Page]);
             }
-        } else if (pBlock->BlockType == 2 && ClientPos.IfIsWithin(0, 0, 174, 150) && ClientPos.y / 26 + pBlock->Page < pBlock->Table.AnzRows &&
+        } else if (pBlock->BlockType == 2 && ClientPos.IfIsWithin(0, 0, 174, 168) && ClientPos.y / 26 + pBlock->Page < pBlock->Table.AnzRows &&
                    (qPlayer.Buttons & 1) == 0) {
             SLONG TipType = 0;
             UWORD HighlightColor = ColorOfFontBlack;
@@ -1024,7 +1024,7 @@ void CPlaner::DoPollingStuff() {
     }
     if ((pBlock != nullptr) && pBlock->IndexB == 1 && pBlock->BlockType == 2 && (IsInClientAreaB != 0) && CurrentPostItType == 0) // s.o.
     {
-        if (ClientPosB.IfIsWithin(16, 0, 172 - 5, 150) && ClientPosB.y / 26 + pBlock->PageB < pBlock->TableB.AnzRows && (qPlayer.Buttons & 1) == 0) {
+        if (ClientPosB.IfIsWithin(16, 0, 172 - 5, 155) && ClientPosB.y / 26 + pBlock->PageB < pBlock->TableB.AnzRows && (qPlayer.Buttons & 1) == 0) {
             SLONG TableCursor = pBlock->PageB + ClientPosB.y / 26;
             CString Dummy;
 
