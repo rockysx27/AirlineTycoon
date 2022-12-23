@@ -97,16 +97,10 @@
     <ClCompile Include="Abend.cpp">
       <Filter>Source Files\Screens</Filter>
     </ClCompile>
-    <ClCompile Include="Credits.cpp">
-      <Filter>Source Files\Screens</Filter>
-    </ClCompile>
     <ClCompile Include="Global.cpp">
       <Filter>Source Files\Defines</Filter>
     </ClCompile>
     <ClCompile Include="Intro.cpp">
-      <Filter>Source Files\Screens</Filter>
-    </ClCompile>
-    <ClCompile Include="Klacker.cpp">
       <Filter>Source Files\Screens</Filter>
     </ClCompile>
     <ClCompile Include="Globe.cpp">
@@ -126,12 +120,6 @@
     </ClCompile>
     <ClCompile Include="Mainfrm.cpp">
       <Filter>Source Files\Old</Filter>
-    </ClCompile>
-    <ClCompile Include="Options.cpp">
-      <Filter>Source Files\Screens</Filter>
-    </ClCompile>
-    <ClCompile Include="NewGamePopup.cpp">
-      <Filter>Source Files\Screens</Filter>
     </ClCompile>
     <ClCompile Include="Outro.cpp">
       <Filter>Source Files\Screens</Filter>
@@ -223,6 +211,18 @@
     <ClCompile Include="Titlepopup.cpp">
       <Filter>Source Files\Screens</Filter>
     </ClCompile>
+    <ClCompile Include="Options.cpp">
+      <Filter>Source Files\Screens\MainMenu</Filter>
+    </ClCompile>
+    <ClCompile Include="NewgamePopup.cpp">
+      <Filter>Source Files\Screens\MainMenu</Filter>
+    </ClCompile>
+    <ClCompile Include="Credits.cpp">
+      <Filter>Source Files\Screens\MainMenu</Filter>
+    </ClCompile>
+    <ClCompile Include="Klacker.cpp">
+      <Filter>Source Files\Screens\MainMenu</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Precompile Header File">
@@ -281,6 +281,9 @@
     </Filter>
     <Filter Include="Source Files\GFX">
       <UniqueIdentifier>{f63eeaa7-86c6-440b-9745-9867c3780db5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Screens\MainMenu">
+      <UniqueIdentifier>{ae69ac08-fb2e-4230-a094-6fc8dd8ba91e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
