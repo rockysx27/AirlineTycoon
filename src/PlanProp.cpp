@@ -938,13 +938,11 @@ void CPlaneProps::OnLButtonDown(UINT nFlags, CPoint point) {
                 qPlayer.NetUpdatePlaneProps(PlaneId);
             }
         } else if (MouseClickArea == ROOM_PLANEPROPS && MouseClickId == 115) {
-            SLONG total = qPlane.MaxPassagiere + qPlane.MaxPassagiereFC * 2;
-            SLONG prozent = qPlane.MaxPassagiereFC * 2 * 100 / total;
-
-            prozent = (prozent + 5) / 10 * 10; // Runden
-
+            SLONG total = qPlane.ptPassagiere;
+            FLOAT prozent = static_cast<FLOAT>(qPlane.MaxPassagiereFC) * 2.0f * 100.0f / static_cast<float>(total);
+            
             prozent -= 10;
-            SLONG newMaxPassagiereFC = total * (prozent) / 2 / 100;
+            SLONG newMaxPassagiereFC = static_cast<SLONG>(std::round(static_cast<FLOAT>(total) * (prozent) / 2.0f / 100.0f));
             SLONG newMaxPassagiere = total - newMaxPassagiereFC * 2;
 
             if (newMaxPassagiere == qPlane.MaxPassagiere) {
@@ -959,13 +957,11 @@ void CPlaneProps::OnLButtonDown(UINT nFlags, CPoint point) {
 
             // if (qPlane.AnzPutzcrew>0) qPlane.AnzPutzcrew--;
         } else if (MouseClickArea == ROOM_PLANEPROPS && MouseClickId == 116) {
-            SLONG total = qPlane.MaxPassagiere + qPlane.MaxPassagiereFC * 2;
-            SLONG prozent = qPlane.MaxPassagiereFC * 2 * 100 / total;
-
-            prozent = (prozent + 5) / 10 * 10; // Runden
+            SLONG total = qPlane.ptPassagiere;
+            FLOAT prozent = static_cast<FLOAT>(qPlane.MaxPassagiereFC) * 2.0f * 100.0f / static_cast<float>(total);
 
             prozent += 10;
-            SLONG newMaxPassagiereFC = total * (prozent) / 2 / 100;
+            SLONG newMaxPassagiereFC = static_cast<SLONG>(std::round(static_cast<FLOAT>(total) * (prozent) / 2.0f / 100.0f));
             SLONG newMaxPassagiere = total - newMaxPassagiereFC * 2;
 
             if (newMaxPassagiere == qPlane.MaxPassagiere) {
