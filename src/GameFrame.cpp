@@ -6,6 +6,7 @@
 #include "StdAfx.h"
 #include "AtNet.h"
 #include "BotHelper.h"
+#include "CVideo.h"
 #include "Intro.h"
 #include "NewGamePopup.h" //Fenster zum Wahl der Gegner und der Spielstärke
 #include "Outro.h"
