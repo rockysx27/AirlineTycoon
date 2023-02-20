@@ -190,7 +190,11 @@ void CRouteBox::OnPaint() {
                 i = -1;
             }
 
-            if ((i != -1 && i + RoutePage * ListSize != CurrentTipIndex) || (i == -1 && i != CurrentTip)) {
+
+            SLONG movedIndex = i + RoutePage * ListSize;
+            if ((i != -1 &&  movedIndex!= CurrentTipIndex) || (i == -1 && i != CurrentTip)) {
+                if (movedIndex >= 0)
+                    CurrentTip = Table.LineIndex[i + RoutePage * ListSize];
                 if (i != -1) {
                     CurrentTip = Table.LineIndex[i + RoutePage * ListSize];
                     CurrentTipIndex = i + RoutePage * ListSize;
@@ -208,6 +212,7 @@ void CRouteBox::OnPaint() {
 
             for (c = Routen.AnzEntries() - 1; c >= 0; c--) {
                 if ((Routen.IsInAlbum(c) != 0) && Routen[c].VonCity < Routen[c].NachCity) {
+                
                     XY von = XY(Cities[Routen[c].VonCity].MapPosition);
                     XY nach = XY(Cities[Routen[c].NachCity].MapPosition);
 
@@ -258,28 +263,30 @@ void CRouteBox::OnPaint() {
 
             SLONG i = -1;
 
-            if (mindist != -1 && mindist < 10) {
-                for (SLONG d = 0; d < Table.LineIndex.AnzEntries(); d++) {
-                    if (Routen(Table.LineIndex[d]) == ULONG(minc)) {
-                        SetMouseLook(CURSOR_HOT, 0, ROOM_ROUTEBOX, 2000);
+            if (IsBuyable[minc] == TRUE && Filter == 1) {
+                if (mindist != -1 && mindist < 10) {
+                    for (SLONG d = 0; d < Table.LineIndex.AnzEntries(); d++) {
+                        if (Routen(Table.LineIndex[d]) == ULONG(minc)) {
+                            SetMouseLook(CURSOR_HOT, 0, ROOM_ROUTEBOX, 2000);
 
-                        i = d;
-                        break;
+                            i = d;
+                            break;
+                        }
                     }
                 }
-            }
 
-            if ((i != -1 && i != CurrentTipIndex) || (i == -1 && i != CurrentTip)) {
-                if (i != -1) {
-                    CurrentTip = Table.LineIndex[i];
+                if ((i != -1 && i != CurrentTipIndex) || (i == -1 && i != CurrentTip)) {
+                    if (i != -1) {
+                        CurrentTip = Table.LineIndex[i];
+                    }
+                    if (i != -1) {
+                        CurrentTipIndex = i;
+                    } else {
+                        CurrentTipIndex = -1;
+                    }
+                    RepaintTip();
+                    RepaintMap();
                 }
-                if (i != -1) {
-                    CurrentTipIndex = i;
-                } else {
-                    CurrentTipIndex = -1;
-                }
-                RepaintTip();
-                RepaintMap();
             }
         } else if (-1 != CurrentTip) {
             CurrentTipIndex = -1;
@@ -520,6 +527,10 @@ void CRouteBox::RepaintMap() {
                         CanHaveIt = TRUE;
                     }
 
+                    if (CanHaveIt == FALSE && Filter == 1) {
+                        continue;
+                    }
+
                     for (d = 0; d < 4; d++) {
                         if ((Sim.Players.Players[d].IsOut == 0) && (Sim.Players.Players[d].RentRouten.RentRouten[c].Rang != 0U) &&
                             ((DisplayPlayer & (1 << d)) != 0)) {
@@ -657,6 +668,7 @@ void CRouteBox::UpdateDataTable() {
     }
     RoutePageMax = (Table.AnzRows - 1) / ListSize + 1;
     RepaintList();
+    RepaintMap();
 }
 
 //--------------------------------------------------------------------------------------------
