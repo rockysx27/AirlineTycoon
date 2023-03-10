@@ -119,6 +119,11 @@ int main(int argc, char *argv[]) {
         sentry_options_set_on_crash(
             options,
             [](const sentry_ucontext_t *uctx, sentry_value_t event, void *closure) -> sentry_value_t {
+            TeakLibException *e = GetLastException();
+            if (e != nullptr) {
+                SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "AT - Exception", e->what(), nullptr);
+            }
+
             const std::string id = std::to_string(*(int*)closure);
             const std::string msg = std::string("Airline Tycoon experienced an unexpected exception\nPress OK to send crash information to sentry\nPress Abort to not send the crash to sentry\n\nCustom Crash ID is: ") + id;
             AT_Log_I("CRASH", msg);
@@ -153,13 +158,18 @@ int main(int argc, char *argv[]) {
         hprintf("Rnd(%d): %u %u %u %u %u", seed, rnd.Rand(), rnd.Rand(), rnd.Rand(), rnd.Rand(), rnd.Rand());
     }
 #endif
-
+#ifndef SENTRY
     try {
         theApp.InitInstance(argc, argv);
     } catch (TeakLibException &e) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "AT - Exception", e.what(), nullptr);
+        
         throw;
     }
+#else
+    theApp.InitInstance(argc, argv);
+#endif
+
 
 #ifdef SENTRY
     if (!disableSentry) {
