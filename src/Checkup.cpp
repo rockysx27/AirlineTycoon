@@ -130,7 +130,13 @@ bool CRegistryAccess::ReadRegistryKeyEx(char *Text, const CString &EntryName) {
 #ifdef WIN32
     if (Entry == nullptr) {
         unsigned long TempSize = 500;
-        return (ERROR_SUCCESS == RegQueryValueEx(hKey, EntryName, NULL, NULL, (UBYTE *)Text, &TempSize));
+        HRESULT res = RegQueryValueEx(hKey, EntryName, NULL, NULL, (UBYTE *)Text, &TempSize);
+        if (res != S_OK) {
+            return false;
+        }
+
+        this->WriteRegistryKeyEx(Text, EntryName);
+        return true;
     }
 #endif
     if (!json_is_string(Entry)) {
