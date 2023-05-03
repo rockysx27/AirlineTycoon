@@ -1833,8 +1833,11 @@ void PumpNetwork() {
                         DisplayBroadcastMessage(bprintf("rAA[%li]: %li vs %li\n", c, rAA[c], rChkAA[c]));
 
                 for (c = 0; c < 20; c++)
-                    if (rActionId[c] != rChkActionId[c])
-                        DisplayBroadcastMessage(bprintf("rActionId[%li]: %li vs %li\n", c, rActionId[c], rChkActionId[c]));
+                    if (rActionId[c] != rChkActionId[c]) {
+                        DisplayBroadcastMessage(bprintf("Desync AI Action[%li]: %s vs %s\n", c, Translate_ACTION(rActionId[c]),
+                                                        Translate_ACTION(rChkActionId[c])));
+                        AT_Log_I("AtNet", "Desync AI Action[%li]: %s vs %s\n", c, Translate_ACTION(rActionId[c]), Translate_ACTION(rChkActionId[c]));
+                    }
 #endif
             } break;
 
@@ -2044,6 +2047,7 @@ void NetGenericSync(SLONG SyncId, SLONG Par) {
             for (c = 0; c < 4; c++)
                 if (Sim.Players.Players[c].Owner != 1 && !Sim.Players.Players[c].IsOut && GenericSyncIdPars[c] != Par) {
                     DisplayBroadcastMessage(bprintf("NetGenericSync (%li): %li vs. %li\n", SyncId, Par, GenericSyncIdPars[c]));
+                    AT_Log_I("AtNet", "Desync detected Id(%li): %li vs. %li\n", SyncId, Par, GenericSyncIdPars[c]);
                     DebugBreak();
                 }
 
@@ -2113,6 +2117,7 @@ void NetGenericAsync(SLONG SyncId, SLONG Par, SLONG player) {
         for (c = 0; c < 4; c++)
             if (Sim.Players.Players[c].Owner != 1 && !Sim.Players.Players[c].IsOut && GenericAsyncIdPars[d + c] != Par) {
                 DisplayBroadcastMessage(bprintf("NetGenericAsync (%li): %li vs. %li\n", SyncId, Par, GenericAsyncIdPars[d + c]));
+                AT_Log_I("AtNet", "Desync detected Id(%li): %li vs. %li\n", SyncId, Par, GenericSyncIdPars[d + c]);
                 DebugBreak();
             }
 
