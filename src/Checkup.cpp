@@ -127,19 +127,18 @@ bool CRegistryAccess::ReadRegistryKeyEx(char *Text, const CString &EntryName) {
     }
 
     json_t *Entry = json_object_get(settingsJSON, EntryName);
-#ifdef WIN32
     if (Entry == nullptr) {
+#if USE_REG_MIGRATION
         unsigned long TempSize = 500;
         HRESULT res = RegQueryValueEx(hKey, EntryName, NULL, NULL, (UBYTE *)Text, &TempSize);
         if (res != S_OK) {
             return false;
         }
+#endif
 
         this->WriteRegistryKeyEx(Text, EntryName);
         return true;
-    }
-#endif
-    if (!json_is_string(Entry)) {
+    } else if (!json_is_string(Entry)) {
         return false;
     }
     return (snprintf(Text, json_string_length(Entry) + 1, "%s", json_string_value(Entry)) >= 0);
