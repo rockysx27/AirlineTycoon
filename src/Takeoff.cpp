@@ -2462,8 +2462,8 @@ void CTakeOffApp::LadeWeitereStandardTexte() {
     }*/
     for (SLONG i = 0; i < 4; ++i) {
         DialogTexte.UpdateText(TOKEN_ARAB, 900 + i,
-                               bprintf("E::[[P1\\AA\\900]]I will take the one with %li gallons (\x24 %li).D::[[P1\\AA\\900]]Ich nehme den mit %lil (%li \x80).",
-                                       TankSize[i], TankPrice[i], TankSize[i], TankPrice[i]));
+                               bprintf("E::I will take the one with %lik gallons (\x24 %li).D::Ich nehme den mit %lik l (%li \x80).",
+                    TankSize[i] / 1000, TankPrice[i], TankSize[i] / 1000, TankPrice[i]));
     }
 
     StandardTexte.AddText(TOKEN_JOBS, 2003, "E::Route advisorD::Routenberaterin");
