@@ -466,10 +466,6 @@ void DoAppPath() {
 
     AppPath = CString(buffer);
     SDL_free(buffer);
-
-    char *bufPrefPath = SDL_GetPrefPath("Spellbound", "Airline Tycoon Deluxe");
-    AppPrefPath = CString(bufPrefPath);
-    SDL_free(bufPrefPath);
 }
 
 //--------------------------------------------------------------------------------------------
