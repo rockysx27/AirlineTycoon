@@ -276,7 +276,6 @@ BOOL CTakeOffApp::InitInstance(int argc, char *argv[]) {
     // #define LANGUAGE_9      18             //U-noch frei
     // #define LANGUAGE_10     19             //V-noch frei
 
-    DoAppPath();
     gLanguage = LANGUAGE_D;
     std::ifstream ifil = std::ifstream(AppPath + "misc/sabbel.dat");
     if (ifil.is_open()) {

@@ -23,6 +23,11 @@
 
 #include <jansson.h>
 
+CString settingsPath;
+
+void PrepareSettingsPath() {
+    settingsPath = AppPath + CString("AT.json");
+}
 
 //--------------------------------------------------------------------------------------------
 // CRegistryAccess::
@@ -30,6 +35,7 @@
 // Konstruktor+Open:
 //--------------------------------------------------------------------------------------------
 CRegistryAccess::CRegistryAccess(const CString &RegistryPath) {
+    PrepareSettingsPath();
     settingsJSON = nullptr;
     Open(RegistryPath);
 }
@@ -42,7 +48,7 @@ bool CRegistryAccess::Open(const CString &RegistryPath) {
 
     json_error_t error;
 
-    settingsJSON = json_load_file("AT.json", JSON_INDENT(3), &error);
+    settingsJSON = json_load_file(settingsPath, JSON_INDENT(3), &error);
     if (settingsJSON == nullptr) {
         AT_Log_Generic("encountered error during settings load: %s", error.text);
         settingsJSON = json_object();
@@ -77,7 +83,7 @@ void CRegistryAccess::Close() {
         return;
     }
     if (settingsJSON != nullptr) {
-        json_dump_file(settingsJSON, "AT.json", JSON_INDENT(3));
+        json_dump_file(settingsJSON, settingsPath, JSON_INDENT(3));
         json_decref(settingsJSON);
 #if USE_REG_MIGRATION
         RegCloseKey(hKey);
