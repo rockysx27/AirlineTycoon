@@ -2495,6 +2495,7 @@ class SIM // Die Simulationswelt; alles was zur aktuellen Partie gehört
     SLONG MaxDifficulty2{};      // Maximaler Schwierigkeitsgrad für Add-On
     SLONG MaxDifficulty3{};      // Maximaler Schwierigkeitsgrad für Add-On Fligh Security
     ULONG GameSpeed;             // Time+=Gamespeed
+    ULONG ServerGameSpeed;       // synced GameSpeed from host in MP
     BOOL bPause;                 // Spiel im Pause-Modus
     BOOL bNoTime;                // Zeit wird nicht weitergezählt (Briefing)
     SLONG DayState{};            // 1=Tag wird gestartet; 2=Spieler spielt; 3=Tag wird beendet; 4=Tag wurde beendet

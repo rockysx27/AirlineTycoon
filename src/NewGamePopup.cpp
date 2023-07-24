@@ -1490,6 +1490,11 @@ void NewGamePopup::OnLButtonDown(UINT nFlags, CPoint point) {
                                                    Sim.Difficulty);
                         }
 
+                        if (Sim.bIsHost) {
+                            SIM::SendSimpleMessage(ATNET_SETGAMESPEED, 0, Sim.GameSpeed, Sim.localPlayer);
+                            Sim.ServerGameSpeed = Sim.GameSpeed;
+                        }
+
                         // Sim.Difficulty     = DIFF_ATFS07;
                         Sim.bWatchForReady = TRUE;
                         Sim.bNetwork = 1;

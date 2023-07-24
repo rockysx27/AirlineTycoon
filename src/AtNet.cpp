@@ -373,6 +373,17 @@ void PumpNetwork() {
                 gTimerCorrection = SLONG(Par1) - SLONG(Sim.TimeSlice);
                 break;
 
+            case ATNET_SETGAMESPEED: {
+                SLONG PlayerNum = 0;
+                SLONG SyncedServerGameSpeed = 0;
+                Message >> SyncedServerGameSpeed >> PlayerNum;
+
+                if (Sim.ServerGameSpeed != SyncedServerGameSpeed) {
+                    Sim.ServerGameSpeed = SyncedServerGameSpeed;
+                    DisplayBroadcastMessage(bprintf("GameSpeed changed to %i / 7\n", static_cast<int>(std::floor(Sim.ServerGameSpeed / 5)) + 1), PlayerNum);
+                }
+            } break;
+
             case ATNET_PLAYERPOS: {
                 SLONG PlayerNum = 0;
                 SLONG MessageTime = 0;

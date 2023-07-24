@@ -98,6 +98,13 @@ Options::~Options() {
     nLocalOptionsOption--;
 
     if (Sim.bNetwork != 0) {
+        if (Sim.bIsHost && Sim.ServerGameSpeed != Sim.GameSpeed) {
+            SIM::SendSimpleMessage(ATNET_SETGAMESPEED, 0, Sim.GameSpeed, Sim.localPlayer);
+            Sim.ServerGameSpeed = Sim.GameSpeed;
+            DisplayBroadcastMessage(bprintf("GameSpeed changed to %i / 7\n", static_cast<int>(std::floor(Sim.ServerGameSpeed / 5)) + 1), Sim.localPlayer);
+              
+        }
+
         SIM::SendSimpleMessage(ATNET_OPTIONS, 0, -1, Sim.localPlayer);
     }
 
@@ -264,7 +271,9 @@ void Options::RefreshKlackerField() {
         KlackerTafel.PrintAt(0, 7, StandardTexte.GetS(TOKEN_MISC, 4044 + Sim.Options.OptionSpeechBubble));
         KlackerTafel.PrintAt(0, 8, StandardTexte.GetS(TOKEN_MISC, 4048 + Sim.Options.OptionBriefBriefing));
         KlackerTafel.PrintAt(0, 9, StandardTexte.GetS(TOKEN_MISC, 4050 + Sim.Options.OptionRandomStartday));
-        KlackerTafel.PrintAt(0, 11, StandardTexte.GetS(TOKEN_MISC, 4099));
+        KlackerTafel.PrintAt(0, 10, bprintf("# %s" , StandardTexte.GetS(TOKEN_PLANE, 1002)));
+        KlackerTafel.PrintVolumeAt(17, 10, 7, Sim.GameSpeed == 1 ? 0 : Sim.GameSpeed / 5);
+        KlackerTafel.PrintAt(0, 12, StandardTexte.GetS(TOKEN_MISC, 4099));
     } else if (PageNum == 5) // Laden
     {
         KlackerTafel.PrintAt(0, 0, StandardTexte.GetS(TOKEN_MISC, 4070));
@@ -459,8 +468,12 @@ void Options::OnPaint() {
             break;
         }
         case 4: // Sonstiges:
-            if ((Line >= 2 && Line <= 9) || Line == 11) {
+            if ((Line >= 2 && Line <= 9) || Line == 12) {
                 SetMouseLook(CURSOR_HOT, 0, -100, 0);
+            }
+            if (Line == 10) 
+            {
+                SetMouseLook(Column >= 17 && Column < 23 ? CURSOR_HOT : CURSOR_NORMAL, 1003, -100, 0);
             }
             break;
 
@@ -765,7 +778,15 @@ void Options::OnLButtonDown(UINT /*nFlags*/, CPoint point) {
             if (Line == 9) {
                 Sim.Options.OptionRandomStartday ^= 1;
             }
-            if (Line == 11) {
+
+            if (Line == 10 && Column >= 17 && Column < 24) {
+                auto speed = (Column - 17) * 5;
+                if (speed <= 0) {
+                    speed = 1;
+                }
+                Sim.GameSpeed = speed;
+            }
+            if (Line == 12) {
                 PageNum = 1;
             }
             RefreshKlackerField();

@@ -118,6 +118,7 @@ SIM::SIM() {
     QuitCountDown = 0;
     Time = 9 * 60000;
     GameSpeed = 30; // ex:51;
+    ServerGameSpeed = 30;
     bPause = FALSE;
     bNoTime = FALSE;
     CallItADay = FALSE;
@@ -1319,7 +1320,8 @@ void SIM::DoTimeStep() {
     PLAYER &qLocalPlayer = Players.Players[localPlayer];
 
     OldMinute = GetMinute();
-    Time += GameSpeed;
+
+    Time += bNetwork ?  ServerGameSpeed : GameSpeed;
     PlayerDidntMove++; // Wird ggf. bei WalkPersons resettet
 
     if (Time >= 24 * 60000) {
@@ -4072,6 +4074,10 @@ void COptions::ReadOptions() {
         OptionLastMission = min(OptionLastMission, Sim.MaxDifficulty);
         OptionLastMission2 = min(OptionLastMission2, Sim.MaxDifficulty2);
         OptionLastMission3 = min(OptionLastMission3, Sim.MaxDifficulty3);
+
+        if (!reg.ReadRegistryKey_u(Sim.GameSpeed)) {
+            Sim.GameSpeed = 30;
+        }
     }
 
     if (gQuickTestRun == 0) {
@@ -4124,6 +4130,7 @@ void COptions::WriteOptions() {
     reg.WriteRegistryKey_b(OptionAutosave);
     reg.WriteRegistryKey_b(OptionFax);
     reg.WriteRegistryKey_b(OptionRoundNumber);
+    reg.WriteRegistryKey_l(Sim.GameSpeed);
 
     if ((gpSSE != nullptr) && gpSSE->IsSoundEnabled()) {
         reg.WriteRegistryKey_l(OptionMasterVolume);

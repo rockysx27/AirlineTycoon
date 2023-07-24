@@ -37,6 +37,7 @@ static const ULONG ATNET_READYFORBRIEFING = 0xadaa0204; // Hello all, I'm ready 
 static const ULONG ATNET_SETSPEED = 0xadaa0300;   // Hello all, I want to have max speed x
 static const ULONG ATNET_FORCESPEED = 0xadaa0301; // Hello all, Now ALL use speed x!
 static const ULONG ATNET_TIMEPING = 0xadaa0302;   // Hello all, it's now hh:mm:ss.
+static const ULONG ATNET_SETGAMESPEED = 0xadaa0303;   // Hello all, the sim game speed is now x.
 
 // Chatting:
 static const ULONG ATNET_CHATMESSAGE = 0xadaa0401;   // Hello x, <generic>
