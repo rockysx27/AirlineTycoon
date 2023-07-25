@@ -77,6 +77,9 @@ Information menu:
 * More information from spy (e.g. weekly balance and financial summary for each competitor)
 * Detailed information from kerosene advisor (quality / value of kerosene, money saved by using tanks)
 
+Option menu:
+* Game Speed is adjustable in options menu. Available values: 1, 5, 10, 15, 20, 25, 30 (default value). The hosts game speed is synced to clients in a network game.
+
 Keyboard navigation:
 * Allow Enter/Backspace in calculator
 * Enable keyboard navigation in Laptop / Globe (arrow keys)
