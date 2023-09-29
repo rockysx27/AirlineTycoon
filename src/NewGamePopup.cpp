@@ -271,23 +271,7 @@ void NewGamePopup::Konstruktor(BOOL /*bHandy*/, SLONG /*PlayerNum*/) {
     RefreshKlackerField();
 
     VersionFont.Load(lpDD, const_cast<char *>((LPCTSTR)FullFilename("stat_1.mcf", MiscPath)));
-
-    SDL_ShowWindow(FrameWnd->m_hWnd);
-    SDL_GetWindowSurface(FrameWnd->m_hWnd);
-    SDL_UpdateWindowSurface(FrameWnd->m_hWnd);
-
-#ifdef BETA_TIME_LIMIT
-    {
-        CTime t = CTime::GetCurrentTime();
-
-        if (t.GetYear() > BETA_TIME_LIMIT_YEAR || (t.GetYear() == BETA_TIME_LIMIT_YEAR && t.GetMonth() > BETA_TIME_LIMIT_MONTH)) {
-            bad = TRUE;
-            RefreshKlackerField();
-            MenuStart(MENU_REQUEST, MENU_REQUEST_BETATEST2);
-        }
-    }
-#endif
-
+    
     SetMouseLook(CURSOR_NORMAL, 0, ROOM_TITLE, 0);
 
     // Create a timer to 'klacker'
