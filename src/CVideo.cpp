@@ -66,9 +66,6 @@ CVideo::CVideo(const CString &SmackName) : CStdRaum(FALSE, 0, "", 0) {
     
     PrimaryBm.SetVSync(FALSE);
     SDL_PauseAudioDevice(audioDevice, 0);
-
-    SDL_ShowWindow(FrameWnd->m_hWnd);
-    SDL_UpdateWindowSurface(FrameWnd->m_hWnd);
 }
 
 //--------------------------------------------------------------------------------------------
