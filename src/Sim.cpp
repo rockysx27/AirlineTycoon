@@ -3864,7 +3864,12 @@ void COptions::ReadOptions() {
         if (!reg.ReadRegistryKey_u(OptionRentOfficeMaxAvailable)) {
             OptionRentOfficeMaxAvailable = 3;
         }
-
+        if (!reg.ReadRegistryKey_l(OptionScreenWindowedWidth)) {
+            OptionScreenWindowedWidth = 640; // default window width
+        }
+        if (!reg.ReadRegistryKey_l(OptionScreenWindowedHeight)) {
+            OptionScreenWindowedHeight = 480; // default window height
+        }
         // Falls Setup nicht geladen wurde dann Standard-Parameter initialisieren
         if (!reg.ReadRegistryKey_b(OptionPlanes)) {
             OptionPlanes = TRUE;
@@ -4091,6 +4096,7 @@ void COptions::ReadOptions() {
         if (!reg.ReadRegistryKey_u(Sim.GameSpeed)) {
             Sim.GameSpeed = 30;
         }
+
     }
 
     if (gQuickTestRun > 0) {
@@ -4124,6 +4130,8 @@ void COptions::WriteOptions() {
 
 
     // Regular
+    reg.WriteRegistryKey_l(OptionScreenWindowedWidth);
+    reg.WriteRegistryKey_l(OptionScreenWindowedHeight);
     reg.WriteRegistryKey_b(OptionPlanes);
     reg.WriteRegistryKey_b(OptionPassengers);
     reg.WriteRegistryKey_l(OptionMusicType);

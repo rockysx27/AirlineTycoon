@@ -2397,6 +2397,8 @@ class COptions {
   public:
     SLONG OptionFullscreen{};
     BOOL OptionKeepAspectRatio{};
+    SLONG OptionScreenWindowedWidth{};
+    SLONG OptionScreenWindowedHeight{};
     BOOL OptionPlanes{};
     BOOL OptionPassengers{};
     SLONG OptionMusicType{};
