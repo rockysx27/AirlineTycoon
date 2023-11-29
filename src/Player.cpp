@@ -204,6 +204,12 @@ void PLAYER::BuyPlane(CXPlane &plane, TEAKRAND *pRnd) {
 //--------------------------------------------------------------------------------------------
 void PLAYER::ChangeMoney(__int64 Money, SLONG Reason, const CString &Par1, char *Par2) {
 
+    if (Money > 0) {
+        hprintf("ChangeMoney: player %li: Erhält %lld wegen %li", PlayerNum, Money, Reason);
+    } else if (Money < 0) {
+        hprintf("ChangeMoney: player %li: Gibt %lld für %li aus", PlayerNum, -Money, Reason);
+    }
+
     if (LocationWin != nullptr) {
         (LocationWin)->StatusCount = 3;
     }
@@ -5063,48 +5069,46 @@ void PLAYER::RobotExecuteAction() {
     case ACTION_VISITMUSEUM:
         if ((BuyBigPlane != 0) && !RobotUse(ROBOT_USE_GROSSESKONTO)) {
             Sim.UpdateUsedPlanes();
-            for (SLONG d = 0; d < 3; d++) {
-                for (c = 0; c < 3; c++) {
-                    if (Sim.UsedPlanes[0x1000000 + c].Name.GetLength() > 0 && Sim.UsedPlanes[0x1000000 + c].Baujahr > 1960 &&
+            for (c = 0; c < 3; c++) {
+                if (Sim.UsedPlanes[0x1000000 + c].Name.GetLength() > 0 && Sim.UsedPlanes[0x1000000 + c].Baujahr > 1960 &&
                         Sim.UsedPlanes[0x1000000 + c].Zustand > 40 && Sim.UsedPlanes[0x1000000 + c].CalculatePrice() < Money + 1000000 &&
                         Sim.UsedPlanes[0x1000000 + c].ptReichweite >= BuyBigPlane)
                     // if (Sim.UsedPlanes[0x1000000+c].Name.GetLength()>0 && Sim.UsedPlanes[0x1000000+c].Baujahr>1960 && Sim.UsedPlanes[0x1000000+c].Zustand>40
                     // && Sim.UsedPlanes[0x1000000+c].CalculatePrice()<Money+1000000 && PlaneTypes[Sim.UsedPlanes[0x1000000+c].TypeId].Reichweite>=BuyBigPlane)
-                    {
-                        if (Sim.Players.Players[Sim.localPlayer].HasBerater(BERATERTYP_INFO) >= rnd.Rand(100)) {
-                            Sim.Players.Players[Sim.localPlayer].Messages.AddMessage(BERATERTYP_INFO,
-                                                                                     bprintf(StandardTexte.GetS(TOKEN_ADVICE, 9000), (LPCTSTR)NameX,
-                                                                                             (LPCTSTR)AirlineX, Sim.UsedPlanes[0x1000000 + c].CalculatePrice()));
-                        }
-
-                        if (Planes.GetNumFree() == 0) {
-                            Planes.ReSize(Planes.AnzEntries() + 10);
-                            Planes.RepairReferences();
-                        }
-                        Sim.UsedPlanes[0x1000000 + c].WorstZustand = Sim.UsedPlanes[0x1000000 + c].Zustand - 20;
-                        // Sim.UsedPlanes[0x1000000+c].MaxBegleiter = SLONG(PlaneTypes
-                        // [Sim.UsedPlanes[0x1000000+c].TypeId].AnzBegleiter*Planes.GetAvgBegleiter());
-                        Sim.UsedPlanes[0x1000000 + c].MaxBegleiter = SLONG(Sim.UsedPlanes[0x1000000 + c].ptAnzBegleiter * Planes.GetAvgBegleiter());
-                        Sim.UsedPlanes[0x1000000 + c].SitzeTarget = 1 + static_cast<SLONG>(RobotUse(ROBOT_USE_UPGRADE_KOMFORT));
-                        Sim.UsedPlanes[0x1000000 + c].EssenTarget = 0;
-                        Sim.UsedPlanes[0x1000000 + c].TablettsTarget = 1 + static_cast<SLONG>(RobotUse(ROBOT_USE_UPGRADE_KOMFORT));
-                        Sim.UsedPlanes[0x1000000 + c].DecoTarget = 1 + static_cast<SLONG>(RobotUse(ROBOT_USE_UPGRADE_KOMFORT));
-                        Sim.UsedPlanes[0x1000000 + c].TriebwerkTarget = 1 + static_cast<SLONG>(RobotUse(ROBOT_USE_UPGRADE_TECH));
-                        Sim.UsedPlanes[0x1000000 + c].ReifenTarget = 1 + static_cast<SLONG>(RobotUse(ROBOT_USE_UPGRADE_TECH));
-                        Sim.UsedPlanes[0x1000000 + c].ElektronikTarget = 1 + static_cast<SLONG>(RobotUse(ROBOT_USE_UPGRADE_TECH));
-                        Sim.UsedPlanes[0x1000000 + c].SicherheitTarget = 1 + static_cast<SLONG>(RobotUse(ROBOT_USE_UPGRADE_TECH));
-
-                        Planes += Sim.UsedPlanes[0x1000000 + c];
-                        ChangeMoney(-Sim.UsedPlanes[0x1000000 + c].CalculatePrice(),
-                                    2010, // Kauf des Flugzeuges
-                                    Sim.UsedPlanes[0x1000000 + c].Name);
-                        Sim.UsedPlanes[0x1000000 + c].Name.Empty();
-
-                        Sim.TickMuseumRefill = 0;
-                        BuyBigPlane = 0;
-                        SavesForPlane = FALSE;
-                        break;
+                {
+                    if (Sim.Players.Players[Sim.localPlayer].HasBerater(BERATERTYP_INFO) >= rnd.Rand(100)) {
+                        Sim.Players.Players[Sim.localPlayer].Messages.AddMessage(BERATERTYP_INFO,
+                                bprintf(StandardTexte.GetS(TOKEN_ADVICE, 9000), (LPCTSTR)NameX,
+                                    (LPCTSTR)AirlineX, Sim.UsedPlanes[0x1000000 + c].CalculatePrice()));
                     }
+
+                    if (Planes.GetNumFree() == 0) {
+                        Planes.ReSize(Planes.AnzEntries() + 10);
+                        Planes.RepairReferences();
+                    }
+                    Sim.UsedPlanes[0x1000000 + c].WorstZustand = Sim.UsedPlanes[0x1000000 + c].Zustand - 20;
+                    // Sim.UsedPlanes[0x1000000+c].MaxBegleiter = SLONG(PlaneTypes
+                    // [Sim.UsedPlanes[0x1000000+c].TypeId].AnzBegleiter*Planes.GetAvgBegleiter());
+                    // Sim.UsedPlanes[0x1000000 + c].MaxBegleiter = SLONG(Sim.UsedPlanes[0x1000000 + c].ptAnzBegleiter * Planes.GetAvgBegleiter());
+                    // Sim.UsedPlanes[0x1000000 + c].SitzeTarget = 1 + static_cast<SLONG>(RobotUse(ROBOT_USE_UPGRADE_KOMFORT));
+                    // Sim.UsedPlanes[0x1000000 + c].EssenTarget = 0;
+                    // Sim.UsedPlanes[0x1000000 + c].TablettsTarget = 1 + static_cast<SLONG>(RobotUse(ROBOT_USE_UPGRADE_KOMFORT));
+                    // Sim.UsedPlanes[0x1000000 + c].DecoTarget = 1 + static_cast<SLONG>(RobotUse(ROBOT_USE_UPGRADE_KOMFORT));
+                    // Sim.UsedPlanes[0x1000000 + c].TriebwerkTarget = 1 + static_cast<SLONG>(RobotUse(ROBOT_USE_UPGRADE_TECH));
+                    // Sim.UsedPlanes[0x1000000 + c].ReifenTarget = 1 + static_cast<SLONG>(RobotUse(ROBOT_USE_UPGRADE_TECH));
+                    // Sim.UsedPlanes[0x1000000 + c].ElektronikTarget = 1 + static_cast<SLONG>(RobotUse(ROBOT_USE_UPGRADE_TECH));
+                    // Sim.UsedPlanes[0x1000000 + c].SicherheitTarget = 1 + static_cast<SLONG>(RobotUse(ROBOT_USE_UPGRADE_TECH));
+
+                    Planes += Sim.UsedPlanes[0x1000000 + c];
+                    ChangeMoney(-Sim.UsedPlanes[0x1000000 + c].CalculatePrice(),
+                            2010, // Kauf des Flugzeuges
+                            Sim.UsedPlanes[0x1000000 + c].Name);
+                    Sim.UsedPlanes[0x1000000 + c].Name.Empty();
+
+                    Sim.TickMuseumRefill = 0;
+                    BuyBigPlane = 0;
+                    SavesForPlane = FALSE;
+                    break;
                 }
             }
 
@@ -5703,15 +5707,15 @@ void PLAYER::RobotExecuteAction() {
                     }
                     Sim.UsedPlanes[0x1000000 + c].WorstZustand = Sim.UsedPlanes[0x1000000 + c].Zustand - 20;
                     // Sim.UsedPlanes[0x1000000+c].MaxBegleiter = SLONG(PlaneTypes [Sim.UsedPlanes[0x1000000+c].TypeId].AnzBegleiter*Planes.GetAvgBegleiter());
-                    Sim.UsedPlanes[0x1000000 + c].MaxBegleiter = SLONG(Sim.UsedPlanes[0x1000000 + c].ptAnzBegleiter * Planes.GetAvgBegleiter());
-                    Sim.UsedPlanes[0x1000000 + c].SitzeTarget = 1 + static_cast<SLONG>(RobotUse(ROBOT_USE_UPGRADE_KOMFORT));
-                    Sim.UsedPlanes[0x1000000 + c].EssenTarget = 0;
-                    Sim.UsedPlanes[0x1000000 + c].TablettsTarget = 1 + static_cast<SLONG>(RobotUse(ROBOT_USE_UPGRADE_KOMFORT));
-                    Sim.UsedPlanes[0x1000000 + c].DecoTarget = 1 + static_cast<SLONG>(RobotUse(ROBOT_USE_UPGRADE_KOMFORT));
-                    Sim.UsedPlanes[0x1000000 + c].TriebwerkTarget = 1 + static_cast<SLONG>(RobotUse(ROBOT_USE_UPGRADE_TECH));
-                    Sim.UsedPlanes[0x1000000 + c].ReifenTarget = 1 + static_cast<SLONG>(RobotUse(ROBOT_USE_UPGRADE_TECH));
-                    Sim.UsedPlanes[0x1000000 + c].ElektronikTarget = 1 + static_cast<SLONG>(RobotUse(ROBOT_USE_UPGRADE_TECH));
-                    Sim.UsedPlanes[0x1000000 + c].SicherheitTarget = 1 + static_cast<SLONG>(RobotUse(ROBOT_USE_UPGRADE_TECH));
+                    // Sim.UsedPlanes[0x1000000 + c].MaxBegleiter = SLONG(Sim.UsedPlanes[0x1000000 + c].ptAnzBegleiter * Planes.GetAvgBegleiter());
+                    // Sim.UsedPlanes[0x1000000 + c].SitzeTarget = 1 + static_cast<SLONG>(RobotUse(ROBOT_USE_UPGRADE_KOMFORT));
+                    // Sim.UsedPlanes[0x1000000 + c].EssenTarget = 0;
+                    // Sim.UsedPlanes[0x1000000 + c].TablettsTarget = 1 + static_cast<SLONG>(RobotUse(ROBOT_USE_UPGRADE_KOMFORT));
+                    // Sim.UsedPlanes[0x1000000 + c].DecoTarget = 1 + static_cast<SLONG>(RobotUse(ROBOT_USE_UPGRADE_KOMFORT));
+                    // Sim.UsedPlanes[0x1000000 + c].TriebwerkTarget = 1 + static_cast<SLONG>(RobotUse(ROBOT_USE_UPGRADE_TECH));
+                    // Sim.UsedPlanes[0x1000000 + c].ReifenTarget = 1 + static_cast<SLONG>(RobotUse(ROBOT_USE_UPGRADE_TECH));
+                    // Sim.UsedPlanes[0x1000000 + c].ElektronikTarget = 1 + static_cast<SLONG>(RobotUse(ROBOT_USE_UPGRADE_TECH));
+                    // Sim.UsedPlanes[0x1000000 + c].SicherheitTarget = 1 + static_cast<SLONG>(RobotUse(ROBOT_USE_UPGRADE_TECH));
 
                     Planes += Sim.UsedPlanes[0x1000000 + c];
                     ChangeMoney(-Sim.UsedPlanes[0x1000000 + c].CalculatePrice(),
