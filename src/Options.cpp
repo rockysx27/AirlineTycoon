@@ -214,7 +214,7 @@ void Options::RefreshKlackerField() {
                              : Sim.Options.OptionFullscreen == 1 ? "# Display : Windowed"
                              : Sim.Options.OptionFullscreen == 2 ? "# Display : Borderless"
                                                                  : "???");
-        KlackerTafel.PrintAt(0, 11, ((static_cast<bool>(Sim.Options.OptionKeepAspectRatio)) ? "# Aspect Ratio: Keep" : "# Aspect Ratio: Stretch"));
+        KlackerTafel.PrintAt(0, 11, (Sim.Options.OptionKeepAspectRatio ? "# Aspect Ratio: Keep" : "# Aspect Ratio: Stretch"));
 
         KlackerTafel.PrintAt(0, 13, StandardTexte.GetS(TOKEN_MISC, 4099));
     } else if (PageNum == 3) // Musik-Optionen
@@ -633,7 +633,7 @@ void Options::OnLButtonDown(UINT /*nFlags*/, CPoint point) {
             } // Fullscreen Option
 
             if (Line == 11) {
-                Sim.Options.OptionKeepAspectRatio = static_cast<BOOL>(static_cast<BOOL>(Sim.Options.OptionKeepAspectRatio) == 0);
+                Sim.Options.OptionKeepAspectRatio = !Sim.Options.OptionKeepAspectRatio;
                 FrameWnd->UpdateFrameSize();
             } // Aspect Ratio Option
 
