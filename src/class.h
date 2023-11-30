@@ -1196,7 +1196,10 @@ class /**/ BLOCK {
     friend TEAKFILE &operator>>(TEAKFILE &File, BLOCK &b);
 
   private:
+    void PrintLine(XY ClientArea, SLONG rowID, const char *str) const;
+    void PrintLineAlignRight(XY ClientArea, SLONG rowID, const char *str) const;
     SLONG PrintLine(XY ClientArea, SLONG rowID, SLONG textID) const;
+    void PrintLineAlignRight(XY ClientArea, SLONG rowID, SLONG textID) const;
     void PrintLineHeading(XY ClientArea, SLONG rowID, SLONG textID) const;
     SLONG PrintLineWithValueT(XY ClientArea, SLONG rowID, SLONG textID, __int64 value);
     SLONG PrintLineWithValueMio(XY ClientArea, SLONG rowID, SLONG textID, __int64 value);
