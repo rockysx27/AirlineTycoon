@@ -449,23 +449,23 @@ void CWorkers::NewDay() {
     for (c = 0; c < Workers.AnzEntries(); c++) {
         Workers[c].WarnedToday = FALSE;
         if (Workers[c].Employer >= 0 && Workers[c].Employer <= 3) {
-            SLONG Anz = 0;
             auto &qPlayer = Sim.Players.Players[Workers[c].Employer];
 
             // Worker u.U. mehrfach um 1%-Punkt unglücklicher machen
             if (qPlayer.Owner == 0 || (qPlayer.Owner == 1 && !qPlayer.RobotUse(ROBOT_USE_FAKE_PERSONAL))) {
                 if (qPlayer.Image < 500) {
-                    Anz = 1;
+                    Workers[c].Happyness--;
                 }
-            }
-            if ((Anz != 0) && qPlayer.Image < 0) {
-                Anz++;
-            }
-            if ((Anz != 0) && qPlayer.Image < -500) {
-                Anz++;
-            }
-            for (; Anz > 0; Anz--) {
-                Workers[c].Happyness--;
+                if (qPlayer.Image < 0) {
+                    Workers[c].Happyness--;
+                }
+                if (qPlayer.Image < -500) {
+                    Workers[c].Happyness--;
+                }
+
+                if (qPlayer.Image >= 750) {
+                    Workers[c].Happyness++;
+                }
             }
 
             // Happyness verändert sich nach Gehalt
@@ -473,6 +473,10 @@ void CWorkers::NewDay() {
                 Workers[c].Happyness++;
             } else if (Workers[c].Gehalt < Workers[c].OriginalGehalt - LocalRand.Rand(2000)) {
                 Workers[c].Happyness--;
+            }
+
+            if (Workers[c].Happyness > 100) {
+                Workers[c].Happyness = 100;
             }
 
             if (Workers[c].Happyness < -100) {

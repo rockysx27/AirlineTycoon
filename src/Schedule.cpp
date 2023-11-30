@@ -937,13 +937,17 @@ void CFlugplanEintrag::BookFlight(CPlane *Plane, SLONG PlayerNum) {
     }
 
     // Flugzeugabnutzung verbuchen:
-    auto faktorDistanz = (1 + Cities.CalcDistance(VonCity, NachCity) * 10 / 40040174);
-    auto faktorBaujahr = (2015 - Plane->Baujahr);
-    auto faktorKerosin = 1;
+    double faktorDistanz = (1 + 10.0 * Cities.CalcDistance(VonCity, NachCity) / 40040174);
+    double faktorBaujahr = (2015 - Plane->Baujahr);
+    double faktorKerosin = 1.0;
+    auto ZustandAlt = Plane->Zustand;
     if (KerosinGesamtQuali > 1.0) {
-        faktorKerosin = 3 * (KerosinGesamtQuali - 1.0) * (KerosinGesamtQuali - 1.0);
+        faktorKerosin = 10 * (KerosinGesamtQuali - 1.0) * (KerosinGesamtQuali - 1.0);
+        hprintf ("Player %li: Schlechtes Kerosin (%.2f) reduziert Flugzeugzustand um %d statt um %d",
+                PlayerNum, KerosinGesamtQuali, (int)(faktorDistanz * faktorBaujahr * faktorKerosin / 15), (int)(faktorDistanz * faktorBaujahr / 15));
     }
     Plane->Zustand = UBYTE(Plane->Zustand - faktorDistanz * faktorBaujahr * faktorKerosin / 15);
+    hprintf("Player %li: Zustand: %i -> %i. Faktoren: faktorDistanz = %f, faktorBaujahr = %f, faktorKerosin = %f", PlayerNum, ZustandAlt, Plane->Zustand, faktorDistanz, faktorBaujahr, faktorKerosin);
     if (Plane->Zustand > 200) {
         Plane->Zustand = 0;
     }
