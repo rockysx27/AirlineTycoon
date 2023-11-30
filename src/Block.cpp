@@ -1982,11 +1982,9 @@ void BLOCK::ZeigeKerosinberater(XY ClientArea, SLONG page) {
 
         PrintLineWithValueMio(ClientArea, idx++, 10303, ref.TankInhalt * ref.TankPreis);
 
-        PrintLine(ClientArea, idx, 10302);
-        Bitmap.PrintAt(bitoa(SLONG(std::round(ref.TankPreis))), FontSmallBlack, TEC_FONT_RIGHT, ClientArea + XY(2, idx++ * 13), ClientArea + XY(172, 170));
+        PrintLineWithValueT(ClientArea, idx++, 10302, ref.TankPreis);
 
-        PrintLine(ClientArea, idx, 10301);
-        Bitmap.PrintAt(bitoa(Sim.Kerosin), FontSmallBlack, TEC_FONT_RIGHT, ClientArea + XY(2, idx++ * 13), ClientArea + XY(172, 170));
+        PrintLineWithValueT(ClientArea, idx++, 10301, Sim.Kerosin);
 
         if (Sim.Players.Players[PlayerNum].HasBerater(BERATERTYP_KEROSIN) < 30) {
             Bitmap.PrintAt(StandardTexte.GetS(TOKEN_EXPERT, 3004), FontSmallBlack, TEC_FONT_LEFT, ClientArea + XY(2, idx * 13), ClientArea + XY(172, 170));
@@ -2000,7 +1998,7 @@ void BLOCK::ZeigeKerosinberater(XY ClientArea, SLONG page) {
             Bitmap.PrintAt("---", FontSmallBlack, TEC_FONT_RIGHT, ClientArea + XY(2, idx++ * 13), ClientArea + XY(172, 170));
         } else {
             // Qualität im Tank
-            PrintLine(ClientArea, idx, 10304);
+            PrintLineWithPercentage(ClientArea, idx++, 10304, std::floor((2 - ref.KerosinQuali)*1000), 1000);
             Bitmap.PrintAt(StandardTexte.GetS(TOKEN_EXPERT, 10305 + quali), FontSmallBlack, TEC_FONT_RIGHT, ClientArea + XY(2, idx++ * 13),
                            ClientArea + XY(172, 170));
         }

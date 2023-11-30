@@ -1683,7 +1683,13 @@ void PLAYER::NewDay() {
                         delta += Improvement * Planes[c].ptPreis / 110;
 
                         delta += SLONG((Planes[c].Zustand - OldZustand) * 10 * Planes[c].ptWartungsfaktor * (2100 - Planes[c].Baujahr) / 100 *
-                                       (200 - Planes[c].Zustand) / 100);
+                                (200 - Planes[c].Zustand) / 100);
+                    }
+
+
+                    if (delta < 0) {
+                        delta = 0;
+                        hprintf("Player.cpp: Repair cost for Player %li negative!", PlayerNum);
                     }
 
                     Summe += delta;
