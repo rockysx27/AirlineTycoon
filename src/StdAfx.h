@@ -48,6 +48,8 @@ typedef CStdStringA CString;
 #include "Schedule.h"    //Der Scheduler Bildschirm
 #include "Werkstat.h"    //Die Werkstatthalle
 
+#include "GameMechanic.h"
+
 #include "global.h" //Deklarationen der globalen Variablen
 
 #ifdef _MSC_VER

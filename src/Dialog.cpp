@@ -8,17 +8,6 @@
 #include "Aufsicht.h"
 #include "Nasa.h"
 
-SLONG TankSize[] = {100000, 1000000, 10000000, 100000000};
-SLONG TankPrice[] = {100000, 800000, 7000000, 60000000};
-
-SLONG SabotagePrice[] = {1000, 5000, 10000, 50000, 100000};
-SLONG SabotagePrice2[] = {10000, 25000, 50000, 250000};
-SLONG SabotagePrice3[] = {100000, 500000, 1000000, 2000000, 5000000, 8000000};
-
-SLONG RocketPrices[] = {200000, 400000, 600000, 5000000, 8000000, 10000000, 20000000, 25000000, 50000000, 85000000};
-
-SLONG StationPrices[] = {1000000, 2000000, 3000000, 2000000, 10000000, 20000000, 35000000, 50000000, 35000000, 80000000};
-
 CString Space = " ";
 
 extern XY BeraterSprechblasenOffset[];
@@ -79,8 +68,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
     }
     if (DialogPartner != TALKER_NONE) {
         // Klick ignorieren, wenn er erst anfängt zu reden:
-        if (pSmackerPartner != nullptr && TextAlign == 0 && pSmackerPartner->GetMood() != SPM_TALKING &&
-            AtGetTime() <= static_cast<DWORD>(SmackerTimeToTalk)) {
+        if (pSmackerPartner != nullptr && TextAlign == 0 && pSmackerPartner->GetMood() != SPM_TALKING && AtGetTime() <= static_cast<DWORD>(SmackerTimeToTalk)) {
             // Hack, damit leerer Sprach-Text weggeklickt werden kann:
             if (CanCancelEmpty != TRUE) {
                 return (TRUE);
@@ -258,20 +246,10 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
             case 695: {
                 SLONG tmpList[5] = {1, 2, 3, 5, 10};
                 SLONG Anzahl = tmpList[id - 691];
-                SLONG Preis = TankPrice[(DialogPar1 - 900)];
-                SLONG Size = TankSize[(DialogPar1 - 900)];
-
-                if (qPlayer.Money - Preis * Anzahl < DEBT_LIMIT) {
-                    MakeSayWindow(0, TOKEN_ARAB, 6000, pFontPartner);
-                } else {
-                    qPlayer.Tank += Size / 1000 * Anzahl;
-                    qPlayer.NetUpdateKerosin();
-
-                    qPlayer.ChangeMoney(-Preis * Anzahl, 2091, CString(bitoa(Size)), const_cast<char *>((LPCTSTR)CString(bitoa(Anzahl))));
-                    SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -Preis * Anzahl, -1);
-
-                    qPlayer.DoBodyguardRabatt(Preis * Anzahl);
+                if (GameMechanic::buyKerosinTank(qPlayer, (DialogPar1 - 900), Anzahl)) {
                     MakeSayWindow(0, TOKEN_ARAB, 700, pFontPartner);
+                } else {
+                    MakeSayWindow(0, TOKEN_ARAB, 6000, pFontPartner);
                 }
             } break;
 
@@ -317,10 +295,12 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
 
             case 1030:
             case 1031:
-            case 1032:
-                qPlayer.ArabOpfer = id - 1030 + static_cast<SLONG>(id - 1030 >= PlayerNum);
-                qPlayer.ArabOpfer2 = id - 1030 + static_cast<SLONG>(id - 1030 >= PlayerNum);
-                qPlayer.ArabOpfer3 = id - 1030 + static_cast<SLONG>(id - 1030 >= PlayerNum);
+            case 1032: {
+                SLONG target = id - 1030;
+                if (target >= PlayerNum) {
+                    ++target;
+                }
+                GameMechanic::setSaboteurTarget(qPlayer, target);
 
                 if (Sim.Players.Players[qPlayer.ArabOpfer].IsOut != 0) {
                     MakeSayWindow(0, TOKEN_SABOTAGE, 1045, pFontPartner);
@@ -328,23 +308,24 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                     MakeSayWindow(0, TOKEN_SABOTAGE, 1040, pFontPartner);
                 }
                 break;
+            }
 
             case 1040: // Sabotage an Flugzeug oder Person? ==>+<==
-                //#ifdef _DEBUG
+                // #ifdef _DEBUG
                 MakeSayWindow(1, TOKEN_SABOTAGE, 1047, 1048 + 1, TRUE, &FontDialog, &FontDialogLight);
-                //#else
-                //                  MakeSayWindow (1, TOKEN_SABOTAGE, 1047, 1048, TRUE, &FontDialog, &FontDialogLight);
-                //#endif
+                // #else
+                //                   MakeSayWindow (1, TOKEN_SABOTAGE, 1047, 1048, TRUE, &FontDialog, &FontDialogLight);
+                // #endif
                 break;
             case 1047:
-                if ((qPlayer.ArabMode != 0) || (qPlayer.ArabMode2 != 0) || (qPlayer.ArabMode3 != 0)) {
+                if (GameMechanic::checkSaboteurBusy(qPlayer)) {
                     MakeSayWindow(0, TOKEN_SABOTAGE, 1100, pFontPartner);
                 } else {
                     MakeSayWindow(1, TOKEN_SABOTAGE, 1050, 1050 + min(5, qPlayer.ArabTrust), FALSE, &FontDialog, &FontDialogLight);
                 }
                 break;
             case 1048:
-                if ((qPlayer.ArabMode != 0) || (qPlayer.ArabMode2 != 0) || (qPlayer.ArabMode3 != 0)) {
+                if (GameMechanic::checkSaboteurBusy(qPlayer)) {
                     MakeSayWindow(0, TOKEN_SABOTAGE, 1100, pFontPartner);
                 } else {
                     MakeSayWindow(1, TOKEN_SABOTAGE, 1250, 1250 + min(4, qPlayer.ArabTrust), FALSE, &FontDialog, &FontDialogLight);
@@ -352,7 +333,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                 break;
 
             case 1049:
-                if ((qPlayer.ArabMode != 0) || (qPlayer.ArabMode2 != 0) || (qPlayer.ArabMode3 != 0)) {
+                if (GameMechanic::checkSaboteurBusy(qPlayer)) {
                     MakeSayWindow(0, TOKEN_SABOTAGE, 1100, pFontPartner);
                 } else {
                     MakeSayWindow(1, TOKEN_SABOTAGE, 1080, 1080 + min(6, qPlayer.ArabTrust), FALSE, &FontDialog, &FontDialogLight);
@@ -368,141 +349,16 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
             case 1052:
             case 1053:
             case 1054:
-            case 1055:
-                if (id == 1051 && ((Sim.Players.Players[qPlayer.ArabOpfer].SecurityFlags & (1 << 6)) != 0U)) {
-                    MakeSayWindow(0, TOKEN_SABOTAGE, 2096, pFontPartner, (LPCTSTR)Sim.Players.Players[qPlayer.ArabOpfer].AirlineX);
-                } else if (id == 1052 && ((Sim.Players.Players[qPlayer.ArabOpfer].SecurityFlags & (1 << 6)) != 0U)) {
-                    MakeSayWindow(0, TOKEN_SABOTAGE, 2096, pFontPartner, (LPCTSTR)Sim.Players.Players[qPlayer.ArabOpfer].AirlineX);
-                } else if (id == 1053 && ((Sim.Players.Players[qPlayer.ArabOpfer].SecurityFlags & (1 << 7)) != 0U)) {
-                    MakeSayWindow(0, TOKEN_SABOTAGE, 2097, pFontPartner, (LPCTSTR)Sim.Players.Players[qPlayer.ArabOpfer].AirlineX);
-                } else if (id == 1054 && ((Sim.Players.Players[qPlayer.ArabOpfer].SecurityFlags & (1 << 7)) != 0U)) {
-                    MakeSayWindow(0, TOKEN_SABOTAGE, 2097, pFontPartner, (LPCTSTR)Sim.Players.Players[qPlayer.ArabOpfer].AirlineX);
-                } else if (id == 1055 && ((Sim.Players.Players[qPlayer.ArabOpfer].SecurityFlags & (1 << 6)) != 0U)) {
-                    MakeSayWindow(0, TOKEN_SABOTAGE, 2096, pFontPartner, (LPCTSTR)Sim.Players.Players[qPlayer.ArabOpfer].AirlineX);
-                } else if (qPlayer.Money - SabotagePrice[id - 1051] < DEBT_LIMIT) {
-                    MakeSayWindow(0, TOKEN_SABOTAGE, 6000, pFontPartner);
+            case 1055: {
+                SLONG number = (id - 1050);
+                auto res = GameMechanic::checkPrerequisitesForSaboteurJob(qPlayer, 0, number);
+                if (res.dialogParam.empty()) {
+                    MakeSayWindow(0, TOKEN_SABOTAGE, res.dialogID, pFontPartner);
                 } else {
-                    if (id == 1051) {
-                        Sim.Players.Players[qPlayer.ArabOpfer].SecurityNeeded |= (1 << 6);
-                    }
-                    if (id == 1052) {
-                        Sim.Players.Players[qPlayer.ArabOpfer].SecurityNeeded |= (1 << 6);
-                    }
-                    if (id == 1053) {
-                        Sim.Players.Players[qPlayer.ArabOpfer].SecurityNeeded |= (1 << 7);
-                    }
-                    if (id == 1054) {
-                        Sim.Players.Players[qPlayer.ArabOpfer].SecurityNeeded |= (1 << 7);
-                    }
-                    if (id == 1055) {
-                        Sim.Players.Players[qPlayer.ArabOpfer].SecurityNeeded |= (1 << 6);
-                    }
-
-                    qPlayer.ArabActive = id - 1050;
-                    MakeSayWindow(0, TOKEN_SABOTAGE, 1060, pFontPartner);
+                    MakeSayWindow(0, TOKEN_SABOTAGE, res.dialogID, pFontPartner, (LPCTSTR)res.dialogParam);
                 }
                 break;
-
-            case 1251:
-            case 1252:
-            case 1253:
-            case 1254:
-                if (id == 1251 && ((Sim.Players.Players[qPlayer.ArabOpfer2].SecurityFlags & (1 << 0)) != 0U)) {
-                    MakeSayWindow(0, TOKEN_SABOTAGE, 2090, pFontPartner, (LPCTSTR)Sim.Players.Players[qPlayer.ArabOpfer2].AirlineX);
-                } else if (id == 1252 && ((Sim.Players.Players[qPlayer.ArabOpfer2].SecurityFlags & (1 << 1)) != 0U)) {
-                    MakeSayWindow(0, TOKEN_SABOTAGE, 2091, pFontPartner, (LPCTSTR)Sim.Players.Players[qPlayer.ArabOpfer2].AirlineX);
-                } else if (id == 1253 && ((Sim.Players.Players[qPlayer.ArabOpfer2].SecurityFlags & (1 << 0)) != 0U)) {
-                    MakeSayWindow(0, TOKEN_SABOTAGE, 2090, pFontPartner, (LPCTSTR)Sim.Players.Players[qPlayer.ArabOpfer2].AirlineX);
-                } else if (id == 1254 && ((Sim.Players.Players[qPlayer.ArabOpfer2].SecurityFlags & (1 << 2)) != 0U)) {
-                    MakeSayWindow(0, TOKEN_SABOTAGE, 2092, pFontPartner, (LPCTSTR)Sim.Players.Players[qPlayer.ArabOpfer2].AirlineX);
-                } else if (qPlayer.Money - SabotagePrice2[id - 1251] < DEBT_LIMIT) {
-                    MakeSayWindow(0, TOKEN_SABOTAGE, 6000, pFontPartner);
-                } else {
-                    if (id - 1250 == 2 && (Sim.Players.Players[qPlayer.ArabOpfer2].HasItem(ITEM_LAPTOP) == 0)) {
-                        MakeSayWindow(0, TOKEN_SABOTAGE, 1300, pFontPartner);
-                    } else {
-                        if (id == 1251) {
-                            Sim.Players.Players[qPlayer.ArabOpfer2].SecurityNeeded |= (1 << 0);
-                        }
-                        if (id == 1252) {
-                            Sim.Players.Players[qPlayer.ArabOpfer2].SecurityNeeded |= (1 << 1);
-                        }
-                        if (id == 1253) {
-                            Sim.Players.Players[qPlayer.ArabOpfer2].SecurityNeeded |= (1 << 0);
-                        }
-                        if (id == 1254) {
-                            Sim.Players.Players[qPlayer.ArabOpfer2].SecurityNeeded |= (1 << 2);
-                        }
-
-                        qPlayer.ArabMode2 = id - 1250;
-                        qPlayer.ArabTrust = min(6, qPlayer.ArabMode2 + 1);
-
-                        qPlayer.ChangeMoney(-SabotagePrice2[id - 1251], 2080, "");
-                        SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -SabotagePrice2[id - 1251], -1);
-
-                        qPlayer.DoBodyguardRabatt(SabotagePrice2[id - 1251]);
-                        qPlayer.NetSynchronizeSabotage();
-                        MakeSayWindow(0, TOKEN_SABOTAGE, 1160, pFontPartner);
-                    }
-                }
-                break;
-
-            case 1081:
-            case 1082:
-            case 1083:
-            case 1084:
-                if (id == 1081 && ((Sim.Players.Players[qPlayer.ArabOpfer3].SecurityFlags & (1 << 8)) != 0U)) {
-                    MakeSayWindow(0, TOKEN_SABOTAGE, 2098, pFontPartner, (LPCTSTR)Sim.Players.Players[qPlayer.ArabOpfer3].AirlineX);
-                } else if (id == 1082 && ((Sim.Players.Players[qPlayer.ArabOpfer3].SecurityFlags & (1 << 5)) != 0U)) {
-                    MakeSayWindow(0, TOKEN_SABOTAGE, 2095, pFontPartner, (LPCTSTR)Sim.Players.Players[qPlayer.ArabOpfer3].AirlineX);
-                } else if (id == 1083 && ((Sim.Players.Players[qPlayer.ArabOpfer3].SecurityFlags & (1 << 5)) != 0U)) {
-                    MakeSayWindow(0, TOKEN_SABOTAGE, 2095, pFontPartner, (LPCTSTR)Sim.Players.Players[qPlayer.ArabOpfer3].AirlineX);
-                } else if (id == 1084 && ((Sim.Players.Players[qPlayer.ArabOpfer3].SecurityFlags & (1 << 3)) != 0U)) {
-                    MakeSayWindow(0, TOKEN_SABOTAGE, 2093, pFontPartner, (LPCTSTR)Sim.Players.Players[qPlayer.ArabOpfer3].AirlineX);
-                } else if (qPlayer.Money - SabotagePrice3[id - 1081] < DEBT_LIMIT) {
-                    MakeSayWindow(0, TOKEN_SABOTAGE, 6000, pFontPartner);
-                } else {
-                    if (id == 1081) {
-                        Sim.Players.Players[qPlayer.ArabOpfer3].SecurityNeeded |= (1 << 8);
-                    }
-                    if (id == 1082) {
-                        Sim.Players.Players[qPlayer.ArabOpfer3].SecurityNeeded |= (1 << 5);
-                    }
-                    if (id == 1083) {
-                        Sim.Players.Players[qPlayer.ArabOpfer3].SecurityNeeded |= (1 << 5);
-                    }
-                    if (id == 1084) {
-                        Sim.Players.Players[qPlayer.ArabOpfer3].SecurityNeeded |= (1 << 3);
-                    }
-
-                    qPlayer.ArabMode3 = id - 1080;
-                    qPlayer.ArabTrust = min(6, qPlayer.ArabMode3 + 1);
-
-                    qPlayer.ChangeMoney(-SabotagePrice3[id - 1081], 2080, "");
-                    SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -SabotagePrice2[id - 1081], -1);
-
-                    qPlayer.DoBodyguardRabatt(SabotagePrice3[id - 1081]);
-                    qPlayer.NetSynchronizeSabotage();
-
-                    MakeSayWindow(0, TOKEN_SABOTAGE, 1160, pFontPartner);
-                }
-                break;
-            case 1085:
-                if ((Sim.Players.Players[qPlayer.ArabOpfer3].SecurityFlags & (1 << 8)) != 0U) {
-                    MakeSayWindow(0, TOKEN_SABOTAGE, 2098, pFontPartner, (LPCTSTR)Sim.Players.Players[qPlayer.ArabOpfer3].AirlineX);
-                } else {
-                    MenuDialogReEntryB = 1090;
-                    MenuStart(MENU_SABOTAGEPLANE);
-                }
-                break;
-            case 1086:
-                if ((Sim.Players.Players[qPlayer.ArabOpfer3].SecurityFlags & (1 << 4)) != 0U) {
-                    MakeSayWindow(0, TOKEN_SABOTAGE, 2094, pFontPartner, (LPCTSTR)Sim.Players.Players[qPlayer.ArabOpfer3].AirlineX);
-                } else {
-                    MenuDialogReEntryB = 1091;
-                    MenuStart(MENU_SABOTAGEROUTE);
-                }
-                break;
+            }
 
             case 1060:
                 MenuDialogReEntryB = 1070;
@@ -510,39 +366,61 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                 break;
 
             case 1070:
-                qPlayer.ArabMode = qPlayer.ArabActive;
-                qPlayer.ArabActive = FALSE;
-                qPlayer.ChangeMoney(-SabotagePrice[qPlayer.ArabMode - 1], 2080, "");
-                qPlayer.DoBodyguardRabatt(SabotagePrice[qPlayer.ArabMode - 1]);
-                qPlayer.ArabTrust = min(6, qPlayer.ArabMode + 1);
-                qPlayer.NetSynchronizeSabotage();
+                GameMechanic::activateSaboteurJob(qPlayer);
                 StopDialog();
 
-                SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -SabotagePrice[qPlayer.ArabMode - 1], -1);
                 break;
 
+            case 1251:
+            case 1252:
+            case 1253:
+            case 1254: {
+                SLONG number = (id - 1250);
+                auto res = GameMechanic::checkPrerequisitesForSaboteurJob(qPlayer, 1, number);
+                if (res.dialogParam.empty()) {
+                    MakeSayWindow(0, TOKEN_SABOTAGE, res.dialogID, pFontPartner);
+                } else {
+                    MakeSayWindow(0, TOKEN_SABOTAGE, res.dialogID, pFontPartner, (LPCTSTR)res.dialogParam);
+                }
+                if (res.OK) {
+                    GameMechanic::activateSaboteurJob(qPlayer);
+                }
+                break;
+            }
+
+            case 1081:
+            case 1082:
+            case 1083:
+            case 1084:
+            case 1085:
+            case 1086: {
+                SLONG number = (id - 1080);
+                auto res = GameMechanic::checkPrerequisitesForSaboteurJob(qPlayer, 2, number);
+                if (res.dialogParam.empty()) {
+                    MakeSayWindow(0, TOKEN_SABOTAGE, res.dialogID, pFontPartner);
+                } else {
+                    MakeSayWindow(0, TOKEN_SABOTAGE, res.dialogID, pFontPartner, (LPCTSTR)res.dialogParam);
+                }
+                if (res.OK) {
+                    if (id == 1085) {
+                        MenuDialogReEntryB = 1090;
+                        MenuStart(MENU_SABOTAGEPLANE);
+                    } else if (id == 1086) {
+                        MenuDialogReEntryB = 1091;
+                        MenuStart(MENU_SABOTAGEROUTE);
+                    } else {
+                        GameMechanic::activateSaboteurJob(qPlayer);
+                    }
+                }
+                break;
+            }
             case 1090:
-                qPlayer.ArabMode3 = 5;
-                qPlayer.ArabTrust = min(6, qPlayer.ArabMode3 + 1);
-
-                qPlayer.ChangeMoney(-SabotagePrice3[4], 2080, "");
-                SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -SabotagePrice3[4], -1);
-
-                qPlayer.DoBodyguardRabatt(SabotagePrice3[4]);
-                qPlayer.NetSynchronizeSabotage();
-
+                GameMechanic::activateSaboteurJob(qPlayer);
                 MakeSayWindow(0, TOKEN_SABOTAGE, 1160, pFontPartner);
                 break;
 
             case 1091:
-                qPlayer.ArabMode3 = 6;
-
-                qPlayer.ChangeMoney(-SabotagePrice3[5], 2080, "");
-                SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -SabotagePrice3[5], -1);
-
-                qPlayer.DoBodyguardRabatt(SabotagePrice3[5]);
-                qPlayer.NetSynchronizeSabotage();
-
+                GameMechanic::activateSaboteurJob(qPlayer);
                 MakeSayWindow(0, TOKEN_SABOTAGE, 1160, pFontPartner);
                 break;
 
@@ -3700,7 +3578,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                 } else if (Sim.Players.Players[DialogPar1].Money < DEBT_GAMEOVER) {
                     MakeSayWindow(0, TOKEN_BOSS, 3000, pFontPartner, (LPCTSTR)Sim.Players.Players[DialogPar1].AirlineX);
                 } else {
-                    //Äußerung zu den Flugzeugen:
+                    // Äußerung zu den Flugzeugen:
                     for (c = tmp = tmp2 = 0; c < Sim.Players.Players[DialogPar1].Planes.AnzEntries(); c++) {
                         if (Sim.Players.Players[DialogPar1].Planes.IsInAlbum(c) != 0) {
                             tmp += Sim.Players.Players[DialogPar1].Planes[c].Zustand;
@@ -3743,7 +3621,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                         TmpStr += bprintf(DialogTexte.GetS(TOKEN_BOSS, 2035)) + Space;
                     }
 
-                    //Äußerung zum Personal:
+                    // Äußerung zum Personal:
                     /*for (c=tmp=tmp2=0; c<Workers.Workers.AnzEntries(); c++)
                       if (Workers.Workers[c].Employer==DialogPar1)
                       {
@@ -4079,7 +3957,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                 StopDialog();
                 break;
 
-                //Übernamedialog:
+                // Übernamedialog:
             case 5000:
                 MakeSayWindow(0, TOKEN_BOSS, 5001, pFontPartner, (LPCTSTR)Sim.Players.Players[Sim.OvertakerAirline].AirlineX,
                               (LPCTSTR)(Sim.Players.Players[Sim.OvertakenAirline].AirlineX));
