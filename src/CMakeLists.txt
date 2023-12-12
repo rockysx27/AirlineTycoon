@@ -70,6 +70,7 @@ add_executable (AT
     Editor.cpp
     Fracht.cpp
     GameFrame.cpp
+    GameMechanic.cpp
     Global.cpp
     Globe.cpp
     HalldiskMenu.cpp

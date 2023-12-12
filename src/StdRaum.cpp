@@ -163,7 +163,7 @@ SLONG WasLButtonDownMouseClickPar2;
 
 extern CString gHostIP;
 
-//Öfnungszeiten:
+// Öfnungszeiten:
 extern SLONG timeArabOpen;
 extern SLONG timeMuseOpen;
 extern SLONG timeMaklClose;
@@ -993,19 +993,19 @@ void CStdRaum::RepaintText(BOOL RefreshAll) {
                         }
                     } else                                                                            // Spieler
                         if (Sim.Players.Players[PlayerNum].GetRoom() == ROOM_BURO_A + PlayerNum * 10) // Im Büro?
-                    {
-                        BubbleRect =
-                            PaintTextBubble(OnscreenBitmap, XY(BigPlayerOffset[Sim.localPlayer].x - 15, BigPlayerOffset[Sim.localPlayer].y - Size / 2 - 10),
-                                            XY(630, BigPlayerOffset[Sim.localPlayer].y + Size / 2 + 10), BigPlayerOffset[Sim.localPlayer]);
-                        TextRect = CRect(BigPlayerOffset[Sim.localPlayer].x - 15 /*!new*/, BigPlayerOffset[Sim.localPlayer].y - Size / 2 - 10, 620,
-                                         BigPlayerOffset[Sim.localPlayer].y + Size / 2 + 10);
-                    } else // normal
-                    {
-                        BubbleRect =
-                            PaintTextBubble(OnscreenBitmap, XY(BeraterSprechblasenOffset[12 + Sim.localPlayer].x, Summe - 10), XY(630, Summe + Size + 10),
-                                            XY(BeraterSprechblasenOffset[12 + Sim.localPlayer].x, BeraterSprechblasenOffset[12 + Sim.localPlayer].y));
-                        TextRect = CRect(BeraterSprechblasenOffset[12 + Sim.localPlayer].x, Summe - 10, 615, Summe + Size + 10);
-                    }
+                        {
+                            BubbleRect =
+                                PaintTextBubble(OnscreenBitmap, XY(BigPlayerOffset[Sim.localPlayer].x - 15, BigPlayerOffset[Sim.localPlayer].y - Size / 2 - 10),
+                                                XY(630, BigPlayerOffset[Sim.localPlayer].y + Size / 2 + 10), BigPlayerOffset[Sim.localPlayer]);
+                            TextRect = CRect(BigPlayerOffset[Sim.localPlayer].x - 15 /*!new*/, BigPlayerOffset[Sim.localPlayer].y - Size / 2 - 10, 620,
+                                             BigPlayerOffset[Sim.localPlayer].y + Size / 2 + 10);
+                        } else // normal
+                        {
+                            BubbleRect =
+                                PaintTextBubble(OnscreenBitmap, XY(BeraterSprechblasenOffset[12 + Sim.localPlayer].x, Summe - 10), XY(630, Summe + Size + 10),
+                                                XY(BeraterSprechblasenOffset[12 + Sim.localPlayer].x, BeraterSprechblasenOffset[12 + Sim.localPlayer].y));
+                            TextRect = CRect(BeraterSprechblasenOffset[12 + Sim.localPlayer].x, Summe - 10, 615, Summe + Size + 10);
+                        }
                 }
 
                 //!
@@ -1230,8 +1230,7 @@ void CStdRaum::StartDialog(SLONG DialogPartner, BOOL Medium, SLONG DialogPar1, S
                 MakeSayWindow(0, TOKEN_ARAB, 1020, pFontPartner);
             }
         } else if (DialogPar1 == 100) {
-            MakeSayWindow(1, TOKEN_ARAB, 400, 403, 3, &FontDialog, &FontDialogLight, Sim.HoleKerosinPreis(0), Sim.HoleKerosinPreis(1),
-                          Sim.HoleKerosinPreis(2));
+            MakeSayWindow(1, TOKEN_ARAB, 400, 403, 3, &FontDialog, &FontDialogLight, Sim.HoleKerosinPreis(0), Sim.HoleKerosinPreis(1), Sim.HoleKerosinPreis(2));
         }
 
         break;
@@ -1865,7 +1864,8 @@ void CStdRaum::StartDialog(SLONG DialogPartner, BOOL Medium, SLONG DialogPar1, S
             DialogPar2 = 0;
         }
         if (DialogPar2 == 0) {
-            MakeSayWindow(0, TOKEN_PLAYER, 1000 + static_cast<SLONG>(DialogMedium == MEDIUM_AIR), pFontPartner, (LPCTSTR)Sim.Players.Players[DialogPar1].AirlineX);
+            MakeSayWindow(0, TOKEN_PLAYER, 1000 + static_cast<SLONG>(DialogMedium == MEDIUM_AIR), pFontPartner,
+                          (LPCTSTR)Sim.Players.Players[DialogPar1].AirlineX);
         } else {
             MakeSayWindow(1, TOKEN_PLAYER, 1000 + static_cast<SLONG>(DialogMedium == MEDIUM_AIR), 1000 + static_cast<SLONG>(DialogMedium == MEDIUM_AIR), FALSE,
                           &FontDialog, &FontDialogLight, (LPCTSTR)Sim.Players.Players[Sim.localPlayer].AirlineX);
@@ -2882,14 +2882,14 @@ void CStdRaum::PostPaint() {
         // Einen anderen Spieler als Dialogpartner anzeigen:
         if (DialogPartner == TALKER_COMPETITOR) {
             if (AtGetTime() > DWORD(SmackerTimeToTalk) || TextAlign != 0 || ((TalkingSpeechFx > 0 && !SpeechFx.pFX->IsMouthOpen(200)))) {
-                PrimaryBm.FlipBlitFromT(
-                    BeraterBms[12 + DialogPar1][static_cast<SLONG>(DialogMedium == MEDIUM_HANDY) * 4],
-                    XY(640 - BeraterBms[12 + DialogPar1][0].Size.x, 440 - BeraterSlideY[12 + DialogPar1 + static_cast<SLONG>(DialogMedium == MEDIUM_HANDY) * 4]));
+                PrimaryBm.FlipBlitFromT(BeraterBms[12 + DialogPar1][static_cast<SLONG>(DialogMedium == MEDIUM_HANDY) * 4],
+                                        XY(640 - BeraterBms[12 + DialogPar1][0].Size.x,
+                                           440 - BeraterSlideY[12 + DialogPar1 + static_cast<SLONG>(DialogMedium == MEDIUM_HANDY) * 4]));
             } else {
-                PrimaryBm.FlipBlitFromT(
-                    BeraterBms[12 + DialogPar1]
-                              ["\x0\x2\x1\x3\x2\x3\x0\x1\x2"[(AtGetTime() / 50 / 3) & 7] + static_cast<SLONG>(DialogMedium == MEDIUM_HANDY) * 4],
-                    XY(640 - BeraterBms[12 + DialogPar1][0].Size.x, 440 - BeraterSlideY[12 + DialogPar1 + static_cast<SLONG>(DialogMedium == MEDIUM_HANDY) * 4]));
+                PrimaryBm.FlipBlitFromT(BeraterBms[12 + DialogPar1]["\x0\x2\x1\x3\x2\x3\x0\x1\x2"[(AtGetTime() / 50 / 3) & 7] +
+                                                                    static_cast<SLONG>(DialogMedium == MEDIUM_HANDY) * 4],
+                                        XY(640 - BeraterBms[12 + DialogPar1][0].Size.x,
+                                           440 - BeraterSlideY[12 + DialogPar1 + static_cast<SLONG>(DialogMedium == MEDIUM_HANDY) * 4]));
             }
 
             // Gedankenblase für nachdenkende Netzwerkspieler:
@@ -3174,7 +3174,7 @@ void CStdRaum::PostPaint() {
 }
 
 //--------------------------------------------------------------------------------------------
-//Überprüft, ob der Cursor mitlerweile auf einem anderem Highlight steht:
+// Überprüft, ob der Cursor mitlerweile auf einem anderem Highlight steht:
 //--------------------------------------------------------------------------------------------
 void CStdRaum::CheckHighlight(const CPoint &point) {
     // Außerhalb geklickt? Dann finden wir eh' nichts!
@@ -3200,10 +3200,10 @@ void CStdRaum::CheckHighlight(const CPoint &point) {
                 Summe = BigPlayerOffset[Sim.localPlayer].y - Summe / 2 - 10 + 10;
             } else // normal
                 if (SLONG(430 - Summe / 2) > BeraterSprechblasenOffset[12 + Sim.localPlayer].y) {
-                Summe = BeraterSprechblasenOffset[12 + Sim.localPlayer].y - Summe / 2;
-            } else {
-                Summe = 430 - Summe;
-            }
+                    Summe = BeraterSprechblasenOffset[12 + Sim.localPlayer].y - Summe / 2;
+                } else {
+                    Summe = 430 - Summe;
+                }
         }
 
         // Welcher Text ist unter dem Cursor?
@@ -4435,28 +4435,28 @@ void CStdRaum::MenuStart(SLONG MenuType, SLONG MenuPar1, SLONG MenuPar2, SLONG M
 void CStdRaum::MenuRepaint() {
     SLONG c = 0;
 
+    PLAYER &qPlayer = Sim.Players.Players[PlayerNum];
+
     switch (CurrentMenu) {
     case MENU_BANK:
-        if (Sim.Players.Players[PlayerNum].GetRoom() == ROOM_BANK) {
+        if (qPlayer.GetRoom() == ROOM_BANK) {
             SB_CFont &qFontBankBlack = (dynamic_cast<Bank *>(this))->FontBankBlack;
             SB_CFont &qFontBankRed = (dynamic_cast<Bank *>(this))->FontBankRed;
 
             OnscreenBitmap.BlitFrom(MenuBms[0]);
 
             // Name:
-            OnscreenBitmap.PrintAt(Sim.Players.Players[PlayerNum].Name, qFontBankRed, TEC_FONT_LEFT, 58, 17, 318, 144);
+            OnscreenBitmap.PrintAt(qPlayer.Name, qFontBankRed, TEC_FONT_LEFT, 58, 17, 318, 144);
 
             // Kredit (alt):
             OnscreenBitmap.PrintAt(StandardTexte.GetS(TOKEN_KONTO, 1000), qFontBankBlack, TEC_FONT_LEFT, 58, 35, 318, 144);
             OnscreenBitmap.PrintAt(StandardTexte.GetS(TOKEN_KONTO, 1001), qFontBankBlack, TEC_FONT_LEFT, 58, 45, 318, 144);
             OnscreenBitmap.PrintAt(StandardTexte.GetS(TOKEN_KONTO, 1002), qFontBankBlack, TEC_FONT_LEFT, 58, 55, 318, 144);
             OnscreenBitmap.PrintAt(StandardTexte.GetS(TOKEN_KONTO, 1003), qFontBankBlack, TEC_FONT_LEFT, 58, 65, 318, 144);
-            OnscreenBitmap.PrintAt(Einheiten[EINH_DM].bString64(Sim.Players.Players[PlayerNum].Credit), qFontBankBlack, TEC_FONT_RIGHT, 58, 35, 270, 144);
-            OnscreenBitmap.PrintAt(Einheiten[EINH_P].bString(Sim.Players.Players[PlayerNum].SollZins), qFontBankBlack, TEC_FONT_RIGHT, 58, 45, 270, 144);
-            OnscreenBitmap.PrintAt(Einheiten[EINH_DM].bString64(Sim.Players.Players[PlayerNum].SollZins * Sim.Players.Players[PlayerNum].Credit / 1200),
-                                   qFontBankBlack, TEC_FONT_RIGHT, 58, 55, 270, 144);
-            OnscreenBitmap.PrintAt(Einheiten[EINH_DM].bString64(Sim.Players.Players[PlayerNum].SollZins * Sim.Players.Players[PlayerNum].Credit / 100),
-                                   qFontBankBlack, TEC_FONT_RIGHT, 58, 65, 270, 144);
+            OnscreenBitmap.PrintAt(Einheiten[EINH_DM].bString64(qPlayer.Credit), qFontBankBlack, TEC_FONT_RIGHT, 58, 35, 270, 144);
+            OnscreenBitmap.PrintAt(Einheiten[EINH_P].bString(qPlayer.SollZins), qFontBankBlack, TEC_FONT_RIGHT, 58, 45, 270, 144);
+            OnscreenBitmap.PrintAt(Einheiten[EINH_DM].bString64(qPlayer.SollZins * qPlayer.Credit / 1200), qFontBankBlack, TEC_FONT_RIGHT, 58, 55, 270, 144);
+            OnscreenBitmap.PrintAt(Einheiten[EINH_DM].bString64(qPlayer.SollZins * qPlayer.Credit / 100), qFontBankBlack, TEC_FONT_RIGHT, 58, 65, 270, 144);
 
             // Neuaufname:
             if (MenuPar2 == 1) {
@@ -4476,15 +4476,12 @@ void CStdRaum::MenuRepaint() {
             OnscreenBitmap.PrintAt(StandardTexte.GetS(TOKEN_KONTO, 1001), qFontBankBlack, TEC_FONT_LEFT, 58, 113, 318, 144);
             OnscreenBitmap.PrintAt(StandardTexte.GetS(TOKEN_KONTO, 1002), qFontBankBlack, TEC_FONT_LEFT, 58, 123, 318, 144);
             OnscreenBitmap.PrintAt(StandardTexte.GetS(TOKEN_KONTO, 1003), qFontBankBlack, TEC_FONT_LEFT, 58, 133, 318, 144);
-            OnscreenBitmap.PrintAt(Einheiten[EINH_DM].bString64(Sim.Players.Players[PlayerNum].Credit + MenuPar1), qFontBankBlack, TEC_FONT_RIGHT, 58, 103, 270,
-                                   144);
-            OnscreenBitmap.PrintAt(Einheiten[EINH_P].bString(Sim.Players.Players[PlayerNum].SollZins), qFontBankBlack, TEC_FONT_RIGHT, 58, 113, 270, 144);
-            OnscreenBitmap.PrintAt(
-                Einheiten[EINH_DM].bString64(Sim.Players.Players[PlayerNum].SollZins * (Sim.Players.Players[PlayerNum].Credit + MenuPar1) / 1200),
-                qFontBankBlack, TEC_FONT_RIGHT, 58, 123, 270, 144);
-            OnscreenBitmap.PrintAt(
-                Einheiten[EINH_DM].bString64(Sim.Players.Players[PlayerNum].SollZins * (Sim.Players.Players[PlayerNum].Credit + MenuPar1) / 100),
-                qFontBankBlack, TEC_FONT_RIGHT, 58, 133, 270, 144);
+            OnscreenBitmap.PrintAt(Einheiten[EINH_DM].bString64(qPlayer.Credit + MenuPar1), qFontBankBlack, TEC_FONT_RIGHT, 58, 103, 270, 144);
+            OnscreenBitmap.PrintAt(Einheiten[EINH_P].bString(qPlayer.SollZins), qFontBankBlack, TEC_FONT_RIGHT, 58, 113, 270, 144);
+            OnscreenBitmap.PrintAt(Einheiten[EINH_DM].bString64(qPlayer.SollZins * (qPlayer.Credit + MenuPar1) / 1200), qFontBankBlack, TEC_FONT_RIGHT, 58, 123,
+                                   270, 144);
+            OnscreenBitmap.PrintAt(Einheiten[EINH_DM].bString64(qPlayer.SollZins * (qPlayer.Credit + MenuPar1) / 100), qFontBankBlack, TEC_FONT_RIGHT, 58, 133,
+                                   270, 144);
 
             if (MenuPar2 == 2) {
                 MenuPar1 = -MenuPar1;
@@ -4498,32 +4495,27 @@ void CStdRaum::MenuRepaint() {
         OnscreenBitmap.PrintAt(StandardTexte.GetS(TOKEN_TANK, 1031), FontSmallBlack, TEC_FONT_LEFT, 18, 41, 250, 320);
 
         OnscreenBitmap.PrintAt(Einheiten[EINH_DM].bString(Sim.Kerosin), FontSmallBlack, TEC_FONT_LEFT, 160, 28, 250, 320);
-        OnscreenBitmap.PrintAt(Einheiten[EINH_DM].bString(SLONG(Sim.Players.Players[PlayerNum].TankPreis)), FontSmallBlack, TEC_FONT_LEFT, 160, 41, 250, 320);
+        OnscreenBitmap.PrintAt(Einheiten[EINH_DM].bString(SLONG(qPlayer.TankPreis)), FontSmallBlack, TEC_FONT_LEFT, 160, 41, 250, 320);
 
         OnscreenBitmap.PrintAt(StandardTexte.GetS(TOKEN_TANK, 1000), FontSmallBlack, TEC_FONT_LEFT, 18, 8, 250, 320);
         OnscreenBitmap.PrintAt(StandardTexte.GetS(TOKEN_TANK, 1001), FontSmallBlack, TEC_FONT_LEFT, 18, 58, 250, 320);
         OnscreenBitmap.PrintAt(StandardTexte.GetS(TOKEN_TANK, 1002), FontSmallBlack, TEC_FONT_LEFT, 18, 71, 250, 320);
 
         if (gLanguage == LANGUAGE_O) {
-            OnscreenBitmap.PrintAt(bprintf("%s Barris", (LPCTSTR)Insert1000erDots(Sim.Players.Players[PlayerNum].Tank)), FontSmallBlack, TEC_FONT_LEFT, 160, 58,
-                                   250, 320);
+            OnscreenBitmap.PrintAt(bprintf("%s Barris", (LPCTSTR)Insert1000erDots(qPlayer.Tank)), FontSmallBlack, TEC_FONT_LEFT, 160, 58, 250, 320);
         } else {
-            OnscreenBitmap.PrintAt(bprintf("%s Barrel", (LPCTSTR)Insert1000erDots(Sim.Players.Players[PlayerNum].Tank)), FontSmallBlack, TEC_FONT_LEFT, 160, 58,
-                                   250, 320);
+            OnscreenBitmap.PrintAt(bprintf("%s Barrel", (LPCTSTR)Insert1000erDots(qPlayer.Tank)), FontSmallBlack, TEC_FONT_LEFT, 160, 58, 250, 320);
         }
         if (gLanguage == LANGUAGE_O) {
-            OnscreenBitmap.PrintAt(bprintf("%s Barris (%li%%)", (LPCTSTR)Insert1000erDots(Sim.Players.Players[PlayerNum].TankInhalt),
-                                           Sim.Players.Players[PlayerNum].TankInhalt * 100 / Sim.Players.Players[PlayerNum].Tank),
+            OnscreenBitmap.PrintAt(bprintf("%s Barris (%li%%)", (LPCTSTR)Insert1000erDots(qPlayer.TankInhalt), qPlayer.TankInhalt * 100 / qPlayer.Tank),
                                    FontSmallBlack, TEC_FONT_LEFT, 160, 71, 250, 320);
         } else {
-            OnscreenBitmap.PrintAt(bprintf("%s Barrel (%li%%)", (LPCTSTR)Insert1000erDots(Sim.Players.Players[PlayerNum].TankInhalt),
-                                           Sim.Players.Players[PlayerNum].TankInhalt * 100 / Sim.Players.Players[PlayerNum].Tank),
+            OnscreenBitmap.PrintAt(bprintf("%s Barrel (%li%%)", (LPCTSTR)Insert1000erDots(qPlayer.TankInhalt), qPlayer.TankInhalt * 100 / qPlayer.Tank),
                                    FontSmallBlack, TEC_FONT_LEFT, 160, 71, 250, 320);
         }
 
-        if (Sim.Players.Players[PlayerNum].TankInhalt != 0) {
-            OnscreenBitmap.PrintAt(StandardTexte.GetS(TOKEN_TANK, 1010 + Sim.Players.Players[PlayerNum].TankOpen), FontSmallBlack, TEC_FONT_LEFT, 18, 100, 250,
-                                   320);
+        if (qPlayer.TankInhalt != 0) {
+            OnscreenBitmap.PrintAt(StandardTexte.GetS(TOKEN_TANK, 1010 + qPlayer.TankOpen), FontSmallBlack, TEC_FONT_LEFT, 18, 100, 250, 320);
         } else {
             OnscreenBitmap.PrintAt(StandardTexte.GetS(TOKEN_TANK, 1012), FontSmallBlack, TEC_FONT_LEFT, 18, 100, 250, 320);
         }
@@ -4539,8 +4531,8 @@ void CStdRaum::MenuRepaint() {
                 if (FilofaxRoomRemapper[c] == 255) {
                     break;
                 }
-                if (Sim.Players.Players[PlayerNum].WasInRoom[static_cast<SLONG>(FilofaxRoomRemapper[c])] != 0) {
-                    if (Sim.Players.Players[PlayerNum].IsLocationInQueue(FilofaxRoomRemapper[c]) == 0) {
+                if (qPlayer.WasInRoom[static_cast<SLONG>(FilofaxRoomRemapper[c])] != 0) {
+                    if (qPlayer.IsLocationInQueue(FilofaxRoomRemapper[c]) == 0) {
                         // OnscreenBitmap.PrintAt (StandardTexte.GetS (TOKEN_FILOFAX, 1000+c), FontSmallBlack, TEC_FONT_LEFT, 34, 8+c*13, 204, 253);
                         OnscreenBitmap.PrintAt(StandardTexte.GetS(TOKEN_FILOFAX, 1000 + c), FontSmallBlack, TEC_FONT_LEFT, 34, 7 + c * 13, 204, 256);
                     } else {
@@ -4552,8 +4544,8 @@ void CStdRaum::MenuRepaint() {
                 if (HandyRoomRemapper[c] == 255) {
                     break;
                 }
-                if (Sim.Players.Players[PlayerNum].WasInRoom[static_cast<SLONG>(HandyRoomRemapper[c])] != 0) {
-                    if (Sim.Players.Players[PlayerNum].IsLocationInQueue(HandyRoomRemapper[c]) == 0) {
+                if (qPlayer.WasInRoom[static_cast<SLONG>(HandyRoomRemapper[c])] != 0) {
+                    if (qPlayer.IsLocationInQueue(HandyRoomRemapper[c]) == 0) {
                         OnscreenBitmap.PrintAt(StandardTexte.GetS(TOKEN_FILOFAX, 2000 + c), FontSmallBlack, TEC_FONT_LEFT, 34, 7 + c * 13, 204, 210);
                     } else {
                         OnscreenBitmap.PrintAt(StandardTexte.GetS(TOKEN_FILOFAX, 2000 + c), FontSmallGrey, TEC_FONT_LEFT, 34, 7 + c * 13, 204, 210);
@@ -4684,7 +4676,7 @@ void CStdRaum::MenuRepaint() {
                 if (Workers.Workers[MenuRemapper[MenuPage - 1]].PlaneId == -1) {
                     OnscreenBitmap.PrintAt(StandardTexte.GetS(TOKEN_JOBS, 1100), FontSmallBlack, TEC_FONT_LEFT, 40, 155, 250, 319);
                 } else {
-                    CString planeName = Sim.Players.Players[PlayerNum].Planes[Workers.Workers[MenuRemapper[MenuPage - 1]].PlaneId].Name;
+                    CString planeName = qPlayer.Planes[Workers.Workers[MenuRemapper[MenuPage - 1]].PlaneId].Name;
                     OnscreenBitmap.PrintAt(bprintf(StandardTexte.GetS(TOKEN_JOBS, 1101), (LPCTSTR)planeName), FontSmallBlack, TEC_FONT_LEFT, 40, 155, 250, 319);
                 }
                 OnscreenBitmap.PrintAt(StandardTexte.GetS(TOKEN_JOBS, 1102), FontSmallBlack, TEC_FONT_LEFT, 40, 181, 250, 319);
@@ -4750,7 +4742,7 @@ void CStdRaum::MenuRepaint() {
         OnscreenBitmap.ReSize(MenuBms[0].Size);
         OnscreenBitmap.BlitFrom(MenuBms[0]);
 
-        //Überschriften:
+        // Überschriften:
         OnscreenBitmap.PrintAt(MenuDataTable.ColTitle[0], FontSmallBlack, TEC_FONT_LEFT, XY(63, 40), MenuBms[0].Size);
 
         // Zustand, Ziel, Kosten
@@ -4764,8 +4756,8 @@ void CStdRaum::MenuRepaint() {
 
             OnscreenBitmap.PrintAt(MenuDataTable.Values[1 + c * MenuDataTable.AnzColums], FontSmallBlack, TEC_FONT_LEFT, XY(185, 53 + (c - MenuPage) * 12),
                                    XY(346, 226));
-            OnscreenBitmap.PrintAt(Einheiten[EINH_P].bString(Sim.Players.Players[PlayerNum].Planes[MenuDataTable.LineIndex[c]].TargetZustand), FontSmallBlack,
-                                   TEC_FONT_LEFT, XY(220, 53 + (c - MenuPage) * 12), XY(346, 226));
+            OnscreenBitmap.PrintAt(Einheiten[EINH_P].bString(qPlayer.Planes[MenuDataTable.LineIndex[c]].TargetZustand), FontSmallBlack, TEC_FONT_LEFT,
+                                   XY(220, 53 + (c - MenuPage) * 12), XY(346, 226));
 
             SLONG Improvement = 0;
             if (qPlayer.Planes[MenuDataTable.LineIndex[c]].TargetZustand > qPlayer.Planes[MenuDataTable.LineIndex[c]].WorstZustand + 20) {
@@ -4800,7 +4792,7 @@ void CStdRaum::MenuRepaint() {
         OnscreenBitmap.ReSize(MenuBms[0].Size);
         OnscreenBitmap.BlitFrom(MenuBms[0]);
 
-        //Überschriften:
+        // Überschriften:
         OnscreenBitmap.PrintAt(StandardTexte.GetS(TOKEN_MISC, 8020), FontSmallBlack, TEC_FONT_LEFT, XY(63, 40), MenuBms[0].Size);
 
         // Die verschiedenen Posten:
@@ -4850,7 +4842,7 @@ void CStdRaum::MenuRepaint() {
         OnscreenBitmap.BlitFrom(MenuBms[0]);
 
         if (MenuInfo3 == -1) {
-            //Überschriften:
+            // Überschriften:
             OnscreenBitmap.PrintAt(MenuDataTable.ColTitle[0], FontSmallBlack, TEC_FONT_LEFT, XY(63, 40), MenuBms[0].Size);
             OnscreenBitmap.PrintAt(StandardTexte.GetS(TOKEN_SCHED, 1009), FontSmallBlack, TEC_FONT_LEFT, XY(265, 40), XY(346, 226));
 
@@ -4882,10 +4874,10 @@ void CStdRaum::MenuRepaint() {
                 struct tm *pTimeStruct = localtime(&Time);
 
                 OnscreenBitmap.PrintAt(bprintf("%li:%02li", qPlane.Pannen[c].Time / 60000, (qPlane.Pannen[c].Time / 1000) % 60), FontSmallBlack, TEC_FONT_LEFT,
-                                       XY(63, 73 + (c)*12), XY(346, 226));
-                OnscreenBitmap.PrintAt(bprintf("%li.%li.", pTimeStruct->tm_mday, pTimeStruct->tm_mon + 1), FontSmallBlack, TEC_FONT_LEFT, XY(108, 73 + (c)*12),
-                                       XY(346, 226));
-                OnscreenBitmap.PrintAt(StandardTexte.GetS(TOKEN_SCHED, 2360 + qPlane.Pannen[c].Code), FontSmallBlack, TEC_FONT_LEFT, XY(153, 73 + (c)*12),
+                                       XY(63, 73 + (c) * 12), XY(346, 226));
+                OnscreenBitmap.PrintAt(bprintf("%li.%li.", pTimeStruct->tm_mday, pTimeStruct->tm_mon + 1), FontSmallBlack, TEC_FONT_LEFT,
+                                       XY(108, 73 + (c) * 12), XY(346, 226));
+                OnscreenBitmap.PrintAt(StandardTexte.GetS(TOKEN_SCHED, 2360 + qPlane.Pannen[c].Code), FontSmallBlack, TEC_FONT_LEFT, XY(153, 73 + (c) * 12),
                                        XY(346, 226));
             }
 
@@ -4966,19 +4958,17 @@ void CStdRaum::MenuRepaint() {
         } else {
             if (MenuPar1 == MENU_REQUEST_KILLITEM) {
                 OnscreenBitmap.PrintAt(bprintf((LPCTSTR)CString(StandardTexte.GetS(TOKEN_MISC, 3010 + MenuPar1)),
-                                               (LPCTSTR)CString(StandardTexte.GetS(TOKEN_TOOLTIP, 2000 + Sim.Players.Players[PlayerNum].Items[MenuPar2]))),
+                                               (LPCTSTR)CString(StandardTexte.GetS(TOKEN_TOOLTIP, 2000 + qPlayer.Items[MenuPar2]))),
                                        FontBigGrey, TEC_FONT_LEFT, 10, 10, 280, 190);
             } else if (MenuPar1 == MENU_REQUEST_KILLAUFTRAG || MenuPar1 == MENU_REQUEST_KILLAUFTRAG0) {
                 OnscreenBitmap.PrintAt(bprintf((LPCTSTR)CString(StandardTexte.GetS(TOKEN_MISC, 3010 + MenuPar1)),
-                                               (LPCTSTR)Cities[Sim.Players.Players[PlayerNum].Auftraege[MenuPar2].VonCity].Name,
-                                               (LPCTSTR)Cities[Sim.Players.Players[PlayerNum].Auftraege[MenuPar2].NachCity].Name,
-                                               Sim.Players.Players[PlayerNum].Auftraege[MenuPar2].Strafe),
+                                               (LPCTSTR)Cities[qPlayer.Auftraege[MenuPar2].VonCity].Name,
+                                               (LPCTSTR)Cities[qPlayer.Auftraege[MenuPar2].NachCity].Name, qPlayer.Auftraege[MenuPar2].Strafe),
                                        FontBigGrey, TEC_FONT_LEFT, 10, 10, 280, 190);
             } else if (MenuPar1 == MENU_REQUEST_KILLFAUFTRAG || MenuPar1 == MENU_REQUEST_KILLFAUFTRAG0) {
                 OnscreenBitmap.PrintAt(bprintf((LPCTSTR)CString(StandardTexte.GetS(TOKEN_MISC, 3010 + MenuPar1)),
-                                               (LPCTSTR)Cities[Sim.Players.Players[PlayerNum].Frachten[MenuPar2].VonCity].Name,
-                                               (LPCTSTR)Cities[Sim.Players.Players[PlayerNum].Frachten[MenuPar2].NachCity].Name,
-                                               Sim.Players.Players[PlayerNum].Frachten[MenuPar2].Strafe),
+                                               (LPCTSTR)Cities[qPlayer.Frachten[MenuPar2].VonCity].Name,
+                                               (LPCTSTR)Cities[qPlayer.Frachten[MenuPar2].NachCity].Name, qPlayer.Frachten[MenuPar2].Strafe),
                                        FontBigGrey, TEC_FONT_LEFT, 10, 10, 280, 190);
             } else if (MenuPar1 == MENU_REQUEST_KILLPLAN) {
                 OnscreenBitmap.PrintAt(bprintf((LPCTSTR)CString(StandardTexte.GetS(TOKEN_MISC, 3010 + MenuPar1)),
@@ -5005,8 +4995,8 @@ void CStdRaum::MenuRepaint() {
 
     case MENU_RENAMEPLANE:
         OnscreenBitmap.BlitFrom(MenuBms[0]);
-        OnscreenBitmap.PrintAt(bprintf(StandardTexte.GetS(TOKEN_MISC, 3099), (LPCTSTR)CString(Sim.Players.Players[PlayerNum].Planes[MenuPar1].Name)),
-                               FontBigGrey, TEC_FONT_LEFT, 10, 10, 280, 190);
+        OnscreenBitmap.PrintAt(bprintf(StandardTexte.GetS(TOKEN_MISC, 3099), (LPCTSTR)CString(qPlayer.Planes[MenuPar1].Name)), FontBigGrey, TEC_FONT_LEFT, 10,
+                               10, 280, 190);
         OnscreenBitmap.PrintAt(StandardTexte.GetS(TOKEN_MISC, 3002), FontBigGrey, TEC_FONT_LEFT, 16, 160, 274, 190);
         OnscreenBitmap.PrintAt(StandardTexte.GetS(TOKEN_MISC, 3003), FontBigGrey, TEC_FONT_RIGHT, 16, 160, 274, 190);
         OnscreenBitmap.PrintAt(Optionen[0] + "_", FontSmallBlack, TEC_FONT_LEFT, 26, 141, 268, 155);
@@ -5055,8 +5045,7 @@ void CStdRaum::MenuRepaint() {
     } break;
 
     case MENU_GAMEOVER:
-        OnscreenBitmap.BlitFromT(MenuBms[static_cast<SLONG>(MenuPar1 == 0)],
-                                 320 - MenuBms[static_cast<SLONG>(MenuPar1 == 0)].Size.x / 2, 330);
+        OnscreenBitmap.BlitFromT(MenuBms[static_cast<SLONG>(MenuPar1 == 0)], 320 - MenuBms[static_cast<SLONG>(MenuPar1 == 0)].Size.x / 2, 330);
         break;
 
     case MENU_SABOTAGEFAX:
@@ -5094,7 +5083,7 @@ void CStdRaum::MenuRepaint() {
         break;
 
     case MENU_LETTERS:
-        if (Sim.Players.Players[PlayerNum].Letters.Letters[MenuPage].IsLetter != 0) {
+        if (qPlayer.Letters.Letters[MenuPage].IsLetter != 0) {
             PLAYER &qPlayer = Sim.Players.Players[PlayerNum];
 
             OnscreenBitmap.BlitFrom(MenuBms[0]);
@@ -5136,37 +5125,12 @@ void CStdRaum::MenuRepaint() {
         break;
 
     case MENU_BUYKEROSIN:
-        if (Sim.Players.Players[PlayerNum].GetRoom() == ROOM_ARAB_AIR) {
+        if (qPlayer.GetRoom() == ROOM_ARAB_AIR) {
             SLONG Kerosinpreis = Sim.HoleKerosinPreis(MenuPar1);
 
-            __int64 Rabatt = 0;
-            __int64 Kosten = 0;
-
-            Kosten = __int64(Kerosinpreis) * __int64(MenuPar2);
-
-            if (MenuPar2 >= 50000) {
-                Rabatt = Kosten / 10;
-            } else if (MenuPar2 >= 10000) {
-                Rabatt = Kosten / 20;
-            }
-
-            // Geldmenge begrenzen, damit's keinen Overflow gibt:
-            if (Kosten - Rabatt > Sim.Players.Players[PlayerNum].Money - (DEBT_LIMIT)) {
-                MenuPar2 = SLONG((Sim.Players.Players[PlayerNum].Money - (DEBT_LIMIT)) / __int64(Kerosinpreis));
-
-                if (MenuPar2 < 0) {
-                    MenuPar2 = 0;
-                }
-                Kosten = __int64(Kerosinpreis) * __int64(MenuPar2);
-
-                if (MenuPar2 >= 50000) {
-                    Rabatt = Kosten / 10;
-                } else if (MenuPar2 >= 10000) {
-                    Rabatt = Kosten / 20;
-                } else {
-                    Rabatt = 0;
-                }
-            }
+            auto retVal = GameMechanic::calcKerosinPrice(qPlayer, MenuPar1, MenuPar2);
+            __int64 Kosten = retVal.first;
+            __int64 Rabatt = retVal.second;
 
             MenuInfo = SLONG(Kosten - Rabatt);
 
@@ -5184,30 +5148,25 @@ void CStdRaum::MenuRepaint() {
             OnscreenBitmap.PrintAt(StandardTexte.GetS(TOKEN_TANK, 2030), FontSmallBlack, TEC_FONT_LEFT, 36, 120, 325, 167);
 
             SLONG _tank = 0;
-            if (Sim.Players.Players[PlayerNum].Tank == 0) {
+            if (qPlayer.Tank == 0) {
                 _tank = 9999999;
             } else {
-                _tank = Sim.Players.Players[PlayerNum].Tank;
+                _tank = qPlayer.Tank;
             }
 
             OnscreenBitmap.PrintAt(Einheiten[EINH_DM].bString(Kerosinpreis), FontSmallBlack, TEC_FONT_LEFT, 200, 37, 325, 113);
             if (gLanguage == LANGUAGE_O) {
-                OnscreenBitmap.PrintAt(bprintf("%s barris", LPCTSTR(Insert1000erDots(Sim.Players.Players[PlayerNum].Tank))), FontSmallBlack, TEC_FONT_LEFT, 200,
-                                       50, 325, 113);
+                OnscreenBitmap.PrintAt(bprintf("%s barris", LPCTSTR(Insert1000erDots(qPlayer.Tank))), FontSmallBlack, TEC_FONT_LEFT, 200, 50, 325, 113);
             } else {
-                OnscreenBitmap.PrintAt(bprintf("%s barrel", LPCTSTR(Insert1000erDots(Sim.Players.Players[PlayerNum].Tank))), FontSmallBlack, TEC_FONT_LEFT, 200,
-                                       50, 325, 113);
+                OnscreenBitmap.PrintAt(bprintf("%s barrel", LPCTSTR(Insert1000erDots(qPlayer.Tank))), FontSmallBlack, TEC_FONT_LEFT, 200, 50, 325, 113);
             }
 
             if (gLanguage == LANGUAGE_O) {
-                OnscreenBitmap.PrintAt(bprintf("%s barris", LPCTSTR(Insert1000erDots(Sim.Players.Players[PlayerNum].TankInhalt))), FontSmallBlack,
-                                       TEC_FONT_RIGHT, 56, 76, 200, 113);
+                OnscreenBitmap.PrintAt(bprintf("%s barris", LPCTSTR(Insert1000erDots(qPlayer.TankInhalt))), FontSmallBlack, TEC_FONT_RIGHT, 56, 76, 200, 113);
             } else {
-                OnscreenBitmap.PrintAt(bprintf("%s barrel", LPCTSTR(Insert1000erDots(Sim.Players.Players[PlayerNum].TankInhalt))), FontSmallBlack,
-                                       TEC_FONT_RIGHT, 56, 76, 200, 113);
+                OnscreenBitmap.PrintAt(bprintf("%s barrel", LPCTSTR(Insert1000erDots(qPlayer.TankInhalt))), FontSmallBlack, TEC_FONT_RIGHT, 56, 76, 200, 113);
             }
-            OnscreenBitmap.PrintAt(Einheiten[EINH_P].bString(Sim.Players.Players[PlayerNum].TankInhalt * 100 / _tank), FontSmallBlack, TEC_FONT_RIGHT, 56, 76,
-                                   236, 113);
+            OnscreenBitmap.PrintAt(Einheiten[EINH_P].bString(qPlayer.TankInhalt * 100 / _tank), FontSmallBlack, TEC_FONT_RIGHT, 56, 76, 236, 113);
 
             if (gLanguage == LANGUAGE_O) {
                 OnscreenBitmap.PrintAt(bprintf("%s barris", LPCTSTR(Insert1000erDots(MenuPar2))), FontSmallBlack, TEC_FONT_RIGHT, 0, 89, 200, 113);
@@ -5218,21 +5177,20 @@ void CStdRaum::MenuRepaint() {
             OnscreenBitmap.PrintAt(Einheiten[EINH_DM].bString(MenuInfo), FontSmallBlack, TEC_FONT_RIGHT, 56, 89, 327, 113);
 
             if (gLanguage == LANGUAGE_O) {
-                OnscreenBitmap.PrintAt(bprintf("%s barris", LPCTSTR(Insert1000erDots((MenuPar2 + Sim.Players.Players[PlayerNum].TankInhalt)))), FontSmallBlack,
-                                       TEC_FONT_RIGHT, 0, 102, 200, 160);
+                OnscreenBitmap.PrintAt(bprintf("%s barris", LPCTSTR(Insert1000erDots((MenuPar2 + qPlayer.TankInhalt)))), FontSmallBlack, TEC_FONT_RIGHT, 0, 102,
+                                       200, 160);
             } else {
-                OnscreenBitmap.PrintAt(bprintf("%s barrel", LPCTSTR(Insert1000erDots((MenuPar2 + Sim.Players.Players[PlayerNum].TankInhalt)))), FontSmallBlack,
-                                       TEC_FONT_RIGHT, 0, 102, 200, 160);
+                OnscreenBitmap.PrintAt(bprintf("%s barrel", LPCTSTR(Insert1000erDots((MenuPar2 + qPlayer.TankInhalt)))), FontSmallBlack, TEC_FONT_RIGHT, 0, 102,
+                                       200, 160);
             }
-            OnscreenBitmap.PrintAt(Einheiten[EINH_P].bString((MenuPar2 + Sim.Players.Players[PlayerNum].TankInhalt) * 100 / _tank), FontSmallBlack,
-                                   TEC_FONT_RIGHT, 56, 102, 236, 160);
+            OnscreenBitmap.PrintAt(Einheiten[EINH_P].bString((MenuPar2 + qPlayer.TankInhalt) * 100 / _tank), FontSmallBlack, TEC_FONT_RIGHT, 56, 102, 236, 160);
 
             OnscreenBitmap.PrintAt(Einheiten[EINH_DM].bString(SLONG(Rabatt)), FontSmallBlack, TEC_FONT_LEFT, 120, 120, 327, 160);
         }
         break;
 
     case MENU_SETRENDITE:
-        if (Sim.Players.Players[PlayerNum].GetRoom() == ROOM_BANK) {
+        if (qPlayer.GetRoom() == ROOM_BANK) {
             SB_CFont &qFontBankBlack = (dynamic_cast<Bank *>(this))->FontBankBlack;
             SB_CFont &qFontBankRed = (dynamic_cast<Bank *>(this))->FontBankRed;
 
@@ -5242,17 +5200,13 @@ void CStdRaum::MenuRepaint() {
             OnscreenBitmap.PrintAt(StandardTexte.GetS(TOKEN_AKTIE, 2002), qFontBankBlack, TEC_FONT_LEFT, 56, 50, 325, 113);
             OnscreenBitmap.PrintAt(StandardTexte.GetS(TOKEN_AKTIE, 2003), qFontBankBlack, TEC_FONT_LEFT, 56, 63, 325, 113);
             OnscreenBitmap.PrintAt(Einheiten[EINH_P].bString(MenuInfo), FontSmallBlack, TEC_FONT_RIGHT, 200, 37, 320, 113);
-            OnscreenBitmap.PrintAt(Einheiten[EINH_DM].bString(MenuInfo * Sim.Players.Players[PlayerNum].AnzAktien), qFontBankBlack, TEC_FONT_RIGHT, 200, 50,
-                                   320, 113);
-            OnscreenBitmap.PrintAt(Einheiten[EINH_DM].bString(MenuInfo * Sim.Players.Players[PlayerNum].AnzAktien / 365), qFontBankBlack, TEC_FONT_RIGHT, 200,
-                                   63, 320, 113);
+            OnscreenBitmap.PrintAt(Einheiten[EINH_DM].bString(MenuInfo * qPlayer.AnzAktien), qFontBankBlack, TEC_FONT_RIGHT, 200, 50, 320, 113);
+            OnscreenBitmap.PrintAt(Einheiten[EINH_DM].bString(MenuInfo * qPlayer.AnzAktien / 365), qFontBankBlack, TEC_FONT_RIGHT, 200, 63, 320, 113);
         }
         break;
 
     case MENU_AKTIE:
-        if (Sim.Players.Players[PlayerNum].GetRoom() == ROOM_BANK) {
-            SLONG neu = 0;
-
+        if (qPlayer.GetRoom() == ROOM_BANK) {
             SLONG Max = Sim.Players.Players[MenuPar1].AnzAktien;
             for (SLONG c = 0; c < 4; c++) {
                 if (Sim.Players.Players[c].IsOut == 0) {
@@ -5263,15 +5217,16 @@ void CStdRaum::MenuRepaint() {
             SB_CFont &qFontBankBlack = (dynamic_cast<Bank *>(this))->FontBankBlack;
             SB_CFont &qFontBankRed = (dynamic_cast<Bank *>(this))->FontBankRed;
 
+            SLONG neu = 0;
             if (MenuPar2 == 0) {
-                neu = Sim.Players.Players[PlayerNum].OwnsAktien[MenuPar1] + MenuInfo;
+                neu = qPlayer.OwnsAktien[MenuPar1] + MenuInfo;
             } else {
-                neu = Sim.Players.Players[PlayerNum].OwnsAktien[MenuPar1] - MenuInfo;
+                neu = qPlayer.OwnsAktien[MenuPar1] - MenuInfo;
             }
 
             OnscreenBitmap.BlitFrom(MenuBms[0]);
 
-            //Überschrift:
+            // Überschrift:
             OnscreenBitmap.PrintAt(StandardTexte.GetS(TOKEN_AKTIE, 3000 + MenuPar2), qFontBankRed, TEC_FONT_LEFT, 60, 10, 325, 139);
 
             // Tabelle mit Werten (Überschrift):
@@ -5291,13 +5246,11 @@ void CStdRaum::MenuRepaint() {
 
             // Tabelle mit Werten (Bestand):
             OnscreenBitmap.PrintAt(StandardTexte.GetS(TOKEN_AKTIE, 3020), qFontBankBlack, TEC_FONT_LEFT, 30, 60, 325, 139);
-            OnscreenBitmap.PrintAt(bitoa(Sim.Players.Players[PlayerNum].OwnsAktien[MenuPar1]), qFontBankBlack, TEC_FONT_LEFT, 140, 60, 325, 139);
-            OnscreenBitmap.PrintAt(
-                Einheiten[EINH_P].bString(SLONG(__int64(Sim.Players.Players[PlayerNum].OwnsAktien[MenuPar1]) * 100 / Sim.Players.Players[MenuPar1].AnzAktien)),
-                qFontBankBlack, TEC_FONT_LEFT, 200, 60, 325, 139);
-            OnscreenBitmap.PrintAt(
-                Einheiten[EINH_DM].bString64(__int64(Sim.Players.Players[PlayerNum].OwnsAktien[MenuPar1]) * SLONG(Sim.Players.Players[MenuPar1].Kurse[0])),
-                qFontBankBlack, TEC_FONT_LEFT, 240, 60, 325, 139);
+            OnscreenBitmap.PrintAt(bitoa(qPlayer.OwnsAktien[MenuPar1]), qFontBankBlack, TEC_FONT_LEFT, 140, 60, 325, 139);
+            OnscreenBitmap.PrintAt(Einheiten[EINH_P].bString(SLONG(__int64(qPlayer.OwnsAktien[MenuPar1]) * 100 / Sim.Players.Players[MenuPar1].AnzAktien)),
+                                   qFontBankBlack, TEC_FONT_LEFT, 200, 60, 325, 139);
+            OnscreenBitmap.PrintAt(Einheiten[EINH_DM].bString64(__int64(qPlayer.OwnsAktien[MenuPar1]) * SLONG(Sim.Players.Players[MenuPar1].Kurse[0])),
+                                   qFontBankBlack, TEC_FONT_LEFT, 240, 60, 325, 139);
 
             // Tabelle mit Werten (ver/kaufen):
             OnscreenBitmap.PrintAt(StandardTexte.GetS(TOKEN_AKTIE, 3021 + MenuPar2), qFontBankBlack, TEC_FONT_LEFT, 30, 73, 325, 139);
@@ -5326,8 +5279,7 @@ void CStdRaum::MenuRepaint() {
             }
 
             OnscreenBitmap.PrintAt(StandardTexte.GetS(TOKEN_AKTIE, 3030), qFontBankBlack, TEC_FONT_LEFT, 30, 111, 325, 139);
-            OnscreenBitmap.PrintAt(Einheiten[EINH_DM].bString64(__int64(Sim.Players.Players[PlayerNum].Money - gesamtPreis)), qFontBankBlack, TEC_FONT_LEFT,
-                                   220, 111, 325, 139);
+            OnscreenBitmap.PrintAt(Einheiten[EINH_DM].bString64(__int64(qPlayer.Money - gesamtPreis)), qFontBankBlack, TEC_FONT_LEFT, 220, 111, 325, 139);
         }
         break;
 
@@ -5336,7 +5288,7 @@ void CStdRaum::MenuRepaint() {
         if (MenuPage < 9) {
             OnscreenBitmap.BlitFrom(MenuBms[2], OnscreenBitmap.Size - MenuBms[2].Size);
         }
-        if (MenuPage > 0 && Sim.Players.Players[PlayerNum].History.HistoryLine[MenuPage * 10 - 1].Description != "*") {
+        if (MenuPage > 0 && qPlayer.History.HistoryLine[MenuPage * 10 - 1].Description != "*") {
             OnscreenBitmap.BlitFrom(MenuBms[1], 0, OnscreenBitmap.Size.y - MenuBms[2].Size.y);
         }
         DrawMoneyTip(OnscreenBitmap, PlayerNum, MenuPage);
@@ -5605,7 +5557,7 @@ void CStdRaum::MenuRepaint() {
             }
             gToiletFx.Play(0, Sim.Options.OptionEffekte * 100 / 7);
 
-            Sim.Players.Players[PlayerNum].RunningToToilet = FALSE;
+            qPlayer.RunningToToilet = FALSE;
             Sim.Persons[Sim.Persons.GetPlayerIndex(PlayerNum)].Running = FALSE;
         }
 
@@ -5618,7 +5570,7 @@ void CStdRaum::MenuRepaint() {
     case MENU_WC_F:
         if (Sim.TimeSlice > MenuPar1 + 20 && MenuPar2 == 0) {
             MenuPar2 = 1;
-            Sim.Players.Players[PlayerNum].RunningToToilet = FALSE;
+            qPlayer.RunningToToilet = FALSE;
             if (PlayerNum != 0) {
                 SLONG r = rand() % 100;
 
@@ -5631,8 +5583,8 @@ void CStdRaum::MenuRepaint() {
                 }
 
                 if (Sim.ItemParfuem != 0) {
-                    Sim.Players.Players[PlayerNum].BuyItem(ITEM_PARFUEM);
-                    if (Sim.Players.Players[PlayerNum].HasItem(ITEM_PARFUEM) != 0) {
+                    qPlayer.BuyItem(ITEM_PARFUEM);
+                    if (qPlayer.HasItem(ITEM_PARFUEM) != 0) {
                         Sim.ItemParfuem = 0;
                         SIM::SendSimpleMessage(ATNET_TAKETHING, 0, ITEM_PARFUEM);
                     }
@@ -5706,7 +5658,7 @@ void CStdRaum::MenuRepaint() {
                     }
                 }
 
-                //Äußerung zu den Flugzeugen:
+                // Äußerung zu den Flugzeugen:
                 SLONG d = 0;
                 SLONG tmp = 0;
                 SLONG tmp2 = 0;
@@ -5953,14 +5905,11 @@ void CStdRaum::MenuLeftClick(XY Pos) {
 
         // Kredit aufnehmen:
         if (MenuPar2 == 1) {
-            Limit(static_cast<SLONG>(0), MenuPar1, static_cast<SLONG>(qPlayer.CalcCreditLimit()));
+            Limit(0, MenuPar1, qPlayer.CalcCreditLimit());
             MenuRepaint();
 
             if (MouseClickArea == -102 && MouseClickPar1 == 10) {
-                if (MenuPar1 >= 1000) {
-                    qPlayer.Credit += MenuPar1;
-                    qPlayer.ChangeMoney(MenuPar1, 2003, "");
-                    PLAYER::NetSynchronizeMoney();
+                if (GameMechanic::takeOutCredit(qPlayer, MenuPar1)) {
                     MenuStop();
                     StartDialog(TALKER_BANKER2, MEDIUM_AIR, 101);
                 } else {
@@ -5970,13 +5919,11 @@ void CStdRaum::MenuLeftClick(XY Pos) {
             }
         } else // Kredit zurückzahlen
         {
-            Limit(static_cast<SLONG>(0), MenuPar1, static_cast<SLONG>(qPlayer.Credit));
+            Limit(0, MenuPar1, static_cast<SLONG>(qPlayer.Credit));
             MenuRepaint();
 
             if (MouseClickArea == -102 && MouseClickPar1 == 10) {
-                qPlayer.Credit -= MenuPar1;
-                qPlayer.ChangeMoney(-MenuPar1, 2004, "");
-                PLAYER::NetSynchronizeMoney();
+                GameMechanic::payBackCredit(qPlayer, MenuPar1);
                 MenuStop();
                 StartDialog(TALKER_BANKER2, MEDIUM_AIR, 102);
             }
@@ -5985,8 +5932,7 @@ void CStdRaum::MenuLeftClick(XY Pos) {
 
     case MENU_KEROSIN:
         if (MouseClickArea == -102 && MouseClickId == MENU_KEROSIN && MouseClickPar1 == -20) {
-            qPlayer.TankOpen ^= 1;
-            qPlayer.NetUpdateKerosin();
+            GameMechanic::toggleKerosinTank(qPlayer);
             MenuRepaint();
         } else if (MouseClickArea == -102 && MouseClickId == MENU_KEROSIN && MouseClickPar1 == -99) {
             MenuStop();
@@ -6011,24 +5957,10 @@ void CStdRaum::MenuLeftClick(XY Pos) {
             MenuStop();
         }
         if (MouseClickArea == -102 && MouseClickId == MENU_BUYKEROSIN && MouseClickPar1 == 10) {
-            auto preis = MenuInfo;
-            auto menge = MenuPar2;
-            if ((preis != 0) && qPlayer.Money - preis < DEBT_LIMIT) {
+            if (GameMechanic::buyKerosin(qPlayer, MenuPar1, MenuPar2)) {
                 MenuStop();
                 MakeSayWindow(0, TOKEN_ARAB, 6000, pFontPartner);
-            } else if (preis != 0) {
-                SLONG OldInhalt = qPlayer.TankInhalt;
-                qPlayer.TankInhalt += menge;
-
-                qPlayer.TankPreis = (OldInhalt * qPlayer.TankPreis + preis) / qPlayer.TankInhalt;
-                qPlayer.KerosinQuali = (OldInhalt * qPlayer.KerosinQuali + menge * qPlayer.KerosinKind) / qPlayer.TankInhalt;
-                qPlayer.NetUpdateKerosin();
-
-                qPlayer.ChangeMoney(-preis, 2020, "");
-                SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -preis, -1);
-
-                qPlayer.DoBodyguardRabatt(preis);
-
+            } else {
                 MakeSayWindow(0, TOKEN_ARAB, 700, pFontPartner);
             }
             MenuStop();
@@ -6662,8 +6594,7 @@ void CStdRaum::MenuLeftClick(XY Pos) {
             MenuStop();
         } else if (MouseClickArea == -102 && MouseClickId == MENU_PLANEREPAIRS && MouseClickPar1 == -21) {
             for (SLONG c = 0; c < MenuDataTable.AnzRows; c++) {
-                qPlayer.Planes[MenuDataTable.LineIndex[c]].TargetZustand = UBYTE(MenuInfo3);
-                qPlayer.NetUpdatePlaneProps(MenuDataTable.LineIndex[c]);
+                GameMechanic::setPlaneTargetZustand(qPlayer, MenuDataTable.LineIndex[c], MenuInfo3);
             }
 
             MenuRepaint();
@@ -6687,25 +6618,7 @@ void CStdRaum::MenuLeftClick(XY Pos) {
         if (MouseClickArea == -102 && MouseClickId == MENU_SECURITY && MouseClickPar1 == -20) {
             MenuStop();
         } else if (MouseClickArea == -102 && MouseClickId == MENU_SECURITY && MouseClickPar1 == -21) {
-            if (MouseClickPar2 >= 0 && MouseClickPar2 < 9) {
-                if (MouseClickPar2 != 1 || (qPlayer.HasItem(ITEM_LAPTOP) != 0)) {
-                    if (MouseClickPar2 == 8) {
-                        if ((qPlayer.SecurityFlags & (1 << 11)) != 0U) {
-                            qPlayer.SecurityFlags = qPlayer.SecurityFlags & ~(1 << 8) & ~(1 << 10) & ~(1 << 11);
-                        } else if ((qPlayer.SecurityFlags & (1 << 10)) != 0U) {
-                            qPlayer.SecurityFlags = qPlayer.SecurityFlags | (1 << 11);
-                        } else if ((qPlayer.SecurityFlags & (1 << 8)) != 0U) {
-                            qPlayer.SecurityFlags = qPlayer.SecurityFlags | (1 << 10);
-                        } else {
-                            qPlayer.SecurityFlags = qPlayer.SecurityFlags | (1 << 8);
-                        }
-                    } else {
-                        qPlayer.SecurityFlags ^= (1 << MouseClickPar2);
-                    }
-
-                    PLAYER::NetSynchronizeFlags();
-                }
-            }
+            GameMechanic::toggleSecurity(qPlayer, MouseClickPar2);
 
             MenuRepaint();
         } else if (MouseClickArea == -102 && MouseClickId == MENU_SECURITY && MouseClickPar1 >= 0) {
@@ -6789,7 +6702,7 @@ void CStdRaum::MenuLeftClick(XY Pos) {
                 MenuStop();
                 MenuDialogReEntryB = tmp;
 
-                qPlayer.ArabPlane = MenuPar1;
+                qPlayer.ArabPlaneSelection = MenuPar1;
 
                 StartDialog(TALKER_SABOTAGE, MEDIUM_AIR, MenuDialogReEntryB);
             }
@@ -6814,7 +6727,7 @@ void CStdRaum::MenuLeftClick(XY Pos) {
                 MenuStop();
                 MenuDialogReEntryB = tmp;
 
-                qPlayer.ArabPlane = MenuPar1;
+                qPlayer.ArabPlaneSelection = MenuPar1;
 
                 StartDialog(TALKER_SABOTAGE, MEDIUM_AIR, MenuDialogReEntryB);
             }
@@ -7789,7 +7702,7 @@ void CStdRaum::MenuStop() {
 }
 
 //--------------------------------------------------------------------------------------------
-//Öffnet den Taschenrechner:
+// Öffnet den Taschenrechner:
 //--------------------------------------------------------------------------------------------
 void CStdRaum::CalcOpen(XY Position, SLONG Value) {
     CalculatorIsOpen = TRUE;
@@ -8005,7 +7918,7 @@ void CStdRaum::CalcKey(SLONG Key) {
 }
 
 //--------------------------------------------------------------------------------------------
-//Übergibt die Daten für das Zoommenü:
+// Übergibt die Daten für das Zoommenü:
 //--------------------------------------------------------------------------------------------
 void CStdRaum::MenuSetZoomStuff(const XY &MenuStartPos, DOUBLE MinimumZoom, BOOL ZoomFromAirport, SLONG ZoomSpeed) {
     CStdRaum::ZoomCounter = 0;
@@ -8099,133 +8012,133 @@ void CStdRaum::OnKeyDown(UINT nChar, UINT /*nRepCnt*/, UINT /*nFlags*/) {
 
     bool change = false;
     switch (CurrentMenu) {
-        case MENU_RENAMEPLANE:
-        case MENU_RENAMEEDITPLANE:
-        case MENU_ENTERTCPIP:
-        case MENU_BROADCAST:
-        case MENU_CHAT:
-            switch (nChar) {
-                case ATKEY_BACK:
-                    if (Optionen[0].GetLength() > 0) {
-                        Optionen[0] = Optionen[0].Left(Optionen[0].GetLength() - 1);
-                        MenuRepaint();
-                    }
-                    break;
+    case MENU_RENAMEPLANE:
+    case MENU_RENAMEEDITPLANE:
+    case MENU_ENTERTCPIP:
+    case MENU_BROADCAST:
+    case MENU_CHAT:
+        switch (nChar) {
+        case ATKEY_BACK:
+            if (Optionen[0].GetLength() > 0) {
+                Optionen[0] = Optionen[0].Left(Optionen[0].GetLength() - 1);
+                MenuRepaint();
+            }
+            break;
 
-                case ATKEY_RETURN:
-                case ATKEY_RETURN2:
-                    if (CurrentMenu == MENU_ENTERTCPIP) {
-                        gHostIP = Optionen[0];
-                        MenuStop();
-                    } else if (Optionen[0].GetLength() > 0) {
+        case ATKEY_RETURN:
+        case ATKEY_RETURN2:
+            if (CurrentMenu == MENU_ENTERTCPIP) {
+                gHostIP = Optionen[0];
+                MenuStop();
+            } else if (Optionen[0].GetLength() > 0) {
 
-                        if (CurrentMenu == MENU_CHAT) {
-                            TEAKFILE Message;
+                if (CurrentMenu == MENU_CHAT) {
+                    TEAKFILE Message;
 
-                            MenuBms[1].ShiftUp(10);
-                            MenuBms[1].PrintAt(Optionen[0], FontSmallBlack, TEC_FONT_LEFT, 6, 119, 279, 147);
+                    MenuBms[1].ShiftUp(10);
+                    MenuBms[1].PrintAt(Optionen[0], FontSmallBlack, TEC_FONT_LEFT, 6, 119, 279, 147);
 
-                            Message.Announce(30);
-                            Message << ATNET_CHATMESSAGE << Optionen[0];
-                            SIM::SendMemFile(Message, Sim.Players.Players[MenuPar1].NetworkID);
+                    Message.Announce(30);
+                    Message << ATNET_CHATMESSAGE << Optionen[0];
+                    SIM::SendMemFile(Message, Sim.Players.Players[MenuPar1].NetworkID);
 
-                            Optionen[0].Empty();
-                            MenuRepaint();
-                        } else if (CurrentMenu == MENU_BROADCAST) {
-                            for (SLONG c = 0; c < 4; c++) {
-                                if (((MenuPar1 & (1 << c)) != 0) && Sim.Players.Players[c].Owner == 2 && (strlen(Optionen[0]) != 0U)) {
-                                    SIM::SendChatBroadcast(Optionen[0], true, Sim.Players.Players[c].NetworkID);
-                                }
-                            }
-
-                            DisplayBroadcastMessage(Optionen[0], Sim.localPlayer);
-                            MenuStop();
-                        } else if (CurrentMenu == MENU_RENAMEPLANE) {
-                            qPlayer.Planes[MenuPar1].Name = Optionen[0];
-                            MenuStop();
-                        } else if (CurrentMenu == MENU_RENAMEEDITPLANE && qPlayer.GetRoom() == ROOM_EDITOR) {
-                            MenuStop();
-                            (dynamic_cast<CEditor *>(qPlayer.LocationWin))->Plane.Name = Optionen[0];
+                    Optionen[0].Empty();
+                    MenuRepaint();
+                } else if (CurrentMenu == MENU_BROADCAST) {
+                    for (SLONG c = 0; c < 4; c++) {
+                        if (((MenuPar1 & (1 << c)) != 0) && Sim.Players.Players[c].Owner == 2 && (strlen(Optionen[0]) != 0U)) {
+                            SIM::SendChatBroadcast(Optionen[0], true, Sim.Players.Players[c].NetworkID);
                         }
                     }
-                default:
-                    break;
-            }
-            break;
 
-        case MENU_PLANECOSTS:
-        case MENU_PLANEREPAIRS:
-        case MENU_SABOTAGEPLANE:
-        case MENU_SABOTAGEROUTE:
-        case MENU_SELLPLANE:
-        case MENU_BUYPLANE:
-        case MENU_BUYXPLANE:
-        case MENU_ADROUTE:
-        case MENU_PLANEJOB:
-            switch (nChar) {
-                case ATKEY_LEFT:
-                    MenuPrevPage();
-                    break;
-                case ATKEY_RIGHT:
-                    MenuNextPage();
-                    break;
-                default:
-                    break;
-            }
-            break;
-
-        case MENU_PERSONAL:
-            switch (nChar) {
-                case ATKEY_LEFT:
-                    if (AtGetAsyncKeyState(ATKEY_CONTROL) / 256 != 0) {
-                        MenuPage = std::max(0, MenuPage - 100);
-                    } else if (AtGetAsyncKeyState(ATKEY_SHIFT) / 256 != 0) {
-                        MenuPage = std::max(0, MenuPage - 10);
-                    } else {
-                        MenuPage = std::max(0, MenuPage - 1);
-                    }
-                    gMovePaper.Play(DSBPLAY_NOSTOP, Sim.Options.OptionEffekte * 100 / 7);
-                    change = true;
-                    break;
-                case ATKEY_RIGHT:
-                    if (AtGetAsyncKeyState(ATKEY_CONTROL) / 256 != 0) {
-                        MenuPage = std::min(MenuPageMax, MenuPage + 100);
-                    } else if (AtGetAsyncKeyState(ATKEY_SHIFT) / 256 != 0) {
-                        MenuPage = std::min(MenuPageMax, MenuPage + 10);
-                    } else {
-                        MenuPage = std::min(MenuPageMax, MenuPage + 1);
-                    }
-                    gMovePaper.Play(DSBPLAY_NOSTOP, Sim.Options.OptionEffekte * 100 / 7);
-                    change = true;
-                    break;
-                case ATKEY_RETURN:
-                    Workers.Workers[MenuRemapper[MenuPage - 1]].Employer = PlayerNum;
-                    Workers.Workers[MenuRemapper[MenuPage - 1]].PlaneId = -1;
-                    qPlayer.MapWorkers(TRUE);
-                    qPlayer.UpdateWalkSpeed();
-                    change = true;
-                    break;
-                case ATKEY_BACK:
-                    Workers.Workers[MenuRemapper[MenuPage - 1]].Employer = WORKER_JOBLESS;
-                    if (Workers.Workers[MenuRemapper[MenuPage - 1]].TimeInPool > 0) {
-                        Workers.Workers[MenuRemapper[MenuPage - 1]].TimeInPool = 0;
-                    }
-                    qPlayer.MapWorkers(TRUE);
-                    qPlayer.UpdateWalkSpeed();
-                    change = true;
-                    break;
-                default:
-                    break;
-            }
-            if (change) {
-                MenuRepaint();
-                if (Sim.bNetwork != 0) {
-                    qPlayer.NetUpdateWorkers();
+                    DisplayBroadcastMessage(Optionen[0], Sim.localPlayer);
+                    MenuStop();
+                } else if (CurrentMenu == MENU_RENAMEPLANE) {
+                    qPlayer.Planes[MenuPar1].Name = Optionen[0];
+                    MenuStop();
+                } else if (CurrentMenu == MENU_RENAMEEDITPLANE && qPlayer.GetRoom() == ROOM_EDITOR) {
+                    MenuStop();
+                    (dynamic_cast<CEditor *>(qPlayer.LocationWin))->Plane.Name = Optionen[0];
                 }
             }
+        default:
+            break;
+        }
+        break;
+
+    case MENU_PLANECOSTS:
+    case MENU_PLANEREPAIRS:
+    case MENU_SABOTAGEPLANE:
+    case MENU_SABOTAGEROUTE:
+    case MENU_SELLPLANE:
+    case MENU_BUYPLANE:
+    case MENU_BUYXPLANE:
+    case MENU_ADROUTE:
+    case MENU_PLANEJOB:
+        switch (nChar) {
+        case ATKEY_LEFT:
+            MenuPrevPage();
+            break;
+        case ATKEY_RIGHT:
+            MenuNextPage();
             break;
         default:
             break;
+        }
+        break;
+
+    case MENU_PERSONAL:
+        switch (nChar) {
+        case ATKEY_LEFT:
+            if (AtGetAsyncKeyState(ATKEY_CONTROL) / 256 != 0) {
+                MenuPage = std::max(0, MenuPage - 100);
+            } else if (AtGetAsyncKeyState(ATKEY_SHIFT) / 256 != 0) {
+                MenuPage = std::max(0, MenuPage - 10);
+            } else {
+                MenuPage = std::max(0, MenuPage - 1);
+            }
+            gMovePaper.Play(DSBPLAY_NOSTOP, Sim.Options.OptionEffekte * 100 / 7);
+            change = true;
+            break;
+        case ATKEY_RIGHT:
+            if (AtGetAsyncKeyState(ATKEY_CONTROL) / 256 != 0) {
+                MenuPage = std::min(MenuPageMax, MenuPage + 100);
+            } else if (AtGetAsyncKeyState(ATKEY_SHIFT) / 256 != 0) {
+                MenuPage = std::min(MenuPageMax, MenuPage + 10);
+            } else {
+                MenuPage = std::min(MenuPageMax, MenuPage + 1);
+            }
+            gMovePaper.Play(DSBPLAY_NOSTOP, Sim.Options.OptionEffekte * 100 / 7);
+            change = true;
+            break;
+        case ATKEY_RETURN:
+            Workers.Workers[MenuRemapper[MenuPage - 1]].Employer = PlayerNum;
+            Workers.Workers[MenuRemapper[MenuPage - 1]].PlaneId = -1;
+            qPlayer.MapWorkers(TRUE);
+            qPlayer.UpdateWalkSpeed();
+            change = true;
+            break;
+        case ATKEY_BACK:
+            Workers.Workers[MenuRemapper[MenuPage - 1]].Employer = WORKER_JOBLESS;
+            if (Workers.Workers[MenuRemapper[MenuPage - 1]].TimeInPool > 0) {
+                Workers.Workers[MenuRemapper[MenuPage - 1]].TimeInPool = 0;
+            }
+            qPlayer.MapWorkers(TRUE);
+            qPlayer.UpdateWalkSpeed();
+            change = true;
+            break;
+        default:
+            break;
+        }
+        if (change) {
+            MenuRepaint();
+            if (Sim.bNetwork != 0) {
+                qPlayer.NetUpdateWorkers();
+            }
+        }
+        break;
+    default:
+        break;
     }
 }
 

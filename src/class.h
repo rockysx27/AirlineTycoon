@@ -50,7 +50,7 @@ class /**/ SBFX {
     void Play(dword dwFlags, SLONG PercentVolume) const;
     void Stop(void) const;
     void SetVolume(SLONG volume) const;
-    void Fusion(BUFFER_V<SBFX *>& Fx, SLONG NumFx);
+    void Fusion(BUFFER_V<SBFX *> &Fx, SLONG NumFx);
     void Fusion(const SBFX *Fx, const SLONG *Von, const SLONG *Bis, SLONG NumFx);
     void Tokenize(BUFFER_V<SLONG> &Von, BUFFER_V<SLONG> &Bis) const;
     void Tokenize(BUFFER_V<SBFX> &Effects) const;
@@ -618,7 +618,7 @@ class CRentRoute {
     }
     SLONG SummeWocheBefoerdert() {
         SLONG summe = 0;
-        for (auto& i : WocheBefoerdert) {
+        for (auto &i : WocheBefoerdert) {
             summe += i;
         }
         return summe;
@@ -1093,7 +1093,7 @@ class /**/ CDataTable {
     CString Title;              // Die Überschrift der Tabelle
     SLONG AnzRows{};            // Zahl der Zeilen
     SLONG AnzColums{};          // Zahl der Spalten
-    BUFFER_V<CString> ColTitle; //Überschriften der Spalten
+    BUFFER_V<CString> ColTitle; // Überschriften der Spalten
     BUFFER_V<CString> Values;   // Die Werte der Tabellenfelder
     BUFFER_V<UBYTE> ValueFlags; // Zusatzangaben für Tabellenfelder
     BUFFER_V<SLONG> LineIndex;  // Verbindung zwischen Tabellenzeile und Tabellenquelle
@@ -1942,42 +1942,44 @@ class CAirportSmack : public CSmack16 {
 class PLAYER {
     // Generelles:
   public:
-    SLONG PlayerNum{};           // Seine Nummer
-    BOOL IsOut;                  // Ist der Spieler aus dem Spiel?
-    CString Name;                // Karl Arsch oder Dirk Doof
-    CString NameX;               // ohne Leerstellen
-    CString Airline;             // Name der Fluglinie;
-    CString AirlineX;            // Name der Fluglinie; ohne Leerstellen am Ende
-    CString Abk;                 // Kurzname der Fluglinie, z.B. 'LH'
-    UBYTE Owner{};               // Spieler=0, Computergegner=1, Netzwerkgegner=2
-    ULONG NetworkID;             // IDs des Spielers im Netzwerk (0=Nicht im Netzwerk)
-    UBYTE Logo{};                // Nummer des Logos der Fluglinie
-    __int64 Money{};             // Seine Barschaft
-    __int64 Bonus{};             // versteckter Bonus, den der Computerspieler noch erhält
-    BUFFER_V<__int64> MoneyPast; // Vergangenheitslinie des Geldes
-    __int64 Credit{};            // Seine Schulden
-    SLONG Image{};               // Firmenimage generell [-1000..1000]
-    DOUBLE KerosinQuali{};       // Qualität des Kerosins
-    SLONG KerosinKind{};         // Diese Art wird getankt
-    SLONG Tank{};                // Soviel kann man auf Reserve Bunkern
-    BOOL TankOpen{};             // Tanks sind zur Verwendung freigegeben
-    SLONG TankInhalt{};          // Soviel ist im Tank drin
-    DOUBLE TankPreis{};          // Korekt berechneter Preis; auch bei mix
-    SLONG GameSpeed{};           // 0..3
-    SLONG ArabTrust{};           // Sabotage möglich?
-    SLONG ArabMode{};            // Anschlag unterwegs?
-    SLONG ArabMode2{};           // Anschlag unterwegs? Und zwar von der Spieler-Bezogenen Art
-    SLONG ArabMode3{};           // Anschlag unterwegs? Und zwar von den Specials
-    SLONG ArabActive{};          // FALSE=Flugzeug war noch nicht gelandet; TRUE=Flugzeug war am Boden, Anschlag jetzt möglich
-    SLONG ArabOpfer{};           // Anschlag auf wen?
-    SLONG ArabOpfer2{};          // Anschlag auf wen?
-    SLONG ArabOpfer3{};          // Anschlag auf wen?
-    SLONG ArabPlane{};           // Auf welches Flugzeug des Opfers?
-    SLONG ArabHints{};           // Wieviele Indizien gibt es, die auf den Spieler hinweisen?
-    SLONG MechMode{};            // Wie wird repariert? 0-3
-    BOOL GlobeOiled{};           // Ist der Globus geölt?
-    SLONG MechTrust{};           // 0=kein, 1=offen, 2=genehmigt
-    SLONG MechAngry{};           // 0=nein, 1=wütend
+    SLONG PlayerNum{};                           // Seine Nummer
+    BOOL IsOut;                                  // Ist der Spieler aus dem Spiel?
+    CString Name;                                // Karl Arsch oder Dirk Doof
+    CString NameX;                               // ohne Leerstellen
+    CString Airline;                             // Name der Fluglinie;
+    CString AirlineX;                            // Name der Fluglinie; ohne Leerstellen am Ende
+    CString Abk;                                 // Kurzname der Fluglinie, z.B. 'LH'
+    UBYTE Owner{};                               // Spieler=0, Computergegner=1, Netzwerkgegner=2
+    ULONG NetworkID;                             // IDs des Spielers im Netzwerk (0=Nicht im Netzwerk)
+    UBYTE Logo{};                                // Nummer des Logos der Fluglinie
+    __int64 Money{};                             // Seine Barschaft
+    __int64 Bonus{};                             // versteckter Bonus, den der Computerspieler noch erhält
+    BUFFER_V<__int64> MoneyPast;                 // Vergangenheitslinie des Geldes
+    __int64 Credit{};                            // Seine Schulden
+    SLONG Image{};                               // Firmenimage generell [-1000..1000]
+    DOUBLE KerosinQuali{};                       // Qualität des Kerosins
+    SLONG KerosinKind{};                         // Diese Art wird getankt
+    SLONG Tank{};                                // Soviel kann man auf Reserve Bunkern
+    BOOL TankOpen{};                             // Tanks sind zur Verwendung freigegeben
+    SLONG TankInhalt{};                          // Soviel ist im Tank drin
+    DOUBLE TankPreis{};                          // Korekt berechneter Preis; auch bei mix
+    SLONG GameSpeed{};                           // 0..3
+    SLONG ArabTrust{};                           // Sabotage möglich?
+    SLONG ArabMode{};                            // Anschlag unterwegs?
+    SLONG ArabMode2{};                           // Anschlag unterwegs? Und zwar von der Spieler-Bezogenen Art
+    SLONG ArabMode3{};                           // Anschlag unterwegs? Und zwar von den Specials
+    SLONG ArabActive{};                          // FALSE=Flugzeug war noch nicht gelandet; TRUE=Flugzeug war am Boden, Anschlag jetzt möglich
+    std::pair<SLONG, SLONG> ArabModeSelection{}; // Spieler hat Anschlagtyp ausgewählt, aber ein Parameter (Flugzeug/Route) fehlt noch
+    SLONG ArabOpfer{};                           // Anschlag auf wen?
+    SLONG ArabOpfer2{};                          // Anschlag auf wen?
+    SLONG ArabOpfer3{};                          // Anschlag auf wen?
+    SLONG ArabPlane{};                           // Auf welches Flugzeug des Opfers?
+    SLONG ArabPlaneSelection{};                  // Flugzeug ausgewählt, aber Auftrag noch nicht erteilt
+    SLONG ArabHints{};                           // Wieviele Indizien gibt es, die auf den Spieler hinweisen?
+    SLONG MechMode{};                            // Wie wird repariert? 0-3
+    BOOL GlobeOiled{};                           // Ist der Globus geölt?
+    SLONG MechTrust{};                           // 0=kein, 1=offen, 2=genehmigt
+    SLONG MechAngry{};                           // 0=nein, 1=wütend
     UWORD EarthAlpha{};
     std::array<UBYTE, 4> DisplayRoutes{}; // Routen bei der Flugplanung anzeigen?
     std::array<UBYTE, 4> DisplayPlanes{}; // Flugzeuge bei der Flugplanung anzeigen?
@@ -2167,7 +2169,7 @@ class PLAYER {
     SLONG CalcCreditLimit(void) const;
     void CalcRoom(void);                                                                   // Speed-up für GetRoom
     SLONG CalcPlanePropSum(void);                                                          // Berechnet, was die anstehenden Umrüstungen zusammen kosten werden
-    void ChangeMoney(__int64 Money, SLONG Reason, const CString &Par1, char *Par2 = NULL); //Ändert Barschaft und Profit
+    void ChangeMoney(__int64 Money, SLONG Reason, const CString &Par1, char *Par2 = NULL); // Ändert Barschaft und Profit
     void CheckAuftragsBerater(const CAuftrag &Auftrag);                                    // in Auftrag.cpp
     void CheckAuftragsBerater(const CFracht &Fracht);                                      // in Fracht.cpp
     void DelayFlightsIfNecessary(void);
