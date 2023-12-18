@@ -18,7 +18,7 @@ class GameMechanic {
     static std::pair<__int64, __int64> calcKerosinPrice(PLAYER &qPlayer, __int64 typ, __int64 menge);
 
     /* Sabotage */
-    static void setSaboteurTarget(PLAYER &qPlayer, SLONG target);
+    static SLONG setSaboteurTarget(PLAYER &qPlayer, SLONG target);
     static bool checkSaboteurBusy(PLAYER &qPlayer) { return (qPlayer.ArabMode != 0) || (qPlayer.ArabMode2 != 0) || (qPlayer.ArabMode3 != 0); }
     struct CheckSabotage {
         bool OK;
@@ -37,4 +37,16 @@ class GameMechanic {
 
     /* Security */
     static bool toggleSecurity(PLAYER &qPlayer, SLONG securityType);
+
+    /* Designer */
+    static bool buyXPlane(PLAYER &qPlayer, const CString &filename, SLONG amount);
+
+    /* Bank */
+    enum class OvertakeAirlineResult { Ok, DeniedInvalidParam, DeniedYourAirline, DeniedAlreadyGone, DeniedNoStock, DeniedNotEnoughStock, DeniedEnemyStock };
+    static OvertakeAirlineResult canOvertakeAirline(PLAYER &qPlayer, SLONG targetAirline);
+    static bool overtakeAirline(PLAYER &qPlayer, SLONG targetAirline, bool liquidate);
+
+    enum class EmitStockResult { Ok, DeniedTooMuch, DeniedValueTooLow };
+    static EmitStockResult canEmitStock(PLAYER &qPlayer);
+    static bool emitStock(PLAYER &qPlayer, SLONG neueAktien, SLONG mode);
 };

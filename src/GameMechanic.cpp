@@ -114,15 +114,18 @@ std::pair<__int64, __int64> GameMechanic::calcKerosinPrice(PLAYER &qPlayer, __in
     return {Kosten, Rabatt};
 }
 
-void GameMechanic::setSaboteurTarget(PLAYER &qPlayer, SLONG target) {
+SLONG GameMechanic::setSaboteurTarget(PLAYER &qPlayer, SLONG target) {
     if (target < 0 || target >= 4) {
         hprintf("GameMechanic::setSaboteurTarget: Invalid target.");
-        return;
+        return -1;
     }
 
-    qPlayer.ArabOpfer = target;
-    qPlayer.ArabOpfer2 = target;
-    qPlayer.ArabOpfer3 = target;
+    if (Sim.Players.Players[target].IsOut != 0) {
+        return -1;
+    }
+
+    qPlayer.ArabOpferSelection = target;
+    return target;
 }
 
 GameMechanic::CheckSabotage GameMechanic::checkPrerequisitesForSaboteurJob(PLAYER &qPlayer, SLONG type, SLONG number) {
@@ -130,21 +133,22 @@ GameMechanic::CheckSabotage GameMechanic::checkPrerequisitesForSaboteurJob(PLAYE
         return {false, 0};
     }
 
+    auto victimID = qPlayer.ArabOpferSelection;
     if (type == 0) {
         if (number < 1 || number >= 6) {
             hprintf("GameMechanic::checkPrerequisitesForSaboteurJob: Invalid job number.");
             return {false, 0};
         }
-        if (number == 1 && ((Sim.Players.Players[qPlayer.ArabOpfer].SecurityFlags & (1 << 6)) != 0U)) {
-            return {false, 2096, Sim.Players.Players[qPlayer.ArabOpfer].AirlineX};
-        } else if (number == 2 && ((Sim.Players.Players[qPlayer.ArabOpfer].SecurityFlags & (1 << 6)) != 0U)) {
-            return {false, 2096, Sim.Players.Players[qPlayer.ArabOpfer].AirlineX};
-        } else if (number == 3 && ((Sim.Players.Players[qPlayer.ArabOpfer].SecurityFlags & (1 << 7)) != 0U)) {
-            return {false, 2097, Sim.Players.Players[qPlayer.ArabOpfer].AirlineX};
-        } else if (number == 4 && ((Sim.Players.Players[qPlayer.ArabOpfer].SecurityFlags & (1 << 7)) != 0U)) {
-            return {false, 2097, Sim.Players.Players[qPlayer.ArabOpfer].AirlineX};
-        } else if (number == 5 && ((Sim.Players.Players[qPlayer.ArabOpfer].SecurityFlags & (1 << 6)) != 0U)) {
-            return {false, 2096, Sim.Players.Players[qPlayer.ArabOpfer].AirlineX};
+        if (number == 1 && ((Sim.Players.Players[victimID].SecurityFlags & (1 << 6)) != 0U)) {
+            return {false, 2096, Sim.Players.Players[victimID].AirlineX};
+        } else if (number == 2 && ((Sim.Players.Players[victimID].SecurityFlags & (1 << 6)) != 0U)) {
+            return {false, 2096, Sim.Players.Players[victimID].AirlineX};
+        } else if (number == 3 && ((Sim.Players.Players[victimID].SecurityFlags & (1 << 7)) != 0U)) {
+            return {false, 2097, Sim.Players.Players[victimID].AirlineX};
+        } else if (number == 4 && ((Sim.Players.Players[victimID].SecurityFlags & (1 << 7)) != 0U)) {
+            return {false, 2097, Sim.Players.Players[victimID].AirlineX};
+        } else if (number == 5 && ((Sim.Players.Players[victimID].SecurityFlags & (1 << 6)) != 0U)) {
+            return {false, 2096, Sim.Players.Players[victimID].AirlineX};
         } else if (qPlayer.Money - SabotagePrice[number - 1] < DEBT_LIMIT) {
             return {false, 6000};
         } else {
@@ -156,17 +160,17 @@ GameMechanic::CheckSabotage GameMechanic::checkPrerequisitesForSaboteurJob(PLAYE
             hprintf("GameMechanic::checkPrerequisitesForSaboteurJob: Invalid job number.");
             return {false, 0};
         }
-        if (number == 1 && ((Sim.Players.Players[qPlayer.ArabOpfer2].SecurityFlags & (1 << 0)) != 0U)) {
-            return {false, 2090, Sim.Players.Players[qPlayer.ArabOpfer].AirlineX};
-        } else if (number == 2 && ((Sim.Players.Players[qPlayer.ArabOpfer2].SecurityFlags & (1 << 1)) != 0U)) {
-            return {false, 2091, Sim.Players.Players[qPlayer.ArabOpfer].AirlineX};
-        } else if (number == 3 && ((Sim.Players.Players[qPlayer.ArabOpfer2].SecurityFlags & (1 << 0)) != 0U)) {
-            return {false, 2090, Sim.Players.Players[qPlayer.ArabOpfer].AirlineX};
-        } else if (number == 4 && ((Sim.Players.Players[qPlayer.ArabOpfer2].SecurityFlags & (1 << 2)) != 0U)) {
-            return {false, 2092, Sim.Players.Players[qPlayer.ArabOpfer].AirlineX};
+        if (number == 1 && ((Sim.Players.Players[victimID].SecurityFlags & (1 << 0)) != 0U)) {
+            return {false, 2090, Sim.Players.Players[victimID].AirlineX};
+        } else if (number == 2 && ((Sim.Players.Players[victimID].SecurityFlags & (1 << 1)) != 0U)) {
+            return {false, 2091, Sim.Players.Players[victimID].AirlineX};
+        } else if (number == 3 && ((Sim.Players.Players[victimID].SecurityFlags & (1 << 0)) != 0U)) {
+            return {false, 2090, Sim.Players.Players[victimID].AirlineX};
+        } else if (number == 4 && ((Sim.Players.Players[victimID].SecurityFlags & (1 << 2)) != 0U)) {
+            return {false, 2092, Sim.Players.Players[victimID].AirlineX};
         } else if (qPlayer.Money - SabotagePrice2[number - 1] < DEBT_LIMIT) {
             return {false, 6000};
-        } else if (number == 2 && (Sim.Players.Players[qPlayer.ArabOpfer2].HasItem(ITEM_LAPTOP) == 0)) {
+        } else if (number == 2 && (Sim.Players.Players[victimID].HasItem(ITEM_LAPTOP) == 0)) {
             return {false, 1300};
         } else {
             qPlayer.ArabModeSelection = {type, number};
@@ -177,18 +181,18 @@ GameMechanic::CheckSabotage GameMechanic::checkPrerequisitesForSaboteurJob(PLAYE
             hprintf("GameMechanic::checkPrerequisitesForSaboteurJob: Invalid job number.");
             return {false, 0};
         }
-        if (number == 1 && ((Sim.Players.Players[qPlayer.ArabOpfer3].SecurityFlags & (1 << 8)) != 0U)) {
-            return {false, 2098, Sim.Players.Players[qPlayer.ArabOpfer].AirlineX};
-        } else if (number == 2 && ((Sim.Players.Players[qPlayer.ArabOpfer3].SecurityFlags & (1 << 5)) != 0U)) {
-            return {false, 2095, Sim.Players.Players[qPlayer.ArabOpfer].AirlineX};
-        } else if (number == 3 && ((Sim.Players.Players[qPlayer.ArabOpfer3].SecurityFlags & (1 << 5)) != 0U)) {
-            return {false, 2095, Sim.Players.Players[qPlayer.ArabOpfer].AirlineX};
-        } else if (number == 4 && ((Sim.Players.Players[qPlayer.ArabOpfer3].SecurityFlags & (1 << 3)) != 0U)) {
-            return {false, 2093, Sim.Players.Players[qPlayer.ArabOpfer].AirlineX};
-        } else if (number == 5 && ((Sim.Players.Players[qPlayer.ArabOpfer3].SecurityFlags & (1 << 8)) != 0U)) {
-            return {false, 2098, Sim.Players.Players[qPlayer.ArabOpfer].AirlineX};
-        } else if (number == 6 && ((Sim.Players.Players[qPlayer.ArabOpfer3].SecurityFlags & (1 << 4)) != 0U)) {
-            return {false, 2094, Sim.Players.Players[qPlayer.ArabOpfer].AirlineX};
+        if (number == 1 && ((Sim.Players.Players[victimID].SecurityFlags & (1 << 8)) != 0U)) {
+            return {false, 2098, Sim.Players.Players[victimID].AirlineX};
+        } else if (number == 2 && ((Sim.Players.Players[victimID].SecurityFlags & (1 << 5)) != 0U)) {
+            return {false, 2095, Sim.Players.Players[victimID].AirlineX};
+        } else if (number == 3 && ((Sim.Players.Players[victimID].SecurityFlags & (1 << 5)) != 0U)) {
+            return {false, 2095, Sim.Players.Players[victimID].AirlineX};
+        } else if (number == 4 && ((Sim.Players.Players[victimID].SecurityFlags & (1 << 3)) != 0U)) {
+            return {false, 2093, Sim.Players.Players[victimID].AirlineX};
+        } else if (number == 5 && ((Sim.Players.Players[victimID].SecurityFlags & (1 << 8)) != 0U)) {
+            return {false, 2098, Sim.Players.Players[victimID].AirlineX};
+        } else if (number == 6 && ((Sim.Players.Players[victimID].SecurityFlags & (1 << 4)) != 0U)) {
+            return {false, 2094, Sim.Players.Players[victimID].AirlineX};
         } else if (qPlayer.Money - SabotagePrice3[number - 1] < DEBT_LIMIT) {
             return {false, 6000};
         } else {
@@ -208,6 +212,7 @@ bool GameMechanic::activateSaboteurJob(PLAYER &qPlayer) {
         return false;
     }
 
+    auto victimID = qPlayer.ArabOpferSelection;
     if (type == 0) {
         if (number < 1 || number >= 6) {
             hprintf("GameMechanic::activateSaboteurJob: Invalid job number.");
@@ -215,16 +220,21 @@ bool GameMechanic::activateSaboteurJob(PLAYER &qPlayer) {
         }
 
         if (number == 1) {
-            Sim.Players.Players[qPlayer.ArabOpfer].SecurityNeeded |= (1 << 6);
+            Sim.Players.Players[victimID].SecurityNeeded |= (1 << 6);
         } else if (number == 2) {
-            Sim.Players.Players[qPlayer.ArabOpfer].SecurityNeeded |= (1 << 6);
+            Sim.Players.Players[victimID].SecurityNeeded |= (1 << 6);
         } else if (number == 3) {
-            Sim.Players.Players[qPlayer.ArabOpfer].SecurityNeeded |= (1 << 7);
+            Sim.Players.Players[victimID].SecurityNeeded |= (1 << 7);
         } else if (number == 4) {
-            Sim.Players.Players[qPlayer.ArabOpfer].SecurityNeeded |= (1 << 7);
+            Sim.Players.Players[victimID].SecurityNeeded |= (1 << 7);
         } else if (number == 5) {
-            Sim.Players.Players[qPlayer.ArabOpfer].SecurityNeeded |= (1 << 6);
+            Sim.Players.Players[victimID].SecurityNeeded |= (1 << 6);
         }
+
+        qPlayer.ArabOpfer = victimID;
+        qPlayer.ArabOpfer2 = victimID;
+        qPlayer.ArabOpfer3 = victimID;
+        qPlayer.ArabOpferSelection = {};
 
         qPlayer.ArabMode = number;
         qPlayer.ArabModeSelection = {};
@@ -248,14 +258,19 @@ bool GameMechanic::activateSaboteurJob(PLAYER &qPlayer) {
         }
 
         if (number == 1) {
-            Sim.Players.Players[qPlayer.ArabOpfer2].SecurityNeeded |= (1 << 0);
+            Sim.Players.Players[victimID].SecurityNeeded |= (1 << 0);
         } else if (number == 2) {
-            Sim.Players.Players[qPlayer.ArabOpfer2].SecurityNeeded |= (1 << 1);
+            Sim.Players.Players[victimID].SecurityNeeded |= (1 << 1);
         } else if (number == 3) {
-            Sim.Players.Players[qPlayer.ArabOpfer2].SecurityNeeded |= (1 << 0);
+            Sim.Players.Players[victimID].SecurityNeeded |= (1 << 0);
         } else if (number == 4) {
-            Sim.Players.Players[qPlayer.ArabOpfer2].SecurityNeeded |= (1 << 2);
+            Sim.Players.Players[victimID].SecurityNeeded |= (1 << 2);
         }
+
+        qPlayer.ArabOpfer = victimID;
+        qPlayer.ArabOpfer2 = victimID;
+        qPlayer.ArabOpfer3 = victimID;
+        qPlayer.ArabOpferSelection = {};
 
         qPlayer.ArabMode2 = number;
         qPlayer.ArabModeSelection = {};
@@ -279,14 +294,19 @@ bool GameMechanic::activateSaboteurJob(PLAYER &qPlayer) {
         }
 
         if (number == 1) {
-            Sim.Players.Players[qPlayer.ArabOpfer3].SecurityNeeded |= (1 << 8);
+            Sim.Players.Players[victimID].SecurityNeeded |= (1 << 8);
         } else if (number == 2) {
-            Sim.Players.Players[qPlayer.ArabOpfer3].SecurityNeeded |= (1 << 5);
+            Sim.Players.Players[victimID].SecurityNeeded |= (1 << 5);
         } else if (number == 3) {
-            Sim.Players.Players[qPlayer.ArabOpfer3].SecurityNeeded |= (1 << 5);
+            Sim.Players.Players[victimID].SecurityNeeded |= (1 << 5);
         } else if (number == 4) {
-            Sim.Players.Players[qPlayer.ArabOpfer3].SecurityNeeded |= (1 << 3);
+            Sim.Players.Players[victimID].SecurityNeeded |= (1 << 3);
         }
+
+        qPlayer.ArabOpfer = victimID;
+        qPlayer.ArabOpfer2 = victimID;
+        qPlayer.ArabOpfer3 = victimID;
+        qPlayer.ArabOpferSelection = {};
 
         qPlayer.ArabMode3 = number;
         qPlayer.ArabModeSelection = {};
@@ -360,5 +380,140 @@ bool GameMechanic::toggleSecurity(PLAYER &qPlayer, SLONG securityType) {
     }
 
     PLAYER::NetSynchronizeFlags();
+    return true;
+}
+
+bool GameMechanic::buyXPlane(PLAYER &qPlayer, const CString &filename, SLONG amount) {
+    CString fn = FullFilename(filename, MyPlanePath);
+    if (fn.empty()) {
+        hprintf("GameMechanic::buyXPlane: Invalid filename.");
+        return false;
+    }
+
+    CXPlane plane;
+    plane.Load(fn);
+
+    if (qPlayer.Money - plane.CalcCost() * amount < DEBT_LIMIT) {
+        return false;
+    }
+
+    TEAKRAND rnd;
+    rnd.SRand(Sim.Date);
+
+    for (SLONG c = 0; c < amount; c++) {
+        qPlayer.BuyPlane(plane, &rnd);
+    }
+
+    qPlayer.NetBuyXPlane(amount, plane);
+
+    qPlayer.DoBodyguardRabatt(plane.CalcCost() * amount);
+    qPlayer.MapWorkers(FALSE);
+    qPlayer.UpdatePersonalberater(1);
+
+    return true;
+}
+
+GameMechanic::OvertakeAirlineResult GameMechanic::canOvertakeAirline(PLAYER &qPlayer, SLONG targetAirline) {
+    if (targetAirline < 0 || targetAirline >= 4) {
+        hprintf("GameMechanic::canOvertakeAirline: Invalid targetAirline.");
+        return OvertakeAirlineResult::DeniedInvalidParam;
+    }
+
+    if (targetAirline == qPlayer.PlayerNum) {
+        return OvertakeAirlineResult::DeniedYourAirline;
+    } else if (Sim.Players.Players[targetAirline].IsOut != 0) {
+        return OvertakeAirlineResult::DeniedAlreadyGone;
+    } else if (qPlayer.OwnsAktien[targetAirline] == 0) {
+        return OvertakeAirlineResult::DeniedNoStock;
+    } else if (qPlayer.OwnsAktien[targetAirline] < Sim.Players.Players[targetAirline].AnzAktien / 2) {
+        return OvertakeAirlineResult::DeniedNotEnoughStock;
+    } else if (Sim.Players.Players[targetAirline].OwnsAktien[qPlayer.PlayerNum] >= qPlayer.AnzAktien * 3 / 10) {
+        return OvertakeAirlineResult::DeniedEnemyStock;
+    }
+    return OvertakeAirlineResult::Ok;
+}
+
+bool GameMechanic::overtakeAirline(PLAYER &qPlayer, SLONG targetAirline, bool liquidate) {
+    if (OvertakeAirlineResult::Ok != canOvertakeAirline(qPlayer, targetAirline)) {
+        hprintf("GameMechanic::overtakeAirline: Conditions not met.");
+        return false;
+    }
+
+    Sim.Overtake = liquidate ? 2 : 1;
+    Sim.OvertakenAirline = targetAirline;
+    Sim.OvertakerAirline = qPlayer.PlayerNum;
+    Sim.NetSynchronizeOvertake();
+    return true;
+}
+
+GameMechanic::EmitStockResult GameMechanic::canEmitStock(PLAYER &qPlayer) {
+    auto tmp = (qPlayer.MaxAktien - qPlayer.AnzAktien) / 100 * 100;
+    if (tmp < 10000) {
+        return EmitStockResult::DeniedTooMuch;
+    } else if (qPlayer.Kurse[0] < 10) {
+        return EmitStockResult::DeniedValueTooLow;
+    }
+    return EmitStockResult::Ok;
+}
+
+bool GameMechanic::emitStock(PLAYER &qPlayer, SLONG neueAktien, SLONG mode) {
+    if (EmitStockResult::Ok != canEmitStock(qPlayer)) {
+        hprintf("GameMechanic::emitStock: Conditions not met.");
+        return false;
+    }
+
+    SLONG emissionsKurs = 0;
+    SLONG marktAktien = 0;
+    if (mode == 0) {
+        emissionsKurs = SLONG(qPlayer.Kurse[0]) - 5;
+        marktAktien = neueAktien;
+    } else if (mode == 1) {
+        emissionsKurs = SLONG(qPlayer.Kurse[0]) - 3;
+        marktAktien = neueAktien * 8 / 10;
+    } else if (mode == 2) {
+        emissionsKurs = SLONG(qPlayer.Kurse[0]) - 1;
+        marktAktien = neueAktien * 6 / 10;
+    } else {
+        hprintf("GameMechanic::emitStock: Invalid mode.");
+        return false;
+    }
+
+    DOUBLE alterKurs = qPlayer.Kurse[0];
+    __int64 emissionsWert = __int64(marktAktien) * emissionsKurs;
+    __int64 emissionsGebuehr = __int64(neueAktien) * emissionsKurs / 10 / 100 * 100;
+
+    qPlayer.ChangeMoney(emissionsWert, 3162, "");
+    qPlayer.ChangeMoney(-emissionsGebuehr, 3160, "");
+
+    __int64 preis = emissionsWert - emissionsGebuehr;
+    if (qPlayer.PlayerNum == Sim.localPlayer) {
+        SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, preis, STAT_E_SONSTIGES);
+    }
+
+    qPlayer.Kurse[0] = (qPlayer.Kurse[0] * __int64(qPlayer.AnzAktien) + emissionsWert) / (qPlayer.AnzAktien + marktAktien);
+    if (qPlayer.Kurse[0] < 0) {
+        qPlayer.Kurse[0] = 0;
+    }
+
+    // Entschädigung +/-
+    auto kursDiff = (alterKurs - qPlayer.Kurse[0]);
+    qPlayer.ChangeMoney(-SLONG((qPlayer.AnzAktien - qPlayer.OwnsAktien[qPlayer.PlayerNum]) * kursDiff), 3161, "");
+    for (SLONG c = 0; c < Sim.Players.Players.AnzEntries(); c++) {
+        if (c != qPlayer.PlayerNum) {
+            auto entschaedigung = SLONG(Sim.Players.Players[c].OwnsAktien[qPlayer.PlayerNum] * kursDiff);
+
+            Sim.Players.Players[c].ChangeMoney(entschaedigung, 3163, "");
+            SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, c, entschaedigung, STAT_E_SONSTIGES);
+        }
+    }
+
+    if (Sim.bNetwork != 0) {
+        SIM::SendSimpleMessage(ATNET_ADVISOR, 0, 3, qPlayer.PlayerNum, neueAktien);
+    }
+
+    qPlayer.AnzAktien += neueAktien;
+    qPlayer.OwnsAktien[qPlayer.PlayerNum] += (neueAktien - marktAktien);
+    PLAYER::NetSynchronizeMoney();
+
     return true;
 }
