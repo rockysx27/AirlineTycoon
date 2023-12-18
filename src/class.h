@@ -1973,6 +1973,7 @@ class PLAYER {
     SLONG ArabOpfer{};                           // Anschlag auf wen?
     SLONG ArabOpfer2{};                          // Anschlag auf wen?
     SLONG ArabOpfer3{};                          // Anschlag auf wen?
+    SLONG ArabOpferSelection{};                  // Anschlagsziel ausgewählt, aber Auftrag noch nicht erteilt
     SLONG ArabPlane{};                           // Auf welches Flugzeug des Opfers?
     SLONG ArabPlaneSelection{};                  // Flugzeug ausgewählt, aber Auftrag noch nicht erteilt
     SLONG ArabHints{};                           // Wieviele Indizien gibt es, die auf den Spieler hinweisen?

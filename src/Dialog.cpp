@@ -300,9 +300,9 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                 if (target >= PlayerNum) {
                     ++target;
                 }
-                GameMechanic::setSaboteurTarget(qPlayer, target);
+                target = GameMechanic::setSaboteurTarget(qPlayer, target);
 
-                if (Sim.Players.Players[qPlayer.ArabOpfer].IsOut != 0) {
+                if (target == -1) {
                     MakeSayWindow(0, TOKEN_SABOTAGE, 1045, pFontPartner);
                 } else {
                     MakeSayWindow(0, TOKEN_SABOTAGE, 1040, pFontPartner);
@@ -566,32 +566,10 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                 Array.ReSize(d);
 
                 if (MenuPar1 >= 0 && MenuPar1 < Array.AnzEntries()) {
-                    CXPlane plane;
-                    CString fn = FullFilename(Array[MenuPar1], MyPlanePath);
-                    if (!fn.empty()) {
-                        plane.Load(fn);
-                    }
-
-                    if (qPlayer.Money - plane.CalcCost() * ("\x1\x2\x3\x5\xa"[id - 6011]) < DEBT_LIMIT) {
-                        MakeSayWindow(0, TOKEN_DESIGNER, 6020, pFontPartner);
-                    } else {
-                        TEAKRAND rnd;
-                        SLONG Anzahl = "\x1\x2\x3\x5\xa"[id - 6011];
-
-                        rnd.SRand(Sim.Date);
-
+                    if (GameMechanic::buyXPlane(qPlayer, Array[MenuPar1], "\x1\x2\x3\x5\xa"[id - 6011])) {
                         MakeSayWindow(0, TOKEN_DESIGNER, 6030, pFontPartner);
-                        for (c = 0; c < Anzahl; c++) {
-                            qPlayer.BuyPlane(plane, &rnd);
-                        }
-
-                        qPlayer.NetBuyXPlane(Anzahl, plane);
-                        // SLONG Type = MenuPar1 - 0x10000000;
-                        // Sim.SendSimpleMessage (ATNET_BUY_NEW, NULL, PlayerNum, Anzahl, Type);
-
-                        qPlayer.DoBodyguardRabatt(plane.CalcCost() * Anzahl);
-                        qPlayer.MapWorkers(FALSE);
-                        qPlayer.UpdatePersonalberater(1);
+                    } else {
+                        MakeSayWindow(0, TOKEN_DESIGNER, 6020, pFontPartner);
                     }
                 }
             } break;
@@ -842,18 +820,19 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
             case 2510:
             case 2511:
             case 2512:
-            case 2513:
+            case 2513: {
                 DialogPar1 = id - 2510;
-                if (DialogPar1 == PlayerNum) {
+                auto res = GameMechanic::canOvertakeAirline(qPlayer, DialogPar1);
+                if (res == GameMechanic::OvertakeAirlineResult::DeniedYourAirline) {
                     MakeSayWindow(0, TOKEN_BANK, 2520, pFontPartner);
-                } else if (Sim.Players.Players[DialogPar1].IsOut != 0) {
+                } else if (res == GameMechanic::OvertakeAirlineResult::DeniedAlreadyGone) {
                     MakeSayWindow(0, TOKEN_BANK, 2521, pFontPartner);
-                } else if (qPlayer.OwnsAktien[DialogPar1] == 0) {
+                } else if (res == GameMechanic::OvertakeAirlineResult::DeniedNoStock) {
                     MakeSayWindow(0, TOKEN_BANK, 2525, pFontPartner);
-                } else if (qPlayer.OwnsAktien[DialogPar1] < Sim.Players.Players[DialogPar1].AnzAktien / 2) {
+                } else if (res == GameMechanic::OvertakeAirlineResult::DeniedNotEnoughStock) {
                     MakeSayWindow(0, TOKEN_BANK, 2522, pFontPartner);
                     MakeNumberWindow(TOKEN_BANK, 9992522, bitoa(qPlayer.OwnsAktien[DialogPar1] * 100 / Sim.Players.Players[DialogPar1].AnzAktien));
-                } else if (Sim.Players.Players[DialogPar1].OwnsAktien[PlayerNum] >= qPlayer.AnzAktien * 3 / 10) {
+                } else if (res == GameMechanic::OvertakeAirlineResult::DeniedEnemyStock) {
                     MakeSayWindow(0, TOKEN_BANK, 2523, pFontPartner, (LPCTSTR)Sim.Players.Players[DialogPar1].AirlineX);
                     MakeNumberWindow(TOKEN_BANK, 9992523, bitoa(qPlayer.OwnsAktien[DialogPar1] * 100 / Sim.Players.Players[DialogPar1].AnzAktien));
                 } else {
@@ -861,32 +840,34 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                     // MakeNumberWindow (TOKEN_BANK, 9992524, bitoa (qPlayer.OwnsAktien[DialogPar1]*100/Sim.Players.Players[DialogPar1].AnzAktien));
                 }
                 break;
+            }
             case 2524:
                 MakeSayWindow(1, TOKEN_BANK, 2530, 2532, FALSE, &FontDialog, &FontDialogLight);
                 break;
             case 2530:
             case 2531:
-                Sim.Overtake = id - 2530 + 1;
-                Sim.OvertakenAirline = DialogPar1;
-                Sim.OvertakerAirline = PlayerNum;
-                Sim.NetSynchronizeOvertake();
-                MakeSayWindow(0, TOKEN_BANK, 2540, pFontPartner);
+                if (GameMechanic::overtakeAirline(qPlayer, DialogPar1, (id == 2531))) {
+                    MakeSayWindow(0, TOKEN_BANK, 2540, pFontPartner);
+                } else {
+                    MakeSayWindow(1, TOKEN_BANK, 1000, 1005, FALSE, &FontDialog, &FontDialogLight);
+                }
                 break;
             case 2532:
                 MakeSayWindow(1, TOKEN_BANK, 1000, 1005, FALSE, &FontDialog, &FontDialogLight);
                 break;
 
-            case 1003: // Aktien ausgeben:
-                tmp = (qPlayer.MaxAktien - qPlayer.AnzAktien) / 100 * 100;
-                if (tmp < 10000) {
+            case 1003: { // Aktien ausgeben:
+                auto res = GameMechanic::canEmitStock(qPlayer);
+                if (res == GameMechanic::EmitStockResult::DeniedTooMuch) {
                     MakeSayWindow(0, TOKEN_BANK, 3000, pFontPartner);
-                } else if (qPlayer.Kurse[0] < 10) {
+                } else if (res == GameMechanic::EmitStockResult::DeniedValueTooLow) {
                     MakeSayWindow(0, TOKEN_BANK, 3001, pFontPartner);
                 } else {
                     MakeSayWindow(0, TOKEN_BANK, 3002, pFontPartner);
                     MakeNumberWindow(TOKEN_BANK, 9993002, (LPCTSTR)Insert1000erDots(qPlayer.AnzAktien), (LPCTSTR)Insert1000erDots(tmp));
                 }
                 break;
+            }
             case 3002:
                 tmp = (qPlayer.MaxAktien - qPlayer.AnzAktien) / 100 * 100;
                 MakeSayWindow(1, TOKEN_BANK, 3010, 3015, 1, &FontDialog, &FontDialogLight, tmp / 10, tmp / 4, tmp / 2, tmp * 3 / 4, tmp);
@@ -919,7 +900,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
             {
                 SLONG Tab[] = {5, 3, 1};
                 DialogPar2 = SLONG(qPlayer.Kurse[0] - Tab[id - 3030]);
-                DialogPar3 = Tab[id - 3030];
+                DialogPar3 = (id - 3030);
             }
                 MakeSayWindow(0, TOKEN_BANK, 3040, pFontPartner);
                 MakeNumberWindow(TOKEN_BANK, 9993040, (LPCTSTR)Insert1000erDots(DialogPar1), DialogPar2, static_cast<SLONG>(qPlayer.Kurse[0]),
@@ -929,56 +910,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                 MakeSayWindow(1, TOKEN_BANK, 3050, 3051, FALSE, &FontDialog, &FontDialogLight);
                 break;
             case 3050: // Wirklich etwas machen: (Aktien ausgeben)
-            {
-                SLONG MarktAktien = 0;
-                SLONG NeueAktien = DialogPar1;
-                auto AlterKurs = qPlayer.Kurse[0];
-                SLONG EmissionsKurs = DialogPar2;
-
-                if (DialogPar3 == 5) {
-                    MarktAktien = NeueAktien;
-                } else if (DialogPar3 == 3) {
-                    MarktAktien = NeueAktien * 8 / 10;
-                } else {
-                    MarktAktien = NeueAktien * 6 / 10;
-                }
-
-                __int64 EmissionsWert = __int64(MarktAktien) * EmissionsKurs;
-                __int64 EmissionsGebuehr = __int64(NeueAktien) * EmissionsKurs / 10 / 100 * 100;
-
-                qPlayer.ChangeMoney(EmissionsWert, 3162, "");
-                qPlayer.ChangeMoney(-EmissionsGebuehr, 3160, "");
-
-                __int64 preis = EmissionsWert - EmissionsGebuehr;
-                if (PlayerNum == Sim.localPlayer) {
-                    SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, preis, STAT_E_SONSTIGES);
-                }
-
-                qPlayer.Kurse[0] = (qPlayer.Kurse[0] * __int64(qPlayer.AnzAktien) + EmissionsWert) / (qPlayer.AnzAktien + MarktAktien);
-                if (qPlayer.Kurse[0] < 0) {
-                    qPlayer.Kurse[0] = 0;
-                }
-
-                // Entschädigung +/-
-                auto kursDiff = (AlterKurs - qPlayer.Kurse[0]);
-                qPlayer.ChangeMoney(-SLONG((qPlayer.AnzAktien - qPlayer.OwnsAktien[PlayerNum]) * kursDiff), 3161, "");
-                for (c = 0; c < Sim.Players.Players.AnzEntries(); c++) {
-                    if (c != PlayerNum) {
-                        auto entschaedigung = SLONG(Sim.Players.Players[c].OwnsAktien[PlayerNum] * kursDiff);
-
-                        Sim.Players.Players[c].ChangeMoney(entschaedigung, 3163, "");
-                        SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, c, entschaedigung, STAT_E_SONSTIGES);
-                    }
-                }
-
-                if (Sim.bNetwork != 0) {
-                    SIM::SendSimpleMessage(ATNET_ADVISOR, 0, 3, PlayerNum, NeueAktien);
-                }
-
-                qPlayer.AnzAktien += NeueAktien;
-                qPlayer.OwnsAktien[PlayerNum] += (NeueAktien - MarktAktien);
-                PLAYER::NetSynchronizeMoney();
-            }
+                GameMechanic::emitStock(qPlayer, DialogPar1, DialogPar3);
                 MakeSayWindow(0, TOKEN_BANK, 3060, pFontPartner, DialogPar1);
                 break;
 
