@@ -644,6 +644,30 @@ SLONG GameMechanic::setMechMode(PLAYER &qPlayer, SLONG mode) {
     return gRepairPrice[qPlayer.MechMode] * qPlayer.Planes.GetNumUsed() / 30;
 }
 
+void GameMechanic::increaseAllSalaries(PLAYER &qPlayer) {
+    Workers.Gehaltsaenderung(1, qPlayer.PlayerNum);
+    qPlayer.StrikePlanned = FALSE;
+
+    while ((Workers.GetAverageHappyness(qPlayer.PlayerNum) - static_cast<SLONG>(Workers.GetMinHappyness(qPlayer.PlayerNum) < 0) * 10 < 20) ||
+           (Workers.GetAverageHappyness(qPlayer.PlayerNum) - static_cast<SLONG>(Workers.GetMinHappyness(qPlayer.PlayerNum) < 0) * 10 < 0)) {
+        Workers.AddHappiness(qPlayer.PlayerNum, 10);
+    }
+}
+
+void GameMechanic::decreaseAllSalaries(PLAYER &qPlayer) { Workers.Gehaltsaenderung(0, qPlayer.PlayerNum); }
+
+void GameMechanic::endStrike(PLAYER &qPlayer, bool mode) {
+    if (mode) {
+        qPlayer.StrikeEndType = 2; // Streik beendet durch Gehaltserhöhung
+        qPlayer.StrikeEndCountdown = 2;
+        increaseAllSalaries(qPlayer);
+    } else {
+        qPlayer.StrikeEndType = 1; // Streik beendet durch Drohung
+        qPlayer.StrikeEndCountdown = 4;
+        Workers.AddHappiness(qPlayer.PlayerNum, -20);
+    }
+}
+
 void GameMechanic::executeAirlineOvertake() {
     SLONG c = 0;
     SLONG d = 0;
