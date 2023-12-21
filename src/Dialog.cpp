@@ -4386,13 +4386,13 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
 
             case 960:
                 qPlayer.StrikeNotified = FALSE; // Dem Spieler bei nächster Gelegenheit bescheid sagen
-                GameMechanic::endStrike(qPlayer, true);
+                GameMechanic::endStrike(qPlayer, GameMechanic::EndStrikeMode::Salary);
                 MakeSayWindow(0, TOKEN_JOBS, 970, pFontPartner);
                 break;
 
             case 961:
                 qPlayer.StrikeNotified = FALSE; // Dem Spieler bei nächster Gelegenheit bescheid sagen
-                GameMechanic::endStrike(qPlayer, false);
+                GameMechanic::endStrike(qPlayer, GameMechanic::EndStrikeMode::Threat);
                 MakeSayWindow(0, TOKEN_JOBS, 971, pFontPartner);
                 break;
 
@@ -5486,8 +5486,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
         case TALKER_TRINKER:
             switch (id) {
             case 6000:
-                qPlayer.StrikeEndType = 3; // Streik beendet durch Trinker
-                qPlayer.StrikeEndCountdown = 4;
+                GameMechanic::endStrike(qPlayer, GameMechanic::EndStrikeMode::Drunk);
                 StopDialog();
                 break;
 
