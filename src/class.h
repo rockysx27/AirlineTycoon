@@ -1393,6 +1393,7 @@ class /**/ CLAN {
     friend class CPersonQueue;
     friend class AIRPORT;
     friend class PLAYER;
+    friend class GameMechanic;
     friend void UpdateHLinePool(void);
 
     friend TEAKFILE &operator<<(TEAKFILE &File, const CLAN &Clan);
@@ -1489,6 +1490,7 @@ class /**/ PERSON {
     friend class CMakler;
     friend class CRouteBox;
     friend class SIM;
+    friend class GameMechanic;
     friend class AIRPORT;
 };
 

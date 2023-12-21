@@ -11,6 +11,8 @@ extern SLONG StationPrices[10];
 
 class GameMechanic {
   public:
+    static void bankruptPlayer(PLAYER &qPlayer);
+
     /* Kerosin */
     static bool buyKerosinTank(PLAYER &qPlayer, SLONG typ, SLONG anzahl);
     static bool toggleKerosinTank(PLAYER &qPlayer);
@@ -27,6 +29,7 @@ class GameMechanic {
     };
     static CheckSabotage checkPrerequisitesForSaboteurJob(PLAYER &qPlayer, SLONG type, SLONG number);
     static bool activateSaboteurJob(PLAYER &qPlayer);
+    static void paySaboteurFine(SLONG player, SLONG opfer);
 
     /* Kredite */
     static bool takeOutCredit(PLAYER &qPlayer, SLONG target);
@@ -49,4 +52,15 @@ class GameMechanic {
     enum class EmitStockResult { Ok, DeniedTooMuch, DeniedValueTooLow };
     static EmitStockResult canEmitStock(PLAYER &qPlayer);
     static bool emitStock(PLAYER &qPlayer, SLONG neueAktien, SLONG mode);
+
+    /* Boss */
+    enum class ExpandAirportResult { Ok, DeniedFreeGates, DeniedLimitReached, DeniedTooEarly, DeniedAlreadyExpanded, DeniedExpandingRightNow };
+    static ExpandAirportResult canExpandAirport(PLAYER &qPlayer);
+    static bool expandAirport(PLAYER &qPlayer);
+
+    /* Mechanic */
+    static SLONG setMechMode(PLAYER &qPlayer, SLONG mode);
+
+    /* Execution routines */
+    static void executeAirlineOvertake();
 };
