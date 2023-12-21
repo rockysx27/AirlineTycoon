@@ -398,6 +398,84 @@ bool GameMechanic::toggleSecurity(PLAYER &qPlayer, SLONG securityType) {
     return true;
 }
 
+bool GameMechanic::GameMechanic::buyPlane(PLAYER &qPlayer, SLONG planeType, SLONG amount) {
+    if (qPlayer.Money - PlaneTypes[planeType].Preis * amount < DEBT_LIMIT) {
+        return false;
+    }
+
+    SLONG idx = planeType - 0x10000000;
+    TEAKRAND rnd;
+    rnd.SRand(Sim.Date);
+
+    for (SLONG c = 0; c < amount; c++) {
+        qPlayer.BuyPlane(idx, &rnd);
+    }
+
+    SIM::SendSimpleMessage(ATNET_BUY_NEW, 0, qPlayer.PlayerNum, amount, idx);
+
+    qPlayer.DoBodyguardRabatt(PlaneTypes[planeType].Preis * amount);
+    qPlayer.MapWorkers(FALSE);
+    qPlayer.UpdatePersonalberater(1);
+
+    return true;
+}
+
+bool GameMechanic::buyUsedPlane(PLAYER &qPlayer, SLONG planeID) {
+    if (qPlayer.Money - Sim.UsedPlanes[planeID].CalculatePrice() < DEBT_LIMIT) {
+        return false;
+    }
+
+    if (qPlayer.Planes.GetNumFree() == 0) {
+        qPlayer.Planes.ReSize(qPlayer.Planes.AnzEntries() + 10);
+        qPlayer.Planes.RepairReferences();
+    }
+    Sim.UsedPlanes[planeID].WorstZustand = UBYTE(Sim.UsedPlanes[planeID].Zustand - 20);
+    Sim.UsedPlanes[planeID].GlobeAngle = 0;
+    qPlayer.Planes += Sim.UsedPlanes[planeID];
+
+    SLONG cost = -Sim.UsedPlanes[planeID].CalculatePrice();
+    qPlayer.ChangeMoney(cost, 2010, Sim.UsedPlanes[planeID].Name);
+    SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, cost, STAT_A_SONSTIGES);
+
+    qPlayer.DoBodyguardRabatt(Sim.UsedPlanes[planeID].CalculatePrice());
+
+    SLONG idx = planeID - 0x10000000;
+    if (Sim.bNetwork != 0) {
+        SIM::SendSimpleMessage(ATNET_ADVISOR, 0, 1, qPlayer.PlayerNum, idx);
+        SIM::SendSimpleMessage(ATNET_BUY_USED, 0, qPlayer.PlayerNum, idx, Sim.Time);
+    }
+
+    Sim.UsedPlanes[planeID].Name.Empty();
+    Sim.TickMuseumRefill = 0;
+
+    qPlayer.MapWorkers(FALSE);
+    qPlayer.UpdatePersonalberater(1);
+
+    return true;
+}
+
+bool GameMechanic::sellPlane(PLAYER &qPlayer, SLONG planeID) {
+    SLONG cost = qPlayer.Planes[planeID].CalculatePrice() * 9 / 10;
+
+    qPlayer.ChangeMoney(cost, 2011, qPlayer.Planes[planeID].Name);
+    if (qPlayer.PlayerNum == Sim.localPlayer) {
+        SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, cost, STAT_E_SONSTIGES);
+    }
+
+    qPlayer.Planes -= planeID;
+    if (qPlayer.Planes.IsInAlbum(qPlayer.ReferencePlane) == 0) {
+        qPlayer.ReferencePlane = -1;
+    }
+
+    SIM::SendSimpleMessage(ATNET_SELL_USED, 0, planeID, planeID);
+    PLAYER::NetSynchronizeMoney();
+
+    qPlayer.MapWorkers(FALSE);
+    qPlayer.UpdatePersonalberater(1);
+
+    return true;
+}
+
 bool GameMechanic::buyXPlane(PLAYER &qPlayer, const CString &filename, SLONG amount) {
     CString fn = FullFilename(filename, MyPlanePath);
     if (fn.empty()) {

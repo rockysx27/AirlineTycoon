@@ -4126,25 +4126,10 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
             case 143:
             case 144:
             case 145:
-                if (qPlayer.Money - PlaneTypes[DialogPar2].Preis * ("\x1\x2\x3\x5\xa"[id - 141]) < DEBT_LIMIT) {
-                    MakeSayWindow(0, TOKEN_MAKLER, 6000, pFontPartner);
-                } else {
-                    TEAKRAND rnd;
-                    SLONG Anzahl = "\x1\x2\x3\x5\xa"[id - 141];
-                    SLONG Type = DialogPar2 - 0x10000000;
-
-                    rnd.SRand(Sim.Date);
-
+                if (GameMechanic::buyPlane(qPlayer, DialogPar2, "\x1\x2\x3\x5\xa"[id - 141])) {
                     MakeSayWindow(0, TOKEN_MAKLER, 150, pFontPartner);
-                    for (c = 0; c < Anzahl; c++) {
-                        qPlayer.BuyPlane(Type, &rnd);
-                    }
-
-                    SIM::SendSimpleMessage(ATNET_BUY_NEW, 0, PlayerNum, Anzahl, Type);
-
-                    qPlayer.DoBodyguardRabatt(PlaneTypes[DialogPar2].Preis * ("\x1\x2\x3\x5\xa"[id - 141]));
-                    qPlayer.MapWorkers(FALSE);
-                    qPlayer.UpdatePersonalberater(1);
+                } else {
+                    MakeSayWindow(0, TOKEN_MAKLER, 6000, pFontPartner);
                 }
                 break;
 
@@ -4202,34 +4187,10 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                 break;
 
             case 600:
-                if (qPlayer.Money - Sim.UsedPlanes[0x1000000 + DialogPar1].CalculatePrice() < DEBT_LIMIT) {
-                    MakeSayWindow(0, TOKEN_MUSEUM, 6000, pFontPartner);
-                } else {
-                    if (qPlayer.Planes.GetNumFree() == 0) {
-                        qPlayer.Planes.ReSize(qPlayer.Planes.AnzEntries() + 10);
-                        qPlayer.Planes.RepairReferences();
-                    }
-                    Sim.UsedPlanes[0x1000000 + DialogPar1].WorstZustand = UBYTE(Sim.UsedPlanes[0x1000000 + DialogPar1].Zustand - 20);
-                    Sim.UsedPlanes[0x1000000 + DialogPar1].GlobeAngle = 0;
-                    qPlayer.Planes += Sim.UsedPlanes[0x1000000 + DialogPar1];
-
-                    SLONG Kosten = -Sim.UsedPlanes[0x1000000 + DialogPar1].CalculatePrice();
-                    qPlayer.ChangeMoney(Kosten, 2010, Sim.UsedPlanes[0x1000000 + DialogPar1].Name);
-                    SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, Kosten, STAT_A_SONSTIGES);
-
-                    qPlayer.DoBodyguardRabatt(Sim.UsedPlanes[0x1000000 + DialogPar1].CalculatePrice());
-
-                    if (Sim.bNetwork != 0) {
-                        SIM::SendSimpleMessage(ATNET_ADVISOR, 0, 1, PlayerNum, DialogPar1);
-                        SIM::SendSimpleMessage(ATNET_BUY_USED, 0, PlayerNum, DialogPar1, Sim.Time);
-                    }
-
-                    Sim.UsedPlanes[0x1000000 + DialogPar1].Name.Empty();
-                    Sim.TickMuseumRefill = 0;
-
+                if (GameMechanic::buyUsedPlane(qPlayer, 0x1000000 + DialogPar1)) {
                     StopDialog();
-                    qPlayer.MapWorkers(FALSE);
-                    qPlayer.UpdatePersonalberater(1);
+                } else {
+                    MakeSayWindow(0, TOKEN_MUSEUM, 6000, pFontPartner);
                 }
                 break;
 
@@ -4251,29 +4212,10 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                 MakeSayWindow(1, TOKEN_MUSEUM, 720, 721, FALSE, &FontDialog, &FontDialogLight);
                 break;
 
-            case 720: {
-                SLONG preis = qPlayer.Planes[DialogPar2].CalculatePrice() * 9 / 10;
-
-                if (PlayerNum == Sim.localPlayer) {
-                    SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, preis, STAT_E_SONSTIGES);
-                }
-
-                qPlayer.ChangeMoney(preis,
-                                    2011, // Verkauf des Flugzeuges
-                                    qPlayer.Planes[DialogPar2].Name);
-
-                qPlayer.Planes -= DialogPar2;
-                SIM::SendSimpleMessage(ATNET_SELL_USED, 0, PlayerNum, DialogPar2);
-                PLAYER::NetSynchronizeMoney();
-
+            case 720:
+                GameMechanic::sellPlane(qPlayer, DialogPar2);
                 StopDialog();
-                qPlayer.MapWorkers(FALSE);
-
-                if (qPlayer.Planes.IsInAlbum(qPlayer.ReferencePlane) == 0) {
-                    qPlayer.ReferencePlane = -1;
-                }
-                qPlayer.UpdatePersonalberater(1);
-            } break;
+                break;
 
             case 711: // Flugzeug wird verwendet und kann gar nicht verkauft werden.
             default:  // Standard: Dialog abbrechen

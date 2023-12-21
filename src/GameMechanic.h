@@ -41,6 +41,13 @@ class GameMechanic {
     /* Security */
     static bool toggleSecurity(PLAYER &qPlayer, SLONG securityType);
 
+    /* Makler */
+    static bool buyPlane(PLAYER &qPlayer, SLONG planeType, SLONG amount);
+
+    /* Museum */
+    static bool buyUsedPlane(PLAYER &qPlayer, SLONG planeID);
+    static bool sellPlane(PLAYER &qPlayer, SLONG planeID);
+
     /* Designer */
     static bool buyXPlane(PLAYER &qPlayer, const CString &filename, SLONG amount);
 
