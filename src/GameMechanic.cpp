@@ -366,6 +366,11 @@ bool GameMechanic::payBackCredit(PLAYER &qPlayer, SLONG amount) {
 }
 
 void GameMechanic::setPlaneTargetZustand(PLAYER &qPlayer, SLONG idx, SLONG zustand) {
+    if (!qPlayer.Planes.IsInAlbum(idx)) {
+        hprintf("GameMechanic::setPlaneTargetZustand: Invalid plane index.");
+        return;
+    }
+
     qPlayer.Planes[idx].TargetZustand = UBYTE(zustand);
     qPlayer.NetUpdatePlaneProps(idx);
 }
@@ -399,6 +404,11 @@ bool GameMechanic::toggleSecurity(PLAYER &qPlayer, SLONG securityType) {
 }
 
 bool GameMechanic::GameMechanic::buyPlane(PLAYER &qPlayer, SLONG planeType, SLONG amount) {
+    if (!PlaneTypes.IsInAlbum(planeType)) {
+        hprintf("GameMechanic::buyPlane: Invalid plane type.");
+        return false;
+    }
+
     if (qPlayer.Money - PlaneTypes[planeType].Preis * amount < DEBT_LIMIT) {
         return false;
     }
@@ -421,6 +431,11 @@ bool GameMechanic::GameMechanic::buyPlane(PLAYER &qPlayer, SLONG planeType, SLON
 }
 
 bool GameMechanic::buyUsedPlane(PLAYER &qPlayer, SLONG planeID) {
+    if (!Sim.UsedPlanes.IsInAlbum(planeID)) {
+        hprintf("GameMechanic::buyUsedPlane: Invalid plane index.");
+        return false;
+    }
+
     if (qPlayer.Money - Sim.UsedPlanes[planeID].CalculatePrice() < DEBT_LIMIT) {
         return false;
     }
@@ -433,11 +448,11 @@ bool GameMechanic::buyUsedPlane(PLAYER &qPlayer, SLONG planeID) {
     Sim.UsedPlanes[planeID].GlobeAngle = 0;
     qPlayer.Planes += Sim.UsedPlanes[planeID];
 
-    SLONG cost = -Sim.UsedPlanes[planeID].CalculatePrice();
-    qPlayer.ChangeMoney(cost, 2010, Sim.UsedPlanes[planeID].Name);
-    SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, cost, STAT_A_SONSTIGES);
+    SLONG cost = Sim.UsedPlanes[planeID].CalculatePrice();
+    qPlayer.ChangeMoney(-cost, 2010, Sim.UsedPlanes[planeID].Name);
+    SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -cost, STAT_A_SONSTIGES);
 
-    qPlayer.DoBodyguardRabatt(Sim.UsedPlanes[planeID].CalculatePrice());
+    qPlayer.DoBodyguardRabatt(cost);
 
     SLONG idx = planeID - 0x10000000;
     if (Sim.bNetwork != 0) {
@@ -455,6 +470,11 @@ bool GameMechanic::buyUsedPlane(PLAYER &qPlayer, SLONG planeID) {
 }
 
 bool GameMechanic::sellPlane(PLAYER &qPlayer, SLONG planeID) {
+    if (!qPlayer.Planes.IsInAlbum(planeID)) {
+        hprintf("GameMechanic::sellPlane: Invalid plane index.");
+        return false;
+    }
+
     SLONG cost = qPlayer.Planes[planeID].CalculatePrice() * 9 / 10;
 
     qPlayer.ChangeMoney(cost, 2011, qPlayer.Planes[planeID].Name);
@@ -666,6 +686,105 @@ void GameMechanic::endStrike(PLAYER &qPlayer, bool mode) {
         qPlayer.StrikeEndCountdown = 4;
         Workers.AddHappiness(qPlayer.PlayerNum, -20);
     }
+}
+
+bool GameMechanic::buyAdvertisement(PLAYER &qPlayer, SLONG adCampaignType, SLONG adCampaignSize, SLONG routeID) {
+    if (adCampaignType < 0 || adCampaignType >= 3) {
+        hprintf("GameMechanic::buyAdvertisement: Invalid adCampaignType.");
+        return false;
+    }
+    if (adCampaignSize < 0 || adCampaignSize >= 6) {
+        hprintf("GameMechanic::buyAdvertisement: Invalid adCampaignSize.");
+        return false;
+    }
+    if (adCampaignType == 1 && routeID == -1) {
+        hprintf("GameMechanic::buyAdvertisement: Invalid routeID.");
+        return false;
+    }
+    if (adCampaignType != 1 && routeID != -1) {
+        hprintf("GameMechanic::buyAdvertisement: RouteID must not be given for this mode.");
+        return false;
+    }
+
+    SLONG cost = gWerbePrice[adCampaignType * 6 + adCampaignSize];
+    if (qPlayer.Money - cost < DEBT_LIMIT) {
+        return false;
+    }
+
+    if (adCampaignType == 0) {
+        qPlayer.Image += cost / 10000 * (adCampaignSize + 6) / 55;
+        Limit(SLONG(-1000), qPlayer.Image, SLONG(1000));
+
+        if (adCampaignSize == 0) {
+            for (SLONG c = 0; c < Sim.Players.AnzPlayers; c++) {
+                if ((Sim.Players.Players[c].Owner == 0U) && (Sim.Players.Players[c].IsOut == 0)) {
+                    Sim.Players.Players[c].Letters.AddLetter(
+                        TRUE, CString(bprintf(StandardTexte.GetS(TOKEN_LETTER, 9900), (LPCTSTR)qPlayer.AirlineX)),
+                        CString(bprintf(StandardTexte.GetS(TOKEN_LETTER, 9901), (LPCTSTR)qPlayer.AirlineX)),
+                        CString(bprintf(StandardTexte.GetS(TOKEN_LETTER, 9902), (LPCTSTR)qPlayer.NameX, (LPCTSTR)qPlayer.AirlineX)), -1);
+                }
+            }
+        }
+    } else if (adCampaignType == 1) {
+        auto &qRoute = qPlayer.RentRouten.RentRouten[routeID];
+        qRoute.Image += UBYTE(cost / 30000);
+        Limit(static_cast<UBYTE>(0), qRoute.Image, static_cast<UBYTE>(100));
+
+        /*for (SLONG c = qPlayer.RentRouten.RentRouten.AnzEntries() - 1; c >= 0; c--) {
+            if (Routen.IsInAlbum(c) != 0) {
+                if (Routen[c].VonCity == Routen[routeID].NachCity && Routen[c].NachCity == Routen[routeID].VonCity) {
+                    qPlayer.RentRouten.RentRouten[c].Image += UBYTE(cost / 30000);
+                    Limit(static_cast<UBYTE>(0), qPlayer.RentRouten.RentRouten[c].Image, static_cast<UBYTE>(100));
+                    break;
+                }
+            }
+        }*/
+
+        if (adCampaignSize == 0) {
+            for (SLONG c = 0; c < Sim.Players.AnzPlayers; c++) {
+                if ((Sim.Players.Players[c].Owner == 0U) && (Sim.Players.Players[c].IsOut == 0)) {
+                    Sim.Players.Players[c].Letters.AddLetter(
+                        TRUE,
+                        CString(bprintf(StandardTexte.GetS(TOKEN_LETTER, 9910), (LPCTSTR)Cities[Routen[routeID].VonCity].Name,
+                                        (LPCTSTR)Cities[Routen[routeID].NachCity].Name, (LPCTSTR)qPlayer.AirlineX)),
+                        CString(bprintf(StandardTexte.GetS(TOKEN_LETTER, 9911), (LPCTSTR)Cities[Routen[routeID].VonCity].Name,
+                                        (LPCTSTR)Cities[Routen[routeID].NachCity].Name, (LPCTSTR)qPlayer.AirlineX)),
+                        CString(bprintf(StandardTexte.GetS(TOKEN_LETTER, 9912), (LPCTSTR)qPlayer.NameX, (LPCTSTR)qPlayer.AirlineX)), -1);
+                }
+            }
+        }
+    } else if (adCampaignType == 2) {
+        qPlayer.Image += cost / 15000 * (adCampaignSize + 6) / 55;
+        Limit(SLONG(-1000), qPlayer.Image, SLONG(1000));
+
+        for (SLONG c = 0; c < qPlayer.RentRouten.RentRouten.AnzEntries(); c++) {
+            if (qPlayer.RentRouten.RentRouten[c].Rang != 0U) {
+                qPlayer.RentRouten.RentRouten[c].Image += UBYTE(cost * (adCampaignSize + 6) / 6 / 120000);
+                Limit(static_cast<UBYTE>(0), qPlayer.RentRouten.RentRouten[c].Image, static_cast<UBYTE>(100));
+            }
+        }
+
+        if (adCampaignSize == 0) {
+            for (SLONG c = 0; c < Sim.Players.AnzPlayers; c++) {
+                if ((Sim.Players.Players[c].Owner == 0U) && (Sim.Players.Players[c].IsOut == 0)) {
+                    Sim.Players.Players[c].Letters.AddLetter(
+                        TRUE, CString(bprintf(StandardTexte.GetS(TOKEN_LETTER, 9920), (LPCTSTR)qPlayer.AirlineX)),
+                        CString(bprintf(StandardTexte.GetS(TOKEN_LETTER, 9921), (LPCTSTR)qPlayer.AirlineX)),
+                        CString(bprintf(StandardTexte.GetS(TOKEN_LETTER, 9922), (LPCTSTR)qPlayer.NameX, (LPCTSTR)qPlayer.AirlineX)), -1);
+                }
+            }
+        }
+    }
+
+    qPlayer.ChangeMoney(-cost, adCampaignSize + 3120, "");
+    if (qPlayer.PlayerNum == Sim.localPlayer) {
+        SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -cost, STAT_A_SONSTIGES);
+    }
+
+    PLAYER::NetSynchronizeImage();
+    qPlayer.DoBodyguardRabatt(cost);
+
+    return true;
 }
 
 void GameMechanic::executeAirlineOvertake() {

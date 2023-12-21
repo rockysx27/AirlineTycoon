@@ -4461,14 +4461,17 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
 
             case 2001: // Firmenimage:
                 DialogPar1 = 0;
+                DialogPar2 = -1;
                 MakeSayWindow(0, TOKEN_WERBUNG, 3000, pFontPartner);
                 break;
             case 2002: // Routen-Image:
                 DialogPar1 = 1;
+                DialogPar2 = -1;
                 MakeSayWindow(0, TOKEN_WERBUNG, 3500, pFontPartner);
                 break;
             case 2003: // Alles:
                 DialogPar1 = 2;
+                DialogPar2 = -1;
                 MakeSayWindow(0, TOKEN_WERBUNG, 3000, pFontPartner);
                 break;
 
@@ -4483,6 +4486,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                 break;
             case 3501: // Alles:
                 DialogPar1 = 1;
+                DialogPar2 = -1;
                 MakeSayWindow(0, TOKEN_WERBUNG, 3001, pFontPartner);
                 break;
 
@@ -4511,82 +4515,10 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
             case 5003:
             case 5004:
             case 5005:
-                if (qPlayer.Money - gWerbePrice[DialogPar1 * 6 + id - 5000] < DEBT_LIMIT) {
-                    MakeSayWindow(0, TOKEN_WERBUNG, 6000, pFontPartner);
-                } else {
-                    if (DialogPar1 == 0) {
-                        qPlayer.Image += gWerbePrice[DialogPar1 * 6 + id - 5000] / 10000 * (id - 5000 + 6) / 55;
-                        Limit(SLONG(-1000), qPlayer.Image, SLONG(1000));
-
-                        if (id == 5000) {
-                            for (c = 0; c < Sim.Players.AnzPlayers; c++) {
-                                if ((Sim.Players.Players[c].Owner == 0U) && (Sim.Players.Players[c].IsOut == 0)) {
-                                    Sim.Players.Players[c].Letters.AddLetter(
-                                        TRUE, CString(bprintf(StandardTexte.GetS(TOKEN_LETTER, 9900), (LPCTSTR)qPlayer.AirlineX)),
-                                        CString(bprintf(StandardTexte.GetS(TOKEN_LETTER, 9901), (LPCTSTR)qPlayer.AirlineX)),
-                                        CString(bprintf(StandardTexte.GetS(TOKEN_LETTER, 9902), (LPCTSTR)qPlayer.NameX, (LPCTSTR)qPlayer.AirlineX)), -1);
-                                }
-                            }
-                        }
-                    } else if (DialogPar1 == 1) {
-                        qPlayer.RentRouten.RentRouten[DialogPar2].Image += UBYTE(gWerbePrice[DialogPar1 * 6 + id - 5000] / 30000);
-                        Limit(static_cast<UBYTE>(0), qPlayer.RentRouten.RentRouten[DialogPar2].Image, static_cast<UBYTE>(100));
-
-                        for (SLONG c = qPlayer.RentRouten.RentRouten.AnzEntries() - 1; c >= 0; c--) {
-                            if (Routen.IsInAlbum(c) != 0) {
-                                if (Routen[c].VonCity == Routen[DialogPar2].NachCity && Routen[c].NachCity == Routen[DialogPar2].VonCity) {
-                                    qPlayer.RentRouten.RentRouten[c].Image += UBYTE(gWerbePrice[DialogPar1 * 6 + id - 5000] / 30000);
-                                    Limit(static_cast<UBYTE>(0), qPlayer.RentRouten.RentRouten[c].Image, static_cast<UBYTE>(100));
-                                    break;
-                                }
-                            }
-                        }
-
-                        if (id == 5000) {
-                            for (c = 0; c < Sim.Players.AnzPlayers; c++) {
-                                if ((Sim.Players.Players[c].Owner == 0U) && (Sim.Players.Players[c].IsOut == 0)) {
-                                    Sim.Players.Players[c].Letters.AddLetter(
-                                        TRUE,
-                                        CString(bprintf(StandardTexte.GetS(TOKEN_LETTER, 9910), (LPCTSTR)Cities[Routen[DialogPar2].VonCity].Name,
-                                                        (LPCTSTR)Cities[Routen[DialogPar2].NachCity].Name, (LPCTSTR)qPlayer.AirlineX)),
-                                        CString(bprintf(StandardTexte.GetS(TOKEN_LETTER, 9911), (LPCTSTR)Cities[Routen[DialogPar2].VonCity].Name,
-                                                        (LPCTSTR)Cities[Routen[DialogPar2].NachCity].Name, (LPCTSTR)qPlayer.AirlineX)),
-                                        CString(bprintf(StandardTexte.GetS(TOKEN_LETTER, 9912), (LPCTSTR)qPlayer.NameX, (LPCTSTR)qPlayer.AirlineX)), -1);
-                                }
-                            }
-                        }
-                    } else if (DialogPar1 == 2) {
-                        qPlayer.Image += gWerbePrice[DialogPar1 * 6 + id - 5000] / 15000 * (id - 5000 + 6) / 55;
-                        Limit(SLONG(-1000), qPlayer.Image, SLONG(1000));
-
-                        for (c = 0; c < qPlayer.RentRouten.RentRouten.AnzEntries(); c++) {
-                            if (qPlayer.RentRouten.RentRouten[c].Rang != 0U) {
-                                qPlayer.RentRouten.RentRouten[c].Image += UBYTE(gWerbePrice[DialogPar1 * 6 + id - 5000] * (id - 5000 + 6) / 6 / 120000);
-                                Limit(static_cast<UBYTE>(0), qPlayer.RentRouten.RentRouten[c].Image, static_cast<UBYTE>(100));
-                            }
-                        }
-
-                        if (id == 5000) {
-                            for (c = 0; c < Sim.Players.AnzPlayers; c++) {
-                                if ((Sim.Players.Players[c].Owner == 0U) && (Sim.Players.Players[c].IsOut == 0)) {
-                                    Sim.Players.Players[c].Letters.AddLetter(
-                                        TRUE, CString(bprintf(StandardTexte.GetS(TOKEN_LETTER, 9920), (LPCTSTR)qPlayer.AirlineX)),
-                                        CString(bprintf(StandardTexte.GetS(TOKEN_LETTER, 9921), (LPCTSTR)qPlayer.AirlineX)),
-                                        CString(bprintf(StandardTexte.GetS(TOKEN_LETTER, 9922), (LPCTSTR)qPlayer.NameX, (LPCTSTR)qPlayer.AirlineX)), -1);
-                                }
-                            }
-                        }
-                    }
-
-                    SLONG preis = -gWerbePrice[DialogPar1 * 6 + id - 5000];
-                    qPlayer.ChangeMoney(preis, id - 5000 + 3120, "");
-                    if (PlayerNum == Sim.localPlayer) {
-                        SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, preis, STAT_A_SONSTIGES);
-                    }
-
-                    PLAYER::NetSynchronizeImage();
-                    qPlayer.DoBodyguardRabatt(gWerbePrice[DialogPar1 * 6 + id - 5000]);
+                if (GameMechanic::buyAdvertisement(qPlayer, DialogPar1, (id - 5000), DialogPar2)) {
                     MakeSayWindow(0, TOKEN_WERBUNG, 3401, pFontPartner);
+                } else {
+                    MakeSayWindow(0, TOKEN_WERBUNG, 6000, pFontPartner);
                 }
                 break;
 

@@ -73,6 +73,9 @@ class GameMechanic {
     static void decreaseAllSalaries(PLAYER &qPlayer);
     static void endStrike(PLAYER &qPlayer, bool mode);
 
+    /* ads */
+    static bool buyAdvertisement(PLAYER &qPlayer, SLONG adCampaignType, SLONG adCampaignSize, SLONG routeID = -1);
+
     /* Execution routines */
     static void executeAirlineOvertake();
 };
