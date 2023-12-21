@@ -71,7 +71,8 @@ class GameMechanic {
     /* HR */
     static void increaseAllSalaries(PLAYER &qPlayer);
     static void decreaseAllSalaries(PLAYER &qPlayer);
-    static void endStrike(PLAYER &qPlayer, bool mode);
+    enum class EndStrikeMode { Salary, Threat, Drunk };
+    static void endStrike(PLAYER &qPlayer, EndStrikeMode mode);
 
     /* ads */
     static bool buyAdvertisement(PLAYER &qPlayer, SLONG adCampaignType, SLONG adCampaignSize, SLONG routeID = -1);

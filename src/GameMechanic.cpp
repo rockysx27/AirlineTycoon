@@ -676,15 +676,20 @@ void GameMechanic::increaseAllSalaries(PLAYER &qPlayer) {
 
 void GameMechanic::decreaseAllSalaries(PLAYER &qPlayer) { Workers.Gehaltsaenderung(0, qPlayer.PlayerNum); }
 
-void GameMechanic::endStrike(PLAYER &qPlayer, bool mode) {
-    if (mode) {
+void GameMechanic::endStrike(PLAYER &qPlayer, EndStrikeMode mode) {
+    if (mode == EndStrikeMode::Salary) {
         qPlayer.StrikeEndType = 2; // Streik beendet durch Gehaltserhöhung
         qPlayer.StrikeEndCountdown = 2;
         increaseAllSalaries(qPlayer);
-    } else {
+    } else if (mode == EndStrikeMode::Threat) {
         qPlayer.StrikeEndType = 1; // Streik beendet durch Drohung
         qPlayer.StrikeEndCountdown = 4;
         Workers.AddHappiness(qPlayer.PlayerNum, -20);
+    } else if (mode == EndStrikeMode::Drunk) {
+        qPlayer.StrikeEndType = 3; // Streik beendet durch Trinker
+        qPlayer.StrikeEndCountdown = 4;
+    } else {
+        hprintf("GameMechanic::endStrike: Invalid EndStrikeMode");
     }
 }
 
