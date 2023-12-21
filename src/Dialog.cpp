@@ -4322,13 +4322,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
 
             case 600:
                 MakeSayWindow(0, TOKEN_JOBS, 700, pFontPartner);
-                Workers.Gehaltsaenderung(1, PlayerNum);
-                qPlayer.StrikePlanned = FALSE;
-
-                while ((Workers.GetAverageHappyness(Sim.localPlayer) - static_cast<SLONG>(Workers.GetMinHappyness(Sim.localPlayer) < 0) * 10 < 20) ||
-                       (Workers.GetAverageHappyness(Sim.localPlayer) - static_cast<SLONG>(Workers.GetMinHappyness(Sim.localPlayer) < 0) * 10 < 0)) {
-                    Workers.AddHappiness(PlayerNum, 10);
-                }
+                GameMechanic::increaseAllSalaries(qPlayer);
                 break;
 
             case 601:
@@ -4374,7 +4368,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                 break;
 
             case 810:
-                Workers.Gehaltsaenderung(0, PlayerNum);
+                GameMechanic::decreaseAllSalaries(qPlayer);
                 MakeSayWindow(0, TOKEN_JOBS, 820, pFontPartner);
                 break;
 
@@ -4392,22 +4386,13 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
 
             case 960:
                 qPlayer.StrikeNotified = FALSE; // Dem Spieler bei nächster Gelegenheit bescheid sagen
-                qPlayer.StrikeEndType = 2;      // Streik beendet durch Gehaltserhöhunh
-                qPlayer.StrikeEndCountdown = 2;
-                Workers.Gehaltsaenderung(1, PlayerNum);
+                GameMechanic::endStrike(qPlayer, true);
                 MakeSayWindow(0, TOKEN_JOBS, 970, pFontPartner);
-
-                while ((Workers.GetAverageHappyness(Sim.localPlayer) - static_cast<SLONG>(Workers.GetMinHappyness(Sim.localPlayer) < 0) * 10 < 20) ||
-                       (Workers.GetAverageHappyness(Sim.localPlayer) - static_cast<SLONG>(Workers.GetMinHappyness(Sim.localPlayer) < 0) * 10 < 0)) {
-                    Workers.AddHappiness(PlayerNum, 10);
-                }
                 break;
 
             case 961:
                 qPlayer.StrikeNotified = FALSE; // Dem Spieler bei nächster Gelegenheit bescheid sagen
-                qPlayer.StrikeEndType = 1;      // Streik beendet durch Drohung
-                qPlayer.StrikeEndCountdown = 4;
-                Workers.AddHappiness(PlayerNum, -20);
+                GameMechanic::endStrike(qPlayer, false);
                 MakeSayWindow(0, TOKEN_JOBS, 971, pFontPartner);
                 break;
 

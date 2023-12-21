@@ -68,6 +68,11 @@ class GameMechanic {
     /* Mechanic */
     static SLONG setMechMode(PLAYER &qPlayer, SLONG mode);
 
+    /* HR */
+    static void increaseAllSalaries(PLAYER &qPlayer);
+    static void decreaseAllSalaries(PLAYER &qPlayer);
+    static void endStrike(PLAYER &qPlayer, bool mode);
+
     /* Execution routines */
     static void executeAirlineOvertake();
 };
