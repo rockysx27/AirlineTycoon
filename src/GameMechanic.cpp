@@ -792,36 +792,70 @@ bool GameMechanic::buyAdvertisement(PLAYER &qPlayer, SLONG adCampaignType, SLONG
     return true;
 }
 
-void GameMechanic::takeFlightJob(PLAYER &qPlayer, SLONG par1, SLONG par2) {
+bool GameMechanic::takeFlightJob(PLAYER &qPlayer, SLONG par1, SLONG par2) {
     auto &qAuftrag = AuslandsAuftraege[par1][par2];
-    if (qAuftrag.Praemie != 0) {
-        if (qPlayer.Auftraege.GetNumFree() < 3) {
-            qPlayer.Auftraege.ReSize(qPlayer.Auftraege.AnzEntries() + 10);
-        }
-
-        qPlayer.Auftraege += qAuftrag;
-        qPlayer.NetUpdateOrder(qAuftrag);
-        qPlayer.Statistiken[STAT_AUFTRAEGE].AddAtPastDay(1);
-
-        qAuftrag.Praemie = 0;
-        qPlayer.NetUpdateTook(4, par2, par1);
+    if (qAuftrag.Praemie <= 0) {
+        return false;
     }
+    if (qPlayer.Auftraege.GetNumFree() < 3) {
+        qPlayer.Auftraege.ReSize(qPlayer.Auftraege.AnzEntries() + 10);
+    }
+
+    qPlayer.Auftraege += qAuftrag;
+    qPlayer.NetUpdateOrder(qAuftrag);
+    qPlayer.Statistiken[STAT_AUFTRAEGE].AddAtPastDay(1);
+
+    qAuftrag.Praemie = 0;
+    qPlayer.NetUpdateTook(4, par2, par1);
+
+    return true;
 }
 
-void GameMechanic::takeFreightJob(PLAYER &qPlayer, SLONG par1, SLONG par2) {
+bool GameMechanic::takeFreightJob(PLAYER &qPlayer, SLONG par1, SLONG par2) {
     auto &qFracht = AuslandsFrachten[par1][par2];
-    if (qFracht.Praemie > 0) {
-        if (qPlayer.Frachten.GetNumFree() < 3) {
-            qPlayer.Frachten.ReSize(qPlayer.Frachten.AnzEntries() + 10);
-        }
-
-        qPlayer.Frachten += qFracht;
-        qPlayer.NetUpdateFreightOrder(qFracht);
-        qPlayer.Statistiken[STAT_AUFTRAEGE].AddAtPastDay(1);
-
-        qFracht.Praemie = 0;
-        qPlayer.NetUpdateTook(5, par2, par1);
+    if (qFracht.Praemie <= 0) {
+        return false;
     }
+    if (qPlayer.Frachten.GetNumFree() < 3) {
+        qPlayer.Frachten.ReSize(qPlayer.Frachten.AnzEntries() + 10);
+    }
+
+    qPlayer.Frachten += qFracht;
+    qPlayer.NetUpdateFreightOrder(qFracht);
+    qPlayer.Statistiken[STAT_AUFTRAEGE].AddAtPastDay(1);
+
+    qFracht.Praemie = 0;
+    qPlayer.NetUpdateTook(5, par2, par1);
+
+    return true;
+}
+
+bool GameMechanic::hireWorker(PLAYER &qPlayer, CWorker &qWorker) {
+    if (qWorker.Employer != WORKER_JOBLESS) {
+        hprintf("GameMechanic::fireWorker: Conditions not met.");
+        return false;
+    }
+
+    qWorker.Employer = qPlayer.PlayerNum;
+    qWorker.PlaneId = -1;
+    qPlayer.MapWorkers(TRUE);
+
+    return true;
+}
+
+bool GameMechanic::fireWorker(PLAYER &qPlayer, CWorker &qWorker) {
+    if (qWorker.Employer != qPlayer.PlayerNum) {
+        hprintf("GameMechanic::fireWorker: Conditions not met.");
+        return false;
+    }
+
+    qWorker.Employer = WORKER_JOBLESS;
+    if (qWorker.TimeInPool > 0) {
+        qWorker.TimeInPool = 0;
+    }
+    qPlayer.MapWorkers(TRUE);
+
+    return true;
 }
 
 void GameMechanic::executeAirlineOvertake() {

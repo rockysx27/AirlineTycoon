@@ -78,8 +78,12 @@ class GameMechanic {
     static bool buyAdvertisement(PLAYER &qPlayer, SLONG adCampaignType, SLONG adCampaignSize, SLONG routeID = -1);
 
     /* Flights */
-    static void takeFlightJob(PLAYER &qPlayer, SLONG par1, SLONG par2);
-    static void takeFreightJob(PLAYER &qPlayer, SLONG par1, SLONG par2);
+    static bool takeFlightJob(PLAYER &qPlayer, SLONG par1, SLONG par2);
+    static bool takeFreightJob(PLAYER &qPlayer, SLONG par1, SLONG par2);
+
+    /* Crew */
+    static bool hireWorker(PLAYER &qPlayer, CWorker &qWorker);
+    static bool fireWorker(PLAYER &qPlayer, CWorker &qWorker);
 
     /* Execution routines */
     static void executeAirlineOvertake();
