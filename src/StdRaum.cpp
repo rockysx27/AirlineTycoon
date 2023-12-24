@@ -6395,77 +6395,52 @@ void CStdRaum::MenuLeftClick(XY Pos) {
                 return;
             }
         } else if (MouseClickArea == -101 && MouseClickPar2 >= 0 && MouseClickPar2 <= 5) {
-            CAuftrag &qAuftrag = AuslandsAuftraege[MenuPar1][MouseClickPar2];
+            GameMechanic::takeFlightJob(qPlayer, MenuPar1, MouseClickPar2);
 
-            if (qAuftrag.Praemie != 0) {
-                if (qPlayer.Auftraege.GetNumFree() < 3) {
-                    qPlayer.Auftraege.ReSize(qPlayer.Auftraege.AnzEntries() + 10);
-                }
+            // Blöcke refeshen:
+            if (qPlayer.GetRoom() == ROOM_LAPTOP) {
 
-                qPlayer.Auftraege += qAuftrag;
-                qPlayer.NetUpdateOrder(qAuftrag);
-                qPlayer.Statistiken[STAT_AUFTRAEGE].AddAtPastDay(1);
+                for (SLONG c = qPlayer.Blocks.AnzEntries() - 1; c >= 1; c--) {
+                    if (qPlayer.Blocks.IsInAlbum(c) != 0) {
+                        BLOCK &qBlock = qPlayer.Blocks[ULONG(c)];
 
-                // Blöcke refeshen:
-                if (qPlayer.GetRoom() == ROOM_LAPTOP) {
-
-                    for (SLONG c = qPlayer.Blocks.AnzEntries() - 1; c >= 1; c--) {
-                        if (qPlayer.Blocks.IsInAlbum(c) != 0) {
-                            BLOCK &qBlock = qPlayer.Blocks[ULONG(c)];
-
-                            qBlock.RefreshData(PlayerNum);
-                            if (qPlayer.LaptopBattery > 0) {
-                                qBlock.Refresh(PlayerNum, TRUE);
-                            }
+                        qBlock.RefreshData(PlayerNum);
+                        if (qPlayer.LaptopBattery > 0) {
+                            qBlock.Refresh(PlayerNum, TRUE);
                         }
                     }
-                } else if (qPlayer.GetRoom() == ROOM_GLOBE) {
-                    BLOCK &qBlock = qPlayer.Blocks[ULONG(0)];
-
-                    qBlock.RefreshData(PlayerNum);
-                    qBlock.Refresh(PlayerNum, FALSE);
                 }
+            } else if (qPlayer.GetRoom() == ROOM_GLOBE) {
+                BLOCK &qBlock = qPlayer.Blocks[ULONG(0)];
 
-                qAuftrag.Praemie = 0;
-                qPlayer.NetUpdateTook(4, MouseClickPar2, MenuPar1);
-                MenuRepaint();
+                qBlock.RefreshData(PlayerNum);
+                qBlock.Refresh(PlayerNum, FALSE);
             }
+            MenuRepaint();
+
         } else if (MouseClickArea == -101 && MouseClickPar2 >= 7 && MouseClickPar2 <= 7 + 5) {
-            CFracht &qFracht = AuslandsFrachten[MenuPar1][MouseClickPar2 - 7];
+            GameMechanic::takeFreightJob(qPlayer, MenuPar1, MouseClickPar2 - 7);
 
-            if (qFracht.Praemie > 0) {
-                if (qPlayer.Frachten.GetNumFree() < 3) {
-                    qPlayer.Frachten.ReSize(qPlayer.Frachten.AnzEntries() + 10);
-                }
+            // Blöcke refeshen:
+            if (qPlayer.GetRoom() == ROOM_LAPTOP) {
 
-                qPlayer.Frachten += qFracht;
-                qPlayer.NetUpdateFreightOrder(qFracht);
-                qPlayer.Statistiken[STAT_AUFTRAEGE].AddAtPastDay(1);
+                for (SLONG c = qPlayer.Blocks.AnzEntries() - 1; c >= 1; c--) {
+                    if (qPlayer.Blocks.IsInAlbum(c) != 0) {
+                        BLOCK &qBlock = qPlayer.Blocks[ULONG(c)];
 
-                // Blöcke refeshen:
-                if (qPlayer.GetRoom() == ROOM_LAPTOP) {
-
-                    for (SLONG c = qPlayer.Blocks.AnzEntries() - 1; c >= 1; c--) {
-                        if (qPlayer.Blocks.IsInAlbum(c) != 0) {
-                            BLOCK &qBlock = qPlayer.Blocks[ULONG(c)];
-
-                            qBlock.RefreshData(PlayerNum);
-                            if (qPlayer.LaptopBattery > 0) {
-                                qBlock.Refresh(PlayerNum, TRUE);
-                            }
+                        qBlock.RefreshData(PlayerNum);
+                        if (qPlayer.LaptopBattery > 0) {
+                            qBlock.Refresh(PlayerNum, TRUE);
                         }
                     }
-                } else if (qPlayer.GetRoom() == ROOM_GLOBE) {
-                    BLOCK &qBlock = qPlayer.Blocks[ULONG(0)];
-
-                    qBlock.RefreshData(PlayerNum);
-                    qBlock.Refresh(PlayerNum, FALSE);
                 }
+            } else if (qPlayer.GetRoom() == ROOM_GLOBE) {
+                BLOCK &qBlock = qPlayer.Blocks[ULONG(0)];
 
-                qFracht.Praemie = 0;
-                qPlayer.NetUpdateTook(5, MouseClickPar2 - 7, MenuPar1);
-                MenuRepaint();
+                qBlock.RefreshData(PlayerNum);
+                qBlock.Refresh(PlayerNum, FALSE);
             }
+            MenuRepaint();
         }
         break;
 
