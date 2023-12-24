@@ -5128,11 +5128,9 @@ void CStdRaum::MenuRepaint() {
         if (qPlayer.GetRoom() == ROOM_ARAB_AIR) {
             SLONG Kerosinpreis = Sim.HoleKerosinPreis(MenuPar1);
 
-            auto retVal = GameMechanic::calcKerosinPrice(qPlayer, MenuPar1, MenuPar2);
-            __int64 Kosten = retVal.first;
-            __int64 Rabatt = retVal.second;
-
-            MenuInfo = SLONG(Kosten - Rabatt);
+            auto transaction = GameMechanic::calcKerosinPrice(qPlayer, MenuPar1, MenuPar2);
+            MenuPar2 = transaction.Menge;
+            MenuInfo = SLONG(transaction.Kosten - transaction.Rabatt);
 
             OnscreenBitmap.BlitFrom(MenuBms[0]);
 
@@ -5185,7 +5183,7 @@ void CStdRaum::MenuRepaint() {
             }
             OnscreenBitmap.PrintAt(Einheiten[EINH_P].bString((MenuPar2 + qPlayer.TankInhalt) * 100 / _tank), FontSmallBlack, TEC_FONT_RIGHT, 56, 102, 236, 160);
 
-            OnscreenBitmap.PrintAt(Einheiten[EINH_DM].bString(SLONG(Rabatt)), FontSmallBlack, TEC_FONT_LEFT, 120, 120, 327, 160);
+            OnscreenBitmap.PrintAt(Einheiten[EINH_DM].bString(SLONG(transaction.Rabatt)), FontSmallBlack, TEC_FONT_LEFT, 120, 120, 327, 160);
         }
         break;
 
@@ -5958,10 +5956,9 @@ void CStdRaum::MenuLeftClick(XY Pos) {
         }
         if (MouseClickArea == -102 && MouseClickId == MENU_BUYKEROSIN && MouseClickPar1 == 10) {
             if (GameMechanic::buyKerosin(qPlayer, MenuPar1, MenuPar2)) {
-                MenuStop();
-                MakeSayWindow(0, TOKEN_ARAB, 6000, pFontPartner);
-            } else {
                 MakeSayWindow(0, TOKEN_ARAB, 700, pFontPartner);
+            } else {
+                MakeSayWindow(0, TOKEN_ARAB, 6000, pFontPartner);
             }
             MenuStop();
         }
