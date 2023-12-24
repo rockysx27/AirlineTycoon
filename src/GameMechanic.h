@@ -14,10 +14,15 @@ class GameMechanic {
     static void bankruptPlayer(PLAYER &qPlayer);
 
     /* Kerosin */
-    static bool buyKerosinTank(PLAYER &qPlayer, SLONG typ, SLONG anzahl);
+    static bool buyKerosinTank(PLAYER &qPlayer, SLONG type, SLONG amount);
     static bool toggleKerosinTank(PLAYER &qPlayer);
-    static bool buyKerosin(PLAYER &qPlayer, SLONG preis, SLONG menge);
-    static std::pair<__int64, __int64> calcKerosinPrice(PLAYER &qPlayer, __int64 typ, __int64 menge);
+    static bool buyKerosin(PLAYER &qPlayer, SLONG type, SLONG amount);
+    struct KerosinTransaction {
+        __int64 Kosten{};
+        __int64 Rabatt{};
+        __int64 Menge{};
+    };
+    static KerosinTransaction calcKerosinPrice(PLAYER &qPlayer, __int64 typ, __int64 menge);
 
     /* Sabotage */
     static SLONG setSaboteurTarget(PLAYER &qPlayer, SLONG target);

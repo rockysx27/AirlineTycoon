@@ -21,30 +21,30 @@ void GameMechanic::bankruptPlayer(PLAYER &qPlayer) {
     }
 }
 
-bool GameMechanic::buyKerosinTank(PLAYER &qPlayer, SLONG typ, SLONG anzahl) {
-    if (typ < 0 || typ >= sizeof(TankSize) || typ >= sizeof(TankPrice)) {
+bool GameMechanic::buyKerosinTank(PLAYER &qPlayer, SLONG type, SLONG amount) {
+    if (type < 0 || type >= sizeof(TankSize) || type >= sizeof(TankPrice)) {
         hprintf("GameMechanic::buyKerosinTank: Invalid tank type.");
         return false;
     }
-    if (anzahl < 0) {
+    if (amount < 0) {
         hprintf("GameMechanic::calcKerosinPrice: Negative amount.");
         return false;
     }
 
-    SLONG Preis = TankPrice[typ];
-    SLONG Size = TankSize[typ];
+    SLONG cost = TankPrice[type];
+    SLONG size = TankSize[type];
 
-    if (qPlayer.Money - Preis * anzahl < DEBT_LIMIT) {
+    if (qPlayer.Money - cost * amount < DEBT_LIMIT) {
         return false;
     }
 
-    qPlayer.Tank += Size / 1000 * anzahl;
+    qPlayer.Tank += size / 1000 * amount;
     qPlayer.NetUpdateKerosin();
 
-    qPlayer.ChangeMoney(-Preis * anzahl, 2091, CString(bitoa(Size)), const_cast<char *>((LPCTSTR)CString(bitoa(anzahl))));
-    SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -Preis * anzahl, -1);
+    qPlayer.ChangeMoney(-cost * amount, 2091, CString(bitoa(size)), const_cast<char *>((LPCTSTR)CString(bitoa(amount))));
+    SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -cost * amount, -1);
 
-    qPlayer.DoBodyguardRabatt(Preis * anzahl);
+    qPlayer.DoBodyguardRabatt(cost * amount);
     return true;
 }
 
@@ -54,38 +54,40 @@ bool GameMechanic::toggleKerosinTank(PLAYER &qPlayer) {
     return true;
 }
 
-bool GameMechanic::buyKerosin(PLAYER &qPlayer, SLONG typ, SLONG menge) {
-    if (typ < 0 || typ >= 3) {
+bool GameMechanic::buyKerosin(PLAYER &qPlayer, SLONG type, SLONG amount) {
+    if (type < 0 || type >= 3) {
         hprintf("GameMechanic::calcKerosinPrice: Invalid kerosine type.");
         return false;
     }
-    if (menge < 0) {
+    if (amount < 0) {
         hprintf("GameMechanic::buyKerosin: Negative amount.");
         return false;
     }
 
-    __int64 preis = Sim.HoleKerosinPreis(typ);
-    if ((preis != 0) && qPlayer.Money - preis < DEBT_LIMIT) {
+    auto transaction = calcKerosinPrice(qPlayer, type, amount);
+    auto cost = transaction.Kosten - transaction.Rabatt;
+    amount = transaction.Menge;
+
+    if ((cost <= 0) || qPlayer.Money - cost < DEBT_LIMIT) {
         return false;
     }
-    if (preis != 0) {
-        SLONG OldInhalt = qPlayer.TankInhalt;
-        qPlayer.TankInhalt += menge;
 
-        qPlayer.TankPreis = (OldInhalt * qPlayer.TankPreis + preis) / qPlayer.TankInhalt;
-        qPlayer.KerosinQuali = (OldInhalt * qPlayer.KerosinQuali + menge * qPlayer.KerosinKind) / qPlayer.TankInhalt;
-        qPlayer.NetUpdateKerosin();
+    SLONG OldInhalt = qPlayer.TankInhalt;
+    qPlayer.TankInhalt += amount;
 
-        qPlayer.ChangeMoney(-preis, 2020, "");
-        SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -preis, -1);
+    qPlayer.TankPreis = (OldInhalt * qPlayer.TankPreis + cost) / qPlayer.TankInhalt;
+    qPlayer.KerosinQuali = (OldInhalt * qPlayer.KerosinQuali + amount * qPlayer.KerosinKind) / qPlayer.TankInhalt;
+    qPlayer.NetUpdateKerosin();
 
-        qPlayer.DoBodyguardRabatt(preis);
-    }
+    qPlayer.ChangeMoney(-cost, 2020, "");
+    SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -cost, -1);
+
+    qPlayer.DoBodyguardRabatt(cost);
     return true;
 }
 
-std::pair<__int64, __int64> GameMechanic::calcKerosinPrice(PLAYER &qPlayer, __int64 typ, __int64 amount) {
-    if (typ < 0 || typ >= 3) {
+GameMechanic::KerosinTransaction GameMechanic::calcKerosinPrice(PLAYER &qPlayer, __int64 type, __int64 amount) {
+    if (type < 0 || type >= 3) {
         hprintf("GameMechanic::calcKerosinPrice: Invalid kerosine type.");
         return {};
     }
@@ -94,33 +96,33 @@ std::pair<__int64, __int64> GameMechanic::calcKerosinPrice(PLAYER &qPlayer, __in
         return {};
     }
 
-    __int64 Kerosinpreis = Sim.HoleKerosinPreis(typ);
-    __int64 Kosten = Kerosinpreis * typ;
-    __int64 Rabatt = 0;
+    __int64 kerosinpreis = Sim.HoleKerosinPreis(type);
+    __int64 kosten = kerosinpreis * amount;
+    __int64 rabatt = 0;
 
     if (amount >= 50000) {
-        Rabatt = Kosten / 10;
+        rabatt = kosten / 10;
     } else if (amount >= 10000) {
-        Rabatt = Kosten / 20;
+        rabatt = kosten / 20;
     }
 
     // Geldmenge begrenzen, damit man sich nichts in den Bankrott schießt
-    if (Kosten - Rabatt > qPlayer.Money - (DEBT_LIMIT)) {
-        amount = (qPlayer.Money - (DEBT_LIMIT)) / Kerosinpreis;
+    if (kosten - rabatt > qPlayer.Money - (DEBT_LIMIT)) {
+        amount = (qPlayer.Money - (DEBT_LIMIT)) / kerosinpreis;
         if (amount < 0) {
             amount = 0;
         }
-        Kosten = Kerosinpreis * typ;
+        kosten = kerosinpreis * amount;
 
         if (amount >= 50000) {
-            Rabatt = Kosten / 10;
+            rabatt = kosten / 10;
         } else if (amount >= 10000) {
-            Rabatt = Kosten / 20;
+            rabatt = kosten / 20;
         } else {
-            Rabatt = 0;
+            rabatt = 0;
         }
     }
-    return {Kosten, Rabatt};
+    return {kosten, rabatt, amount};
 }
 
 SLONG GameMechanic::setSaboteurTarget(PLAYER &qPlayer, SLONG target) {
