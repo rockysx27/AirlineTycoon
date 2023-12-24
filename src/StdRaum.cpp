@@ -6446,6 +6446,7 @@ void CStdRaum::MenuLeftClick(XY Pos) {
 
     case MENU_PERSONAL:
         if (MouseClickId == MENU_PERSONAL) {
+            auto &qWorker = Workers.Workers[MenuRemapper[MenuPage - 1]];
             if (MouseClickPar1 == -1 && MenuPage > 0) {
                 if (AtGetAsyncKeyState(ATKEY_CONTROL) / 256 != 0) {
                     MenuPage = std::max(0, MenuPage - 100);
@@ -6465,23 +6466,17 @@ void CStdRaum::MenuLeftClick(XY Pos) {
                 }
                 gMovePaper.Play(DSBPLAY_NOSTOP, Sim.Options.OptionEffekte * 100 / 7);
             } else if (MouseClickPar1 == -3) {
-                Workers.Workers[MenuRemapper[MenuPage - 1]].Employer = PlayerNum;
-                Workers.Workers[MenuRemapper[MenuPage - 1]].PlaneId = -1;
-                qPlayer.MapWorkers(TRUE);
+                GameMechanic::hireWorker(qPlayer, qWorker);
                 qPlayer.UpdateWalkSpeed();
             } else if (MouseClickPar1 == -4) {
-                Workers.Workers[MenuRemapper[MenuPage - 1]].Employer = WORKER_JOBLESS;
-                if (Workers.Workers[MenuRemapper[MenuPage - 1]].TimeInPool > 0) {
-                    Workers.Workers[MenuRemapper[MenuPage - 1]].TimeInPool = 0;
-                }
-                qPlayer.MapWorkers(TRUE);
+                GameMechanic::fireWorker(qPlayer, qWorker);
                 qPlayer.UpdateWalkSpeed();
             }
             // Gehalt erhöhen/kürzen:
             else if (MouseClickPar1 == -5) {
-                Workers.Workers[MenuRemapper[MenuPage - 1]].Gehaltsaenderung(1);
+                qWorker.Gehaltsaenderung(1);
             } else if (MouseClickPar1 == -6) {
-                Workers.Workers[MenuRemapper[MenuPage - 1]].Gehaltsaenderung(0);
+                qWorker.Gehaltsaenderung(0);
             } else if (MouseClickPar1 == -7) {
                 // Anderes Flugzeug:
                 SLONG m1 = MenuPage;
@@ -6494,18 +6489,15 @@ void CStdRaum::MenuLeftClick(XY Pos) {
             }
 
             if (MenuPar2 == 1 && (qPlayer.HasBerater(BERATERTYP_PERSONAL) != 0) && MenuPage > 0 && (MouseClickPar1 == -1 || MouseClickPar1 == -2)) {
-                if (Workers.Workers[MenuRemapper[MenuPage - 1]].Employer == WORKER_RESERVE) {
+                if (qWorker.Employer == WORKER_RESERVE) {
                     // rausgeekelt:
-                    qPlayer.Messages.AddMessage(BERATERTYP_PERSONAL,
-                                                bprintf(StandardTexte.GetS(TOKEN_ADVICE, 1004 + Workers.Workers[MenuRemapper[MenuPage - 1]].Geschlecht),
-                                                        Workers.Workers[MenuRemapper[MenuPage - 1]].Name.c_str()),
+                    qPlayer.Messages.AddMessage(BERATERTYP_PERSONAL, bprintf(StandardTexte.GetS(TOKEN_ADVICE, 1004 + qWorker.Geschlecht), qWorker.Name.c_str()),
                                                 MESSAGE_COMMENT);
-                } else if (Workers.Workers[MenuRemapper[MenuPage - 1]].Employer == WORKER_JOBLESS) {
-                    if (Workers.Workers[MenuRemapper[MenuPage - 1]].Typ <= BERATERTYP_SICHERHEIT &&
-                        (qPlayer.HasBerater(Workers.Workers[MenuRemapper[MenuPage - 1]].Typ) != 0)) {
-                        if (Workers.Workers[MenuRemapper[MenuPage - 1]].Typ == BERATERTYP_PERSONAL) {
+                } else if (qWorker.Employer == WORKER_JOBLESS) {
+                    if (qWorker.Typ <= BERATERTYP_SICHERHEIT && (qPlayer.HasBerater(qWorker.Typ) != 0)) {
+                        if (qWorker.Typ == BERATERTYP_PERSONAL) {
                             qPlayer.Messages.AddMessage(BERATERTYP_PERSONAL, StandardTexte.GetS(TOKEN_ADVICE, 1272), MESSAGE_COMMENT);
-                        } else if (Workers.Workers[MenuRemapper[MenuPage - 1]].Talent <= qPlayer.HasBerater(Workers.Workers[MenuRemapper[MenuPage - 1]].Typ)) {
+                        } else if (qWorker.Talent <= qPlayer.HasBerater(qWorker.Typ)) {
                             qPlayer.Messages.AddMessage(BERATERTYP_PERSONAL, StandardTexte.GetS(TOKEN_ADVICE, 1270), MESSAGE_COMMENT, SMILEY_BAD);
                         } else {
                             qPlayer.Messages.AddMessage(BERATERTYP_PERSONAL, StandardTexte.GetS(TOKEN_ADVICE, 1271), MESSAGE_COMMENT, SMILEY_GOOD);
@@ -6516,17 +6508,17 @@ void CStdRaum::MenuLeftClick(XY Pos) {
                         SLONG n = Workers.GetQualityRatio(MenuRemapper[MenuPage - 1]);
                         SLONG Smiley = 0;
 
-                        if (Workers.Workers[MenuRemapper[MenuPage - 1]].Talent <= 25) {
+                        if (qWorker.Talent <= 25) {
                             n = 1006;
                             Smiley = SMILEY_BAD;
-                        } else if (Workers.Workers[MenuRemapper[MenuPage - 1]].Talent <= 45) {
+                        } else if (qWorker.Talent <= 45) {
                             n = 1007;
                             Smiley = SMILEY_BAD;
                         } else if (n < -5) {
                             n = 1001;
                             Smiley = SMILEY_BAD;
                         } else if (n > 5) {
-                            if (Workers.Workers[MenuRemapper[MenuPage - 1]].Talent >= 90) {
+                            if (qWorker.Talent >= 90) {
                                 n = 1008;
                                 Smiley = SMILEY_GREAT;
                             } else {
@@ -8062,7 +8054,8 @@ void CStdRaum::OnKeyDown(UINT nChar, UINT /*nRepCnt*/, UINT /*nFlags*/) {
         }
         break;
 
-    case MENU_PERSONAL:
+    case MENU_PERSONAL: {
+        auto &qWorker = Workers.Workers[MenuRemapper[MenuPage - 1]];
         switch (nChar) {
         case ATKEY_LEFT:
             if (AtGetAsyncKeyState(ATKEY_CONTROL) / 256 != 0) {
@@ -8087,18 +8080,12 @@ void CStdRaum::OnKeyDown(UINT nChar, UINT /*nRepCnt*/, UINT /*nFlags*/) {
             change = true;
             break;
         case ATKEY_RETURN:
-            Workers.Workers[MenuRemapper[MenuPage - 1]].Employer = PlayerNum;
-            Workers.Workers[MenuRemapper[MenuPage - 1]].PlaneId = -1;
-            qPlayer.MapWorkers(TRUE);
+            GameMechanic::hireWorker(qPlayer, qWorker);
             qPlayer.UpdateWalkSpeed();
             change = true;
             break;
         case ATKEY_BACK:
-            Workers.Workers[MenuRemapper[MenuPage - 1]].Employer = WORKER_JOBLESS;
-            if (Workers.Workers[MenuRemapper[MenuPage - 1]].TimeInPool > 0) {
-                Workers.Workers[MenuRemapper[MenuPage - 1]].TimeInPool = 0;
-            }
-            qPlayer.MapWorkers(TRUE);
+            GameMechanic::fireWorker(qPlayer, qWorker);
             qPlayer.UpdateWalkSpeed();
             change = true;
             break;
@@ -8112,6 +8099,7 @@ void CStdRaum::OnKeyDown(UINT nChar, UINT /*nRepCnt*/, UINT /*nFlags*/) {
             }
         }
         break;
+    }
     default:
         break;
     }
