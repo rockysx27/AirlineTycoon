@@ -4,6 +4,7 @@
 namespace fs = std::filesystem;
 
 #define AT_Log(...) AT_Log_I("TeakFile", __VA_ARGS__)
+#define GET_RAW_TEXT_PATH(path, buffer, max_size) snprintf(buffer, max_size, "%s.txt", path)
 
 const char *ExcOpen = "Can't open %s!";
 const char *ExcRead = "Can't read %s!";
@@ -147,6 +148,7 @@ CRLEReader::CRLEReader(const char *path) : Ctx(nullptr), SeqLength(0), SeqUsed(0
 CRLEReader::~CRLEReader() { Close(); }
 
 bool CRLEReader::AlwaysSaveAsPlainText = false;
+bool CRLEReader::UpdateDataBeforeOpening = false;
 
 bool CRLEReader::Close() {
     if (Ctx == nullptr) {
@@ -163,8 +165,8 @@ void CRLEReader::SaveAsPlainText() {
     BUFFER_V<BYTE> buffer(GetSize());
     if (Read(buffer.getData(), buffer.AnzEntries(), true)) {
         char fn[255];
-        snprintf(fn, 255, "%s.txt", Path);
-        AT_Log("Saving RL encoded file to %s", fn);
+        GET_RAW_TEXT_PATH(Path, fn, 255);
+        AT_Log("Saving as plain text file to %s", fn);
 
         // TEAKFILE file(fn, TEAKFILE_WRITE);
         FILE *fp = fopen(fn, "w");
@@ -258,10 +260,126 @@ BUFFER_V<BYTE> LoadCompleteFile(char const *path) {
         return buffer;
     }
 
+    if (reader.getIsRLE() && CRLEReader::UpdateDataBeforeOpening) {
+        reader.Close();
+        CRLEWriter writer(path);
+        writer.UpdateFromPlainText();
+        writer.Close();
+
+        // Reload the potentially modified file
+        CRLEReader _reader(path);
+        BUFFER_V<BYTE> _buffer(_reader.GetSize());
+        if (!_reader.Read(_buffer.getData(), _buffer.AnzEntries(), true)) {
+            return _buffer;
+        }
+        // Update local references
+        reader = _reader;
+        buffer = _buffer;
+    }
+
     if (reader.getIsRLE() && CRLEReader::AlwaysSaveAsPlainText) {
         CRLEReader converter(path);
         converter.SaveAsPlainText();
     }
 
     return buffer;
+}
+
+
+CRLEWriter::CRLEWriter(const char *path) : Ctx(nullptr), Version(0x102), Key(0xA5), Magic("xtRLE"), Path(path), Sequence() {}
+CRLEWriter::~CRLEWriter() { Close(); }
+bool CRLEWriter::Close() {
+    if (Ctx == nullptr) {
+        return false;
+    }
+    return SDL_RWclose(Ctx) == 0;
+}
+
+SLONG CRLEWriter::GetNextSequence(const unsigned char *buffer, SLONG size, SLONG consumed) {
+    SLONG length = 0;
+    unsigned char previousChar = buffer[consumed];
+    Sequence[length++] = previousChar;
+
+    // chain of same characters - compress them
+    while (consumed + length < size && previousChar == buffer[consumed + length]) {
+        length += 1;
+        // length is limited to 127
+        if (length == 127) {
+            return length;
+        }
+        if (consumed + length < size && previousChar != buffer[consumed + length]) {
+            return length;
+        }
+    }
+
+    // create a sequence
+    while (consumed + length < size && previousChar != buffer[consumed + length]) {
+        if (consumed + length + 1 < size) {
+            // two same character - we shouldn't include them in the sequence
+            if (buffer[consumed + length] == buffer[consumed + length + 1]) {
+                break;
+            }
+        }
+        previousChar = buffer[consumed + length];
+        Sequence[length] = buffer[consumed + length];
+        length += 1;
+        // length is limited to 127
+        if (length == 127) {
+            break;
+        }
+    }
+
+    return length | 0x80;
+}
+
+void CRLEWriter::Write(const unsigned char *buffer, SLONG size) {
+    SLONG consumed = 0;
+    SLONG cursor = 0;
+    // This should theoratically be enough
+    unsigned char *output = new unsigned char[size * 4];
+
+    while (consumed < size) {
+        SLONG length = GetNextSequence(buffer, size, consumed);
+        // it's a sequence
+        if (length & 0x80) {
+            length &= 0x7FU;
+            output[cursor++] = length | 0x80;
+            for (SLONG j = 0; j < length; ++j) {
+                output[cursor++] = Sequence[j] ^ Key;
+            }
+        } else {
+            output[cursor++] = length;
+            output[cursor++] = Sequence[0];
+        }
+        consumed += length;
+    }
+
+    // Finally: Write header + content
+    TEAKFILE file(Path, TEAKFILE_WRITE);
+    file.Write(reinterpret_cast<const unsigned char *>(Magic), 6);
+    file.WriteTrap(Version);
+    // size
+    file.WriteTrap(consumed);
+    file.Write(output, cursor);
+    file.Close();
+}
+
+void CRLEWriter::UpdateFromPlainText() {
+    char rawPath[255];
+    GET_RAW_TEXT_PATH(Path, rawPath, 255);
+    if (DoesFileExist(rawPath) == 0) {
+        AT_Log("CRLEWriter: Unable to find file %s to update data file. Skipping.", rawPath);
+        return;
+    }
+    AT_Log("Saving as compressed text file to %s", Path);
+
+    // Read the buffer
+    CRLEReader reader(rawPath);
+    std::vector<char> buffer;
+    SLONG bufferSize = reader.GetSize();
+    buffer.resize(bufferSize);
+    reader.Buffer(buffer.data(), bufferSize);
+
+    Write(reinterpret_cast<const unsigned char *>(buffer.data()), bufferSize);
+    reader.Close();
 }

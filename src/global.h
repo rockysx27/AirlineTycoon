@@ -138,6 +138,7 @@ extern BOOL gRoomJustLeft; // TRUE, wenn Raum gerade verlassen wurde (wegen mess
 extern TEXTRES DialogTexte;   // Die Text-Ressourcen der Dialoge
 extern TEXTRES StandardTexte; // Allgemeine Texte
 extern TEXTRES ETexte;        // Die Einheiten
+extern TEXTRES ModdedTexte; // Allgemeine Texte
 
 //--------------------------------------------------------------------------------------------
 // einige Flags:

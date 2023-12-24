@@ -133,9 +133,10 @@ BOOL gRoomJustLeft; // TRUE, wenn Raum gerade verlassen wurde (wegen messagePump
 //--------------------------------------------------------------------------------------------
 // Text-Ressourcen:
 //--------------------------------------------------------------------------------------------
-TEXTRES DialogTexte;   // Die Text-Ressourcen der Dialoge
-TEXTRES StandardTexte; // Allgemeine Texte
-TEXTRES ETexte;        // Die Einheiten
+TEXTRES DialogTexte;    // Die Text-Ressourcen der Dialoge
+TEXTRES StandardTexte;  // Allgemeine Texte
+TEXTRES ModdedTexte;    // Modded Texts
+TEXTRES ETexte;         // Die Einheiten
 
 //--------------------------------------------------------------------------------------------
 // einige Flags:
