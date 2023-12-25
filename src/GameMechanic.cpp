@@ -146,85 +146,93 @@ SLONG GameMechanic::setSaboteurTarget(PLAYER &qPlayer, SLONG target) {
 
 GameMechanic::CheckSabotage GameMechanic::checkPrerequisitesForSaboteurJob(PLAYER &qPlayer, SLONG type, SLONG number) {
     if (checkSaboteurBusy(qPlayer)) {
-        return {false, 0};
+        return {CheckSabotageResult::DeniedInvalidParam, 0};
     }
 
     auto victimID = qPlayer.ArabOpferSelection;
     if (type == 0) {
         if (number < 1 || number >= 6) {
             hprintf("GameMechanic::checkPrerequisitesForSaboteurJob: Invalid job number.");
-            return {false, 0};
+            return {CheckSabotageResult::DeniedInvalidParam, 0};
         }
+
+        /* check security */
         if (number == 1 && ((Sim.Players.Players[victimID].SecurityFlags & (1 << 6)) != 0U)) {
-            return {false, 2096, Sim.Players.Players[victimID].AirlineX};
+            return {CheckSabotageResult::DeniedSecurity, 2096, Sim.Players.Players[victimID].AirlineX};
         } else if (number == 2 && ((Sim.Players.Players[victimID].SecurityFlags & (1 << 6)) != 0U)) {
-            return {false, 2096, Sim.Players.Players[victimID].AirlineX};
+            return {CheckSabotageResult::DeniedSecurity, 2096, Sim.Players.Players[victimID].AirlineX};
         } else if (number == 3 && ((Sim.Players.Players[victimID].SecurityFlags & (1 << 7)) != 0U)) {
-            return {false, 2097, Sim.Players.Players[victimID].AirlineX};
+            return {CheckSabotageResult::DeniedSecurity, 2097, Sim.Players.Players[victimID].AirlineX};
         } else if (number == 4 && ((Sim.Players.Players[victimID].SecurityFlags & (1 << 7)) != 0U)) {
-            return {false, 2097, Sim.Players.Players[victimID].AirlineX};
+            return {CheckSabotageResult::DeniedSecurity, 2097, Sim.Players.Players[victimID].AirlineX};
         } else if (number == 5 && ((Sim.Players.Players[victimID].SecurityFlags & (1 << 6)) != 0U)) {
-            return {false, 2096, Sim.Players.Players[victimID].AirlineX};
+            return {CheckSabotageResult::DeniedSecurity, 2096, Sim.Players.Players[victimID].AirlineX};
         } else if (qPlayer.Money - SabotagePrice[number - 1] < DEBT_LIMIT) {
-            return {false, 6000};
-        } else {
-            qPlayer.ArabModeSelection = {type, number};
-            return {true, 1060};
+            return {CheckSabotageResult::DeniedNotEnoughMoney, 6000};
         }
-    } else if (type == 1) {
+
+        qPlayer.ArabModeSelection = {type, number};
+        return {CheckSabotageResult::Ok, 1060};
+    }
+    if (type == 1) {
         if (number < 1 || number >= 5) {
             hprintf("GameMechanic::checkPrerequisitesForSaboteurJob: Invalid job number.");
-            return {false, 0};
+            return {CheckSabotageResult::DeniedInvalidParam, 0};
         }
+
+        /* check security */
         if (number == 1 && ((Sim.Players.Players[victimID].SecurityFlags & (1 << 0)) != 0U)) {
-            return {false, 2090, Sim.Players.Players[victimID].AirlineX};
+            return {CheckSabotageResult::DeniedSecurity, 2090, Sim.Players.Players[victimID].AirlineX};
         } else if (number == 2 && ((Sim.Players.Players[victimID].SecurityFlags & (1 << 1)) != 0U)) {
-            return {false, 2091, Sim.Players.Players[victimID].AirlineX};
+            return {CheckSabotageResult::DeniedSecurity, 2091, Sim.Players.Players[victimID].AirlineX};
         } else if (number == 3 && ((Sim.Players.Players[victimID].SecurityFlags & (1 << 0)) != 0U)) {
-            return {false, 2090, Sim.Players.Players[victimID].AirlineX};
+            return {CheckSabotageResult::DeniedSecurity, 2090, Sim.Players.Players[victimID].AirlineX};
         } else if (number == 4 && ((Sim.Players.Players[victimID].SecurityFlags & (1 << 2)) != 0U)) {
-            return {false, 2092, Sim.Players.Players[victimID].AirlineX};
+            return {CheckSabotageResult::DeniedSecurity, 2092, Sim.Players.Players[victimID].AirlineX};
         } else if (qPlayer.Money - SabotagePrice2[number - 1] < DEBT_LIMIT) {
-            return {false, 6000};
+            return {CheckSabotageResult::DeniedNotEnoughMoney, 6000};
         } else if (number == 2 && (Sim.Players.Players[victimID].HasItem(ITEM_LAPTOP) == 0)) {
-            return {false, 1300};
-        } else {
-            qPlayer.ArabModeSelection = {type, number};
-            return {true, 1160};
+            return {CheckSabotageResult::DeniedNoLaptop, 1300};
         }
-    } else if (type == 2) {
+
+        qPlayer.ArabModeSelection = {type, number};
+        return {CheckSabotageResult::Ok, 1160};
+    }
+    if (type == 2) {
         if (number < 1 || number >= 7) {
             hprintf("GameMechanic::checkPrerequisitesForSaboteurJob: Invalid job number.");
-            return {false, 0};
+            return {CheckSabotageResult::DeniedInvalidParam, 0};
         }
+
+        /* check security */
         if (number == 1 && ((Sim.Players.Players[victimID].SecurityFlags & (1 << 8)) != 0U)) {
-            return {false, 2098, Sim.Players.Players[victimID].AirlineX};
+            return {CheckSabotageResult::DeniedSecurity, 2098, Sim.Players.Players[victimID].AirlineX};
         } else if (number == 2 && ((Sim.Players.Players[victimID].SecurityFlags & (1 << 5)) != 0U)) {
-            return {false, 2095, Sim.Players.Players[victimID].AirlineX};
+            return {CheckSabotageResult::DeniedSecurity, 2095, Sim.Players.Players[victimID].AirlineX};
         } else if (number == 3 && ((Sim.Players.Players[victimID].SecurityFlags & (1 << 5)) != 0U)) {
-            return {false, 2095, Sim.Players.Players[victimID].AirlineX};
+            return {CheckSabotageResult::DeniedSecurity, 2095, Sim.Players.Players[victimID].AirlineX};
         } else if (number == 4 && ((Sim.Players.Players[victimID].SecurityFlags & (1 << 3)) != 0U)) {
-            return {false, 2093, Sim.Players.Players[victimID].AirlineX};
+            return {CheckSabotageResult::DeniedSecurity, 2093, Sim.Players.Players[victimID].AirlineX};
         } else if (number == 5 && ((Sim.Players.Players[victimID].SecurityFlags & (1 << 8)) != 0U)) {
-            return {false, 2098, Sim.Players.Players[victimID].AirlineX};
+            return {CheckSabotageResult::DeniedSecurity, 2098, Sim.Players.Players[victimID].AirlineX};
         } else if (number == 6 && ((Sim.Players.Players[victimID].SecurityFlags & (1 << 4)) != 0U)) {
-            return {false, 2094, Sim.Players.Players[victimID].AirlineX};
+            return {CheckSabotageResult::DeniedSecurity, 2094, Sim.Players.Players[victimID].AirlineX};
         } else if (qPlayer.Money - SabotagePrice3[number - 1] < DEBT_LIMIT) {
-            return {false, 6000};
-        } else {
-            qPlayer.ArabModeSelection = {type, number};
-            return {true, 1160};
+            return {CheckSabotageResult::DeniedNotEnoughMoney, 6000};
         }
+
+        qPlayer.ArabModeSelection = {type, number};
+        return {CheckSabotageResult::Ok, 1160};
     }
     hprintf("GameMechanic::checkPrerequisitesForSaboteurJob: Invalid type.");
-    return {false, 0};
+    return {CheckSabotageResult::DeniedInvalidParam, 0};
 }
 
 bool GameMechanic::activateSaboteurJob(PLAYER &qPlayer) {
     SLONG type = qPlayer.ArabModeSelection.first;
     SLONG number = qPlayer.ArabModeSelection.second;
-    auto res = checkPrerequisitesForSaboteurJob(qPlayer, type, number);
-    if (!res.OK) {
+    auto ret = checkPrerequisitesForSaboteurJob(qPlayer, type, number);
+    if (ret.result != CheckSabotageResult::Ok) {
         return false;
     }
 
@@ -232,6 +240,10 @@ bool GameMechanic::activateSaboteurJob(PLAYER &qPlayer) {
     if (type == 0) {
         if (number < 1 || number >= 6) {
             hprintf("GameMechanic::activateSaboteurJob: Invalid job number.");
+            return false;
+        }
+        if (qPlayer.ArabPlaneSelection == -1) {
+            hprintf("GameMechanic::activateSaboteurJob: Need plane or route ID for this job");
             return false;
         }
 
@@ -255,6 +267,7 @@ bool GameMechanic::activateSaboteurJob(PLAYER &qPlayer) {
         qPlayer.ArabMode = number;
         qPlayer.ArabModeSelection = {};
 
+        qPlayer.ArabActive = FALSE;
         qPlayer.ArabPlane = qPlayer.ArabPlaneSelection;
         qPlayer.ArabPlaneSelection = -1;
 
@@ -265,8 +278,6 @@ bool GameMechanic::activateSaboteurJob(PLAYER &qPlayer) {
         SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -SabotagePrice[qPlayer.ArabMode - 1], -1);
 
         qPlayer.NetSynchronizeSabotage();
-
-        return true;
     } else if (type == 1) {
         if (number < 1 || number >= 5) {
             hprintf("GameMechanic::activateSaboteurJob: Invalid job number.");
@@ -291,6 +302,7 @@ bool GameMechanic::activateSaboteurJob(PLAYER &qPlayer) {
         qPlayer.ArabMode2 = number;
         qPlayer.ArabModeSelection = {};
 
+        qPlayer.ArabActive = FALSE;
         qPlayer.ArabPlane = qPlayer.ArabPlaneSelection;
         qPlayer.ArabPlaneSelection = -1;
 
@@ -301,11 +313,13 @@ bool GameMechanic::activateSaboteurJob(PLAYER &qPlayer) {
         SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -SabotagePrice2[qPlayer.ArabMode2 - 1], -1);
 
         qPlayer.NetSynchronizeSabotage();
-
-        return true;
     } else if (type == 2) {
         if (number < 1 || number >= 5) {
             hprintf("GameMechanic::activateSaboteurJob: Invalid job number.");
+            return false;
+        }
+        if (number >= 5 && qPlayer.ArabPlaneSelection == -1) {
+            hprintf("GameMechanic::activateSaboteurJob: Need plane or route ID for this job");
             return false;
         }
 
@@ -327,6 +341,7 @@ bool GameMechanic::activateSaboteurJob(PLAYER &qPlayer) {
         qPlayer.ArabMode3 = number;
         qPlayer.ArabModeSelection = {};
 
+        qPlayer.ArabActive = FALSE;
         qPlayer.ArabPlane = qPlayer.ArabPlaneSelection;
         qPlayer.ArabPlaneSelection = -1;
 
@@ -337,11 +352,11 @@ bool GameMechanic::activateSaboteurJob(PLAYER &qPlayer) {
         SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -SabotagePrice3[qPlayer.ArabMode3 - 1], -1);
 
         qPlayer.NetSynchronizeSabotage();
-
-        return true;
+    } else {
+        hprintf("GameMechanic::activateSaboteurJob: Invalid type.");
+        return false;
     }
-    hprintf("GameMechanic::activateSaboteurJob: Invalid type.");
-    return false;
+    return true;
 }
 
 void GameMechanic::paySaboteurFine(SLONG player, SLONG opfer) {
