@@ -27,9 +27,10 @@ class GameMechanic {
     /* Sabotage */
     static SLONG setSaboteurTarget(PLAYER &qPlayer, SLONG target);
     static bool checkSaboteurBusy(PLAYER &qPlayer) { return (qPlayer.ArabMode != 0) || (qPlayer.ArabMode2 != 0) || (qPlayer.ArabMode3 != 0); }
+    enum class CheckSabotageResult { Ok, DeniedInvalidParam, DeniedSecurity, DeniedNotEnoughMoney, DeniedNoLaptop };
     struct CheckSabotage {
-        bool OK;
-        int dialogID;
+        CheckSabotageResult result{CheckSabotageResult::DeniedInvalidParam};
+        int dialogID{};
         CString dialogParam{};
     };
     static CheckSabotage checkPrerequisitesForSaboteurJob(PLAYER &qPlayer, SLONG type, SLONG number);

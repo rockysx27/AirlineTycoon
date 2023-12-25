@@ -351,11 +351,11 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
             case 1054:
             case 1055: {
                 SLONG number = (id - 1050);
-                auto res = GameMechanic::checkPrerequisitesForSaboteurJob(qPlayer, 0, number);
-                if (res.dialogParam.empty()) {
-                    MakeSayWindow(0, TOKEN_SABOTAGE, res.dialogID, pFontPartner);
+                auto ret = GameMechanic::checkPrerequisitesForSaboteurJob(qPlayer, 0, number);
+                if (ret.dialogParam.empty()) {
+                    MakeSayWindow(0, TOKEN_SABOTAGE, ret.dialogID, pFontPartner);
                 } else {
-                    MakeSayWindow(0, TOKEN_SABOTAGE, res.dialogID, pFontPartner, (LPCTSTR)res.dialogParam);
+                    MakeSayWindow(0, TOKEN_SABOTAGE, ret.dialogID, pFontPartner, (LPCTSTR)ret.dialogParam);
                 }
                 break;
             }
@@ -376,13 +376,13 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
             case 1253:
             case 1254: {
                 SLONG number = (id - 1250);
-                auto res = GameMechanic::checkPrerequisitesForSaboteurJob(qPlayer, 1, number);
-                if (res.dialogParam.empty()) {
-                    MakeSayWindow(0, TOKEN_SABOTAGE, res.dialogID, pFontPartner);
+                auto ret = GameMechanic::checkPrerequisitesForSaboteurJob(qPlayer, 1, number);
+                if (ret.dialogParam.empty()) {
+                    MakeSayWindow(0, TOKEN_SABOTAGE, ret.dialogID, pFontPartner);
                 } else {
-                    MakeSayWindow(0, TOKEN_SABOTAGE, res.dialogID, pFontPartner, (LPCTSTR)res.dialogParam);
+                    MakeSayWindow(0, TOKEN_SABOTAGE, ret.dialogID, pFontPartner, (LPCTSTR)ret.dialogParam);
                 }
-                if (res.OK) {
+                if (ret.result == GameMechanic::CheckSabotageResult::Ok) {
                     GameMechanic::activateSaboteurJob(qPlayer);
                 }
                 break;
@@ -395,13 +395,13 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
             case 1085:
             case 1086: {
                 SLONG number = (id - 1080);
-                auto res = GameMechanic::checkPrerequisitesForSaboteurJob(qPlayer, 2, number);
-                if (res.dialogParam.empty()) {
-                    MakeSayWindow(0, TOKEN_SABOTAGE, res.dialogID, pFontPartner);
+                auto ret = GameMechanic::checkPrerequisitesForSaboteurJob(qPlayer, 2, number);
+                if (ret.dialogParam.empty()) {
+                    MakeSayWindow(0, TOKEN_SABOTAGE, ret.dialogID, pFontPartner);
                 } else {
-                    MakeSayWindow(0, TOKEN_SABOTAGE, res.dialogID, pFontPartner, (LPCTSTR)res.dialogParam);
+                    MakeSayWindow(0, TOKEN_SABOTAGE, ret.dialogID, pFontPartner, (LPCTSTR)ret.dialogParam);
                 }
-                if (res.OK) {
+                if (ret.result == GameMechanic::CheckSabotageResult::Ok) {
                     if (id == 1085) {
                         MenuDialogReEntryB = 1090;
                         MenuStart(MENU_SABOTAGEPLANE);

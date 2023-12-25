@@ -4598,193 +4598,89 @@ void PLAYER::RobotExecuteAction() {
                 dislike != -1 && dislike != PlayerNum &&
                 (ArabHints < 80 || (ArabHints < 90 && Credit < 1000000 && Money > 3000000 && RobotUse(ROBOT_USE_SABO_AFFORD_FINE) && (Sim.Date & 3) == 0)) &&
                 (Sim.Players.Players[dislike].Owner == 1 || RobotUse(ROBOT_USE_MUCH_SABOTAGE))) {
+
                 SLONG SecurityAnnoiance = 0;
+                SLONG targetMode = 0;
+                GameMechanic::CheckSabotage ret = {};
 
                 for (SLONG pass = 1; pass <= 2 + 3 * static_cast<SLONG>(RobotUse(ROBOT_USE_EXTREME_SABOTAGE)); pass++) {
                     switch (Sim.GetHour() % 3) {
                     case 0:
                         if (Sim.Players.Players[dislike].Planes.GetNumUsed() > 0) {
-                            ArabOpfer = dislike;
-                            ArabMode = min(4, ArabTrust);
-                            if (pass > 2 && ArabMode > 0) {
-                                ArabMode = LocalRandom.Rand(ArabMode);
+                            targetMode = min(4, ArabTrust);
+                            if (pass > 2 && targetMode > 0) {
+                                targetMode = LocalRandom.Rand(targetMode);
                             }
 
                             if (RobotUse(ROBOT_USE_MILDER_SABOTAGE) && ArabTrust >= 2 && LocalRandom.Rand(3) != 0) {
-                                ArabMode = min(ArabMode, 2);
+                                targetMode = min(targetMode, 2);
                             }
                             if (RobotUse(ROBOT_USE_MILD_SABOTAGE) && ArabTrust >= 3 && LocalRandom.Rand(3) != 0) {
-                                ArabMode = min(ArabMode, 3);
+                                targetMode = min(targetMode, 3);
                             }
 
-                            ArabActive = FALSE;
-                            ArabPlane = Sim.Players.Players[dislike].Planes.GetRandomUsedIndex(&LocalRandom);
+                            ArabPlaneSelection = Sim.Players.Players[dislike].Planes.GetRandomUsedIndex(&LocalRandom);
+                            ret = GameMechanic::checkPrerequisitesForSaboteurJob(*this, 0, targetMode);
+                            if (ret.result == GameMechanic::CheckSabotageResult::Ok) {
+                                GameMechanic::activateSaboteurJob(*this);
+                            } else if (ret.result == GameMechanic::CheckSabotageResult::DeniedSecurity) {
+                                SecurityAnnoiance++;
+                            }
                         }
                         break;
 
                     case 1:
-                        ArabOpfer2 = dislike;
-                        ArabMode2 = min(4, ArabTrust);
-                        if (pass > 2 && ArabMode2 > 0) {
-                            ArabMode2 = LocalRandom.Rand(ArabMode2);
+                        targetMode = min(4, ArabTrust);
+                        if (pass > 2 && targetMode > 0) {
+                            targetMode = LocalRandom.Rand(targetMode);
                         }
 
                         if (RobotUse(ROBOT_USE_MILDER_SABOTAGE) && LocalRandom.Rand(3) != 0) {
-                            ArabMode2 = 1;
+                            targetMode = 1;
                         }
                         if (RobotUse(ROBOT_USE_MILD_SABOTAGE) && ArabTrust >= 3 && LocalRandom.Rand(3) != 0) {
-                            ArabMode2 = min(ArabMode2, 3);
+                            targetMode = min(targetMode, 3);
                         }
-                        if (ArabMode2 == 1 && ArabTrust > ArabMode2 && rand() % 2 == 0) {
-                            ArabMode2++;
+                        if (targetMode == 1 && ArabTrust > targetMode && rand() % 2 == 0) {
+                            targetMode++;
                         }
-                        if (ArabMode2 == 2 && (Sim.Players.Players[ArabOpfer2].HasItem(ITEM_LAPTOP) == 0)) {
-                            ArabMode2--;
+                        if (targetMode == 2 && (Sim.Players.Players[ArabOpfer2].HasItem(ITEM_LAPTOP) == 0)) {
+                            targetMode--;
+                        }
+
+                        ret = GameMechanic::checkPrerequisitesForSaboteurJob(*this, 1, targetMode);
+                        if (ret.result == GameMechanic::CheckSabotageResult::Ok) {
+                            GameMechanic::activateSaboteurJob(*this);
+                        } else if (ret.result == GameMechanic::CheckSabotageResult::DeniedSecurity) {
+                            SecurityAnnoiance++;
                         }
                         break;
 
                     case 2:
                         if (Sim.Players.Players[dislike].Planes.GetNumUsed() > 0) {
-                            ArabOpfer3 = dislike;
-                            ArabMode3 = min(5, ArabTrust);
-                            if (pass > 2 && ArabMode3 > 0) {
-                                ArabMode3 = LocalRandom.Rand(ArabMode3);
+                            targetMode = min(5, ArabTrust);
+                            if (pass > 2 && targetMode > 0) {
+                                targetMode = LocalRandom.Rand(targetMode);
                             }
 
                             if (RobotUse(ROBOT_USE_MILDER_SABOTAGE) && LocalRandom.Rand(3) != 0) {
-                                ArabMode3 = 1;
+                                targetMode = 1;
                             }
-                            if (ArabMode3 == 5) {
-                                ArabPlane = Sim.Players.Players[dislike].Planes.GetRandomUsedIndex(&LocalRandom);
+
+                            if (targetMode == 5) {
+                                ArabPlaneSelection = Sim.Players.Players[dislike].Planes.GetRandomUsedIndex(&LocalRandom);
+                            }
+                            ret = GameMechanic::checkPrerequisitesForSaboteurJob(*this, 2, targetMode);
+                            if (ret.result == GameMechanic::CheckSabotageResult::Ok) {
+                                GameMechanic::activateSaboteurJob(*this);
+                            } else if (ret.result == GameMechanic::CheckSabotageResult::DeniedSecurity) {
+                                SecurityAnnoiance++;
                             }
                         }
                         break;
                     default:
                         hprintf("Player.cpp: Default case should not be reached.");
                         DebugBreak();
-                    }
-
-                    if (ArabMode != 0 && Money - SabotagePrice[ArabMode] < DEBT_LIMIT) {
-                        ArabMode = 0;
-                    }
-                    if (ArabMode2 != 0 && Money - SabotagePrice2[ArabMode2] < DEBT_LIMIT) {
-                        ArabMode2 = 0;
-                    }
-                    if (ArabMode3 != 0 && Money - SabotagePrice3[ArabMode3] < DEBT_LIMIT) {
-                        ArabMode3 = 0;
-                    }
-
-                    // Wegen Security-Office:
-                    if (ArabMode == 1 && ((Sim.Players.Players[ArabOpfer].SecurityFlags & (1 << 6)) != 0U)) {
-                        ArabMode = 0;
-                        SecurityAnnoiance++;
-                    }
-                    if (ArabMode == 2 && ((Sim.Players.Players[ArabOpfer].SecurityFlags & (1 << 6)) != 0U)) {
-                        ArabMode = 0;
-                        SecurityAnnoiance++;
-                    }
-                    if (ArabMode == 3 && ((Sim.Players.Players[ArabOpfer].SecurityFlags & (1 << 7)) != 0U)) {
-                        ArabMode = 0;
-                        SecurityAnnoiance++;
-                    }
-                    if (ArabMode == 4 && ((Sim.Players.Players[ArabOpfer].SecurityFlags & (1 << 7)) != 0U)) {
-                        ArabMode = 0;
-                        SecurityAnnoiance++;
-                    }
-                    if (ArabMode == 5 && ((Sim.Players.Players[ArabOpfer].SecurityFlags & (1 << 6)) != 0U)) {
-                        ArabMode = 0;
-                        SecurityAnnoiance++;
-                    }
-
-                    if (ArabMode2 == 1 && ((Sim.Players.Players[ArabOpfer2].SecurityFlags & (1 << 0)) != 0U)) {
-                        ArabMode2 = 0;
-                        SecurityAnnoiance++;
-                    }
-                    if (ArabMode2 == 2 && ((Sim.Players.Players[ArabOpfer2].SecurityFlags & (1 << 1)) != 0U)) {
-                        ArabMode2 = 0;
-                        SecurityAnnoiance++;
-                    }
-                    if (ArabMode2 == 3 && ((Sim.Players.Players[ArabOpfer2].SecurityFlags & (1 << 0)) != 0U)) {
-                        ArabMode2 = 0;
-                        SecurityAnnoiance++;
-                    }
-                    if (ArabMode2 == 4 && ((Sim.Players.Players[ArabOpfer2].SecurityFlags & (1 << 2)) != 0U)) {
-                        ArabMode2 = 0;
-                        SecurityAnnoiance++;
-                    }
-
-                    if (ArabMode3 == 1 && ((Sim.Players.Players[ArabOpfer3].SecurityFlags & (1 << 8)) != 0U)) {
-                        ArabMode3 = 0;
-                        SecurityAnnoiance++;
-                    }
-                    if (ArabMode3 == 2 && ((Sim.Players.Players[ArabOpfer3].SecurityFlags & (1 << 5)) != 0U)) {
-                        ArabMode3 = 0;
-                        SecurityAnnoiance++;
-                    }
-                    if (ArabMode3 == 3 && ((Sim.Players.Players[ArabOpfer3].SecurityFlags & (1 << 5)) != 0U)) {
-                        ArabMode3 = 0;
-                        SecurityAnnoiance++;
-                    }
-                    if (ArabMode3 == 4 && ((Sim.Players.Players[ArabOpfer3].SecurityFlags & (1 << 3)) != 0U)) {
-                        ArabMode3 = 0;
-                        SecurityAnnoiance++;
-                    }
-                    if (ArabMode3 == 5 && ((Sim.Players.Players[ArabOpfer3].SecurityFlags & (1 << 8)) != 0U)) {
-                        ArabMode3 = 0;
-                        SecurityAnnoiance++;
-                    }
-                    if (ArabMode3 == 6 && ((Sim.Players.Players[ArabOpfer3].SecurityFlags & (1 << 4)) != 0U)) {
-                        ArabMode3 = 0;
-                        SecurityAnnoiance++;
-                    }
-
-                    // Wegen Security-Office II:
-                    if (ArabMode == 1) {
-                        Sim.Players.Players[ArabOpfer].SecurityNeeded |= (1 << 6);
-                    }
-                    if (ArabMode == 2) {
-                        Sim.Players.Players[ArabOpfer].SecurityNeeded |= (1 << 6);
-                    }
-                    if (ArabMode == 3) {
-                        Sim.Players.Players[ArabOpfer].SecurityNeeded |= (1 << 7);
-                    }
-                    if (ArabMode == 4) {
-                        Sim.Players.Players[ArabOpfer].SecurityNeeded |= (1 << 7);
-                    }
-                    if (ArabMode == 5) {
-                        Sim.Players.Players[ArabOpfer].SecurityNeeded |= (1 << 6);
-                    }
-
-                    if (ArabMode2 == 1) {
-                        Sim.Players.Players[ArabOpfer2].SecurityNeeded |= (1 << 0);
-                    }
-                    if (ArabMode2 == 2) {
-                        Sim.Players.Players[ArabOpfer2].SecurityNeeded |= (1 << 1);
-                    }
-                    if (ArabMode2 == 3) {
-                        Sim.Players.Players[ArabOpfer2].SecurityNeeded |= (1 << 0);
-                    }
-                    if (ArabMode2 == 4) {
-                        Sim.Players.Players[ArabOpfer2].SecurityNeeded |= (1 << 2);
-                    }
-
-                    if (ArabMode3 == 1) {
-                        Sim.Players.Players[ArabOpfer3].SecurityNeeded |= (1 << 8);
-                    }
-                    if (ArabMode3 == 2) {
-                        Sim.Players.Players[ArabOpfer3].SecurityNeeded |= (1 << 5);
-                    }
-                    if (ArabMode3 == 3) {
-                        Sim.Players.Players[ArabOpfer3].SecurityNeeded |= (1 << 5);
-                    }
-                    if (ArabMode3 == 4) {
-                        Sim.Players.Players[ArabOpfer3].SecurityNeeded |= (1 << 3);
-                    }
-                    if (ArabMode3 == 5) {
-                        Sim.Players.Players[ArabOpfer3].SecurityNeeded |= (1 << 8);
-                    }
-                    if (ArabMode3 == 6) {
-                        Sim.Players.Players[ArabOpfer3].SecurityNeeded |= (1 << 4);
                     }
 
                     if ((ArabMode != 0) || (ArabMode2 != 0) || (ArabMode3 != 0)) {
@@ -4801,25 +4697,6 @@ void PLAYER::RobotExecuteAction() {
                         SIM::SendSimpleMessage(ATNET_TAKETHING, 0, ITEM_ZANGE);
                         RobotActions[1].ActionId = ACTION_VISITSECURITY2;
                     }
-                }
-
-                // Kosten verbuchen
-                SLONG mode = 0;
-                SLONG preis = 0;
-                if (ArabMode != 0) {
-                    mode = ArabMode;
-                    preis = SabotagePrice[mode - 1];
-                } else if (ArabMode2 != 0) {
-                    mode = ArabMode2;
-                    preis = SabotagePrice2[mode - 1];
-                } else if (ArabMode3 != 0) {
-                    mode = ArabMode3;
-                    preis = SabotagePrice3[mode - 1];
-                }
-                if (mode != 0) {
-                    ChangeMoney(-preis, 2080, "");
-                    DoBodyguardRabatt(preis);
-                    ArabTrust = min(6, mode + 1);
                 }
 
                 WorkCountdown = 20 * 10;
