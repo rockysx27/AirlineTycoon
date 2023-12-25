@@ -4317,8 +4317,7 @@ void CStdRaum::MenuStart(SLONG MenuType, SLONG MenuPar1, SLONG MenuPar2, SLONG M
     case MENU_AUSLANDSAUFTRAG:
         Sim.NetRefill(4, MenuPar1);
         Sim.NetRefill(5, MenuPar1);
-        AuslandsAuftraege[MenuPar1].RefillForAusland(MenuPar1);
-        AuslandsFrachten[MenuPar1].RefillForAusland(MenuPar1);
+        GameMechanic::refillFlightJobs(MenuPar1);
         pGfxMain->LoadLib(const_cast<char *>((LPCTSTR)FullFilename("listauft.gli", GliPath)), &pMenuLib1, L_LOCMEM);
         MenuBms.ReSize(pMenuLib1, "BLOCK LEFT RIGHT");
         MenuBms2.ReSize(5);
@@ -6392,7 +6391,8 @@ void CStdRaum::MenuLeftClick(XY Pos) {
                 return;
             }
         } else if (MouseClickArea == -101 && MouseClickPar2 >= 0 && MouseClickPar2 <= 5) {
-            GameMechanic::takeFlightJob(qPlayer, MenuPar1, MouseClickPar2);
+            SLONG outId = -1;
+            GameMechanic::takeFlightJob(qPlayer, MenuPar1, MouseClickPar2, outId);
 
             // Blöcke refeshen:
             if (qPlayer.GetRoom() == ROOM_LAPTOP) {
@@ -6416,7 +6416,8 @@ void CStdRaum::MenuLeftClick(XY Pos) {
             MenuRepaint();
 
         } else if (MouseClickArea == -101 && MouseClickPar2 >= 7 && MouseClickPar2 <= 7 + 5) {
-            GameMechanic::takeFreightJob(qPlayer, MenuPar1, MouseClickPar2 - 7);
+            SLONG outId = -1;
+            GameMechanic::takeFreightJob(qPlayer, MenuPar1, MouseClickPar2 - 7, outId);
 
             // Blöcke refeshen:
             if (qPlayer.GetRoom() == ROOM_LAPTOP) {

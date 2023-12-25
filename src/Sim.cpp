@@ -1666,8 +1666,6 @@ void SIM::DoTimeStep() {
         }
 
         if (Minute < OldMinute) {
-            SLONG c = 0;
-
             // Sabotage:
             GameMechanic::executeSabotage();
         }
