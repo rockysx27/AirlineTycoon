@@ -92,4 +92,5 @@ class GameMechanic {
 
     /* Execution routines */
     static void executeAirlineOvertake();
+    static void executeSabotage();
 };

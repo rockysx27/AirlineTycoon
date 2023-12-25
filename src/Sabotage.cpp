@@ -181,14 +181,14 @@ void CSabotage::OnPaint() {
             NewTip = (gMousePosition.y - (MenuPos.y + 25)) / 13 + MenuPage;
 
             if (NewTip >= 0 && NewTip - MenuPage < 13 && NewTip < MenuDataTable.LineIndex.AnzEntries() &&
-                (Sim.Players.Players[qPlayer.ArabOpfer].Planes.IsInAlbum(MenuDataTable.LineIndex[NewTip]) != 0)) {
+                (Sim.Players.Players[qPlayer.ArabOpferSelection].Planes.IsInAlbum(MenuDataTable.LineIndex[NewTip]) != 0)) {
                 if (NewTip != CurrentTip) {
                     MenuRepaint();
                     // DrawPlaneTipContents (OnscreenBitmap,
                     // &PlaneTypes[Sim.Players.Players[(SLONG)qPlayer.ArabOpfer].Planes[MenuDataTable.LineIndex[NewTip]].TypeId],
                     // &Sim.Players.Players[(SLONG)qPlayer.ArabOpfer].Planes[MenuDataTable.LineIndex[NewTip]],
-                    DrawPlaneTipContents(OnscreenBitmap, nullptr, &Sim.Players.Players[qPlayer.ArabOpfer].Planes[MenuDataTable.LineIndex[NewTip]], XY(6, 6),
-                                         XY(6, 28), &FontSmallBlack, &FontSmallBlack, FALSE, TRUE);
+                    DrawPlaneTipContents(OnscreenBitmap, nullptr, &Sim.Players.Players[qPlayer.ArabOpferSelection].Planes[MenuDataTable.LineIndex[NewTip]],
+                                         XY(6, 6), XY(6, 28), &FontSmallBlack, &FontSmallBlack, FALSE, TRUE);
                 }
 
                 if (MenuDataTable.ValueFlags[0 + NewTip * MenuDataTable.AnzColums] != 0U) {

@@ -1,5 +1,6 @@
 #include "StdAfx.h"
 #include "AtNet.h"
+#include "Sabotage.h"
 
 SLONG TankSize[4] = {100000, 1000000, 10000000, 100000000};
 SLONG TankPrice[4] = {100000, 800000, 7000000, 60000000};
@@ -1117,4 +1118,239 @@ void GameMechanic::executeAirlineOvertake() {
     Overtaken.UpdateStatistics();
 
     Sim.Overtake = 0;
+}
+
+void GameMechanic::executeSabotage() {
+    PLAYER &qLocalPlayer = Sim.Players.Players[Sim.localPlayer];
+
+    for (SLONG c = 0; c < Sim.Players.Players.AnzEntries(); c++) {
+        auto &qPlayer = Sim.Players.Players[c];
+        if (qPlayer.ArabMode == 0) {
+            continue;
+        }
+
+        PLAYER &qOpfer = Sim.Players.Players[qPlayer.ArabOpfer];
+
+        if (qOpfer.Planes.IsInAlbum(qPlayer.ArabPlane) == 0) {
+            qPlayer.ArabMode = 0; // Flugzeug gibt es nicht mehr
+            continue;
+        }
+
+        if (qPlayer.ArabActive == FALSE && qOpfer.Planes[qPlayer.ArabPlane].Ort >= 0) {
+            qPlayer.ArabActive = TRUE;
+        }
+
+        if (qPlayer.ArabActive != TRUE) {
+            continue;
+        }
+
+        BOOL ActNow = FALSE;
+
+        if (qPlayer.ArabMode != 3 && qOpfer.Planes[qPlayer.ArabPlane].Ort < 0) {
+            ActNow = TRUE;
+        }
+        if (qPlayer.ArabMode == 3 && qOpfer.Planes[qPlayer.ArabPlane].Ort >= 0) {
+            CPlane &qPlane = qOpfer.Planes[qPlayer.ArabPlane];
+            SLONG e = qPlane.Flugplan.NextStart;
+
+            if (e != -1 && qPlane.Flugplan.Flug[e].Startdate * 24 + qPlane.Flugplan.Flug[e].Startzeit == Sim.Date * 24 + Sim.GetHour()) {
+                ActNow = TRUE;
+            }
+        }
+
+        if (ActNow == FALSE) {
+            continue;
+        }
+
+        // Die Anschläge ausführen:
+        __int64 PictureId = 0;
+        CPlane &qPlane = qOpfer.Planes[qPlayer.ArabPlane];
+
+        qOpfer.Statistiken[STAT_UNFAELLE].AddAtPastDay(1);
+        qPlayer.Statistiken[STAT_SABOTIERT].AddAtPastDay(1);
+
+        if (qPlane.Flugplan.NextFlight == -1) {
+            continue;
+        }
+
+        CFlugplanEintrag &qFPE = qPlane.Flugplan.Flug[qPlane.Flugplan.NextFlight];
+
+        bool bFremdsabotage = false;
+        if (qPlayer.ArabMode < 0) {
+            qPlayer.ArabMode = -qPlayer.ArabMode;
+            bFremdsabotage = true;
+        }
+
+        switch (qPlayer.ArabMode) {
+        case 1:
+            if (!bFremdsabotage) {
+                qPlayer.ArabHints += 2;
+            }
+            qOpfer.Kurse[0] *= 0.95;
+            qOpfer.TrustedDividende -= 1;
+            qOpfer.Sympathie[c] -= 5;
+            if (qFPE.ObjectType == 1) {
+                qOpfer.RentRouten.RentRouten[Routen(qFPE.ObjectId)].Image = qOpfer.RentRouten.RentRouten[Routen(qFPE.ObjectId)].Image * 99 / 100;
+            }
+            if (qOpfer.TrustedDividende < 0) {
+                qOpfer.TrustedDividende = 0;
+            }
+            PictureId = GetIdFromString("SALZ");
+            break;
+
+        case 2:
+            if (!bFremdsabotage) {
+                qPlayer.ArabHints += 4;
+            }
+            qOpfer.ChangeMoney(-2000, 3500, "");
+            qOpfer.Kurse[0] *= 0.9;
+            qOpfer.TrustedDividende -= 2;
+            qOpfer.Sympathie[c] -= 15;
+            if (qOpfer.TrustedDividende < 0) {
+                qOpfer.TrustedDividende = 0;
+            }
+            qOpfer.Image -= 2;
+            if (qFPE.ObjectType == 1) {
+                qOpfer.RentRouten.RentRouten[Routen(qFPE.ObjectId)].Image = qOpfer.RentRouten.RentRouten[Routen(qFPE.ObjectId)].Image * 95 / 100;
+            }
+            PictureId = GetIdFromString("SKELETT");
+            break;
+
+        case 3: // Platter Reifen:
+        {
+            if (!bFremdsabotage) {
+                qPlayer.ArabHints += 10;
+            }
+            qOpfer.ChangeMoney(-8000, 3500, "");
+            qOpfer.Kurse[0] *= 0.85;
+            qOpfer.TrustedDividende -= 3;
+            qOpfer.Sympathie[c] -= 35;
+            if (qOpfer.TrustedDividende < 0) {
+                qOpfer.TrustedDividende = 0;
+            }
+            qOpfer.Image -= 3;
+            if (qFPE.ObjectType == 1) {
+                qOpfer.RentRouten.RentRouten[Routen(qFPE.ObjectId)].Image = qOpfer.RentRouten.RentRouten[Routen(qFPE.ObjectId)].Image * 90 / 100;
+            }
+
+            SLONG e = qPlane.Flugplan.NextStart;
+
+            qPlane.Flugplan.Flug[e].Startzeit++;
+            qPlane.Flugplan.UpdateNextFlight();
+            qPlane.Flugplan.UpdateNextStart();
+            if (!bFremdsabotage) {
+                qPlayer.Statistiken[STAT_VERSPAETUNG].AddAtPastDay(1);
+            }
+
+            if (qPlane.Flugplan.Flug[e].Startzeit == 24) {
+                qPlane.Flugplan.Flug[e].Startzeit = 0;
+                qPlane.Flugplan.Flug[e].Startdate++;
+            }
+            qPlane.CheckFlugplaene(qPlayer.ArabOpfer);
+            qOpfer.UpdateAuftragsUsage();
+            qOpfer.Messages.AddMessage(BERATERTYP_GIRL, bprintf(StandardTexte.GetS(TOKEN_ADVICE, 2304), (LPCTSTR)qPlane.Name));
+            PictureId = GetIdFromString("REIFEN");
+        } break;
+
+        case 4:
+            if (!bFremdsabotage) {
+                qPlayer.ArabHints += 20;
+            }
+            qOpfer.ChangeMoney(-40000, 3500, "");
+            qOpfer.Kurse[0] *= 0.75;
+            qOpfer.TrustedDividende -= 4;
+            qOpfer.Sympathie[c] -= 80;
+            if (qOpfer.TrustedDividende < 0) {
+                qOpfer.TrustedDividende = 0;
+            }
+            qOpfer.Image -= 8;
+            if (qFPE.ObjectType == 1) {
+                qOpfer.RentRouten.RentRouten[Routen(qFPE.ObjectId)].Image = qOpfer.RentRouten.RentRouten[Routen(qFPE.ObjectId)].Image * 50 / 100;
+            }
+            PictureId = GetIdFromString("FEUER");
+            break;
+
+        case 5:
+            if (!bFremdsabotage) {
+                qPlayer.ArabHints += 100;
+            }
+            qOpfer.ChangeMoney(-70000, 3500, "");
+            qOpfer.Kurse[0] *= 0.70;
+            qOpfer.TrustedDividende -= 5;
+            qOpfer.Sympathie[c] -= 200;
+            if (qOpfer.TrustedDividende < 0) {
+                qOpfer.TrustedDividende = 0;
+            }
+            PictureId = GetIdFromString("SUPERMAN");
+            break;
+        default:
+            hprintf("Sim.cpp: Default case should not be reached.");
+            DebugBreak();
+        }
+        if (qOpfer.Kurse[0] < 0) {
+            qOpfer.Kurse[0] = 0;
+        }
+        // log: hprintf ("Player[%li].Image now (sabo) = %li", (LPCTSTR)qPlayer.ArabOpfer, (LPCTSTR)qOpfer.Image);
+
+        // Für's Briefing vermerken:
+        Sim.SabotageActs.ReSize(Sim.SabotageActs.AnzEntries() + 1);
+        Sim.SabotageActs[Sim.SabotageActs.AnzEntries() - 1].Player = bFremdsabotage ? -2 : c;
+        Sim.SabotageActs[Sim.SabotageActs.AnzEntries() - 1].ArabMode = qPlayer.ArabMode;
+        Sim.SabotageActs[Sim.SabotageActs.AnzEntries() - 1].Opfer = qPlayer.ArabOpfer;
+
+        Sim.Headlines.AddOverride(0, bprintf(StandardTexte.GetS(TOKEN_MISC, 2000 + qPlayer.ArabMode), (LPCTSTR)qOpfer.AirlineX), PictureId,
+                                  static_cast<SLONG>(qPlayer.ArabOpfer == Sim.localPlayer) * 50 + qPlayer.ArabMode);
+        Limit(SLONG(-1000), qOpfer.Image, SLONG(1000));
+
+        // Araber meldet sich, oder Fax oder Brief sind da.
+        if (c == Sim.localPlayer && (qLocalPlayer.IsOkayToCallThisPlayer() != 0)) {
+            if (qLocalPlayer.GetRoom() == ROOM_SABOTAGE) {
+                (qLocalPlayer.LocationWin)->StartDialog(TALKER_SABOTAGE, MEDIUM_AIR, 2000);
+                bgWarp = FALSE;
+                if (CheatTestGame == 0) {
+                    qLocalPlayer.GameSpeed = 0;
+                }
+            } else {
+                gUniversalFx.Stop();
+                gUniversalFx.ReInit("phone.raw");
+                gUniversalFx.Play(DSBPLAY_NOSTOP, Sim.Options.OptionEffekte * 100 / 7);
+
+                bgWarp = FALSE;
+                if (CheatTestGame == 0) {
+                    qLocalPlayer.GameSpeed = 0;
+                }
+
+                delete qLocalPlayer.DialogWin;
+                qLocalPlayer.DialogWin = new CSabotage(TRUE, Sim.localPlayer);
+                (qLocalPlayer.LocationWin)->StartDialog(TALKER_SABOTAGE, MEDIUM_HANDY, 2000);
+                (qLocalPlayer.LocationWin)->PayingForCall = FALSE;
+            }
+        } else if (qPlayer.ArabOpfer == Sim.localPlayer) {
+            if (qOpfer.Owner == 0 && (qOpfer.IsOut == 0)) {
+                qOpfer.Letters.AddLetter(FALSE,
+                                         bprintf(StandardTexte.GetS(TOKEN_LETTER, 500 + qPlayer.ArabMode), (LPCTSTR)qOpfer.Planes[qPlayer.ArabPlane].Name), "",
+                                         "", qPlayer.ArabMode);
+            }
+
+            if (qLocalPlayer.LocationWin != nullptr) {
+                if (((qLocalPlayer.LocationWin)->IsDialogOpen() == 0) && ((qLocalPlayer.LocationWin)->MenuIsOpen() == 0) && (Sim.Options.OptionFax != 0) &&
+                    (Sim.CallItADay == 0)) {
+                    (qOpfer.LocationWin)->MenuStart(MENU_SABOTAGEFAX, qPlayer.ArabMode, qPlayer.ArabOpfer, qPlayer.ArabPlane);
+                    (qOpfer.LocationWin)->MenuSetZoomStuff(XY(320, 220), 0.17, FALSE);
+
+                    qOpfer.Messages.AddMessage(BERATERTYP_GIRL, StandardTexte.GetS(TOKEN_ADVICE, 2308));
+
+                    bgWarp = FALSE;
+                    if (CheatTestGame == 0) {
+                        qLocalPlayer.GameSpeed = 0;
+                    }
+                } else if (Sim.CallItADay == 0) {
+                    qOpfer.Messages.AddMessage(
+                        BERATERTYP_GIRL, bprintf(StandardTexte.GetS(TOKEN_ADVICE, 2301 + qPlayer.ArabMode), (LPCTSTR)qOpfer.Planes[qPlayer.ArabPlane].Name));
+                }
+            }
+        }
+
+        qPlayer.ArabMode = 0;
+    }
 }
