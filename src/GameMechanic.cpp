@@ -64,6 +64,10 @@ bool GameMechanic::buyKerosin(PLAYER &qPlayer, SLONG type, SLONG amount) {
         hprintf("GameMechanic::buyKerosin: Negative amount.");
         return false;
     }
+    if (qPlayer.TankInhalt + amount > qPlayer.Tank) {
+        hprintf("GameMechanic::buyKerosin: Amount too high.");
+        return false;
+    }
 
     auto transaction = calcKerosinPrice(qPlayer, type, amount);
     auto cost = transaction.Kosten - transaction.Rabatt;
@@ -795,7 +799,7 @@ bool GameMechanic::buyAdvertisement(PLAYER &qPlayer, SLONG adCampaignType, SLONG
     return true;
 }
 
-bool GameMechanic::takeFlightJob(PLAYER &qPlayer, SLONG par1, SLONG par2) {
+bool GameMechanic::takeFlightJob(PLAYER &qPlayer, SLONG par1, SLONG par2, SLONG &outObjectId) {
     auto &qAuftrag = AuslandsAuftraege[par1][par2];
     if (qAuftrag.Praemie <= 0) {
         return false;
@@ -804,7 +808,7 @@ bool GameMechanic::takeFlightJob(PLAYER &qPlayer, SLONG par1, SLONG par2) {
         qPlayer.Auftraege.ReSize(qPlayer.Auftraege.AnzEntries() + 10);
     }
 
-    qPlayer.Auftraege += qAuftrag;
+    outObjectId = (qPlayer.Auftraege += qAuftrag);
     qPlayer.NetUpdateOrder(qAuftrag);
     qPlayer.Statistiken[STAT_AUFTRAEGE].AddAtPastDay(1);
 
@@ -814,7 +818,7 @@ bool GameMechanic::takeFlightJob(PLAYER &qPlayer, SLONG par1, SLONG par2) {
     return true;
 }
 
-bool GameMechanic::takeFreightJob(PLAYER &qPlayer, SLONG par1, SLONG par2) {
+bool GameMechanic::takeFreightJob(PLAYER &qPlayer, SLONG par1, SLONG par2, SLONG &outObjectId) {
     auto &qFracht = AuslandsFrachten[par1][par2];
     if (qFracht.Praemie <= 0) {
         return false;
@@ -823,12 +827,19 @@ bool GameMechanic::takeFreightJob(PLAYER &qPlayer, SLONG par1, SLONG par2) {
         qPlayer.Frachten.ReSize(qPlayer.Frachten.AnzEntries() + 10);
     }
 
-    qPlayer.Frachten += qFracht;
+    outObjectId = (qPlayer.Frachten += qFracht);
     qPlayer.NetUpdateFreightOrder(qFracht);
     qPlayer.Statistiken[STAT_AUFTRAEGE].AddAtPastDay(1);
 
     qFracht.Praemie = 0;
     qPlayer.NetUpdateTook(5, par2, par1);
+
+    return true;
+}
+
+bool GameMechanic::refillFlightJobs(SLONG cityNum) {
+    AuslandsAuftraege[cityNum].RefillForAusland(cityNum);
+    AuslandsFrachten[cityNum].RefillForAusland(cityNum);
 
     return true;
 }

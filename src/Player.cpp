@@ -25,7 +25,7 @@ extern SLONG ReifenCosts[];
 extern SLONG ElektronikCosts[];
 extern SLONG SicherheitCosts[];
 
-//Öffnungszeiten:
+// Öffnungszeiten:
 extern SLONG timeDutyOpen;
 extern SLONG timeDutyClose;
 extern SLONG timeArabOpen;
@@ -1016,7 +1016,7 @@ SLONG PLAYER::GetMissionRating(bool bAnderer) {
         break;
 
     case DIFF_ADDON07: {
-        //Äußerung zu den Flugzeugen:
+        // Äußerung zu den Flugzeugen:
         SLONG d = 0;
         SLONG tmp = 0;
         SLONG anz = 0;
@@ -1050,7 +1050,7 @@ SLONG PLAYER::GetMissionRating(bool bAnderer) {
         break;
 
     case DIFF_ATFS02: {
-        //Äußerung zu den Flugzeugen:
+        // Äußerung zu den Flugzeugen:
         SLONG d = 0;
         SLONG anz = 0;
         for (d = anz = 0; d < Planes.AnzEntries(); d++) {
@@ -1683,9 +1683,8 @@ void PLAYER::NewDay() {
                         delta += Improvement * Planes[c].ptPreis / 110;
 
                         delta += SLONG((Planes[c].Zustand - OldZustand) * 10 * Planes[c].ptWartungsfaktor * (2100 - Planes[c].Baujahr) / 100 *
-                                (200 - Planes[c].Zustand) / 100);
+                                       (200 - Planes[c].Zustand) / 100);
                     }
-
 
                     if (delta < 0) {
                         delta = 0;
@@ -4115,8 +4114,7 @@ void PLAYER::RobotExecuteAction() {
                 CAuftraege &qAuftraege = AuslandsAuftraege[n];
                 CFrachten &qFrachten = AuslandsFrachten[n];
 
-                qAuftraege.RefillForAusland(n);
-                qFrachten.RefillForAusland(n);
+                GameMechanic::refillFlightJobs(n);
 
                 // Normale Aufträge:
                 for (c = 0; c < SLONG(Planes.AnzEntries()); c++) {
@@ -4159,19 +4157,10 @@ void PLAYER::RobotExecuteAction() {
 
                                             SLONG Cost = ((CalculateFlightCost(VonCity, qAuftraege[e].VonCity, 8000, 700, -1)) + 99) / 100 * 100;
                                             if (Cost <= qAuftraege[e].Praemie * 8 / 10) {
-                                                if (Auftraege.GetNumFree() < 2) {
-                                                    Auftraege.ReSize(Auftraege.AnzEntries() + 1);
-                                                }
-                                                SLONG ObjectId = (Auftraege += qAuftraege[e]);
-
-                                                if (Sim.Difficulty != DIFF_ADDON09 || NumOrderFlightsToday2 >= 5) {
-                                                    Statistiken[STAT_AUFTRAEGE].AddAtPastDay(1);
-                                                }
+                                                SLONG ObjectId;
+                                                GameMechanic::takeFlightJob(*this, n, e, ObjectId);
 
                                                 NumOrderFlightsToday2++;
-
-                                                qAuftraege[e].Praemie = 0;
-
                                                 if (Auftraege.IsInAlbum(ObjectId) == 0) {
                                                     hprintvar(__LINE__);
                                                     Auftraege[ObjectId];
@@ -4227,15 +4216,8 @@ void PLAYER::RobotExecuteAction() {
 
                                         SLONG Cost = ((CalculateFlightCost(VonCity, qAuftraege[e].VonCity, 8000, 700, -1)) + 99) / 100 * 100;
                                         if (Cost <= qAuftraege[e].Praemie) {
-                                            if (Auftraege.GetNumFree() < 2) {
-                                                Auftraege.ReSize(Auftraege.AnzEntries() + 1);
-                                            }
-                                            SLONG ObjectId = (Auftraege += qAuftraege[e]);
-                                            qAuftraege[e].Praemie = 0;
-
-                                            if (Sim.Difficulty != DIFF_ADDON09 || NumOrderFlightsToday2 >= 5) {
-                                                Statistiken[STAT_AUFTRAEGE].AddAtPastDay(1);
-                                            }
+                                            SLONG ObjectId;
+                                            GameMechanic::takeFlightJob(*this, n, e, ObjectId);
 
                                             NumOrderFlightsToday2++;
 
@@ -4277,8 +4259,6 @@ void PLAYER::RobotExecuteAction() {
                     }
                 }
 
-                // ANFANG FRACHTAUFTRÄGE
-                // ANFANG FRACHTAUFTRÄGE
                 // ANFANG FRACHTAUFTRÄGE
                 if ((DoRoutes == 0) && !(RobotUse(ROBOT_USE_SHORTFLIGHTS) && Planes.GetNumUsed() == 4)) {
                     SLONG Bewertungsbonus = 0;
@@ -4327,12 +4307,8 @@ void PLAYER::RobotExecuteAction() {
 
                                                 if ((Cost <= qFracht.Praemie * 8 / 10 + Bewertungsbonus) ||
                                                     (RobotUse(ROBOT_USE_FREE_FRACHT) && qFracht.Praemie == 0)) {
-                                                    if (Frachten.GetNumFree() < 2) {
-                                                        Frachten.ReSize(Frachten.AnzEntries() + 1);
-                                                    }
-                                                    Statistiken[STAT_FRACHTEN].AddAtPastDay(1);
-                                                    SLONG ObjectId = (Frachten += qFracht);
-                                                    qFracht.Praemie = -1;
+                                                    SLONG ObjectId;
+                                                    GameMechanic::takeFreightJob(*this, n, e, ObjectId);
 
                                                     while (qFracht.TonsOpen > 0) {
                                                         if (Frachten.IsInAlbum(ObjectId) == 0) {
@@ -4402,12 +4378,8 @@ void PLAYER::RobotExecuteAction() {
                                                 Cost += ((CalculateFlightCost(VonCity, qFracht.VonCity, 8000, 700, -1)) + 99) / 100 * 100;
 
                                                 if ((Cost <= qFracht.Praemie + Bewertungsbonus) || (RobotUse(ROBOT_USE_FREE_FRACHT) && qFracht.Praemie == 0)) {
-                                                    if (Frachten.GetNumFree() < 2) {
-                                                        Frachten.ReSize(Frachten.AnzEntries() + 1);
-                                                    }
-                                                    Statistiken[STAT_FRACHTEN].AddAtPastDay(1);
-                                                    SLONG ObjectId = (Frachten += qFracht);
-                                                    qFracht.Praemie = -1;
+                                                    SLONG ObjectId;
+                                                    GameMechanic::takeFreightJob(*this, n, e, ObjectId);
 
                                                     while (qFracht.TonsOpen > 0) {
                                                         if (Frachten.IsInAlbum(ObjectId) == 0) {
@@ -4445,11 +4417,6 @@ void PLAYER::RobotExecuteAction() {
                     }
                 }
                 // ENDE FRACHTAUFTRÄGE
-                // ENDE FRACHTAUFTRÄGE
-                // ENDE FRACHTAUFTRÄGE
-
-                qAuftraege.RefillForAusland(n, 3);
-                qFrachten.RefillForAusland(n, 3);
             }
         }
         if ((StrikeHours != 0) && LocalRandom.Rand(6) == 0 && RobotUse(ROBOT_USE_END_STRIKE_RAND)) {
@@ -4585,24 +4552,24 @@ void PLAYER::RobotExecuteAction() {
         TimePersonal = Sim.Time;
         break;
 
-    case ACTION_VISITARAB:
+    case ACTION_VISITARAB: {
         WorkCountdown = 20 * 5;
-        if (RobotUse(ROBOT_USE_TANKS) && Sim.Kerosin < 500 && Money > 1000000) {
-            __int64 Menge = (Money - 2500000) / Sim.Kerosin;
-            if (Sim.Kerosin < 400) {
-                Menge = (Money - 2000000) / Sim.Kerosin;
+        auto Preis = Sim.HoleKerosinPreis(1);
+        if (RobotUse(ROBOT_USE_TANKS) && Preis < 500 && Money > 1000000) {
+            __int64 Menge = (Money - 2500000) / Preis;
+            if (Preis < 400) {
+                Menge = (Money - 2000000) / Preis;
             }
-            if (Sim.Kerosin < 350) {
-                Menge = (Money - 1500000) / Sim.Kerosin;
+            if (Preis < 350) {
+                Menge = (Money - 1500000) / Preis;
             }
 
             if (Menge > 0) {
                 Menge = min(Menge, Tank - TankInhalt);
-                TankInhalt += SLONG(Menge);
-                ChangeMoney(-Menge * Sim.Kerosin, 2020, "");
+                GameMechanic::buyKerosin(*this, 1, Menge);
             }
         }
-        break;
+    } break;
 
     case ACTION_SABOTAGE:
         if (dislike == -1 && (RobotUse(ROBOT_USE_EXTREME_SABOTAGE) || RobotUse(ROBOT_USE_EXTRA_SABOTAGE) || LocalRandom.Rand(3) == 0)) {
@@ -5077,15 +5044,15 @@ void PLAYER::RobotExecuteAction() {
             Sim.UpdateUsedPlanes();
             for (c = 0; c < 3; c++) {
                 if (Sim.UsedPlanes[0x1000000 + c].Name.GetLength() > 0 && Sim.UsedPlanes[0x1000000 + c].Baujahr > 1960 &&
-                        Sim.UsedPlanes[0x1000000 + c].Zustand > 40 && Sim.UsedPlanes[0x1000000 + c].CalculatePrice() < Money + 1000000 &&
-                        Sim.UsedPlanes[0x1000000 + c].ptReichweite >= BuyBigPlane)
-                    // if (Sim.UsedPlanes[0x1000000+c].Name.GetLength()>0 && Sim.UsedPlanes[0x1000000+c].Baujahr>1960 && Sim.UsedPlanes[0x1000000+c].Zustand>40
-                    // && Sim.UsedPlanes[0x1000000+c].CalculatePrice()<Money+1000000 && PlaneTypes[Sim.UsedPlanes[0x1000000+c].TypeId].Reichweite>=BuyBigPlane)
+                    Sim.UsedPlanes[0x1000000 + c].Zustand > 40 && Sim.UsedPlanes[0x1000000 + c].CalculatePrice() < Money + 1000000 &&
+                    Sim.UsedPlanes[0x1000000 + c].ptReichweite >= BuyBigPlane)
+                // if (Sim.UsedPlanes[0x1000000+c].Name.GetLength()>0 && Sim.UsedPlanes[0x1000000+c].Baujahr>1960 && Sim.UsedPlanes[0x1000000+c].Zustand>40
+                // && Sim.UsedPlanes[0x1000000+c].CalculatePrice()<Money+1000000 && PlaneTypes[Sim.UsedPlanes[0x1000000+c].TypeId].Reichweite>=BuyBigPlane)
                 {
                     if (Sim.Players.Players[Sim.localPlayer].HasBerater(BERATERTYP_INFO) >= rnd.Rand(100)) {
-                        Sim.Players.Players[Sim.localPlayer].Messages.AddMessage(BERATERTYP_INFO,
-                                bprintf(StandardTexte.GetS(TOKEN_ADVICE, 9000), (LPCTSTR)NameX,
-                                    (LPCTSTR)AirlineX, Sim.UsedPlanes[0x1000000 + c].CalculatePrice()));
+                        Sim.Players.Players[Sim.localPlayer].Messages.AddMessage(
+                            BERATERTYP_INFO,
+                            bprintf(StandardTexte.GetS(TOKEN_ADVICE, 9000), (LPCTSTR)NameX, (LPCTSTR)AirlineX, Sim.UsedPlanes[0x1000000 + c].CalculatePrice()));
                     }
 
                     if (Planes.GetNumFree() == 0) {
@@ -5107,8 +5074,8 @@ void PLAYER::RobotExecuteAction() {
 
                     Planes += Sim.UsedPlanes[0x1000000 + c];
                     ChangeMoney(-Sim.UsedPlanes[0x1000000 + c].CalculatePrice(),
-                            2010, // Kauf des Flugzeuges
-                            Sim.UsedPlanes[0x1000000 + c].Name);
+                                2010, // Kauf des Flugzeuges
+                                Sim.UsedPlanes[0x1000000 + c].Name);
                     Sim.UsedPlanes[0x1000000 + c].Name.Empty();
 
                     Sim.TickMuseumRefill = 0;
@@ -7187,7 +7154,7 @@ PLAYERS::PLAYERS() {
 }
 
 //--------------------------------------------------------------------------------------------
-//Überprüft alle Flugpläne auf tote Einträge: (crasht bei toten Einträgen; nur zum testen)
+// Überprüft alle Flugpläne auf tote Einträge: (crasht bei toten Einträgen; nur zum testen)
 //--------------------------------------------------------------------------------------------
 void PLAYERS::CheckFlighplans() {
     for (SLONG c = 0; c < AnzPlayers; c++) {
