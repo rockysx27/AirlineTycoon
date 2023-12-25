@@ -363,25 +363,25 @@ CAufsicht::CAufsicht(BOOL bHandy, ULONG PlayerNum) : CStdRaum(bHandy, PlayerNum,
 
             // Uhrig's Aufträge:
             if (Sim.Difficulty == DIFF_ADDON09) {
-            for (SLONG c = 0; c < 4; c++) {
-                PLAYER &qPlayer = Sim.Players.Players[c];
+                for (SLONG c = 0; c < 4; c++) {
+                    PLAYER &qPlayer = Sim.Players.Players[c];
 
-                if (qPlayer.IsOut == 0) {
-                    if (Sim.Date == 0) {
-                        qPlayer.NumOrderFlightsToday = 2 + (qPlayer.PlayerNum & 1);
-                    } else {
-                        qPlayer.NumOrderFlightsToday = 0;
-                    }
+                    if (qPlayer.IsOut == 0) {
+                        if (Sim.Date == 0) {
+                            qPlayer.NumOrderFlightsToday = 2 + (qPlayer.PlayerNum & 1);
+                        } else {
+                            qPlayer.NumOrderFlightsToday = 0;
+                        }
 
-                    qPlayer.NumOrderFlightsToday2 = qPlayer.NumOrderFlightsToday;
-                    qPlayer.Statistiken[STAT_AUFTRAEGE].AddAtPastDay(5);
+                        qPlayer.NumOrderFlightsToday2 = qPlayer.NumOrderFlightsToday;
+                        qPlayer.Statistiken[STAT_AUFTRAEGE].AddAtPastDay(5);
 
-                    if (qPlayer.Owner != 1) {
-                        qPlayer.Add5UhrigFlights();
+                        if (qPlayer.Owner != 1) {
+                            qPlayer.Add5UhrigFlights();
+                        }
                     }
                 }
             }
-        }
 
         if (Sim.Date == 0 || Sim.Options.OptionBriefBriefing == 0) {
             StartDialog(TALKER_BOSS, MEDIUM_AIR, 1);
@@ -456,6 +456,9 @@ CAufsicht::~CAufsicht() {
         }
 
         bool bAnyBombs = false;
+        GameMechanic::executeSabotageMode2(bAnyBombs);
+        GameMechanic::executeSabotageMode3();
+
         for (c = 0; c < Sim.Players.Players.AnzEntries(); c++) {
             if (Sim.Players.Players[c].IsOut == 0) {
                 PLAYER &qPlayer = Sim.Players.Players[c];
@@ -465,178 +468,11 @@ CAufsicht::~CAufsicht() {
                 }
 
                 qPlayer.NumFlights = 0;
-                qPlayer.WaitWorkTill = -1;
                 qPlayer.WorkCountdown = 1;
                 qPlayer.WaitWorkTill = 0;
 
                 if (qPlayer.Owner == 1) {
                     qPlayer.WalkToRoom(UBYTE(ROOM_BURO_A + c * 10));
-                }
-
-                bool bFremdsabotage = false;
-                if (Sim.Players.Players[c].ArabMode2 < 0) {
-                    Sim.Players.Players[c].ArabMode2 = -Sim.Players.Players[c].ArabMode2;
-                    bFremdsabotage = true;
-                }
-
-                if (qPlayer.ArabMode2 != 0) {
-                    PLAYER &qOpfer = Sim.Players.Players[qPlayer.ArabOpfer2];
-
-                    if (!bFremdsabotage) {
-                        Sim.Players.Players[c].Statistiken[STAT_SABOTIERT].AddAtPastDay(1);
-                    }
-
-                    switch (qPlayer.ArabMode2) {
-                    case 1: // Bakterien im Kaffee
-                        if (!bFremdsabotage) {
-                            qPlayer.ArabHints += 8;
-                        }
-                        qOpfer.Sympathie[c] -= 10;
-                        qOpfer.SickTokay = TRUE;
-                        PLAYER::NetSynchronizeFlags();
-                        break;
-
-                    case 2: // Virus im Notepad
-                        if ((qOpfer.HasItem(ITEM_LAPTOP) != 0) && qOpfer.LaptopVirus == 0) {
-                            qOpfer.LaptopVirus = 1;
-                        }
-                        break;
-
-                    case 3: // Bombe im Büro
-                        bAnyBombs = true;
-                        if (!bFremdsabotage) {
-                            qPlayer.ArabHints += 25;
-                        }
-                        qOpfer.Sympathie[c] -= 50;
-                        qOpfer.OfficeState = 1;
-                        qOpfer.WalkToRoom(UBYTE(ROOM_BURO_A + qOpfer.PlayerNum * 10));
-                        break;
-
-                    case 4: // Streik provozieren
-                        if (!bFremdsabotage) {
-                            qPlayer.ArabHints += 40;
-                        }
-                        qOpfer.StrikePlanned = TRUE;
-                        break;
-                    default:
-                        hprintf("Aufsicht.cpp: Default case should not be reached.");
-                        DebugBreak();
-                    }
-
-                    // Für's nächste Briefing vermerken:
-                    Sim.SabotageActs.ReSize(Sim.SabotageActs.AnzEntries() + 1);
-                    Sim.SabotageActs[Sim.SabotageActs.AnzEntries() - 1].Player = bFremdsabotage ? -2 : c;
-                    Sim.SabotageActs[Sim.SabotageActs.AnzEntries() - 1].ArabMode = 2075 + qPlayer.ArabMode2 - 1;
-                    Sim.SabotageActs[Sim.SabotageActs.AnzEntries() - 1].Opfer = qPlayer.ArabOpfer2;
-
-                    qPlayer.ArabMode2 = 0;
-                }
-
-                bFremdsabotage = false;
-                if (Sim.Players.Players[c].ArabMode3 < 0) {
-                    Sim.Players.Players[c].ArabMode3 = -Sim.Players.Players[c].ArabMode3;
-                    bFremdsabotage = true;
-                }
-
-                if (qPlayer.ArabMode3 != 0) {
-                    PLAYER &qOpfer = Sim.Players.Players[qPlayer.ArabOpfer3];
-
-                    Sim.Players.Players[c].Statistiken[STAT_SABOTIERT].AddAtPastDay(1);
-
-                    switch (qPlayer.ArabMode3) {
-                    case 1: // Fremde Broschüren
-                        if (!bFremdsabotage) {
-                            qPlayer.ArabHints += 8;
-                        }
-                        qOpfer.WerbeBroschuere = qPlayer.PlayerNum;
-                        PLAYER::NetSynchronizeFlags();
-                        break;
-
-                    case 2: // Telefone sperren
-                        if (!bFremdsabotage) {
-                            qPlayer.ArabHints += 15;
-                        }
-                        qOpfer.TelephoneDown = 1;
-                        PLAYER::NetSynchronizeFlags();
-                        break;
-
-                    case 3: // Presseerklärung
-                        if (!bFremdsabotage) {
-                            qPlayer.ArabHints += 25;
-                        }
-                        qOpfer.Presseerklaerung = 1;
-                        PLAYER::NetSynchronizeFlags();
-                        Sim.Players.Players[Sim.localPlayer].Letters.AddLetter(
-                            FALSE, bprintf(StandardTexte.GetS(TOKEN_LETTER, 509), (LPCTSTR)qOpfer.AirlineX, (LPCTSTR)qOpfer.NameX, (LPCTSTR)qOpfer.AirlineX),
-                            "", "", 0);
-                        if (qOpfer.PlayerNum == Sim.localPlayer) {
-                            qOpfer.Messages.AddMessage(BERATERTYP_GIRL, StandardTexte.GetS(TOKEN_ADVICE, 2020));
-                        }
-
-                        {
-                            // Für alle Flugzeuge die er besitzt, die Passagierzahl aktualisieren:
-                            for (SLONG d = 0; d < qOpfer.Planes.AnzEntries(); d++) {
-                                if (qOpfer.Planes.IsInAlbum(d) != 0) {
-                                    CPlane &qPlane = qOpfer.Planes[d];
-
-                                    for (SLONG e = 0; e < qPlane.Flugplan.Flug.AnzEntries(); e++) {
-                                        if (qPlane.Flugplan.Flug[e].ObjectType == 1) {
-                                            qPlane.Flugplan.Flug[e].CalcPassengers(qOpfer.PlayerNum, qPlane);
-                                        }
-                                    }
-                                    // qPlane.Flugplan.Flug[e].CalcPassengers (qPlane.TypeId, (LPCTSTR)qOpfer.PlayerNum, (LPCTSTR)qPlane);
-                                }
-                            }
-                        }
-                        break;
-
-                    case 4: // Bankkonto hacken
-                        qOpfer.ChangeMoney(-1000000, 3502, "");
-                        if (!bFremdsabotage) {
-                            qPlayer.ChangeMoney(1000000, 3502, "");
-                        }
-                        if (!bFremdsabotage) {
-                            qPlayer.ArabHints += 30;
-                        }
-                        break;
-
-                    case 5: // Flugzeug festsetzen
-                        if (!bFremdsabotage) {
-                            qPlayer.ArabHints += 50;
-                        }
-                        if (qOpfer.Planes.IsInAlbum(qPlayer.ArabPlane) != 0) {
-                            qOpfer.Planes[qPlayer.ArabPlane].PseudoProblem = 15;
-                        }
-                        break;
-
-                    case 6: // Route klauen
-                        qPlayer.ArabHints += 70;
-                        qOpfer.RouteWegnehmen(Routen(qPlayer.ArabPlane), qPlayer.PlayerNum);
-                        {
-                            for (SLONG d = 0; d < Routen.AnzEntries(); d++) {
-                                if ((Routen.IsInAlbum(d) != 0) && Routen[d].VonCity == Routen[qPlayer.ArabPlane].NachCity &&
-                                    Routen[d].NachCity == Routen[qPlayer.ArabPlane].VonCity) {
-                                    qOpfer.RouteWegnehmen(d, qPlayer.PlayerNum);
-                                    break;
-                                }
-                            }
-                        }
-                        if (qOpfer.PlayerNum == Sim.localPlayer) {
-                            qOpfer.Messages.AddMessage(BERATERTYP_GIRL, StandardTexte.GetS(TOKEN_ADVICE, 2021));
-                        }
-                        break;
-                    default:
-                        hprintf("Aufsicht.cpp: Default case should not be reached.");
-                        DebugBreak();
-                    }
-
-                    // Für's nächste Briefing vermerken:
-                    Sim.SabotageActs.ReSize(Sim.SabotageActs.AnzEntries() + 1);
-                    Sim.SabotageActs[Sim.SabotageActs.AnzEntries() - 1].Player = bFremdsabotage ? -2 : c;
-                    Sim.SabotageActs[Sim.SabotageActs.AnzEntries() - 1].ArabMode = 2090 + qPlayer.ArabMode3;
-                    Sim.SabotageActs[Sim.SabotageActs.AnzEntries() - 1].Opfer = qPlayer.ArabOpfer3;
-
-                    qPlayer.ArabMode3 = 0;
                 }
             }
         }

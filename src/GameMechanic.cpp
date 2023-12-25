@@ -296,9 +296,9 @@ bool GameMechanic::activateSaboteurJob(PLAYER &qPlayer) {
 
         qPlayer.ArabTrust = min(6, qPlayer.ArabMode2 + 1);
 
-        qPlayer.ChangeMoney(-SabotagePrice2[number - 1], 2080, "");
-        qPlayer.DoBodyguardRabatt(SabotagePrice2[number - 1]);
-        SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -SabotagePrice2[number - 1], -1);
+        qPlayer.ChangeMoney(-SabotagePrice2[qPlayer.ArabMode2 - 1], 2080, "");
+        qPlayer.DoBodyguardRabatt(SabotagePrice2[qPlayer.ArabMode2 - 1]);
+        SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -SabotagePrice2[qPlayer.ArabMode2 - 1], -1);
 
         qPlayer.NetSynchronizeSabotage();
 
@@ -332,9 +332,9 @@ bool GameMechanic::activateSaboteurJob(PLAYER &qPlayer) {
 
         qPlayer.ArabTrust = min(6, qPlayer.ArabMode3 + 1);
 
-        qPlayer.ChangeMoney(-SabotagePrice3[number - 1], 2080, "");
-        qPlayer.DoBodyguardRabatt(SabotagePrice3[number - 1]);
-        SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -SabotagePrice3[number - 1], -1);
+        qPlayer.ChangeMoney(-SabotagePrice3[qPlayer.ArabMode3 - 1], 2080, "");
+        qPlayer.DoBodyguardRabatt(SabotagePrice3[qPlayer.ArabMode3 - 1]);
+        SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -SabotagePrice3[qPlayer.ArabMode3 - 1], -1);
 
         qPlayer.NetSynchronizeSabotage();
 
@@ -1131,7 +1131,7 @@ void GameMechanic::executeAirlineOvertake() {
     Sim.Overtake = 0;
 }
 
-void GameMechanic::executeSabotage() {
+void GameMechanic::executeSabotageMode1() {
     PLAYER &qLocalPlayer = Sim.Players.Players[Sim.localPlayer];
 
     for (SLONG c = 0; c < Sim.Players.Players.AnzEntries(); c++) {
@@ -1295,7 +1295,7 @@ void GameMechanic::executeSabotage() {
             PictureId = GetIdFromString("SUPERMAN");
             break;
         default:
-            hprintf("Sim.cpp: Default case should not be reached.");
+            hprintf("GameMechanic.cpp: Default case should not be reached.");
             DebugBreak();
         }
         if (qOpfer.Kurse[0] < 0) {
@@ -1363,5 +1363,193 @@ void GameMechanic::executeSabotage() {
         }
 
         qPlayer.ArabMode = 0;
+    }
+}
+
+void GameMechanic::executeSabotageMode2(bool &outBAnyBombs) {
+    outBAnyBombs = false;
+
+    for (SLONG c = 0; c < Sim.Players.Players.AnzEntries(); c++) {
+        PLAYER &qPlayer = Sim.Players.Players[c];
+        if (qPlayer.IsOut != 0) {
+            continue;
+        }
+
+        bool bFremdsabotage = false;
+        if (qPlayer.ArabMode2 < 0) {
+            qPlayer.ArabMode2 = -qPlayer.ArabMode2;
+            bFremdsabotage = true;
+        }
+
+        if (qPlayer.ArabMode2 == 0) {
+            continue;
+        }
+
+        PLAYER &qOpfer = Sim.Players.Players[qPlayer.ArabOpfer2];
+
+        if (!bFremdsabotage) {
+            qPlayer.Statistiken[STAT_SABOTIERT].AddAtPastDay(1);
+        }
+
+        switch (qPlayer.ArabMode2) {
+        case 1: // Bakterien im Kaffee
+            if (!bFremdsabotage) {
+                qPlayer.ArabHints += 8;
+            }
+            qOpfer.Sympathie[c] -= 10;
+            qOpfer.SickTokay = TRUE;
+            PLAYER::NetSynchronizeFlags();
+            break;
+
+        case 2: // Virus im Notepad
+            if ((qOpfer.HasItem(ITEM_LAPTOP) != 0) && qOpfer.LaptopVirus == 0) {
+                qOpfer.LaptopVirus = 1;
+            }
+            break;
+
+        case 3: // Bombe im Büro
+            outBAnyBombs = true;
+            if (!bFremdsabotage) {
+                qPlayer.ArabHints += 25;
+            }
+            qOpfer.Sympathie[c] -= 50;
+            qOpfer.OfficeState = 1;
+            qOpfer.WalkToRoom(UBYTE(ROOM_BURO_A + qOpfer.PlayerNum * 10));
+            break;
+
+        case 4: // Streik provozieren
+            if (!bFremdsabotage) {
+                qPlayer.ArabHints += 40;
+            }
+            qOpfer.StrikePlanned = TRUE;
+            break;
+        default:
+            hprintf("GameMechanic.cpp: Default case should not be reached.");
+            DebugBreak();
+        }
+
+        // Für's nächste Briefing vermerken:
+        Sim.SabotageActs.ReSize(Sim.SabotageActs.AnzEntries() + 1);
+        Sim.SabotageActs[Sim.SabotageActs.AnzEntries() - 1].Player = bFremdsabotage ? -2 : c;
+        Sim.SabotageActs[Sim.SabotageActs.AnzEntries() - 1].ArabMode = 2075 + qPlayer.ArabMode2 - 1;
+        Sim.SabotageActs[Sim.SabotageActs.AnzEntries() - 1].Opfer = qPlayer.ArabOpfer2;
+
+        qPlayer.ArabMode2 = 0;
+    }
+}
+
+void GameMechanic::executeSabotageMode3() {
+    for (SLONG c = 0; c < Sim.Players.Players.AnzEntries(); c++) {
+        PLAYER &qPlayer = Sim.Players.Players[c];
+
+        bool bFremdsabotage = false;
+        if (qPlayer.ArabMode3 < 0) {
+            qPlayer.ArabMode3 = -qPlayer.ArabMode3;
+            bFremdsabotage = true;
+        }
+
+        if (qPlayer.ArabMode3 == 0) {
+            continue;
+        }
+
+        PLAYER &qOpfer = Sim.Players.Players[qPlayer.ArabOpfer3];
+
+        qPlayer.Statistiken[STAT_SABOTIERT].AddAtPastDay(1);
+
+        switch (qPlayer.ArabMode3) {
+        case 1: // Fremde Broschüren
+            if (!bFremdsabotage) {
+                qPlayer.ArabHints += 8;
+            }
+            qOpfer.WerbeBroschuere = qPlayer.PlayerNum;
+            PLAYER::NetSynchronizeFlags();
+            break;
+
+        case 2: // Telefone sperren
+            if (!bFremdsabotage) {
+                qPlayer.ArabHints += 15;
+            }
+            qOpfer.TelephoneDown = 1;
+            PLAYER::NetSynchronizeFlags();
+            break;
+
+        case 3: // Presseerklärung
+            if (!bFremdsabotage) {
+                qPlayer.ArabHints += 25;
+            }
+            qOpfer.Presseerklaerung = 1;
+            PLAYER::NetSynchronizeFlags();
+            Sim.Players.Players[Sim.localPlayer].Letters.AddLetter(
+                FALSE, bprintf(StandardTexte.GetS(TOKEN_LETTER, 509), (LPCTSTR)qOpfer.AirlineX, (LPCTSTR)qOpfer.NameX, (LPCTSTR)qOpfer.AirlineX), "", "", 0);
+            if (qOpfer.PlayerNum == Sim.localPlayer) {
+                qOpfer.Messages.AddMessage(BERATERTYP_GIRL, StandardTexte.GetS(TOKEN_ADVICE, 2020));
+            }
+
+            {
+                // Für alle Flugzeuge die er besitzt, die Passagierzahl aktualisieren:
+                for (SLONG d = 0; d < qOpfer.Planes.AnzEntries(); d++) {
+                    if (qOpfer.Planes.IsInAlbum(d) != 0) {
+                        CPlane &qPlane = qOpfer.Planes[d];
+
+                        for (SLONG e = 0; e < qPlane.Flugplan.Flug.AnzEntries(); e++) {
+                            if (qPlane.Flugplan.Flug[e].ObjectType == 1) {
+                                qPlane.Flugplan.Flug[e].CalcPassengers(qOpfer.PlayerNum, qPlane);
+                            }
+                        }
+                        // qPlane.Flugplan.Flug[e].CalcPassengers (qPlane.TypeId, (LPCTSTR)qOpfer.PlayerNum, (LPCTSTR)qPlane);
+                    }
+                }
+            }
+            break;
+
+        case 4: // Bankkonto hacken
+            qOpfer.ChangeMoney(-1000000, 3502, "");
+            if (!bFremdsabotage) {
+                qPlayer.ChangeMoney(1000000, 3502, "");
+            }
+            if (!bFremdsabotage) {
+                qPlayer.ArabHints += 30;
+            }
+            break;
+
+        case 5: // Flugzeug festsetzen
+            if (!bFremdsabotage) {
+                qPlayer.ArabHints += 50;
+            }
+            if (qOpfer.Planes.IsInAlbum(qPlayer.ArabPlane) != 0) {
+                qOpfer.Planes[qPlayer.ArabPlane].PseudoProblem = 15;
+            }
+            break;
+
+        case 6: // Route klauen
+            if (!bFremdsabotage) {
+                qPlayer.ArabHints += 70;
+            }
+            qOpfer.RouteWegnehmen(Routen(qPlayer.ArabPlane), qPlayer.PlayerNum);
+            {
+                for (SLONG d = 0; d < Routen.AnzEntries(); d++) {
+                    if ((Routen.IsInAlbum(d) != 0) && Routen[d].VonCity == Routen[qPlayer.ArabPlane].NachCity &&
+                        Routen[d].NachCity == Routen[qPlayer.ArabPlane].VonCity) {
+                        qOpfer.RouteWegnehmen(d, qPlayer.PlayerNum);
+                        break;
+                    }
+                }
+            }
+            if (qOpfer.PlayerNum == Sim.localPlayer) {
+                qOpfer.Messages.AddMessage(BERATERTYP_GIRL, StandardTexte.GetS(TOKEN_ADVICE, 2021));
+            }
+            break;
+        default:
+            hprintf("GameMechanic.cpp: Default case should not be reached.");
+            DebugBreak();
+        }
+
+        // Für's nächste Briefing vermerken:
+        Sim.SabotageActs.ReSize(Sim.SabotageActs.AnzEntries() + 1);
+        Sim.SabotageActs[Sim.SabotageActs.AnzEntries() - 1].Player = bFremdsabotage ? -2 : c;
+        Sim.SabotageActs[Sim.SabotageActs.AnzEntries() - 1].ArabMode = 2090 + qPlayer.ArabMode3;
+        Sim.SabotageActs[Sim.SabotageActs.AnzEntries() - 1].Opfer = qPlayer.ArabOpfer3;
+
+        qPlayer.ArabMode3 = 0;
     }
 }
