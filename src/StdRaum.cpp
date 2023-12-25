@@ -4124,7 +4124,7 @@ void CStdRaum::MenuStart(SLONG MenuType, SLONG MenuPar1, SLONG MenuPar2, SLONG M
         MenuBms.ReSize(pMenuLib1, "BLOCK LEFT RIGHT");
         OnscreenBitmap.ReSize(MenuBms[0].Size);
         MenuPage = 0;
-        MenuDataTable.FillWithPlanes(&Sim.Players.Players[Sim.Players.Players[PlayerNum].ArabOpfer].Planes);
+        MenuDataTable.FillWithPlanes(&Sim.Players.Players[Sim.Players.Players[PlayerNum].ArabOpferSelection].Planes);
         MenuPageMax = (MenuDataTable.AnzRows - 1) / 13;
 
         for (SLONG c = 0; c < MenuDataTable.AnzRows; c++) {
@@ -4137,7 +4137,7 @@ void CStdRaum::MenuStart(SLONG MenuType, SLONG MenuPar1, SLONG MenuPar2, SLONG M
         MenuBms.ReSize(pMenuLib1, "BLOCK LEFT RIGHT");
         OnscreenBitmap.ReSize(MenuBms[0].Size);
         MenuPage = 0;
-        MenuDataTable.FillWithRouten(&::Routen, &Sim.Players.Players[Sim.Players.Players[PlayerNum].ArabOpfer].RentRouten);
+        MenuDataTable.FillWithRouten(&::Routen, &Sim.Players.Players[Sim.Players.Players[PlayerNum].ArabOpferSelection].RentRouten);
         MenuPageMax = (MenuDataTable.AnzRows - 1) / 13;
 
         for (SLONG c = 0; c < MenuDataTable.AnzRows; c++) {
@@ -6659,7 +6659,7 @@ void CStdRaum::MenuLeftClick(XY Pos) {
             SLONG n = ((Pos.y - 25)) / 13 + MenuPage;
 
             if (n >= 0 && n - MenuPage < 13 && n < MenuDataTable.AnzRows &&
-                (Sim.Players.Players[qPlayer.ArabOpfer].Planes.IsInAlbum(MenuDataTable.LineIndex[n]) != 0)) {
+                (Sim.Players.Players[qPlayer.ArabOpferSelection].Planes.IsInAlbum(MenuDataTable.LineIndex[n]) != 0)) {
                 MenuPar1 = MenuDataTable.LineIndex[n];
 
                 auto tmp = MenuDialogReEntryB;
@@ -6684,7 +6684,7 @@ void CStdRaum::MenuLeftClick(XY Pos) {
             SLONG n = ((Pos.y - 25)) / 13 + MenuPage;
 
             if (n >= 0 && n - MenuPage < 13 && n < MenuDataTable.AnzRows &&
-                Sim.Players.Players[qPlayer.ArabOpfer].RentRouten.RentRouten[Routen(MenuDataTable.LineIndex[n])].Rang != 0) {
+                Sim.Players.Players[qPlayer.ArabOpferSelection].RentRouten.RentRouten[Routen(MenuDataTable.LineIndex[n])].Rang != 0) {
                 MenuPar1 = MenuDataTable.LineIndex[n];
 
                 auto tmp = MenuDialogReEntryB;
