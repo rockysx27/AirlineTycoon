@@ -548,6 +548,95 @@ bool GameMechanic::buyXPlane(PLAYER &qPlayer, const CString &filename, SLONG amo
     return true;
 }
 
+bool GameMechanic::buyStock(PLAYER &qPlayer, SLONG airlineNum, SLONG amount) {
+    if (airlineNum < 0 || airlineNum >= 4) {
+        hprintf("GameMechanic::buyStock: Invalid airline.");
+        return false;
+    }
+    if (amount < 0) {
+        hprintf("GameMechanic::buyStock: Negative amount.");
+        return false;
+    }
+    if (amount == 0) {
+        return false;
+    }
+
+    /* Handel durchführen */
+    auto aktienWert = static_cast<__int64>(Sim.Players.Players[airlineNum].Kurse[0] * amount);
+    auto gesamtPreis = aktienWert + aktienWert / 10 + 100;
+    if (qPlayer.Money - gesamtPreis < DEBT_LIMIT) {
+        return false;
+    }
+
+    qPlayer.ChangeMoney(-gesamtPreis, 3150, "");
+    qPlayer.OwnsAktien[airlineNum] += amount;
+
+    /* aktualisiere Aktienwert */
+    qPlayer.AktienWert[airlineNum] += aktienWert;
+
+    /* aktualisiere Aktienkurs */
+    auto anzAktien = static_cast<DOUBLE>(Sim.Players.Players[airlineNum].AnzAktien);
+    Sim.Players.Players[airlineNum].Kurse[0] *= anzAktien / (anzAktien - amount / 2);
+    if (Sim.Players.Players[airlineNum].Kurse[0] < 0) {
+        Sim.Players.Players[airlineNum].Kurse[0] = 0;
+    }
+
+    if (aktienWert != 0) {
+        if (qPlayer.PlayerNum == Sim.localPlayer) {
+            SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -SLONG(aktienWert), STAT_A_SONSTIGES);
+        }
+
+        if ((Sim.bNetwork != 0) && Sim.Players.Players[airlineNum].Owner == 2) {
+            SIM::SendSimpleMessage(ATNET_ADVISOR, Sim.Players.Players[airlineNum].NetworkID, 4, qPlayer.PlayerNum, airlineNum);
+        }
+    }
+
+    PLAYER::NetSynchronizeMoney();
+    return true;
+}
+
+bool GameMechanic::sellStock(PLAYER &qPlayer, SLONG airlineNum, SLONG amount) {
+    if (airlineNum < 0 || airlineNum >= 4) {
+        hprintf("GameMechanic::sellStock: Invalid airline.");
+        return false;
+    }
+    if (amount < 0) {
+        hprintf("GameMechanic::sellStock: Negative amount.");
+        return false;
+    }
+    if (amount == 0) {
+        return false;
+    }
+
+    /* aktualisiere Aktienwert */
+    {
+        auto num = static_cast<DOUBLE>(qPlayer.OwnsAktien[airlineNum]);
+        qPlayer.AktienWert[airlineNum] *= (num - amount) / num;
+    }
+
+    /* Handel durchführen */
+    auto aktienWert = static_cast<__int64>(Sim.Players.Players[airlineNum].Kurse[0] * amount);
+    auto gesamtPreis = aktienWert - aktienWert / 10 - 100;
+    qPlayer.ChangeMoney(gesamtPreis, 3151, "");
+    qPlayer.OwnsAktien[airlineNum] -= amount;
+
+    /* aktualisiere Aktienkurs */
+    auto anzAktien = static_cast<DOUBLE>(Sim.Players.Players[airlineNum].AnzAktien);
+    Sim.Players.Players[airlineNum].Kurse[0] *= (anzAktien - amount / 2) / anzAktien;
+    if (Sim.Players.Players[airlineNum].Kurse[0] < 0) {
+        Sim.Players.Players[airlineNum].Kurse[0] = 0;
+    }
+
+    if (aktienWert != 0) {
+        if (qPlayer.PlayerNum == Sim.localPlayer) {
+            SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, SLONG(aktienWert), STAT_E_SONSTIGES);
+        }
+    }
+
+    PLAYER::NetSynchronizeMoney();
+    return true;
+}
+
 GameMechanic::OvertakeAirlineResult GameMechanic::canOvertakeAirline(PLAYER &qPlayer, SLONG targetAirline) {
     if (targetAirline < 0 || targetAirline >= 4) {
         hprintf("GameMechanic::canOvertakeAirline: Invalid targetAirline.");
@@ -648,6 +737,17 @@ bool GameMechanic::emitStock(PLAYER &qPlayer, SLONG neueAktien, SLONG mode) {
 
     qPlayer.AnzAktien += neueAktien;
     qPlayer.OwnsAktien[qPlayer.PlayerNum] += (neueAktien - marktAktien);
+    PLAYER::NetSynchronizeMoney();
+
+    return true;
+}
+
+bool GameMechanic::setDividend(PLAYER &qPlayer, SLONG dividend) {
+    if (dividend < 0 || dividend > 25) {
+        hprintf("GameMechanic::setDividend: Divident not in allowed range");
+        return false;
+    }
+    qPlayer.Dividende = dividend;
     PLAYER::NetSynchronizeMoney();
 
     return true;
@@ -852,6 +952,87 @@ bool GameMechanic::takeFreightJob(PLAYER &qPlayer, SLONG par1, SLONG par2, SLONG
     return true;
 }
 
+bool GameMechanic::killFlightJob(PLAYER &qPlayer, SLONG par1, bool payFine) {
+    BLOCKS &qBlocks = qPlayer.Blocks;
+    for (SLONG c = 0; c < qBlocks.AnzEntries(); c++) {
+        if ((qBlocks.IsInAlbum(c) != 0) && qBlocks[c].IndexB == 0 && qBlocks[c].BlockTypeB == 3 && qPlayer.Auftraege(qBlocks[c].SelectedIdB) == ULONG(par1)) {
+            qBlocks[c].IndexB = TRUE;
+            qBlocks[c].PageB = 0;
+            qBlocks[c].RefreshData(qPlayer.PlayerNum);
+            qBlocks[c].AnzPagesB = max(0, (qBlocks[c].TableB.AnzRows - 1) / 6) + 1;
+        }
+    }
+
+    if (payFine) {
+        qPlayer.ChangeMoney(-qPlayer.Auftraege[par1].Strafe, 2060,
+                            (LPCTSTR)CString(bprintf("%s-%s", (LPCTSTR)Cities[qPlayer.Auftraege[par1].VonCity].Kuerzel,
+                                                     (LPCTSTR)Cities[qPlayer.Auftraege[par1].NachCity].Kuerzel)));
+    }
+
+    qPlayer.Auftraege -= par1;
+    qPlayer.Blocks.RepaintAll = TRUE;
+
+    return true;
+}
+
+bool GameMechanic::killFreightJob(PLAYER &qPlayer, SLONG par1, bool payFine) {
+    BLOCKS &qBlocks = qPlayer.Blocks;
+    for (SLONG c = 0; c < qBlocks.AnzEntries(); c++) {
+        if ((qBlocks.IsInAlbum(c) != 0) && qBlocks[c].IndexB == 0 && qBlocks[c].BlockTypeB == 6 && qPlayer.Frachten(qBlocks[c].SelectedIdB) == ULONG(par1)) {
+            qBlocks[c].IndexB = TRUE;
+            qBlocks[c].PageB = 0;
+            qBlocks[c].RefreshData(qPlayer.PlayerNum);
+            qBlocks[c].AnzPagesB = max(0, (qBlocks[c].TableB.AnzRows - 1) / 6) + 1;
+        }
+    }
+
+    if (payFine) {
+        qPlayer.ChangeMoney(-qPlayer.Frachten[par1].Strafe, 2065,
+                            (LPCTSTR)CString(bprintf("%s-%s", (LPCTSTR)Cities[qPlayer.Frachten[par1].VonCity].Kuerzel,
+                                                     (LPCTSTR)Cities[qPlayer.Frachten[par1].NachCity].Kuerzel)));
+    }
+
+    // qPlayer.Frachten-= par1;
+    qPlayer.Frachten[par1].Okay = -1;
+    qPlayer.Frachten[par1].InPlan = -1;
+
+    qPlayer.Blocks.RepaintAll = TRUE;
+
+    return true;
+}
+
+bool GameMechanic::killFlightPlan(PLAYER &qPlayer, SLONG par1) {
+    CFlugplan &qPlan = qPlayer.Planes[par1].Flugplan;
+
+    for (SLONG c = qPlan.Flug.AnzEntries() - 1; c >= 0; c--) {
+        if (qPlan.Flug[c].ObjectType != 0) {
+            if (qPlan.Flug[c].Startdate > Sim.Date || (qPlan.Flug[c].Startdate == Sim.Date && qPlan.Flug[c].Startzeit > Sim.GetHour() + 1)) {
+                qPlan.Flug[c].ObjectType = 0;
+            }
+        }
+    }
+
+    qPlan.UpdateNextFlight();
+    qPlan.UpdateNextStart();
+
+    if (Sim.bNetwork != 0) {
+        SLONG key = par1;
+
+        if (key < 0x1000000) {
+            key = qPlayer.Planes.GetIdFromIndex(key);
+        }
+
+        qPlayer.NetUpdateFlightplan(key);
+    }
+
+    qPlayer.UpdateAuftragsUsage();
+    qPlayer.UpdateFrachtauftragsUsage();
+    qPlayer.Planes[par1].CheckFlugplaene(qPlayer.PlayerNum, FALSE);
+    qPlayer.Blocks.RepaintAll = TRUE;
+
+    return true;
+}
+
 bool GameMechanic::refillFlightJobs(SLONG cityNum) {
     AuslandsAuftraege[cityNum].RefillForAusland(cityNum);
     AuslandsFrachten[cityNum].RefillForAusland(cityNum);
@@ -883,6 +1064,89 @@ bool GameMechanic::fireWorker(PLAYER &qPlayer, CWorker &qWorker) {
         qWorker.TimeInPool = 0;
     }
     qPlayer.MapWorkers(TRUE);
+
+    return true;
+}
+
+bool GameMechanic::killCity(PLAYER &qPlayer, SLONG cityID) {
+    BLOCKS &qBlocks = qPlayer.Blocks;
+    for (SLONG c = 0; c < Routen.AnzEntries(); c++) {
+        if ((qBlocks.IsInAlbum(c) != 0) && qBlocks[c].Index == 0 && qBlocks[c].BlockType == 1 && Cities(qBlocks[c].SelectedId) == ULONG(cityID)) {
+            qBlocks[c].Index = TRUE;
+            qBlocks[c].Page = 0;
+            qBlocks[c].RefreshData(qPlayer.PlayerNum);
+            qBlocks[c].AnzPages = max(0, (qBlocks[c].Table.AnzRows - 1) / 13) + 1;
+        }
+    }
+
+    qPlayer.RentCities.RentCities[cityID].Rang = 0;
+    qPlayer.Blocks.RepaintAll = TRUE;
+
+    return true;
+}
+
+bool GameMechanic::killRoute(PLAYER &qPlayer, SLONG routeA, SLONG routeB) {
+    BLOCKS &qBlocks = qPlayer.Blocks;
+    for (SLONG c = 0; c < Routen.AnzEntries(); c++) {
+        if ((qBlocks.IsInAlbum(c) != 0) && qBlocks[c].IndexB == 0 && qBlocks[c].BlockTypeB == 4 &&
+            (Routen(qBlocks[c].SelectedIdB) == ULONG(routeA) || Routen(qBlocks[c].SelectedIdB) == ULONG(routeB))) {
+            qBlocks[c].IndexB = TRUE;
+            qBlocks[c].PageB = 0;
+            qBlocks[c].RefreshData(qPlayer.PlayerNum);
+            qBlocks[c].AnzPagesB = max(0, (qBlocks[c].TableB.AnzRows - 1) / 6) + 1;
+        }
+    }
+
+    for (SLONG e = 0; e < 4; e++) {
+        if ((Sim.Players.Players[e].IsOut == 0) && Sim.Players.Players[e].RentRouten.RentRouten[routeA].Rang > qPlayer.RentRouten.RentRouten[routeA].Rang) {
+            Sim.Players.Players[e].RentRouten.RentRouten[routeA].Rang--;
+        }
+
+        if ((Sim.Players.Players[e].IsOut == 0) && Sim.Players.Players[e].RentRouten.RentRouten[routeB].Rang > qPlayer.RentRouten.RentRouten[routeB].Rang) {
+            Sim.Players.Players[e].RentRouten.RentRouten[routeB].Rang--;
+        }
+    }
+
+    if ((qPlayer.LocationWin != nullptr) && (qPlayer.GetRoom() == ROOM_LAPTOP || qPlayer.GetRoom() == ROOM_GLOBE)) {
+        CPlaner &qPlaner = *dynamic_cast<CPlaner *>(qPlayer.LocationWin);
+
+        if (qPlaner.CurrentPostItType == 1 && (qPlaner.CurrentPostItId == static_cast<SLONG>(Routen.GetIdFromIndex(routeA)) ||
+                                               qPlaner.CurrentPostItId == static_cast<SLONG>(Routen.GetIdFromIndex(routeB)))) {
+            qPlaner.CurrentPostItType = 0;
+        }
+    }
+
+    qPlayer.RentRouten.RentRouten[routeA].Rang = 0;
+    qPlayer.RentRouten.RentRouten[routeB].Rang = 0;
+    qPlayer.RentRouten.RentRouten[routeA].TageMitGering = 99;
+    qPlayer.RentRouten.RentRouten[routeB].TageMitGering = 99;
+    qPlayer.Blocks.RepaintAll = TRUE;
+
+    qPlayer.NetUpdateRentRoute(routeA, routeB);
+
+    return true;
+}
+
+bool GameMechanic::rentRoute(PLAYER &qPlayer, SLONG routeA, SLONG routeB) {
+    SLONG d = 0;
+    SLONG Rang = 1;
+
+    for (d = 0; d < 4; d++) {
+        if ((Sim.Players.Players[d].IsOut == 0) && Sim.Players.Players[d].RentRouten.RentRouten[routeB].Rang >= Rang) {
+            Rang = Sim.Players.Players[d].RentRouten.RentRouten[routeB].Rang + 1;
+        }
+    }
+
+    qPlayer.RentRoute(Routen[routeA].VonCity, Routen[routeA].NachCity, Routen[routeA].Miete);
+
+    qPlayer.RentRouten.RentRouten[routeA].TageMitGering = 0;
+    qPlayer.RentRouten.RentRouten[routeB].TageMitGering = 0;
+    qPlayer.RentRouten.RentRouten[routeA].Rang = UBYTE(Rang);
+    qPlayer.RentRouten.RentRouten[routeB].Rang = UBYTE(Rang);
+
+    qPlayer.Blocks.RepaintAll = TRUE;
+
+    qPlayer.NetUpdateRentRoute(routeA, routeB);
 
     return true;
 }

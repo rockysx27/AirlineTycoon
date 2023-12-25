@@ -58,6 +58,9 @@ class GameMechanic {
     static bool buyXPlane(PLAYER &qPlayer, const CString &filename, SLONG amount);
 
     /* Bank */
+    static bool buyStock(PLAYER &qPlayer, SLONG airlineNum, SLONG amount);
+    static bool sellStock(PLAYER &qPlayer, SLONG airlineNum, SLONG amount);
+
     enum class OvertakeAirlineResult { Ok, DeniedInvalidParam, DeniedYourAirline, DeniedAlreadyGone, DeniedNoStock, DeniedNotEnoughStock, DeniedEnemyStock };
     static OvertakeAirlineResult canOvertakeAirline(PLAYER &qPlayer, SLONG targetAirline);
     static bool overtakeAirline(PLAYER &qPlayer, SLONG targetAirline, bool liquidate);
@@ -65,6 +68,8 @@ class GameMechanic {
     enum class EmitStockResult { Ok, DeniedTooMuch, DeniedValueTooLow };
     static EmitStockResult canEmitStock(PLAYER &qPlayer);
     static bool emitStock(PLAYER &qPlayer, SLONG neueAktien, SLONG mode);
+
+    static bool setDividend(PLAYER &qPlayer, SLONG dividend);
 
     /* Boss */
     enum class ExpandAirportResult { Ok, DeniedFreeGates, DeniedLimitReached, DeniedTooEarly, DeniedAlreadyExpanded, DeniedExpandingRightNow };
@@ -86,11 +91,19 @@ class GameMechanic {
     /* Flights */
     static bool takeFlightJob(PLAYER &qPlayer, SLONG par1, SLONG par2, SLONG &outObjectId);
     static bool takeFreightJob(PLAYER &qPlayer, SLONG par1, SLONG par2, SLONG &outObjectId);
+    static bool killFlightJob(PLAYER &qPlayer, SLONG par1, bool payFine);
+    static bool killFreightJob(PLAYER &qPlayer, SLONG par1, bool payFine);
+    static bool killFlightPlan(PLAYER &qPlayer, SLONG par1);
     static bool refillFlightJobs(SLONG cityNum);
 
     /* Crew */
     static bool hireWorker(PLAYER &qPlayer, CWorker &qWorker);
     static bool fireWorker(PLAYER &qPlayer, CWorker &qWorker);
+
+    /* Routes */
+    static bool killCity(PLAYER &qPlayer, SLONG cityID);
+    static bool killRoute(PLAYER &qPlayer, SLONG routeA, SLONG routeB);
+    static bool rentRoute(PLAYER &qPlayer, SLONG routeA, SLONG routeB);
 
     /* Execution routines */
     static void executeAirlineOvertake();

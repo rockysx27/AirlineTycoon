@@ -6848,18 +6848,7 @@ void CStdRaum::MenuLeftClick(XY Pos) {
 
         case MENU_REQUEST_KILLCITY:
             if (MouseClickArea == -101 && MouseClickId == MENU_REQUEST && MouseClickPar1 == 1) {
-                BLOCKS &qBlocks = qPlayer.Blocks;
-                for (SLONG c = 0; c < Routen.AnzEntries(); c++) {
-                    if ((qBlocks.IsInAlbum(c) != 0) && qBlocks[c].Index == 0 && qBlocks[c].BlockType == 1 && Cities(qBlocks[c].SelectedId) == ULONG(MenuPar2)) {
-                        qBlocks[c].Index = TRUE;
-                        qBlocks[c].Page = 0;
-                        qBlocks[c].RefreshData(PlayerNum);
-                        qBlocks[c].AnzPages = max(0, (qBlocks[c].Table.AnzRows - 1) / 13) + 1;
-                    }
-                }
-
-                qPlayer.RentCities.RentCities[MenuPar2].Rang = 0;
-                qPlayer.Blocks.RepaintAll = TRUE;
+                GameMechanic::killCity(qPlayer, MenuPar2);
             }
             if (MouseClickArea == -101 && MouseClickId == MENU_REQUEST && MouseClickPar1 > 0) {
                 MenuStop();
@@ -6868,51 +6857,12 @@ void CStdRaum::MenuLeftClick(XY Pos) {
 
         case MENU_REQUEST_KILLROUTE:
             if (MouseClickArea == -101 && MouseClickId == MENU_REQUEST && MouseClickPar1 == 1) {
-                BLOCKS &qBlocks = qPlayer.Blocks;
-                for (SLONG c = 0; c < Routen.AnzEntries(); c++) {
-                    if ((qBlocks.IsInAlbum(c) != 0) && qBlocks[c].IndexB == 0 && qBlocks[c].BlockTypeB == 4 &&
-                        (Routen(qBlocks[c].SelectedIdB) == ULONG(MenuPar2) || Routen(qBlocks[c].SelectedIdB) == ULONG(MenuPar3))) {
-                        qBlocks[c].IndexB = TRUE;
-                        qBlocks[c].PageB = 0;
-                        qBlocks[c].RefreshData(PlayerNum);
-                        qBlocks[c].AnzPagesB = max(0, (qBlocks[c].TableB.AnzRows - 1) / 6) + 1;
-                    }
-                }
-
-                for (SLONG e = 0; e < 4; e++) {
-                    if ((Sim.Players.Players[e].IsOut == 0) &&
-                        Sim.Players.Players[e].RentRouten.RentRouten[MenuPar2].Rang > qPlayer.RentRouten.RentRouten[MenuPar2].Rang) {
-                        Sim.Players.Players[e].RentRouten.RentRouten[MenuPar2].Rang--;
-                    }
-
-                    if ((Sim.Players.Players[e].IsOut == 0) &&
-                        Sim.Players.Players[e].RentRouten.RentRouten[MenuPar3].Rang > qPlayer.RentRouten.RentRouten[MenuPar3].Rang) {
-                        Sim.Players.Players[e].RentRouten.RentRouten[MenuPar3].Rang--;
-                    }
-                }
-
-                if ((qPlayer.LocationWin != nullptr) && (qPlayer.GetRoom() == ROOM_LAPTOP || qPlayer.GetRoom() == ROOM_GLOBE)) {
-                    CPlaner &qPlaner = *dynamic_cast<CPlaner *>(qPlayer.LocationWin);
-
-                    if (qPlaner.CurrentPostItType == 1 && (qPlaner.CurrentPostItId == static_cast<SLONG>(Routen.GetIdFromIndex(MenuPar2)) ||
-                                                           qPlaner.CurrentPostItId == static_cast<SLONG>(Routen.GetIdFromIndex(MenuPar3)))) {
-                        qPlaner.CurrentPostItType = 0;
-                    }
-                }
-
-                qPlayer.RentRouten.RentRouten[MenuPar2].Rang = 0;
-                qPlayer.RentRouten.RentRouten[MenuPar3].Rang = 0;
-                qPlayer.RentRouten.RentRouten[MenuPar2].TageMitGering = 99;
-                qPlayer.RentRouten.RentRouten[MenuPar3].TageMitGering = 99;
-                qPlayer.Blocks.RepaintAll = TRUE;
-
+                GameMechanic::killRoute(qPlayer, MenuPar2, MenuPar3);
                 if (qPlayer.GetRoom() == ROOM_ROUTEBOX) {
                     if (qPlayer.LocationWin != nullptr) {
                         (dynamic_cast<CRouteBox *>(qPlayer.LocationWin))->UpdateDataTable();
                     }
                 }
-
-                qPlayer.NetUpdateRentRoute(MenuPar2, MenuPar3);
             }
             if (MouseClickArea == -101 && MouseClickId == MENU_REQUEST && MouseClickPar1 > 0) {
                 MenuStop();
@@ -6921,31 +6871,12 @@ void CStdRaum::MenuLeftClick(XY Pos) {
 
         case MENU_REQUEST_RENTROUTE:
             if (MouseClickArea == -101 && MouseClickId == MENU_REQUEST && MouseClickPar1 == 1) {
-                SLONG d = 0;
-                SLONG Rang = 1;
-
-                for (d = 0; d < 4; d++) {
-                    if ((Sim.Players.Players[d].IsOut == 0) && Sim.Players.Players[d].RentRouten.RentRouten[MenuPar3].Rang >= Rang) {
-                        Rang = Sim.Players.Players[d].RentRouten.RentRouten[MenuPar3].Rang + 1;
-                    }
-                }
-
-                qPlayer.RentRoute(Routen[MenuPar2].VonCity, Routen[MenuPar2].NachCity, Routen[MenuPar2].Miete);
-
-                qPlayer.RentRouten.RentRouten[MenuPar2].TageMitGering = 0;
-                qPlayer.RentRouten.RentRouten[MenuPar3].TageMitGering = 0;
-                qPlayer.RentRouten.RentRouten[MenuPar2].Rang = UBYTE(Rang);
-                qPlayer.RentRouten.RentRouten[MenuPar3].Rang = UBYTE(Rang);
-
-                qPlayer.Blocks.RepaintAll = TRUE;
-
+                GameMechanic::rentRoute(qPlayer, MenuPar2, MenuPar3);
                 if (qPlayer.GetRoom() == ROOM_ROUTEBOX) {
                     if (qPlayer.LocationWin != nullptr) {
                         (dynamic_cast<CRouteBox *>(qPlayer.LocationWin))->UpdateDataTable();
                     }
                 }
-
-                qPlayer.NetUpdateRentRoute(MenuPar2, MenuPar3);
             }
             if (MouseClickArea == -101 && MouseClickId == MENU_REQUEST && MouseClickPar1 > 0) {
                 MenuStop();
@@ -6954,16 +6885,7 @@ void CStdRaum::MenuLeftClick(XY Pos) {
 
         case MENU_REQUEST_KILLAUFTRAG0:
             if (MouseClickArea == -101 && MouseClickId == MENU_REQUEST && MouseClickPar1 == 1) {
-                BLOCKS &qBlocks = qPlayer.Blocks;
-                for (SLONG c = 0; c < qBlocks.AnzEntries(); c++) {
-                    if ((qBlocks.IsInAlbum(c) != 0) && qBlocks[c].IndexB == 0 && qBlocks[c].BlockTypeB == 3 &&
-                        qPlayer.Auftraege(qBlocks[c].SelectedIdB) == ULONG(MenuPar2)) {
-                        qBlocks[c].IndexB = TRUE;
-                        qBlocks[c].PageB = 0;
-                        qBlocks[c].RefreshData(PlayerNum);
-                        qBlocks[c].AnzPagesB = max(0, (qBlocks[c].TableB.AnzRows - 1) / 6) + 1;
-                    }
-                }
+                GameMechanic::killFlightJob(qPlayer, MenuPar2, false);
 
                 if ((qPlayer.LocationWin != nullptr) && (qPlayer.GetRoom() == ROOM_LAPTOP || qPlayer.GetRoom() == ROOM_GLOBE)) {
                     CPlaner &qPlaner = *dynamic_cast<CPlaner *>(qPlayer.LocationWin);
@@ -6972,9 +6894,6 @@ void CStdRaum::MenuLeftClick(XY Pos) {
                         qPlaner.CurrentPostItType = 0;
                     }
                 }
-
-                qPlayer.Auftraege -= MenuPar2;
-                qPlayer.Blocks.RepaintAll = TRUE;
             }
             if (MouseClickArea == -101 && MouseClickId == MENU_REQUEST && MouseClickPar1 > 0) {
                 MenuStop();
@@ -6983,20 +6902,7 @@ void CStdRaum::MenuLeftClick(XY Pos) {
 
         case MENU_REQUEST_KILLAUFTRAG:
             if (MouseClickArea == -101 && MouseClickId == MENU_REQUEST && MouseClickPar1 == 1) {
-                BLOCKS &qBlocks = qPlayer.Blocks;
-                for (SLONG c = 0; c < qBlocks.AnzEntries(); c++) {
-                    if ((qBlocks.IsInAlbum(c) != 0) && qBlocks[c].IndexB == 0 && qBlocks[c].BlockTypeB == 3 &&
-                        qPlayer.Auftraege(qBlocks[c].SelectedIdB) == ULONG(MenuPar2)) {
-                        qBlocks[c].IndexB = TRUE;
-                        qBlocks[c].PageB = 0;
-                        qBlocks[c].RefreshData(PlayerNum);
-                        qBlocks[c].AnzPagesB = max(0, (qBlocks[c].TableB.AnzRows - 1) / 6) + 1;
-                    }
-                }
-
-                qPlayer.ChangeMoney(-qPlayer.Auftraege[MenuPar2].Strafe, 2060,
-                                    (LPCTSTR)CString(bprintf("%s-%s", (LPCTSTR)Cities[qPlayer.Auftraege[MenuPar2].VonCity].Kuerzel,
-                                                             (LPCTSTR)Cities[qPlayer.Auftraege[MenuPar2].NachCity].Kuerzel)));
+                GameMechanic::killFlightJob(qPlayer, MenuPar2, true);
 
                 if ((qPlayer.LocationWin != nullptr) && (qPlayer.GetRoom() == ROOM_LAPTOP || qPlayer.GetRoom() == ROOM_GLOBE)) {
                     CPlaner &qPlaner = *dynamic_cast<CPlaner *>(qPlayer.LocationWin);
@@ -7005,9 +6911,6 @@ void CStdRaum::MenuLeftClick(XY Pos) {
                         qPlaner.CurrentPostItType = 0;
                     }
                 }
-
-                qPlayer.Auftraege -= MenuPar2;
-                qPlayer.Blocks.RepaintAll = TRUE;
             }
             if (MouseClickArea == -101 && MouseClickId == MENU_REQUEST && MouseClickPar1 > 0) {
                 MenuStop();
@@ -7016,16 +6919,7 @@ void CStdRaum::MenuLeftClick(XY Pos) {
 
         case MENU_REQUEST_KILLFAUFTRAG0:
             if (MouseClickArea == -101 && MouseClickId == MENU_REQUEST && MouseClickPar1 == 1) {
-                BLOCKS &qBlocks = qPlayer.Blocks;
-                for (SLONG c = 0; c < qBlocks.AnzEntries(); c++) {
-                    if ((qBlocks.IsInAlbum(c) != 0) && qBlocks[c].IndexB == 0 && qBlocks[c].BlockTypeB == 6 &&
-                        qPlayer.Frachten(qBlocks[c].SelectedIdB) == ULONG(MenuPar2)) {
-                        qBlocks[c].IndexB = TRUE;
-                        qBlocks[c].PageB = 0;
-                        qBlocks[c].RefreshData(PlayerNum);
-                        qBlocks[c].AnzPagesB = max(0, (qBlocks[c].TableB.AnzRows - 1) / 6) + 1;
-                    }
-                }
+                GameMechanic::killFreightJob(qPlayer, MenuPar2, false);
 
                 if ((qPlayer.LocationWin != nullptr) && (qPlayer.GetRoom() == ROOM_LAPTOP || qPlayer.GetRoom() == ROOM_GLOBE)) {
                     CPlaner &qPlaner = *dynamic_cast<CPlaner *>(qPlayer.LocationWin);
@@ -7034,12 +6928,6 @@ void CStdRaum::MenuLeftClick(XY Pos) {
                         qPlaner.CurrentPostItType = 0;
                     }
                 }
-
-                // qPlayer.Frachten-= MenuPar2;
-                qPlayer.Frachten[MenuPar2].Okay = -1;
-                qPlayer.Frachten[MenuPar2].InPlan = -1;
-
-                qPlayer.Blocks.RepaintAll = TRUE;
             }
             if (MouseClickArea == -101 && MouseClickId == MENU_REQUEST && MouseClickPar1 > 0) {
                 MenuStop();
@@ -7048,20 +6936,7 @@ void CStdRaum::MenuLeftClick(XY Pos) {
 
         case MENU_REQUEST_KILLFAUFTRAG:
             if (MouseClickArea == -101 && MouseClickId == MENU_REQUEST && MouseClickPar1 == 1) {
-                BLOCKS &qBlocks = qPlayer.Blocks;
-                for (SLONG c = 0; c < qBlocks.AnzEntries(); c++) {
-                    if ((qBlocks.IsInAlbum(c) != 0) && qBlocks[c].IndexB == 0 && qBlocks[c].BlockTypeB == 6 &&
-                        qPlayer.Frachten(qBlocks[c].SelectedIdB) == ULONG(MenuPar2)) {
-                        qBlocks[c].IndexB = TRUE;
-                        qBlocks[c].PageB = 0;
-                        qBlocks[c].RefreshData(PlayerNum);
-                        qBlocks[c].AnzPagesB = max(0, (qBlocks[c].TableB.AnzRows - 1) / 6) + 1;
-                    }
-                }
-
-                qPlayer.ChangeMoney(-qPlayer.Frachten[MenuPar2].Strafe, 2065,
-                                    (LPCTSTR)CString(bprintf("%s-%s", (LPCTSTR)Cities[qPlayer.Frachten[MenuPar2].VonCity].Kuerzel,
-                                                             (LPCTSTR)Cities[qPlayer.Frachten[MenuPar2].NachCity].Kuerzel)));
+                GameMechanic::killFreightJob(qPlayer, MenuPar2, true);
 
                 if ((qPlayer.LocationWin != nullptr) && (qPlayer.GetRoom() == ROOM_LAPTOP || qPlayer.GetRoom() == ROOM_GLOBE)) {
                     CPlaner &qPlaner = *dynamic_cast<CPlaner *>(qPlayer.LocationWin);
@@ -7070,12 +6945,6 @@ void CStdRaum::MenuLeftClick(XY Pos) {
                         qPlaner.CurrentPostItType = 0;
                     }
                 }
-
-                qPlayer.Frachten[MenuPar2].Okay = -1;
-                qPlayer.Frachten[MenuPar2].InPlan = -1;
-
-                // qPlayer.Frachten-= MenuPar2;
-                qPlayer.Blocks.RepaintAll = TRUE;
             }
             if (MouseClickArea == -101 && MouseClickId == MENU_REQUEST && MouseClickPar1 > 0) {
                 MenuStop();
@@ -7101,33 +6970,7 @@ void CStdRaum::MenuLeftClick(XY Pos) {
 
         case MENU_REQUEST_KILLPLAN:
             if (MouseClickArea == -101 && MouseClickId == MENU_REQUEST && MouseClickPar1 == 1) {
-                CFlugplan &qPlan = Sim.Players.Players[Sim.localPlayer].Planes[MenuPar2].Flugplan;
-
-                for (SLONG c = qPlan.Flug.AnzEntries() - 1; c >= 0; c--) {
-                    if (qPlan.Flug[c].ObjectType != 0) {
-                        if (qPlan.Flug[c].Startdate > Sim.Date || (qPlan.Flug[c].Startdate == Sim.Date && qPlan.Flug[c].Startzeit > Sim.GetHour() + 1)) {
-                            qPlan.Flug[c].ObjectType = 0;
-                        }
-                    }
-                }
-
-                qPlan.UpdateNextFlight();
-                qPlan.UpdateNextStart();
-
-                if (Sim.bNetwork != 0) {
-                    SLONG key = MenuPar2;
-
-                    if (key < 0x1000000) {
-                        key = Sim.Players.Players[Sim.localPlayer].Planes.GetIdFromIndex(key);
-                    }
-
-                    Sim.Players.Players[Sim.localPlayer].NetUpdateFlightplan(key);
-                }
-
-                Sim.Players.Players[Sim.localPlayer].UpdateAuftragsUsage();
-                Sim.Players.Players[Sim.localPlayer].UpdateFrachtauftragsUsage();
-                Sim.Players.Players[Sim.localPlayer].Planes[MenuPar2].CheckFlugplaene(PlayerNum, FALSE);
-                Sim.Players.Players[Sim.localPlayer].Blocks.RepaintAll = TRUE;
+                GameMechanic::killFlightPlan(qPlayer, MenuPar2);
             }
             if (MouseClickArea == -101 && MouseClickId == MENU_REQUEST && MouseClickPar1 > 0) {
                 MenuStop();
@@ -7311,8 +7154,7 @@ void CStdRaum::MenuLeftClick(XY Pos) {
             MenuStop();
         }
         if (MouseClickArea == -102 && MouseClickId == MENU_SETRENDITE && MouseClickPar1 == 10) {
-            qPlayer.Dividende = MenuInfo;
-            PLAYER::NetSynchronizeMoney();
+            GameMechanic::setDividend(qPlayer, MenuInfo);
             if (Sim.Options.OptionEffekte != 0) {
                 PaperTearFX.Play(DSBPLAY_NOSTOP, Sim.Options.OptionEffekte * 100 / 7);
             }
@@ -7339,41 +7181,19 @@ void CStdRaum::MenuLeftClick(XY Pos) {
         if (MouseClickArea == -102 && MouseClickId == MENU_SETRENDITE && MouseClickPar1 == 10) {
             if (MenuPar2 == 0) // kaufen
             {
-                auto Preis = __int64(Sim.Players.Players[MenuPar1].Kurse[0] * MenuInfo);
-                Preis += Preis / 10 + 100;
-
                 if (Sim.Options.OptionAmbiente != 0) {
                     BackgroundFX[1].Play(DSBPLAY_NOSTOP, Sim.Options.OptionEffekte * 100 / 7);
                 }
 
                 MenuStop();
-                if ((Preis != 0) && qPlayer.Money - Preis < DEBT_LIMIT) {
+
+                if (MenuInfo > 0 && !GameMechanic::buyStock(qPlayer, MenuPar1, MenuInfo)) {
                     MakeSayWindow(0, TOKEN_BANK, 6000, pFontPartner);
-                } else {
-                    if ((Sim.bNetwork != 0) && Sim.Players.Players[MenuPar1].Owner == 2) {
-                        SIM::SendSimpleMessage(ATNET_ADVISOR, Sim.Players.Players[MenuPar1].NetworkID, 4, PlayerNum, MenuInfo);
-                    }
-
-                    auto preis = qPlayer.TradeStock(MenuPar1, MenuInfo);
-                    if (preis != 0) {
-                        if (PlayerNum == Sim.localPlayer) {
-                            SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -SLONG(preis), STAT_A_SONSTIGES);
-                        }
-                    }
-
-                    PLAYER::NetSynchronizeMoney();
                 }
             } else if (MenuPar2 == 1) // verkaufen
             {
                 MenuStop();
-                auto preis = qPlayer.TradeStock(MenuPar1, -MenuInfo);
-                if (preis != 0) {
-                    if (PlayerNum == Sim.localPlayer) {
-                        SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, SLONG(preis), STAT_E_SONSTIGES);
-                    }
-                }
-
-                PLAYER::NetSynchronizeMoney();
+                GameMechanic::sellStock(qPlayer, MenuPar1, MenuInfo);
             }
         }
 
