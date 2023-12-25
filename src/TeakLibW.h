@@ -529,7 +529,6 @@ class CRLEWriter {
 
     bool                Close(void);
     void                Write(const unsigned char *buffer, SLONG size);
-    void                WriteAsRaw(const unsigned char *buffer, SLONG size);
     SLONG               GetNextSequence(const unsigned char *buffer, SLONG size, SLONG consumed);
     void                UpdateFromPlainText();
 
