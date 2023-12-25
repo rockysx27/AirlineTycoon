@@ -4710,21 +4710,30 @@ void PLAYER::RobotExecuteAction() {
 
         // Umschulden, Aktien kaufen:
     case ACTION_VISITBANK:
-        if (RobotUse(ROBOT_USE_HIGHSHAREPRICE)) {
-            Dividende = 25;
-        } else if (LocalRandom.Rand(10) == 0) {
-            if (LocalRandom.Rand(5) == 0) {
-                Dividende++;
-            }
-            if (LocalRandom.Rand(10) == 0) {
-                Dividende++;
+
+        // Dividende festlegen
+        {
+            SLONG _dividende = Dividende;
+            if (RobotUse(ROBOT_USE_HIGHSHAREPRICE)) {
+                _dividende = 25;
+            } else if (LocalRandom.Rand(10) == 0) {
+                if (LocalRandom.Rand(5) == 0) {
+                    _dividende++;
+                }
+                if (LocalRandom.Rand(10) == 0) {
+                    _dividende++;
+                }
+
+                if (_dividende < 5) {
+                    _dividende = 5;
+                }
+                if (_dividende > 25) {
+                    _dividende = 25;
+                }
             }
 
-            if (Dividende < 5) {
-                Dividende = 5;
-            }
-            if (Dividende > 25) {
-                Dividende = 25;
+            if (_dividende != Dividende) {
+                GameMechanic::setDividend(*this, _dividende);
             }
         }
 
@@ -4733,24 +4742,20 @@ void PLAYER::RobotExecuteAction() {
             if (RobotUse(ROBOT_USE_PAYBACK_CREDIT)) {
                 if (Money > 750000 && Sim.Date > 1 && !RobotUse(ROBOT_USE_MAXKREDIT)) {
                     SLONG m = min(0x7fffffff, min(Credit, Money - 250000));
-                    ChangeMoney(-m, 2004, "");
-                    Credit -= m;
+                    GameMechanic::payBackCredit(*this, m);
                 }
             } else {
                 SLONG limit = CalcCreditLimit() / 1000 * 1000;
                 SLONG limitNPC = 1000000 + Sim.Date * 50000;
                 if ((RobotUse(ROBOT_USE_ALT_KREDIT) || RobotUse(ROBOT_USE_MAXKREDIT)) && Credit < limitNPC) {
                     SLONG m = min(limit, limitNPC - Credit);
-                    ChangeMoney(m, 2003, "");
-                    Credit += m;
+                    GameMechanic::takeOutCredit(*this, m);
                 } else if (Money > 1500000 && Credit > 0 && !RobotUse(ROBOT_USE_ALT_KREDIT) && !RobotUse(ROBOT_USE_MAXKREDIT)) {
                     SLONG m = min(limit, min(Credit, Money - 1500000));
-                    ChangeMoney(-m, 2004, "");
-                    Credit -= m;
+                    GameMechanic::payBackCredit(*this, m);
                 } else if (Money < 1000000 && !RobotUse(ROBOT_USE_ALT_KREDIT)) {
                     SLONG m = min(limit, 1400000 - Money);
-                    ChangeMoney(m, 2003, "");
-                    Credit += m;
+                    GameMechanic::takeOutCredit(*this, m);
                 }
             }
         }
@@ -4759,7 +4764,7 @@ void PLAYER::RobotExecuteAction() {
             SLONG Sells = OwnsAktien[PlayerNum] - AnzAktien * BTARGET_MEINANTEIL / 100;
 
             if (Sells > 0) {
-                TradeStock(PlayerNum, -Sells);
+                GameMechanic::sellStock(*this, PlayerNum, Sells);
             }
         }
         if ((Credit > 1000000 && RobotUse(ROBOT_USE_SELLSHARES)) || Credit > 3000000) {
@@ -4770,7 +4775,7 @@ void PLAYER::RobotExecuteAction() {
                             SLONG Sells = min(OwnsAktien[c], 20000);
 
                             if (c != PlayerNum || Sim.Date > 20 || OwnsAktien[c] - Sells > AnzAktien / 2) {
-                                TradeStock(c, -Sells);
+                                GameMechanic::sellStock(*this, c, Sells);
                             }
                         }
                     }
@@ -4795,7 +4800,7 @@ void PLAYER::RobotExecuteAction() {
                 }
 
                 if (Anz != 0) {
-                    TradeStock(dislike, Anz);
+                    GameMechanic::buyStock(*this, dislike, Anz);
 
                     if (dislike == Sim.localPlayer && (Sim.Players.Players[Sim.localPlayer].HasBerater(BERATERTYP_INFO) >= rnd.Rand(100))) {
                         Sim.Players.Players[Sim.localPlayer].Messages.AddMessage(
@@ -4820,7 +4825,7 @@ void PLAYER::RobotExecuteAction() {
                 }
 
                 if (Anz != 0) {
-                    TradeStock(PlayerNum, Anz);
+                    GameMechanic::buyStock(*this, PlayerNum, Anz);
                 }
             }
         }
@@ -4834,15 +4839,13 @@ void PLAYER::RobotExecuteAction() {
 
             for (c = 0; c < Planes.AnzEntries(); c++) {
                 if (Planes.IsInAlbum(c) != 0) {
-                    Planes[c].TargetZustand = min(Planes[c].WorstZustand + 19, 100);
+                    GameMechanic::setPlaneTargetZustand(*this, c, min(Planes[c].WorstZustand + 19, 100));
 
                     while (Planes[c].TargetZustand < 100 && FreeMoney > 300000) {
                         if (FreeMoney > 3000000 && Planes[c].TargetZustand < 92) {
-                            Planes[c].TargetZustand = min(Planes[c].TargetZustand + 15, 100);
-                            FreeMoney -= 3000000;
+                            GameMechanic::setPlaneTargetZustand(*this, c, min(Planes[c].TargetZustand + 15, 100));
                         } else {
-                            Planes[c].TargetZustand = min(Planes[c].TargetZustand + 3, 100);
-                            FreeMoney -= 300000;
+                            GameMechanic::setPlaneTargetZustand(*this, c, min(Planes[c].TargetZustand + 3, 100));
                         }
                     }
                 }
@@ -4855,7 +4858,7 @@ void PLAYER::RobotExecuteAction() {
 
             for (c = 0; c < Planes.AnzEntries(); c++) {
                 if (Planes.IsInAlbum(c) != 0) {
-                    Planes[c].TargetZustand = min(Planes[c].TargetZustand + 3, 100);
+                    GameMechanic::setPlaneTargetZustand(*this, c, min(Planes[c].TargetZustand + 3, 100));
                 }
             }
 
@@ -4867,9 +4870,9 @@ void PLAYER::RobotExecuteAction() {
             for (c = 0; c < Planes.AnzEntries(); c++) {
                 if (Planes.IsInAlbum(c) != 0) {
                     if (RobotUse(ROBOT_USE_BARELY_REPAIR)) {
-                        Planes[c].TargetZustand = min(Planes[c].TargetZustand + 2, 70);
+                        GameMechanic::setPlaneTargetZustand(*this, c, min(Planes[c].TargetZustand + 2, 70));
                     } else {
-                        Planes[c].TargetZustand = min(Planes[c].TargetZustand + 2, 100);
+                        GameMechanic::setPlaneTargetZustand(*this, c, min(Planes[c].TargetZustand + 2, 100));
                     }
                 }
             }
@@ -5019,14 +5022,14 @@ void PLAYER::RobotExecuteAction() {
 
         if (RobotUse(ROBOT_USE_REBUYSHARES)) {
             // Direkt wieder die Hälfte aufkaufen:
-            TradeStock(PlayerNum, NeueAktien / 2);
+            GameMechanic::buyStock(*this, PlayerNum, NeueAktien / 2);
         }
 
         if (RobotUse(ROBOT_USE_MAX20PERCENT) && OwnsAktien[PlayerNum] * 100 / AnzAktien > BTARGET_MEINANTEIL && Kurse[0] >= BTARGET_KURS) {
             SLONG Sells = OwnsAktien[PlayerNum] - AnzAktien * BTARGET_MEINANTEIL / 100;
 
             if (Sells > 0) {
-                TradeStock(PlayerNum, -Sells);
+                GameMechanic::sellStock(*this, PlayerNum, Sells);
             }
         }
     }
@@ -6909,70 +6912,6 @@ void PLAYER::UpdateTicketpreise(SLONG RouteId, SLONG Ticketpreis, SLONG Ticketpr
             }
         }
     }
-}
-
-//--------------------------------------------------------------------------------------------
-// Aktienhandel durchführen
-//--------------------------------------------------------------------------------------------
-SLONG PLAYER::TradeStock(SLONG airlineNum, SLONG amount) {
-    if (amount == 0) {
-        return 0;
-    }
-
-    __int64 aktienWert = 0;
-    if (amount > 0) {
-        /* kaufen */
-
-        /* Handel durchführen */
-        aktienWert = __int64(Sim.Players.Players[airlineNum].Kurse[0] * amount);
-        auto gesamtPreis = aktienWert + aktienWert / 10 + 100;
-        if (Money - gesamtPreis < DEBT_LIMIT) {
-            return 0;
-        }
-        ChangeMoney(-gesamtPreis, 3150, "");
-        OwnsAktien[airlineNum] += amount;
-
-        /* aktualisiere Aktienwert */
-        AktienWert[airlineNum] += aktienWert;
-
-        /* aktualisiere Aktienkurs */
-        auto anzAktien = static_cast<DOUBLE>(Sim.Players.Players[airlineNum].AnzAktien);
-        Sim.Players.Players[airlineNum].Kurse[0] *= anzAktien / (anzAktien - amount / 2);
-        if (Sim.Players.Players[airlineNum].Kurse[0] < 0) {
-            Sim.Players.Players[airlineNum].Kurse[0] = 0;
-        }
-    } else {
-        /* verkaufen */
-
-        auto _amount = std::abs(amount);
-        if (_amount > OwnsAktien[airlineNum]) {
-            TeakLibW_Exception(FNL, ExcNever);
-            return 0;
-        }
-
-        /* aktualisiere Aktienwert */
-        {
-            auto num = static_cast<DOUBLE>(OwnsAktien[airlineNum]);
-            AktienWert[airlineNum] *= (num - _amount) / num;
-        }
-
-        /* Handel durchführen */
-        aktienWert = __int64(Sim.Players.Players[airlineNum].Kurse[0] * _amount);
-        auto gesamtPreis = aktienWert - aktienWert / 10 - 100;
-        ChangeMoney(gesamtPreis, 3151, "");
-        OwnsAktien[airlineNum] -= _amount;
-
-        /* aktualisiere Aktienkurs */
-        {
-            auto anzAktien = static_cast<DOUBLE>(Sim.Players.Players[airlineNum].AnzAktien);
-            Sim.Players.Players[airlineNum].Kurse[0] *= (anzAktien - _amount / 2) / anzAktien;
-            if (Sim.Players.Players[airlineNum].Kurse[0] < 0) {
-                Sim.Players.Players[airlineNum].Kurse[0] = 0;
-            }
-        }
-    }
-
-    return aktienWert;
 }
 
 //--------------------------------------------------------------------------------------------
