@@ -93,5 +93,7 @@ class GameMechanic {
 
     /* Execution routines */
     static void executeAirlineOvertake();
-    static void executeSabotage();
+    static void executeSabotageMode1();
+    static void executeSabotageMode2(bool &outBAnyBombs);
+    static void executeSabotageMode3();
 };
