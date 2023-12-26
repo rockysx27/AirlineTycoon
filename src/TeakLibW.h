@@ -777,9 +777,12 @@ class TEXTRES {
     void Open(char const *, void *);
     BUFFER_V<char> &GetB(ULONG, ULONG);
     char *GetP(ULONG, ULONG);
+    char *FindP(ULONG, ULONG);
     char *GetS(ULONG, ULONG);
+    char *FindS(ULONG, ULONG);
     // char* GetS(ULONG, char const*);
     char *GetS(char const *c, ULONG i) { return GetS(*(const ULONG *)c, i); }
+    char *FindS(char const *c, ULONG i) { return FindS(*(const ULONG *)c, i); }
     void AddText(const char *groupId, ULONG id, const char *text);
     void UpdateText(const char *groupId, ULONG id, const char *newText);
 

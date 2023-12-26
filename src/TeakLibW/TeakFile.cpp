@@ -169,7 +169,7 @@ void CRLEReader::SaveAsPlainText() {
         AT_Log("Saving as plain text file to %s", fn);
 
         // TEAKFILE file(fn, TEAKFILE_WRITE);
-        FILE *fp = fopen(fn, "w");
+        FILE *fp = fopen(fn, "wb");
         for (SLONG i = 0; i < buffer.AnzEntries(); ++i) {
             fputc(buffer[i], fp);
         }

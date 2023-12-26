@@ -251,8 +251,12 @@ void PLAYER::ChangeMoney(__int64 Money, SLONG Reason, const CString &Par1, char 
 
         PLAYER::Money += Money;
     }
+    char const *text = ModdedTexte.FindS(TOKEN_MONEY, Reason);
+    if (text == nullptr) {
+        text = StandardTexte.GetS(TOKEN_MONEY, Reason);
+    }
 
-    History.AddEntry(Money, bprintf(StandardTexte.GetS(TOKEN_MONEY, Reason), (LPCTSTR)Par1, Par2));
+    History.AddEntry(Money, bprintf(text, (LPCTSTR)Par1, Par2));
 
     switch (Reason) {
     case 2000:
@@ -644,6 +648,17 @@ void PLAYER::EnterRoom(SLONG RoomNum, bool bDontBroadcast) {
 void PLAYER::AddRocketPart(SLONG rocketPart, SLONG price) {
     RocketFlags |= rocketPart;
     this->ChangeMoney(-price, 3400, "");
+
+    // Synchronize to other players
+    NetSynchronizeFlags();
+}
+
+//--------------------------------------------------------------------------------------------
+// Adds a new part to a space station
+//--------------------------------------------------------------------------------------------
+void PLAYER::AddSpaceStationPart(SLONG flag, SLONG rocketPart, SLONG price) {
+    RocketFlags |= flag;
+    this->ChangeMoney(-price, rocketPart, "");
 
     // Synchronize to other players
     NetSynchronizeFlags();

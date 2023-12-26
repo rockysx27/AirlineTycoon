@@ -83,3 +83,95 @@
   O::# Sound:
   S::# Sound:
   D::# Sound:
+
+>Mony
+>>0008000
+  B::Anel de suprimento
+  E::Supply ring
+  F::Etage d'approvisionnement
+  I::Anello di rifornimento
+  N::Verzorgingsring
+  O::Anel de abastecimento
+  S::Anillo de suministro
+  D::Versorgungsring
+>>0008001
+  B::Anel de tecnologia
+  E::Technology ring
+  F::Étage technologique
+  I::Anello tecnologico
+  N::Technische ring
+  O::Anel de tecnologia
+  S::Anillo tecnológico
+  D::Technikring
+>>0008002
+  B::Anel principal
+  E::Main ring
+  F::Étage principal
+  I::Anello principale
+  N::Hoofdring
+  O::Anel principal
+  S::Anillo principal
+  D::Hauptring
+>>0008100
+  B::Tanques de oxigênio
+  E::Oxygen tanks
+  F::Réservoirs à oxygène
+  I::Serbatoi di ossigeno
+  N::Zuurstoftanks
+  O::Tanques de oxigénio
+  S::Tanques de oxígeno
+  D::Sauerstofftanks
+>>0008101
+  B::Equipamento de comunicação
+  E::Communication equipment
+  F::Equipement de communication
+  I::Attrezzatura per le comunicazioni
+  N::Communicatie-uitrusting
+  O::Equipamento de comunicação
+  S::Equipo de comunicación
+  D::Kommunikationsausrüstung
+>>0008102
+  B::Ponte de comando
+  E::Command bridge
+  F::Pont de commande
+  I::Ponte di comando
+  N::Commandobrug
+  O::Ponte de comando
+  S::Puente de mando
+  D::Kommandobrücke
+>>0008103
+  B::Àreas de habitação
+  E::Living areas
+  F::Zones d'habitation
+  I::Zone abitabili
+  N::Woongelegenheden
+  O::Àreas habitacionais
+  S::Àreas habitables
+  D::Wohnbereiche
+>>0008104
+  B::Escritórios e área de lazer
+  E::Offices and recreation area
+  F::Bureaux et zone de loisir
+  I::Uffici e area ricreativa
+  N::Kantoren en recreatiegebied
+  O::Escritórios e área de lazer
+  S::Oficinas y zona de ocio
+  D::Büros und Freizeitbereich
+>>0008200
+  B::Estação de força
+  E::Power station
+  F::Centrale électrique
+  I::Centrale elettrica
+  N::Krachtstation
+  O::Central eléctrica
+  S::Estación transformadora
+  D::Umspannwerk
+>>0008201
+  B::Painéis solares
+  E::Solar panels
+  F::Panneaux solaires
+  I::Pannelli solari
+  N::Zonnepanelen
+  O::Painéis solares
+  S::Paneles solares
+  D::Solarpanele
