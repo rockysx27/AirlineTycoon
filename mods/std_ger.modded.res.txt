@@ -1,0 +1,1222 @@
+//==============================================================================
+//Modded "std_ger" resources
+//==============================================================================
+>STAT
+>>0010000
+  B::Desconto de guarda-costas
+  E::Bodyguard discount
+  F::Réduction pour garde du corps
+  I::Sconto per guardia del corpo
+  N::Korting voor lijfwacht
+  O::Desconto de guarda-costas
+  S::Descuento para guardaespaldas 
+>>0010001
+  B::Interesse
+  E::Interest
+  F::Intérêt
+  I::Interesse
+  N::Interesse
+  O::Interesse
+  S::Interés
+>>0010002
+  B::Empréstimos
+  E::Loans
+  F::Prêts
+  I::Prestiti
+  N::Leningen
+  O::Empréstimos
+  S::Préstamos
+>>0010003
+  B::Aviões vendidos
+  E::Planes sold
+  F::Avions vendus
+  I::Aerei venduti
+  N::Vliegtuigen verkocht
+  O::Aviões vendidos
+  S::Aviones vendidos
+>>0010004
+  B::Negociação de ações
+  E::Stock trading
+  F::Négociation d'actions
+  I::Trading di azioni
+  N::Aandelenhandel
+  O::Negociação de ações
+  S::Comercio de acciones
+>>0010010
+  B::Aviões comprados
+  E::Planes bought
+  F::Avions achetés
+  I::Aerei acquistati
+  N::Vliegtuigen gekocht
+  O::Aviões comprados
+  S::Aviones comprados
+>>0010011
+  B::Interesse
+  E::Interest
+  F::Intérêt
+  I::Interesse
+  N::Interesse
+  O::Interesse
+  S::Interés
+>>0010012
+  B::Empréstimos
+  E::Loans
+  F::Prêts
+  I::Prestiti
+  N::Leningen
+  O::Empréstimos
+  S::Préstamos
+>>0010013
+  B::Refeições para passageiros
+  E::Meals for passengers
+  F::Repas pour passagers
+  I::Pasti per passeggeri
+  N::Maaltijden voor passagiers
+  O::Refeições para passageiros
+  S::Comidas para pasajeros
+>>0010014
+  B::Expansão
+  E::Expansion
+  F::Expansion
+  I::Espansione
+  N::Uitbreiding
+  O::Expansão
+  S::Expansión
+>>0010015
+  B::Sabotar empregos
+  E::Sabotage jobs
+  F::Saboter des emplois
+  I::Sabotare i lavori
+  N::Banen saboteren
+  O::Sabotar empregos
+  S::Sabotear trabajos
+>>0010016
+  B::Negociação de ações
+  E::Stock trading
+  F::Commerce d'actions
+  I::Commercio di azioni
+  N::Aandelenhandel
+  O::Negociação de ações
+  S::Comercio de acciones
+>>0010017
+  B::Taxas de agência
+  E::Agency fees
+  F::Frais d'agence
+  I::Commissioni d'agenzia
+  N::Agentschapskosten
+  O::Taxas de agência
+  S::Tarifas de agencia
+
+>Mony
+>>0002021
+  B::Querosene para o voo %s
+  E::Kerosene for flight %s
+  F::Kérosène pour le vol %s
+  I::Cherosene per il volo %s
+  N::Kerosine voor vlucht %s
+  O::Querosene para o voo %s
+  S::Queroseno para el vuelo %s
+>>0002022
+  B::Refeições para passageiros do voo %s
+  E::Meals for passengers for flight %s
+  F::Repas pour les passagers du vol %s
+  I::Pasti per i passeggeri del volo %s
+  N::Maaltijden voor passagiers voor vlucht %s
+  O::Refeições para passageiros do voo %s
+  S::Comidas para pasajeros del vuelo %s
+>>0002040
+  B::Leilão de filial
+  E::Auctioning of branch office
+  F::Vente aux enchères de bureau de filiale
+  I::Asta di ufficio filiale
+  N::Veilen van filiaalkantoor
+  O::Leilão de sucursal
+  S::Subasta de oficina sucursal
+>>0002041
+  B::Leilão de rota
+  E::Auctioning of route
+  F::Vente aux enchères de route
+  I::Asta di rotta
+  N::Veilen van route
+  O::Leilão de rota
+  S::Subasta de ruta
+>>0002042
+  B::Leilão de portão
+  E::Auctioning of gate
+  F::Vente aux enchères de porte
+  I::Asta di cancello
+  N::Veilen van poort
+  O::Leilão de portão
+  S::Subasta de puerta
+>>0002100
+  B::(Balanço da rota %s)
+  E::(Balance of route %s)
+  F::(Bilan de la route %s)
+  I::(Bilancio della rotta %s)
+  N::(Balans van route %s)
+  O::(Balanço da rota %s)
+  S::(Balance de la ruta %s)
+>>0002101
+  B::(Balanço do pedido %s)
+  E::(Balance of order %s)
+  F::(Bilan de la commande %s)
+  I::(Bilancio dell'ordine %s)
+  N::(Balans van bestelling %s)
+  O::(Balanço do pedido %s)
+  S::(Balance del pedido %s)
+>>0002102
+  B::(Balanço do voo vazio %s)
+  E::(Balance of empty flight %s)
+  F::(Bilan du vol vide %s)
+  I::(Bilancio del volo vuoto %s)
+  N::(Balans van lege vlucht %s)
+  O::(Balanço do voo vazio %s)
+  S::(Balance del vuelo vacío %s)
+>>0002103
+  B::(Balanço do voo de carga %s)
+  E::(Balance of cargo flight %s)
+  F::(Bilan du vol de fret %s)
+  I::(Bilancio del volo cargo %s)
+  N::(Balans van vrachtvlucht %s)
+  O::(Balanço do voo de carga %s)
+  S::(Balance del vuelo de carga %s)
+>>0003161
+  B::Indenizações por emissões (pagas)
+  E::Emission indemnifications (paid)
+  F::Indemnisations pour émissions (payées)
+  I::Indennità per emissioni (pagate)
+  N::Emissievergoedingen (betaald)
+  O::Indemnizações por emissões (pagas)
+  S::Indemnizaciones por emisiones (pagadas)
+>>0003163
+  B::Indenizações por emissões (recebidas)
+  E::Emission indemnifications (received)
+  F::Indemnisations pour émissions (reçues)
+  I::Indennità per emissioni (ricevute)
+  N::Emissievergoedingen (ontvangen)
+  O::Indemnizações por emissões (recebidas)
+  S::Indemnizaciones por emisiones (recibidas)
+>>0008000
+  B::Anel de suprimento
+  E::Supply ring
+  F::Etage d'approvisionnement
+  I::Anello di rifornimento
+  N::Verzorgingsring
+  O::Anel de abastecimento
+  S::Anillo de suministro
+>>0008001
+  B::Anel de tecnologia
+  E::Technology ring
+  F::?tage technologique
+  I::Anello tecnologico
+  N::Technische ring
+  O::Anel de tecnologia
+  S::Anillo tecnol?gico
+>>0008002
+  B::Anel principal
+  E::Main ring
+  F::?tage principal
+  I::Anello principale
+  N::Hoofdring
+  O::Anel principal
+  S::Anillo principal
+>>0008100
+  B::Tanques de oxig?nio
+  E::Oxygen tanks
+  F::R?servoirs ? oxyg?ne
+  I::Serbatoi di ossigeno
+  N::Zuurstoftanks
+  O::Tanques de oxig?nio
+  S::Tanques de ox?geno
+>>0008101
+  B::Equipamento de comunica??o
+  E::Communication equipment
+  F::Equipement de communication
+  I::Attrezzatura per le comunicazioni
+  N::Communicatie-uitrusting
+  O::Equipamento de comunica??o
+  S::Equipo de comunicaci?n
+>>0008102
+  B::Ponte de comando
+  E::Command bridge
+  F::Pont de commande
+  I::Ponte di comando
+  N::Commandobrug
+  O::Ponte de comando
+  S::Puente de mando
+>>0008103
+  B::?reas de habita??o
+  E::Living areas
+  F::Zones d'habitation
+  I::Zone abitabili
+  N::Woongelegenheden
+  O::?reas habitacionais
+  S::?reas habitables
+>>0008104
+  B::Escrit?rios e ?rea de lazer
+  E::Offices and recreation area
+  F::Bureaux et zone de loisir
+  I::Uffici e area ricreativa
+  N::Kantoren en recreatiegebied
+  O::Escrit?rios e ?rea de lazer
+  S::Oficinas y zona de ocio
+>>0008200
+  B::Esta??o de for?a
+  E::Power station
+  F::Centrale ?lectrique
+  I::Centrale elettrica
+  N::Krachtstation
+  O::Central el?ctrica
+  S::Estaci?n transformadora
+>>0008201
+  B::Pain?is solares
+  E::Solar panels
+  F::Panneaux solaires
+  I::Pannelli solari
+  N::Zonnepanelen
+  O::Pain?is solares
+  S::Paneles solares
+
+>Akti
+>>0003030
+  B::Novo saldo da conta (incluindo taxa)
+  E::New account balance (incl. fee)
+  F::Nouveau solde du compte (incl. frais)
+  I::Nuovo saldo del conto (incl. commissione)
+  N::Nieuw rekeningsaldo (incl. vergoeding)
+  O::Novo saldo da conta (incluindo taxa)
+  S::Nuevo saldo de la cuenta (incl. tarifa)
+
+>XPrt
+>>0002001
+  B::Resumo
+  E::Summary
+  F::Résumé
+  I::Sommario
+  N::Samenvatting
+  O::Resumo
+  S::Resumen
+>>0002002
+  B::Balanço diário
+  E::Daily balance
+  F::Solde quotidien
+  I::Bilancio giornaliero
+  N::Dagelijkse balans
+  O::Balanço diário
+  S::Balance diario
+>>0002003
+  B::Balanço semanal
+  E::Weekly balance
+  F::Solde hebdomadaire
+  I::Bilancio settimanale
+  N::Wekelijkse balans
+  O::Balanço semanal
+  S::Balance semanal
+>>0002004
+  B::Balanço geral
+  E::Overall balance
+  F::Solde global
+  I::Bilancio complessivo
+  N::Algeheel saldo
+  O::Balanço geral
+  S::Balance general
+>>0002005
+  B::Renda através de aviões
+  E::Income through planes
+  F::Revenus grâce aux avions
+  I::Entrate tramite aerei
+  N::Inkomen via vliegtuigen
+  O::Rendimento através de aviões
+  S::Ingresos a través de aviones
+>>0002006
+  B::Concorrentes (visão geral)
+  E::Competitors (overview)
+  F::Concurrents (aperçu)
+  I::Concorrenti (panoramica)
+  N::Concurrenten (overzicht)
+  O::Concorrentes (visão geral)
+  S::Competidores (visión general)
+>>0002007
+  B:: Resumos
+  E:: Summaries
+  F:: Résumés
+  I:: Sommari
+  N:: Samenvattingen
+  O:: Resumos
+  S:: Resúmenes
+>>0002008
+  B:: Balanço semanal de %s
+  E:: Weekly balance of %s
+  F:: Solde hebdomadaire de %s
+  I:: Bilancio settimanale di %s
+  N:: Wekelijkse balans van %s
+  O:: Balanço semanal de %s
+  S:: Balance semanal de %s
+>>0002009
+  B:: Balanço semanal de %s
+  E:: Weekly balance of %s
+  F:: Solde hebdomadaire de %s
+  I:: Bilancio settimanale di %s
+  N:: Wekelijkse balans van %s
+  O:: Balanço semanal de %s
+  S:: Balance semanal de %s
+>>0002010
+  B:: Balanço semanal de %s
+  E:: Weekly balance of %s
+  F:: Solde hebdomadaire de %s
+  I:: Bilancio settimanale di %s
+  N:: Wekelijkse balans van %s
+  O:: Balanço semanal de %s
+  S:: Balance semanal de %s
+>>0002011
+  B::Consultor de Querosene
+  E::Kerosene Advisor
+  F::Conseiller en kérosène
+  I::Consulente di cherosene
+  N::Kerosineadviseur
+  O::Consultor de Querosene
+  S::Asesor de Keroseno
+>>0003003
+  B::Você precisa de um informante mais qualificado para este relatório.
+  E::You need a better qualified informer for this report.
+  F::Vous avez besoin d'un informateur mieux qualifié pour ce rapport.
+  I::Hai bisogno di un informatore più qualificato per questo rapporto.
+  N::Je hebt een beter gekwalificeerde informant nodig voor dit rapport.
+  O::Precisa de um informante mais qualificado para este relatório.
+  S::Necesitas un informante más calificado para este informe.
+>>0003004
+  B::Você precisa de um consultor de querosene mais qualificado para este relatório.
+  E::You need a better qualified kerosene advisor for this report.
+  F::Vous avez besoin d'un conseiller en kérosène mieux qualifié pour ce rapport.
+  I::Hai bisogno di un consulente per il cherosene più qualificato per questo rapporto.
+  N::Je hebt een beter gekwalificeerde kerosineadviseur nodig voor dit rapport.
+  O::Precisa de um consultor de querosene mais qualificado para este relatório.
+  S::Necesitas un asesor de queroseno más calificado para este informe.
+>>0003404
+  B::Pedidos
+  E::Orders
+  F::Commandes
+  I::Ordini
+  N::Bestellingen
+  O::Encomendas
+  S::Órdenes
+>>0010000
+  B::Querosene para avião
+  E::Kerosene for plane
+  F::Kérosène pour avion
+  I::Cherosene per aereo
+  N::Kerosine voor vliegtuig
+  O::Querosene para avião
+  S::Queroseno para avión
+>>0010001
+  B::Querosene para estoque
+  E::Kerosene for stock
+  F::Kérosène pour les stocks
+  I::Cherosene per le scorte
+  N::Kerosine voor voorraad
+  O::Querosene para estoque
+  S::Queroseno para stock
+>>0010002
+  B::Refeições para passageiros
+  E::Meals for passengers
+  F::Repas pour les passagers
+  I::Pasti per i passeggeri
+  N::Maaltijden voor passagiers
+  O::Refeições para passageiros
+  S::Comidas para pasajeros
+>>0010003
+  B::Reforma de aeronave\r\nCarga/Passageiros
+  E::Plane rework\r\nCargo/Passengers
+  F::Rénovation d'avion\r\nCargo/Passagers
+  I::Ristrutturazione aereo\r\nCarico/Passeggeri
+  N::Vliegtuigrenovatie\r\nVracht/Passagiers
+  O::Reforma de avião\r\nCarga/Passageiros
+  S::Reacondicionamiento de avión\r\nCarga/Pasajeros
+>>0010004
+  B::Empréstimos atuais
+  E::Current loans
+  F::Prêts en cours
+  I::Prestiti attuali
+  N::Huidige leningen
+  O::Empréstimos atuais
+  S::Préstamos actuales
+>>0010005
+  B::Pagamento do empréstimo
+  E::Loan repayment
+  F::Remboursement du prêt
+  I::Ripagamento del prestito
+  N::Aflossing van lening
+  O::Reembolso do empréstimo
+  S::Reembolso del préstamo
+>>0003501
+  B::Juros do empréstimo
+  E::Loan interest
+  F::Intérêt du prêt
+  I::Interesse del prestito
+  N::Leningrente
+  O::Juros do empréstimo
+  S::Interés del préstamo
+>>0010006
+  B::Imposto sobre a riqueza
+  E::Wealth tax
+  F::Impôt sur la fortune
+  I::Imposta sulla ricchezza
+  N::Vermogensbelasting
+  O::Imposto sobre a riqueza
+  S::Impuesto sobre el patrimonio
+>>0010007
+  B::Roubo (hacking)
+  E::Theft (hacking)
+  F::Vol (piratage)
+  I::Furto (hacking)
+  N::Diefstal (hacken)
+  O::Roubo (hacking)
+  S::Robo (piratería)
+>>0010008
+  B::Compensação
+  E::Compensation
+  F::Indemnisation
+  I::Compensazione
+  N::Compensatie
+  O::Compensação
+  S::Compensación
+>>0010009
+  B::Pago ao sabotador
+  E::Paid to saboteur
+  F::Payé au saboteur
+  I::Pagato al sabotatore
+  N::Betaald aan saboteur
+  O::Pago ao sabotador
+  S::Pago al saboteador
+>>0010010
+  B::Multas por sabotagem
+  E::Fine for sabotage
+  F::Amende pour sabotage
+  I::Multa per sabotaggio
+  N::Boete voor sabotage
+  O::Multa por sabotagem
+  S::Multas por sabotaje
+>>0010011
+  B::Danos causados por sabotagem
+  E::Sabotage damage
+  F::Dommages de sabotage
+  I::Danni da sabotaggio
+  N::Schade door sabotage
+  O::Danos causados por sabotagem
+  S::Daños por sabotaje
+>>0010012
+  B::Desconto para guarda-costas
+  E::Bodyguard discount
+  F::Réduction pour les gardes du corps
+  I::Sconto per bodyguard
+  N::Korting voor bodyguards
+  O::Desconto para guarda-costas
+  S::Descuento para guardaespaldas
+>>0010013
+  B::Received from\r\nplayers
+  E::Received from\r\nplayers
+  F::Reçu de\r\njoueurs
+  I::Ricevuto da\r\ngiocatori
+  N::Ontvangen van\r\nspelers
+  O::Recebido de\r\njogadores
+  S::Recibido de\r\njugadores
+  D::Erhalten von\r\nSpielern
+>>0010014
+  B::Outras receitas
+  E::Other income
+  F::Autres revenus
+  I::Altri redditi
+  N::Overige inkomsten
+  O::Outros rendimentos
+  S::Otros ingresos
+  D::Andere Einkünfte
+>>0010015
+  B::Custo de reparo da avaria
+  E::Breakdown repair cost
+  F::Coût de réparation de la panne
+  I::Costo di riparazione del guasto
+  N::Reparatiekosten bij pech
+  O::Custo de reparação da avaria
+  S::Costo de reparación de la avería
+  D::Reparaturkosten bei Panne
+>>0010016
+  B::Custo de segurança
+  E::Security cost
+  F::Coût de sécurité
+  I::Costo della sicurezza
+  N::Beveiligingskosten
+  O::Custo de segurança
+  S::Costo de seguridad
+  D::Sicherheitskosten
+>>0010017
+  B::Custo de publicidade
+  E::Advertisement cost
+  F::Coût de publicité
+  I::Costo della pubblicità
+  N::Reclamekosten
+  O::Custo de publicidade
+  S::Costo de publicidad
+  D::Werbekosten
+>>0010018
+  B::enviado para outros\r\njogadores
+  E::sent to other\r\nplayers
+  F::envoyé aux autres\r\njoueurs
+  I::inviato agli altri\r\ngiocatori
+  N::verzonden naar andere\r\nspelers
+  O::enviado para outros\r\njogadores
+  S::enviado a otros\r\njugadores
+  D::an andere\r\nSpieler gesendet
+>>0010019
+  B::Outras despesas
+  E::Other expenses
+  F::Autres dépenses
+  I::Altre spese
+  N::Andere uitgaven
+  O::Outras despesas
+  S::Otros gastos
+  D::Andere Ausgaben
+>>0010020
+  B::Venda de ações
+  E::Stock sale
+  F::Vente de titres
+  I::Vendita di azioni
+  N::Verkoop van aandelen
+  O::Venda de ações
+  S::Venta de acciones
+  D::Aktienverkauf
+>>0010021
+  B::Emissões de ações
+  E::Stock emissions
+  F::Émissions d'actions
+  I::Emissioni di azioni
+  N::Aandelenuitgiften
+  O::Emissões de ações
+  S::Emisiones de acciones
+  D::Aktienemissionen
+>>0010022
+  B::Indenizações por emissões\r\n(recebidas)
+  E::Emission indemnifications\r\n(received)
+  F::Indemnisations d'émission\r\n(reçues)
+  I::Indennizzi per emissioni\r\n(ricevuti)
+  N::Emissie vergoedingen\r\n(ontvangen)
+  O::Indemnizações de emissão\r\n(recebidas)
+  S::Indemnizaciones de emisión\r\n(recibidas)
+  D::Emissionsentschädigungen\r\n(erhalten)
+>>0010023
+  B::Compra de ações
+  E::Stock purchase
+  F::Achat d'actions
+  I::Acquisto di azioni
+  N::Aandelenaankoop
+  O::Compra de ações
+  S::Compra de acciones
+  D::Aktienkauf
+>>0010024
+  B::Taxas de emissão
+  E::Emission fees
+  F::Frais d'émission
+  I::Spese di emissione
+  N::Emmissiekosten
+  O::Taxas de emissão
+  S::Tarifas de emisión
+  D::Emissionsgebühren
+>>0010025
+  B::Indenizações de emissão\r\n(recebidas)
+  E::Emission indemnifications\r\n(received)
+  F::Indemnisations d'émission\r\n(reçues)
+  I::Indennizzi per emissioni\r\n(ricevuti)
+  N::Emissie vergoedingen\r\n(ontvangen)
+  O::Indemnizações de emissão\r\n(recebidas)
+  S::Indemnizaciones de emisión\r\n(recibidas)
+  D::Emissionsentschädigungen\r\n(erhalten)
+>>0010026
+  B::Aviões vendidos
+  E::Planes sold
+  F::Avions vendus
+  I::Aerei venduti
+  N::Vliegtuigen verkocht
+  O::Aviões vendidos
+  S::Aviones vendidos
+  D::Flugzeuge verkauft
+>>0010027
+  B::Aquisições
+  E::Takeovers
+  F::Prises de contrôle
+  I::Acquisizioni
+  N::Overnames
+  O::Aquisições
+  S::Adquisiciones
+  D::Übernahmen
+>>0010028
+  B::Aviões comprados
+  E::Planes bought
+  F::Avions achetés
+  I::Aerei acquistati
+  N::Vliegtuigen gekocht
+  O::Aviões comprados
+  S::Aviones comprados
+  D::Flugzeuge gekauft
+>>0010029
+  B::Equipamento de aeronave
+  E::Plane equipment
+  F::Équipement d'avion
+  I::Attrezzatura dell'aereo
+  N::Vliegtuiguitrusting
+  O::Equipamento de aeronave
+  S::Equipo de avión
+  D::Flugzeugausrüstung
+>>0010030
+  B::Aquisição de\r\nfiliais
+  E::Buying of\r\nbranch offices
+  F::Achat de\r\nsuccursales
+  I::Acquisto di\r\nsedi secondarie
+  N::Aankoop van\r\nfilialen
+  O::Aquisição de\r\nfiliais
+  S::Compra de\r\nsucursales
+  D::Kauf von\r\nFilialen
+>>0010031
+  B::Compra de rotas
+  E::Buying of routes
+  F::Achat de itinéraires
+  I::Acquisto di percorsi
+  N::Aankoop van routes
+  O::Compra de rotas
+  S::Compra de rutas
+  D::Kauf von Strecken
+>>0010032
+  B::Compra de portões
+  E::Buying of gates
+  F::Achat de portes
+  I::Acquisto di gate
+  N::Aankoop van gates
+  O::Compra de portões
+  S::Compra de puertas
+  D::Kauf von Toren
+>>0010033
+  B::Tanques de querosene
+  E::Kerosene tanks
+  F::Réservoirs de kérosène
+  I::Serbatoi di cherosene
+  N::Kerosinetanks
+  O::Tanques de querosene
+  S::Tanques de queroseno
+  D::Kerosintanks
+>>0010034
+  B::Escritório filial\r\ntaxas de aluguel
+  E::Branch office\r\nrental fees
+  F::Bureau de succursale\r\nfrais de location
+  I::Ufficio filiale\r\ncanone di locazione
+  N::Filialkantoor\r\nhuurkosten
+  O::Escritório de filial\r\ntaxas de arrendamento
+  S::Oficina sucursal\r\ntarifas de alquiler
+  D::Zweigstelle\r\nMietgebühren
+>>0010035
+  B::Taxas de aluguel de rota
+  E::Route rental fees
+  F::Frais de location de route
+  I::Tariffe di noleggio percorso
+  N::Route huurkosten
+  O::Taxas de aluguer de rota
+  S::Tarifas de alquiler de ruta
+  D::Streckenmietgebühren
+>>0010036
+  B::Juros de crédito
+  E::Credit interest
+  F::Intérêts de crédit
+  I::Interessi sul credito
+  N::Kredietrente
+  O::Juros de crédito
+  S::Intereses de crédito
+  D::Kreditzinsen
+>>0010037
+  B::Juros de débito
+  E::Debit interest
+  F::Intérêts de débit
+  I::Interessi sul debito
+  N::Debetrente
+  O::Juros de débito
+  S::Intereses de débito
+  D::Debetzinsen
+>>0010038
+  B::Dividendo recebido
+  E::Dividend received
+  F::Dividende reçu
+  I::Dividendo ricevuto
+  N::Ontvangen dividend
+  O::Dividendo recebido
+  S::Dividendo recibido
+  D::Erhaltene Dividende
+>>0010039
+  B::Dividendo pago
+  E::Dividend paid
+  F::Dividende versé
+  I::Dividendo pagato
+  N::Dividend uitbetaald
+  O::Dividendo pago
+  S::Dividendo pagado
+  D::Dividende ausgezahlt
+
+>>0010050
+  B::Saldo geral ($ 1000)
+  E::Overall balance ($ 1000)
+  F::Solde général (1000 €)
+  I::Saldo complessivo (1000 $)
+  N::Totaal saldo (1000 $)
+  O::Saldo geral (1000 $)
+  S::Saldo general (Pts 1000)
+  D::Gesamtbilanz (1000 €)
+>>0010051
+  B::Operações comerciais ($ 1000)
+  E::Business operations ($ 1000)
+  F::Opérations commerciales (1000 €)
+  I::Operazioni commerciali (1000 $)
+  N::Bedrijfsactiviteiten (1000 $)
+  O::Operações empresariais (1000 $)
+  S::Operaciones comerciales (Pts 1000)
+  D::Geschäftsbetrieb (1000 €)
+>>0010052
+  B::Pessoal e aluguel ($ 1000)
+  E::Personal and rent ($ 1000)
+  F::Personnel et loyer (1000 €)
+  I::Personale e affitto (1000 $)
+  N::Persoonlijk en huur (1000 $)
+  O::Pessoal e renda (1000 $)
+  S::Personal y alquiler (Pts 1000)
+  D::Personal und Miete (1000 €)
+>>0010053
+  B::Juros e empréstimos ($ 1000)
+  E::Interest and loans ($ 1000)
+  F::Intérêts et prêts (1000 €)
+  I::Interessi e prestiti (1000 $)
+  N::Rente en leningen (1000 $)
+  O::Juros e empréstimos (1000 $)
+  S::Intereses y préstamos (Pts 1000)
+  D::Zinsen und Darlehen (1000 €)
+>>0010054
+  B::Negociação de ações ($ 1000)
+  E::Stock trading ($ 1000)
+  F::Trading d'actions (1000 €)
+  I::Trading di azioni (1000 $)
+  N::Aandelenhandel (1000 $)
+  O::Negociação de ações (1000 $)
+  S::Negociación de acciones (Pts 1000)
+  D::Aktienhandel (1000 €)
+>>0010055
+  B::Expansão ($ 1000)
+  E::Expansion ($ 1000)
+  F::Expansion (1000 €)
+  I::Espansione (1000 $)
+  N::Uitbreiding (1000 $)
+  O::Expansão (1000 $)
+  S::Expansión (Pts 1000)
+  D::Expansion (1000 €)
+>>0010056
+  B::Sabotagem ($ 1000)
+  E::Sabotage ($ 1000)
+  F::Sabotage (1000 €)
+  I::Sabotaggio (1000 $)
+  N::Sabotage (1000 $)
+  O::Sabotagem (1000 $)
+  S::Sabotaje (Pts 1000)
+  D::Sabotage (1000 €)
+>>0010057
+  B::Outros ($ 1000)
+  E::Other ($ 1000)
+  F::Autre (1000 €)
+  I::Altro (1000 $)
+  N::Andere (1000 $)
+  O::Outro (1000 $)
+  S::Otro (Pts 1000)
+  D::Andere (1000 €)
+>>0010100
+  B::Lucro operacional
+  E::Operating profit
+  F::Bénéfice d'exploitation
+  I::Profitto operativo
+  N::Operationele winst
+  O::Lucro operacional
+  S::Beneficio operativo
+  D::Betrieblicher Gewinn
+>>0010101
+  B::Perda operacional
+  E::Operational loss
+  F::Perte opérationnelle
+  I::Perdita operativa
+  N::Operationeel verlies
+  O::Perda operacional
+  S::Pérdida operativa
+  D::Betriebsverlust
+>>0010102
+  B::Balanço operacional
+  E::Operating balance
+  F::Solde d'exploitation
+  I::Bilancio operativo
+  N::Operationeel saldo
+  O::Balanço operacional
+  S::Saldo operativo
+  D::Betrieblicher Saldo
+>>0010103
+  B::Proporção Lucro Operacional
+  E::Proportion of Op. Profit
+  F::Proportion du Bénéfice Opérationnel
+  I::Proporzione Profitto Operativo
+  N::Percentage Op. Winst
+  O::Proporção Lucro Operacional
+  S::Proporción Beneficio Operativo
+  D::Anteil Betr. Gewinn
+>>0010150
+  B::destas operações comerciais
+  E::thereof business operations
+  F::dont les opérations commerciales
+  I::delle operazioni commerciali
+  N::daarvan bedrijfsactiviteiten
+  O::das operações empresariais
+  S::de las operaciones comerciales
+  D::davon Geschäftsbetrieb
+>>0010151
+  B::Saldo semanal ($ 1000)
+  E::Weekly balance ($ 1000)
+  F::Solde hebdomadaire (1000 €)
+  I::Saldo settimanale (1000 $)
+  N::Wekelijks saldo (1000 $)
+  O::Saldo semanal (1000 $)
+  S::Saldo semanal (Pts 1000)
+  D::Wöchentlicher Saldo (1000 €)
+>>0010152
+  B::Obrigações ($ 1000)
+  E::Obligations ($ 1000)
+  F::Obligations (1000 €)
+  I::Obbligazioni (1000 $)
+  N::Verplichtingen (1000 $)
+  O::Obrigações (1000 $)
+  S::Obligaciones (Pts 1000)
+  D::Verpflichtungen (1000 €)
+>>0010153
+  B::cada semana ($ 1000)
+  E::each week ($ 1000)
+  F::chaque semaine (1000 €)
+  I::ogni settimana (1000 $)
+  N::elke week (1000 $)
+  O::cada semana (1000 $)
+  S::cada semana (Pts 1000)
+  D::jede Woche (1000 $)
+
+>>0010200
+  B::O concorrente não existe mais
+  E::Competitor does not exist anymore
+  F::Le concurrent n'existe plus
+  I::Il concorrente non esiste più
+  N::De concurrent bestaat niet meer
+  O::O concorrente não existe mais
+  S::El competidor ya no existe
+  D::Der Konkurrent existiert nicht mehr
+>>0010201
+  B::A %s considera-nos o concorrente mais forte!
+  E::%s considers us the strongest competitor!
+  F::%s nous considère comme le concurrent le plus fort !
+  I::%s ci considera il concorrente più forte!
+  N::%s beschouwt ons als de sterkste concurrent!
+  O::A %s considera-nos o concorrente mais forte!
+  S::¡%s nos considera el competidor más fuerte!
+  D::%s betrachtet uns als den stärksten Konkurrenten!
+>>0010202
+  B::%s não tem gates suficientes!
+  E::%s does not have enough gates!
+  F::%s n'a pas assez de portes d'embarquement !
+  I::%s non ha abbastanza gate!
+  N::%s heeft niet genoeg gates!
+  O::%s não tem portões suficientes!
+  S::¡%s no tiene suficientes puertas de embarque!
+  D::%s hat nicht genug Gates!
+>>0010203
+  B::%s poupa para um avião.
+  E::%s saves for a plane.
+  F::%s économise pour un avion.
+  I::%s risparmia per un aereo.
+  N::%s spaart voor een vliegtuig.
+  O::%s poupa para um avião.
+  S::%s ahorra para un avión.
+  D::%s spart für ein Flugzeug.
+>>0010204
+  B::%s quer começar a voar rotas.
+  E::%s wants to start flying routes.
+  F::%s souhaite commencer à voler des routes.
+  I::%s vuole iniziare a volare su rotte.
+  N::%s wil beginnen met het vliegen van routes.
+  O::%s quer começar a voar rotas.
+  S::%s quiere empezar a volar rutas.
+  D::%s möchte damit beginnen, Strecken zu fliegen.
+
+>>0010300
+  B::Tanque
+  E::Tank
+  F::Réservoir
+  I::Serbatoio
+  N::Tank
+  O::Tanque
+  S::Tanque
+  D::Tank
+>>0010301
+  B::Preço/barril (mercado)
+  E::Price/barrel (market)
+  F::Prix/baril (marché)
+  I::Prezzo/barile (mercato)
+  N::Prijs/per vat (markt)
+  O::Preço/barril (mercado)
+  S::Precio/barril (mercado)
+  D::Preis/pro Barrel (Markt)
+>>0010302
+  B::Preço/barril (tanque)
+  E::Price/barrel (tank)
+  F::Prix/baril (réservoir)
+  I::Prezzo/barile (serbatoio)
+  N::Prijs/per vat (tank)
+  O::Preço/barril (tanque)
+  S::Precio/barril (tanque)
+  D::Preis/pro Barrel (Tank)
+>>0010303
+  B::Valor do tanque (milhões)
+  E::Value of tank (millions)
+  F::Valeur du réservoir (millions)
+  I::Valore del serbatoio (milioni)
+  N::Waarde van tank (miljoenen)
+  O::Valor do tanque (milhões)
+  S::Valor del tanque (millones)
+  D::Wert des Tanks (Millionen)
+>>0010304
+  B::Qualidade do querosene
+  E::Kerosene quality
+  F::Qualité du kérosène
+  I::Qualità del cherosene
+  N::Kerosinekwaliteit
+  O::Qualidade do querosene
+  S::Calidad del queroseno
+  D::Kerosinqualität
+>>0010305
+  B::top de linha
+  E::top of the range
+  F::haut de gamme
+  I::alta gamma
+  N::topklasse
+  O::top de gama
+  S::tope de gama
+  D::topmodell
+>>0010306
+  B::muito bom
+  E::very good
+  F::très bien
+  I::molto buono
+  N::zeer goed
+  O::muito bom
+  S::muy bueno
+  D::sehr gut
+>>0010307
+  B::bom
+  E::good
+  F::bien
+  I::buono
+  N::goed
+  O::bom
+  S::bueno
+  D::gut
+>>0010308
+  B::regular
+  E::regular
+  F::ordinaire
+  I::normale
+  N::gewoon
+  O::regular
+  S::regular
+  D::normal
+>>0010309
+  B::médio
+  E::average
+  F::moyen
+  I::medio
+  N::gemiddeld
+  O::média
+  S::promedio
+  D::durchschnittlich
+>>0010310
+  B::ruim
+  E::bad
+  F::mauvais
+  I::cattivo
+  N::slecht
+  O::mau
+  S::malo
+  D::schlecht
+>>0010311
+  B::muito ruim
+  E::very bad
+  F::très mauvais
+  I::molto cattivo
+  N::zeer slecht
+  O::muito mau
+  S::muy malo
+  D::sehr schlecht
+>>0010312
+  B::Qualidade
+  E::Quality
+  F::Qualité
+  I::Qualità
+  N::Kwaliteit
+  O::Qualidade
+  S::Calidad
+  D::Qualität
+>>0010313
+  B::barato
+  E::cheap
+  F::bon marché
+  I::economico
+  N::goedkoop
+  O::barato
+  S::barato
+  D::günstig
+>>0010314
+  B::Dinheiro economizado (ontem)
+  E::Money saved (yesterday)
+  F::Argent économisé (hier)
+  I::Denaro risparmiato (ieri)
+  N::Geld bespaard (gisteren)
+  O::Dinheiro poupado (ontem)
+  S::Dinero ahorrado (ayer)
+  D::Gespartes Geld (gestern)
+>>0010315
+  B::Dinheiro economizado (semana)
+  E::Money saved (week)
+  F::Argent économisé (semaine)
+  I::Denaro risparmiato (settimana)
+  N::Geld bespaard (week)
+  O::Dinheiro poupado (semana)
+  S::Dinero ahorrado (semana)
+  D::Gespartes Geld (Woche)
+>>0010316
+  B::Dinheiro economizado (total)
+  E::Money saved (overall)
+  F::Argent économisé (total)
+  I::Denaro risparmiato (totale)
+  N::Geld bespaard (totaal)
+  O::Dinheiro poupado (total)
+  S::Dinero ahorrado (total)
+  D::Gespartes Geld (insgesamt)
+>>0010317
+  B::A qualidade do querosene é desastrosa! Devemos comprar querosene de topo de gama.
+  E::Kerosene quality is disastrous! We should buy top of the range kerosene.
+  F::La qualité du kérosène est désastreuse ! Nous devrions acheter du kérosène haut de gamme.
+  I::La qualità del cherosene è disastrosa! Dovremmo acquistare cherosene di alta gamma.
+  N::De kerosinekwaliteit is rampzalig! We zouden hoogwaardige kerosine moeten kopen.
+  O::A qualidade do querosene é desastrosa! Devemos comprar querosene de topo de gama.
+  S::¡La calidad del queroseno es desastrosa! Deberíamos comprar queroseno de gama alta.
+  D::Die Qualität des Kerosins ist katastrophal! Wir sollten Kerosin der Spitzenklasse kaufen.
+>>0010318
+  B::A qualidade do querosene é desastrosa! Devemos comprar querosene de topo de gama em %li barril.
+  E::Kerosene quality is disastrous! We should buy %li barrel top of the range kerosene.
+  F::La qualité du kérosène est désastreuse ! Nous devrions acheter %li baril de kérosène haut de gamme.
+  I::La qualità del cherosene è disastrosa! Dovremmo acquistare %li barile di cherosene di alta gamma.
+  N::De kerosinekwaliteit is rampzalig! We zouden %li vat hoogwaardige kerosine moeten kopen.
+  O::A qualidade do querosene é desastrosa! Devemos comprar %li barril de querosene de topo de gama.
+  S::¡La calidad del queroseno es desastrosa! Deberíamos comprar %li barril de queroseno de gama alta.
+  D::Die Qualität des Kerosins ist katastrophal! Wir sollten %li Barrel Kerosin der Spitzenklasse kaufen.
+>>0010319
+  B::A qualidade do querosene é má. Devemos comprar querosene de topo de gama.
+  E::Kerosene quality is bad. We should buy top of the range kerosene.
+  F::La qualité du kérosène est mauvaise. Nous devrions acheter du kérosène haut de gamme.
+  I::La qualità del cherosene è scarsa. Dovremmo acquistare cherosene di alta gamma.
+  N::De kerosinekwaliteit is slecht. We zouden hoogwaardige kerosine moeten kopen.
+  O::A qualidade do querosene é má. Devemos comprar querosene de topo de gama.
+  S::La calidad del queroseno es mala. Deberíamos comprar queroseno de gama alta.
+  D::Die Qualität des Kerosins ist schlecht. Wir sollten Kerosin der Spitzenklasse kaufen.
+>>0010320
+  B::A qualidade do querosene é má. Devemos comprar %li barril de querosene de topo de gama.
+  E::Kerosene quality is bad. We should buy %li barrel top of the range kerosene.
+  F::La qualité du kérosène est mauvaise. Nous devrions acheter %li baril de kérosène haut de gamme.
+  I::La qualità del cherosene è scarsa. Dovremmo acquistare %li barile di cherosene di alta gamma.
+  N::De kerosinekwaliteit is slecht. We zouden %li vat hoogwaardige kerosine moeten kopen.
+  O::A qualidade do querosene é má. Devemos comprar %li barril de querosene de topo de gama.
+  S::La calidad del queroseno es mala. Deberíamos comprar %li barril de queroseno de gama alta.
+  D::Die 
+>>0010321
+  B::A qualidade do querosene é muito boa demais. Devemos economizar dinheiro e comprar querosene barato.
+  E::Kerosene quality is way too good. We should save money and buy cheap kerosene.
+  F::La qualité du kérosène est bien trop bonne. Nous devrions économiser de l'argent et acheter du kérosène bon marché.
+  I::La qualità del cherosene è troppo buona. Dovremmo risparmiare denaro e comprare cherosene economico.
+  N::De kerosinekwaliteit is veel te goed. We zouden geld moeten besparen en goedkope kerosine moeten kopen.
+  O::A qualidade do querosene é boa demais. Devemos economizar dinheiro e comprar querosene barato.
+  S::La calidad del queroseno es demasiado buena. Deberíamos ahorrar dinero y comprar queroseno barato.
+  D::Die Qualität des Kerosins ist viel zu gut. Wir sollten Geld sparen und billiges Kerosin kaufen.
+>>0010322
+  B::A qualidade do querosene é muito boa demais. Devemos economizar dinheiro e comprar %li barril de querosene barato.
+  E::Kerosene quality is way too good. We should save money and buy %li barrel of cheap kerosene.
+  F::La qualité du kérosène est bien trop bonne. Nous devrions économiser de l'argent et acheter %li baril de kérosène bon marché.
+  I::La qualità del cherosene è troppo buona. Dovremmo risparmiare denaro e comprare %li barile di cherosene economico.
+  N::De kerosinekwaliteit is veel te goed. We zouden geld moeten besparen en %li vat goedkope kerosine moeten kopen.
+  O::A qualidade do querosene é boa demais. Devemos economizar dinheiro e comprar %li barril de querosene barato.
+  S::La calidad del queroseno es demasiado buena. Deberíamos ahorrar dinero y comprar %li barril de queroseno barato.
+  D::Die Qualität des Kerosins ist viel zu gut. Wir sollten Geld sparen und %li Barrel billiges Kerosin kaufen.
+>>0010323
+  B::A qualidade do querosene está bem. Poderíamos economizar dinheiro e comprar querosene barato se nossos aviões puderem suportar isso.
+  E::Kerosene quality is fine. We could save money and buy cheap kerosene if our planes can support this.
+  F::La qualité du kérosène est bonne. Nous pourrions économiser de l'argent et acheter du kérosène bon marché si nos avions le permettent.
+  I::La qualità del cherosene va bene. Potremmo risparmiare denaro e acquistare cherosene economico se i nostri aerei possono supportarlo.
+  N::De kerosinekwaliteit is prima. We zouden geld kunnen besparen en goedkope kerosine kunnen kopen als onze vliegtuigen dit kunnen ondersteunen.
+  O::A qualidade do querosene está bem. Poderíamos economizar dinheiro e comprar querosene barato se nossos aviões puderem suportar isso.
+  S::La calidad del queroseno está bien. Podríamos ahorrar dinero y comprar queroseno barato si nuestros aviones lo permiten.
+  D::Die Qualität des Kerosins ist in Ordnung. Wir könnten Geld sparen und billiges Kerosin kaufen, wenn unsere Flugzeuge dies unterstützen können.
+>>0010324
+  B::A qualidade do querosene está bem. Poderíamos economizar dinheiro e comprar %li barril de querosene barato se nossos aviões puderem suportar isso.
+  E::Kerosene quality is fine. We could save money and buy %li barrel of cheap kerosene if our planes can support this.
+  F::La qualité du kérosène est bonne. Nous pourrions économiser de l'argent et acheter %li baril de kérosène bon marché si nos avions le permettent.
+  I::La qualità del cherosene va bene. Potremmo risparmiare denaro e acquistare %li barile di cherosene economico se i nostri aerei possono supportarlo.
+  N::De kerosinekwaliteit is prima. We zouden geld kunnen besparen en %li vat goedkope kerosine kunnen kopen als onze vliegtuigen dit kunnen ondersteunen.
+  O::A qualidade do querosene está bem. Poderíamos economizar dinheiro e comprar %li barril de querosene barato se nossos aviões puderem suportar isso.
+  S::La calidad del queroseno está bien. Podríamos ahorrar dinero y comprar %li barril de queroseno barato si nuestros aviones lo permiten.
+  D::Die Qualität des Kerosins ist in Ordnung. Wir könnten Geld sparen und %li Barrel billiges Kerosin kaufen, wenn unsere Flugzeuge dies unterstützen können.
+>>0010350
+  B::Relatório do querosene
+  E::Kerosene report
+  F::Rapport sur le kérosène
+  I::Rapporto sul cherosene
+  N::Kerosine rapport
+  O::Relatório do querosene
+  S::Informe del queroseno
+  D::Kerosinbericht
+
+>Jobs
+>>0002003
+  B::Consultor de rotas
+  E::Route advisor
+  F::Conseiller de route
+  I::Consulente di rotta
+  N::Routeadviseur
+  O::Consultor de rotas
+  S::Asesor de rutas
+  D::Routenberater
+>Misc
+>>0003201
+  B::Horário de funcionamento.µ µSeg-Sáb: 10-19µDom: fechado
+  E::Opening hours.µ µMon-Sat: 10-19µSun: closed
+  F::Heures d'ouverture.µ µLun-Sam: 10-19µDim: fermé
+  I::Orari di apertura.µ µLun-Sab: 10-19µDom: chiuso
+  N::Openingstijden.µ µMa t/m za: 10-19µZon: gesloten
+  O::Horário de funcionamento.µ µSeg-Sáb: 10-19µDom: fechado
+  S::Horario de apertura.µ µLun-Sáb: 10-19µDom: cerrado
+  D::Öffnungszeiten.µ µMo-Sa: 10-19µSo: geschlossen
+>>0001152
+  B::Missão %li: %s (%s)
+  E::Mission %li: %s (%s)
+  F::Mission %li : %s (%s)
+  I::Missione %li: %s (%s)
+  N::Missie %li: %s (%s)
+  O::Missão %li: %s (%s)
+  S::Misión %li: %s (%s)
+  D::Mission %li: %s (%s)
+>>0001153
+  B::Jogo livre: %s (%s)
+  E::Freeplay game: %s (%s)
+  F::Jeu en mode libre : %s (%s)
+  I::Gioco freeplay: %s (%s)
+  N::Freeplay-spel: %s (%s)
+  O::Jogo livre: %s (%s)
+  S::Juego libre: %s (%s)
+  D::Freies Spiel: %s (%s)
