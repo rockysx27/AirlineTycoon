@@ -253,35 +253,32 @@ BOOL DoesDirectoryExist(char const *path) {
     return false;
 }
 
+BOOL isCRLE(char const *path) {
+    CRLEReader reader(path);
+    return reader.getIsRLE();
+}
+
 BUFFER_V<BYTE> LoadCompleteFile(char const *path) {
+    BOOL _isCRLE = isCRLE(path);
+
+    if (_isCRLE && CRLEReader::UpdateDataBeforeOpening) {
+        CRLEWriter writer(path);
+        writer.UpdateFromPlainText();
+        writer.Close();
+    }
+
+    if (_isCRLE && CRLEReader::AlwaysSaveAsPlainText) {
+        CRLEReader converter(path);
+        converter.SaveAsPlainText();
+        converter.Close();
+    }
+    
+    // Read file and return
     CRLEReader reader(path);
     BUFFER_V<BYTE> buffer(reader.GetSize());
     if (!reader.Read(buffer.getData(), buffer.AnzEntries(), true)) {
         return buffer;
     }
-
-    if (reader.getIsRLE() && CRLEReader::UpdateDataBeforeOpening) {
-        reader.Close();
-        CRLEWriter writer(path);
-        writer.UpdateFromPlainText();
-        writer.Close();
-
-        // Reload the potentially modified file
-        CRLEReader _reader(path);
-        BUFFER_V<BYTE> _buffer(_reader.GetSize());
-        if (!_reader.Read(_buffer.getData(), _buffer.AnzEntries(), true)) {
-            return _buffer;
-        }
-        // Update local references
-        reader = _reader;
-        buffer = _buffer;
-    }
-
-    if (reader.getIsRLE() && CRLEReader::AlwaysSaveAsPlainText) {
-        CRLEReader converter(path);
-        converter.SaveAsPlainText();
-    }
-
     return buffer;
 }
 

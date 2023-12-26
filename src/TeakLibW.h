@@ -776,20 +776,23 @@ class TEXTRES {
 
     void Open(char const *, void *);
     BUFFER_V<char> &GetB(ULONG, ULONG);
-    char *GetP(ULONG, ULONG);
     char *FindP(ULONG, ULONG);
-    char *GetS(ULONG, ULONG);
     char *FindS(ULONG, ULONG);
-    // char* GetS(ULONG, char const*);
+    char *GetP(ULONG, ULONG);
+    char *GetS(ULONG, ULONG);
+
     char *GetS(char const *c, ULONG i) { return GetS(*(const ULONG *)c, i); }
-    char *FindS(char const *c, ULONG i) { return FindS(*(const ULONG *)c, i); }
-    void AddText(const char *groupId, ULONG id, const char *text);
-    void UpdateText(const char *groupId, ULONG id, const char *newText);
+
+    void SetOverrideFile(char const *c);
 
   private:
-    BUFFER_V<char> Path;
-    BUFFER_V<char> Strings;
-    BUFFER_V<TEXTRES_CACHE_ENTRY> Entries;
+    char *FindOverridenS(ULONG, ULONG);
+
+    BUFFER_V<char>                  Path;
+    BUFFER_V<char>                  Strings;
+    BUFFER_V<TEXTRES_CACHE_ENTRY>   Entries;
+    BOOL                            hasOverride = false;
+    TEXTRES                         *override;
 };
 
 // static_assert(sizeof(TEXTRES) == 36, "TEXTRES size check");

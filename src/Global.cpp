@@ -206,6 +206,7 @@ CString IntroPath;    // Der Intro-Film
 CString AppPath;      // Der Ganze Pfad, z.B. "f:\project\takeoff\"
 CString VoicePath;   // die Sprache
 CString MyPlanePath; // die eigenen Flugzeuge
+CString ModsPath;    // Mods path
 
 //--------------------------------------------------------------------------------------------
 // Die Simulationswelt mit ihren Parameter (Zeit, Spieler, Schwierigkeit, ..)

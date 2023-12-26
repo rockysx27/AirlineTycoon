@@ -43,6 +43,7 @@ void InitPathVars() {
     ExcelPath = prefix + "data\\%s";
     GliPath = prefix + "gli\\%s";
     MiscPath = prefix + "misc\\%s";
+    ModsPath = prefix + "mods\\%s";
     VoicePath = prefix + "voice\\%s";
     SoundPath = "sound\\%s";
     RoomPath = "room\\%s";
