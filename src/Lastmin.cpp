@@ -323,26 +323,14 @@ void CLastMinute::OnLButtonDown(UINT nFlags, CPoint point) {
             if (LastMinuteAuftraege[c].Praemie > 0) {
                 if (RoomPos.IfIsWithin(ZettelPos[c * 2], ZettelPos[c * 2 + 1], ZettelPos[c * 2] + gZettelBms[c % 3].Size.x,
                                        ZettelPos[c * 2 + 1] + gZettelBms[c % 3].Size.y)) {
-                    if (qPlayer.Auftraege.GetNumFree() < 3) {
-                        qPlayer.Auftraege.ReSize(qPlayer.Auftraege.AnzEntries() + 10);
-                    }
+
+                    SLONG outId = -1;
+                    GameMechanic::takeLastMinuteJob(qPlayer, c, outId);
 
                     gUniversalFx.Stop();
                     gUniversalFx.ReInit("paptake.raw");
                     gUniversalFx.Play(DSBPLAY_NOSTOP, Sim.Options.OptionEffekte * 100 / 7);
 
-                    qPlayer.Auftraege += LastMinuteAuftraege[c];
-                    qPlayer.NetUpdateOrder(LastMinuteAuftraege[c]);
-
-                    // Für den Statistikscreen:
-                    qPlayer.Statistiken[STAT_AUFTRAEGE].AddAtPastDay(1);
-                    qPlayer.Statistiken[STAT_LMAUFTRAEGE].AddAtPastDay(1);
-
-                    SIM::SendSimpleMessage(ATNET_SYNCNUMFLUEGE, 0, Sim.localPlayer, static_cast<SLONG>(qPlayer.Statistiken[STAT_AUFTRAEGE].GetAtPastDay(0)),
-                                           static_cast<SLONG>(qPlayer.Statistiken[STAT_LMAUFTRAEGE].GetAtPastDay(0)));
-
-                    LastMinuteAuftraege[c].Praemie = -1000;
-                    qPlayer.NetUpdateTook(1, c);
                     break;
                 }
             }

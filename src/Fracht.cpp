@@ -358,24 +358,16 @@ void CFrachtRaum::OnLButtonDown(UINT nFlags, CPoint point) {
             if (gFrachten[c].Praemie >= 0) {
                 if (RoomPos.IfIsWithin(KistePos[c * 2], KistePos[c * 2 + 1] + 30, KistePos[c * 2] + ZettelBms[c].Size.x,
                                        KistePos[c * 2 + 1] + ZettelBms[c].Size.y)) {
-                    if (qPlayer.Frachten.GetNumFree() < 3) {
-                        qPlayer.Frachten.ReSize(qPlayer.Frachten.AnzEntries() + 10);
-                    }
+
+                    SLONG outId = -1;
+                    GameMechanic::takeFreightJob(qPlayer, c, outId);
 
                     gUniversalFx.Stop();
                     gUniversalFx.ReInit("paptake.raw");
                     gUniversalFx.Play(DSBPLAY_NOSTOP, Sim.Options.OptionEffekte * 100 / 7);
 
-                    qPlayer.Frachten += gFrachten[c];
-                    qPlayer.NetUpdateFreightOrder(gFrachten[c]);
-
                     KommVar = 3;
 
-                    // Für den Statistikscreen:
-                    qPlayer.Statistiken[STAT_FRACHTEN].AddAtPastDay(1);
-
-                    gFrachten[c].Praemie = -1000;
-                    qPlayer.NetUpdateTook(3, c);
                     break;
                 }
             }
