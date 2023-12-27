@@ -4955,38 +4955,7 @@ void PLAYER::RobotExecuteAction() {
 
     case ACTION_EMITSHARES: {
         SLONG NeueAktien = (MaxAktien - AnzAktien) / 100 * 100;
-        SLONG MarktAktien = NeueAktien * 8 / 10;
-        auto AlterKurs = Kurse[0];
-        auto EmissionsKurs = SLONG(Kurse[0] - 3);
-
-        __int64 EmissionsWert = __int64(MarktAktien) * EmissionsKurs;
-        __int64 EmissionsGebuehr = __int64(NeueAktien) * EmissionsKurs / 10 / 100 * 100;
-
-        ChangeMoney(EmissionsWert, 3162, "");
-        ChangeMoney(-EmissionsGebuehr, 3160, "");
-
-        Kurse[0] = (Kurse[0] * __int64(AnzAktien) + EmissionsWert) / (AnzAktien + MarktAktien);
-        if (Kurse[0] < 0) {
-            Kurse[0] = 0;
-        }
-
-        // Entschädigung +/-
-        auto kursDiff = (AlterKurs - Kurse[0]);
-        ChangeMoney(-SLONG((AnzAktien - OwnsAktien[PlayerNum]) * kursDiff), 3161, "");
-        for (c = 0; c < Sim.Players.Players.AnzEntries(); c++) {
-            if (c != PlayerNum) {
-                auto entschaedigung = SLONG(Sim.Players.Players[c].OwnsAktien[PlayerNum] * kursDiff);
-                Sim.Players.Players[c].ChangeMoney(entschaedigung, 3163, "");
-            }
-        }
-
-        AnzAktien += NeueAktien;
-        OwnsAktien[PlayerNum] += (NeueAktien - MarktAktien);
-
-        if (Sim.Players.Players[Sim.localPlayer].HasBerater(BERATERTYP_INFO) >= rnd.Rand(100)) {
-            Sim.Players.Players[Sim.localPlayer].Messages.AddMessage(
-                BERATERTYP_INFO, bprintf(StandardTexte.GetS(TOKEN_ADVICE, 9004), (LPCTSTR)NameX, (LPCTSTR)AirlineX, NeueAktien));
-        }
+        GameMechanic::emitStock(*this, NeueAktien, 1);
 
         if (RobotUse(ROBOT_USE_REBUYSHARES)) {
             // Direkt wieder die Hälfte aufkaufen:
