@@ -4103,8 +4103,11 @@ void COptions::WriteOptions() {
 
     CRegistryAccess reg(chRegKey);
 
+    // Modded
     reg.WriteRegistryKey_l(OptionFullscreen);
     reg.WriteRegistryKey_b(OptionKeepAspectRatio);
+
+    // Regular
     reg.WriteRegistryKey_b(OptionPlanes);
     reg.WriteRegistryKey_b(OptionPassengers);
     reg.WriteRegistryKey_l(OptionMusicType);

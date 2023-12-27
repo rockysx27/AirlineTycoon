@@ -5,19 +5,21 @@
 >>0010000
   B::Desconto de guarda-costas
   E::Bodyguard discount
-  F::Réduction pour garde du corps
-  I::Sconto per guardia del corpo
-  N::Korting voor lijfwacht
+  F::Remise pour les gardes du corps
+  I::Sconto per bodyguard
+  N::Korting voor bodyguards
   O::Desconto de guarda-costas
-  S::Descuento para guardaespaldas 
+  S::Descuento para guardaespaldas
+  D::Bodyguard-Rabatt
 >>0010001
-  B::Interesse
+  B::Juros
   E::Interest
   F::Intérêt
   I::Interesse
-  N::Interesse
-  O::Interesse
+  N::Rente
+  O::Juros
   S::Interés
+  D::Zinsen
 >>0010002
   B::Empréstimos
   E::Loans
@@ -26,6 +28,7 @@
   N::Leningen
   O::Empréstimos
   S::Préstamos
+  D::Darlehen
 >>0010003
   B::Aviões vendidos
   E::Planes sold
@@ -34,14 +37,16 @@
   N::Vliegtuigen verkocht
   O::Aviões vendidos
   S::Aviones vendidos
+  D::Verkaufte Flugzeuge
 >>0010004
   B::Negociação de ações
   E::Stock trading
-  F::Négociation d'actions
+  F::Trading d'actions
   I::Trading di azioni
-  N::Aandelenhandel
+  N::Effectenhandel
   O::Negociação de ações
-  S::Comercio de acciones
+  S::Negociación de acciones
+  D::Aktienhandel
 >>0010010
   B::Aviões comprados
   E::Planes bought
@@ -50,14 +55,16 @@
   N::Vliegtuigen gekocht
   O::Aviões comprados
   S::Aviones comprados
+  D::Gekaufte Flugzeuge
 >>0010011
-  B::Interesse
+  B::Juros
   E::Interest
   F::Intérêt
   I::Interesse
-  N::Interesse
-  O::Interesse
+  N::Rente
+  O::Juros
   S::Interés
+  D::Zinsen
 >>0010012
   B::Empréstimos
   E::Loans
@@ -66,14 +73,16 @@
   N::Leningen
   O::Empréstimos
   S::Préstamos
+  D::Darlehen
 >>0010013
   B::Refeições para passageiros
   E::Meals for passengers
-  F::Repas pour passagers
-  I::Pasti per passeggeri
+  F::Repas pour les passagers
+  I::Pasti per i passeggeri
   N::Maaltijden voor passagiers
   O::Refeições para passageiros
   S::Comidas para pasajeros
+  D::Mahlzeiten für Passagiere
 >>0010014
   B::Expansão
   E::Expansion
@@ -82,30 +91,34 @@
   N::Uitbreiding
   O::Expansão
   S::Expansión
+  D::Expansion
 >>0010015
-  B::Sabotar empregos
+  B::Trabalhos de sabotagem
   E::Sabotage jobs
-  F::Saboter des emplois
-  I::Sabotare i lavori
-  N::Banen saboteren
-  O::Sabotar empregos
-  S::Sabotear trabajos
+  F::Travaux de sabotage
+  I::Lavori di sabotaggio
+  N::Sabotagebanen
+  O::Trabalhos de sabotagem
+  S::Trabajos de sabotaje
+  D::Sabotageaufträge
 >>0010016
   B::Negociação de ações
   E::Stock trading
-  F::Commerce d'actions
-  I::Commercio di azioni
-  N::Aandelenhandel
+  F::Négociation d'actions
+  I::Trading di azioni
+  N::Effectenhandel
   O::Negociação de ações
-  S::Comercio de acciones
+  S::Negociación de acciones
+  D::Aktienhandel
 >>0010017
-  B::Taxas de agência
+  B::Taxas da agência
   E::Agency fees
   F::Frais d'agence
-  I::Commissioni d'agenzia
-  N::Agentschapskosten
-  O::Taxas de agência
-  S::Tarifas de agencia
+  I::Spese dell'agenzia
+  N::Bureaukosten
+  O::Taxas da agência
+  S::Honorarios de la agencia
+  D::Agenturgebühren
 
 >Mony
 >>0002021
@@ -115,177 +128,199 @@
   I::Cherosene per il volo %s
   N::Kerosine voor vlucht %s
   O::Querosene para o voo %s
-  S::Queroseno para el vuelo %s
+  S::Keroseno para el vuelo %s
+  D::Kerosin für den Flug %s
 >>0002022
   B::Refeições para passageiros do voo %s
   E::Meals for passengers for flight %s
   F::Repas pour les passagers du vol %s
   I::Pasti per i passeggeri del volo %s
-  N::Maaltijden voor passagiers voor vlucht %s
+  N::Maaltijden voor passagiers van vlucht %s
   O::Refeições para passageiros do voo %s
   S::Comidas para pasajeros del vuelo %s
+  D::Mahlzeiten für Passagiere des Fluges %s
 >>0002040
   B::Leilão de filial
   E::Auctioning of branch office
-  F::Vente aux enchères de bureau de filiale
-  I::Asta di ufficio filiale
-  N::Veilen van filiaalkantoor
-  O::Leilão de sucursal
-  S::Subasta de oficina sucursal
+  F::Adjudication de succursale
+  I::Asta di filiale
+  N::Veiling van filiaal
+  O::Leilão de filial
+  S::Subasta de sucursal
+  D::Versteigerung der Zweigstelle
 >>0002041
   B::Leilão de rota
   E::Auctioning of route
-  F::Vente aux enchères de route
-  I::Asta di rotta
-  N::Veilen van route
+  F::Adjudication de l'itinéraire
+  I::Asta della rotta
+  N::Veiling van route
   O::Leilão de rota
   S::Subasta de ruta
+  D::Versteigerung der Route
 >>0002042
   B::Leilão de portão
   E::Auctioning of gate
-  F::Vente aux enchères de porte
-  I::Asta di cancello
-  N::Veilen van poort
+  F::Adjudication de porte
+  I::Asta del gate
+  N::Veiling van gate
   O::Leilão de portão
   S::Subasta de puerta
+  D::Versteigerung des Gates
 >>0002100
-  B::(Balanço da rota %s)
+  B::(Saldo da rota %s)
   E::(Balance of route %s)
-  F::(Bilan de la route %s)
-  I::(Bilancio della rotta %s)
-  N::(Balans van route %s)
-  O::(Balanço da rota %s)
-  S::(Balance de la ruta %s)
+  F::(Solde de l'itinéraire %s)
+  I::(Bilancio del percorso %s)
+  N::(Saldo van de route %s)
+  O::(Saldo da rota %s)
+  S::(Saldo de la ruta %s)
+  D::(Saldo der Route %s)
 >>0002101
-  B::(Balanço do pedido %s)
+  B::(Saldo do pedido %s)
   E::(Balance of order %s)
-  F::(Bilan de la commande %s)
+  F::(Solde de la commande %s)
   I::(Bilancio dell'ordine %s)
-  N::(Balans van bestelling %s)
-  O::(Balanço do pedido %s)
-  S::(Balance del pedido %s)
+  N::(Saldo van de bestelling %s)
+  O::(Saldo do pedido %s)
+  S::(Saldo del pedido %s)
+  D::(Saldo der Bestellung %s)
 >>0002102
-  B::(Balanço do voo vazio %s)
+  B::(Saldo do voo vazio %s)
   E::(Balance of empty flight %s)
-  F::(Bilan du vol vide %s)
+  F::(Solde du vol à vide %s)
   I::(Bilancio del volo vuoto %s)
-  N::(Balans van lege vlucht %s)
-  O::(Balanço do voo vazio %s)
-  S::(Balance del vuelo vacío %s)
+  N::(Saldo van lege vlucht %s)
+  O::(Saldo do voo vazio %s)
+  S::(Saldo del vuelo vacío %s)
+  D::(Saldo des Leerflugs %s)
 >>0002103
-  B::(Balanço do voo de carga %s)
+  B::(Saldo do voo de carga %s)
   E::(Balance of cargo flight %s)
-  F::(Bilan du vol de fret %s)
-  I::(Bilancio del volo cargo %s)
-  N::(Balans van vrachtvlucht %s)
-  O::(Balanço do voo de carga %s)
-  S::(Balance del vuelo de carga %s)
+  F::(Solde du vol de fret %s)
+  I::(Bilancio del volo merci %s)
+  N::(Saldo van vrachtvlucht %s)
+  O::(Saldo do voo de carga %s)
+  S::(Saldo del vuelo de carga %s)
+  D::(Saldo des Frachtflugs %s)
 >>0003161
-  B::Indenizações por emissões (pagas)
+  B::Indenizações de emissão (pagas)
   E::Emission indemnifications (paid)
-  F::Indemnisations pour émissions (payées)
-  I::Indennità per emissioni (pagate)
-  N::Emissievergoedingen (betaald)
-  O::Indemnizações por emissões (pagas)
-  S::Indemnizaciones por emisiones (pagadas)
+  F::Indemnités d'émission (payées)
+  I::Indennizzi per emissioni (pagati)
+  N::Emissiecompensaties (betaald)
+  O::Indenizações de emissão (pagas)
+  S::Indemnizaciones por emisión (pagadas)
+  D::Emissionsentschädigungen (bezahlt)
 >>0003163
-  B::Indenizações por emissões (recebidas)
+  B::Indenizações de emissão (recebidas)
   E::Emission indemnifications (received)
-  F::Indemnisations pour émissions (reçues)
-  I::Indennità per emissioni (ricevute)
-  N::Emissievergoedingen (ontvangen)
-  O::Indemnizações por emissões (recebidas)
-  S::Indemnizaciones por emisiones (recibidas)
+  F::Indemnités d'émission (reçues)
+  I::Indennizzi per emissioni (ricevuti)
+  N::Emissiecompensaties (ontvangen)
+  O::Indenizações de emissão (recebidas)
+  S::Indemnizaciones por emisión (recibidas)
+  D::Emissionsentschädigungen (erhalten)
 >>0008000
   B::Anel de suprimento
   E::Supply ring
-  F::Etage d'approvisionnement
-  I::Anello di rifornimento
-  N::Verzorgingsring
+  F::Anneau d'approvisionnement
+  I::Anello di approvvigionamento
+  N::Leveranciersring
   O::Anel de abastecimento
   S::Anillo de suministro
+  D::Versorgungsring
 >>0008001
   B::Anel de tecnologia
   E::Technology ring
-  F::?tage technologique
+  F::Anneau technologique
   I::Anello tecnologico
-  N::Technische ring
+  N::Technologiering
   O::Anel de tecnologia
-  S::Anillo tecnol?gico
+  S::Anillo de tecnología
+  D::Technologiering
 >>0008002
   B::Anel principal
   E::Main ring
-  F::?tage principal
+  F::Anneau principal
   I::Anello principale
   N::Hoofdring
   O::Anel principal
   S::Anillo principal
+  D::Hauptring
 >>0008100
-  B::Tanques de oxig?nio
+  B::Tanques de oxigênio
   E::Oxygen tanks
-  F::R?servoirs ? oxyg?ne
+  F::Réservoirs d'oxygène
   I::Serbatoi di ossigeno
   N::Zuurstoftanks
-  O::Tanques de oxig?nio
-  S::Tanques de ox?geno
+  O::Tanques de oxigénio
+  S::Tanques de oxígeno
+  D::Sauerstofftanks
 >>0008101
-  B::Equipamento de comunica??o
+  B::Equipamento de comunicação
   E::Communication equipment
-  F::Equipement de communication
-  I::Attrezzatura per le comunicazioni
-  N::Communicatie-uitrusting
-  O::Equipamento de comunica??o
-  S::Equipo de comunicaci?n
+  F::Équipement de communication
+  I::Attrezzatura di comunicazione
+  N::Communicatieapparatuur
+  O::Equipamento de comunicação
+  S::Equipos de comunicación
+  D::Kommunikationsausrüstung
 >>0008102
   B::Ponte de comando
   E::Command bridge
-  F::Pont de commande
+  F::Passerelle de commandement
   I::Ponte di comando
   N::Commandobrug
   O::Ponte de comando
   S::Puente de mando
+  D::Kommandobrücke
 >>0008103
-  B::?reas de habita??o
+  B::Áreas de convivência
   E::Living areas
-  F::Zones d'habitation
-  I::Zone abitabili
-  N::Woongelegenheden
-  O::?reas habitacionais
-  S::?reas habitables
+  F::Espaces de vie
+  I::Aree di vita
+  N::Leefruimtes
+  O::Áreas de convivência
+  S::Áreas de convivencia
+  D::Wohnbereiche
 >>0008104
-  B::Escrit?rios e ?rea de lazer
+  B::Escritórios e área de lazer
   E::Offices and recreation area
-  F::Bureaux et zone de loisir
+  F::Bureaux et espace de loisirs
   I::Uffici e area ricreativa
   N::Kantoren en recreatiegebied
-  O::Escrit?rios e ?rea de lazer
-  S::Oficinas y zona de ocio
+  O::Escritórios e área de lazer
+  S::Oficinas y área de recreación
+  D::Büros und Freizeitbereich
 >>0008200
-  B::Esta??o de for?a
+  B::Central elétrica
   E::Power station
-  F::Centrale ?lectrique
+  F::Centrale électrique
   I::Centrale elettrica
-  N::Krachtstation
-  O::Central el?ctrica
-  S::Estaci?n transformadora
+  N::Energiecentrale
+  O::Central elétrica
+  S::Central eléctrica
+  D::Kraftwerk
 >>0008201
-  B::Pain?is solares
+  B::Painéis solares
   E::Solar panels
   F::Panneaux solaires
   I::Pannelli solari
   N::Zonnepanelen
-  O::Pain?is solares
+  O::Painéis solares
   S::Paneles solares
+  D::Solarmodule
 
 >Akti
 >>0003030
-  B::Novo saldo da conta (incluindo taxa)
-  E::New account balance (incl. fee)
-  F::Nouveau solde du compte (incl. frais)
-  I::Nuovo saldo del conto (incl. commissione)
-  N::Nieuw rekeningsaldo (incl. vergoeding)
-  O::Novo saldo da conta (incluindo taxa)
-  S::Nuevo saldo de la cuenta (incl. tarifa)
+  B::Novo saldo (incl. taxa)
+  E::New balance (incl. fee)
+  F::Nouveau solde (incl. frais)
+  I::Nuovo saldo (incl. tassa)
+  N::Nieuw saldo (incl. kosten)
+  O::Novo saldo (incl. taxa)
+  S::Nuevo saldo (incl. tarifa)
+  D::Neuer Saldo (inkl. Gebühr)
 
 >XPrt
 >>0002001
@@ -296,6 +331,7 @@
   N::Samenvatting
   O::Resumo
   S::Resumen
+  D::Zusammenfassung
 >>0002002
   B::Balanço diário
   E::Daily balance
@@ -304,6 +340,7 @@
   N::Dagelijkse balans
   O::Balanço diário
   S::Balance diario
+  D::Tagesguthaben
 >>0002003
   B::Balanço semanal
   E::Weekly balance
@@ -312,6 +349,7 @@
   N::Wekelijkse balans
   O::Balanço semanal
   S::Balance semanal
+  D::Wöchentlicher Saldo
 >>0002004
   B::Balanço geral
   E::Overall balance
@@ -320,6 +358,7 @@
   N::Algeheel saldo
   O::Balanço geral
   S::Balance general
+  D::Gesamtsaldo
 >>0002005
   B::Renda através de aviões
   E::Income through planes
@@ -328,6 +367,7 @@
   N::Inkomen via vliegtuigen
   O::Rendimento através de aviões
   S::Ingresos a través de aviones
+  D::Einkommen durch Flugzeuge
 >>0002006
   B::Concorrentes (visão geral)
   E::Competitors (overview)
@@ -336,6 +376,7 @@
   N::Concurrenten (overzicht)
   O::Concorrentes (visão geral)
   S::Competidores (visión general)
+  D::Wettbewerber (Überblick)
 >>0002007
   B:: Resumos
   E:: Summaries
@@ -344,6 +385,7 @@
   N:: Samenvattingen
   O:: Resumos
   S:: Resúmenes
+  D::Zusammenfassungen
 >>0002008
   B:: Balanço semanal de %s
   E:: Weekly balance of %s
@@ -352,6 +394,7 @@
   N:: Wekelijkse balans van %s
   O:: Balanço semanal de %s
   S:: Balance semanal de %s
+  D:: Wöchentlicher Saldo von %s
 >>0002009
   B:: Balanço semanal de %s
   E:: Weekly balance of %s
@@ -360,6 +403,7 @@
   N:: Wekelijkse balans van %s
   O:: Balanço semanal de %s
   S:: Balance semanal de %s
+  D:: Wöchentlicher Saldo von %s
 >>0002010
   B:: Balanço semanal de %s
   E:: Weekly balance of %s
@@ -368,6 +412,7 @@
   N:: Wekelijkse balans van %s
   O:: Balanço semanal de %s
   S:: Balance semanal de %s
+  D:: Wöchentlicher Saldo von %s
 >>0002011
   B::Consultor de Querosene
   E::Kerosene Advisor
@@ -376,6 +421,7 @@
   N::Kerosineadviseur
   O::Consultor de Querosene
   S::Asesor de Keroseno
+  D::Kerosinberater
 >>0003003
   B::Você precisa de um informante mais qualificado para este relatório.
   E::You need a better qualified informer for this report.
@@ -384,6 +430,7 @@
   N::Je hebt een beter gekwalificeerde informant nodig voor dit rapport.
   O::Precisa de um informante mais qualificado para este relatório.
   S::Necesitas un informante más calificado para este informe.
+  D::Sie benötigen einen besser qualifizierten Informanten für diesen Bericht.
 >>0003004
   B::Você precisa de um consultor de querosene mais qualificado para este relatório.
   E::You need a better qualified kerosene advisor for this report.
@@ -392,6 +439,7 @@
   N::Je hebt een beter gekwalificeerde kerosineadviseur nodig voor dit rapport.
   O::Precisa de um consultor de querosene mais qualificado para este relatório.
   S::Necesitas un asesor de queroseno más calificado para este informe.
+  D::Sie benötigen einen besser qualifizierten Kerosinberater für diesen Bericht.
 >>0003404
   B::Pedidos
   E::Orders
@@ -400,6 +448,7 @@
   N::Bestellingen
   O::Encomendas
   S::Órdenes
+  D::Bestellungen
 >>0010000
   B::Querosene para avião
   E::Kerosene for plane
@@ -408,6 +457,7 @@
   N::Kerosine voor vliegtuig
   O::Querosene para avião
   S::Queroseno para avión
+  D::Kerosin für Flugzeug
 >>0010001
   B::Querosene para estoque
   E::Kerosene for stock
@@ -416,6 +466,7 @@
   N::Kerosine voor voorraad
   O::Querosene para estoque
   S::Queroseno para stock
+  D::Kerosin für Lagerbestand
 >>0010002
   B::Refeições para passageiros
   E::Meals for passengers
@@ -424,6 +475,7 @@
   N::Maaltijden voor passagiers
   O::Refeições para passageiros
   S::Comidas para pasajeros
+  D::Mahlzeiten für Passagiere
 >>0010003
   B::Reforma de aeronave\r\nCarga/Passageiros
   E::Plane rework\r\nCargo/Passengers
@@ -432,6 +484,7 @@
   N::Vliegtuigrenovatie\r\nVracht/Passagiers
   O::Reforma de avião\r\nCarga/Passageiros
   S::Reacondicionamiento de avión\r\nCarga/Pasajeros
+  D::Flugzeugrenovierung\r\nFracht/Passagiere
 >>0010004
   B::Empréstimos atuais
   E::Current loans
@@ -440,6 +493,7 @@
   N::Huidige leningen
   O::Empréstimos atuais
   S::Préstamos actuales
+  D::Aktuelle Darlehen
 >>0010005
   B::Pagamento do empréstimo
   E::Loan repayment
@@ -448,6 +502,7 @@
   N::Aflossing van lening
   O::Reembolso do empréstimo
   S::Reembolso del préstamo
+  D::Kreditrückzahlung
 >>0003501
   B::Juros do empréstimo
   E::Loan interest
@@ -456,6 +511,7 @@
   N::Leningrente
   O::Juros do empréstimo
   S::Interés del préstamo
+  D::Darlehenszinsen
 >>0010006
   B::Imposto sobre a riqueza
   E::Wealth tax
@@ -464,6 +520,7 @@
   N::Vermogensbelasting
   O::Imposto sobre a riqueza
   S::Impuesto sobre el patrimonio
+  D::Vermögenssteuer
 >>0010007
   B::Roubo (hacking)
   E::Theft (hacking)
@@ -472,6 +529,7 @@
   N::Diefstal (hacken)
   O::Roubo (hacking)
   S::Robo (piratería)
+  D::Diebstahl (Hacking)
 >>0010008
   B::Compensação
   E::Compensation
@@ -480,6 +538,7 @@
   N::Compensatie
   O::Compensação
   S::Compensación
+  D::Entschädigung
 >>0010009
   B::Pago ao sabotador
   E::Paid to saboteur
@@ -488,6 +547,7 @@
   N::Betaald aan saboteur
   O::Pago ao sabotador
   S::Pago al saboteador
+  D::Zahlung an Saboteur
 >>0010010
   B::Multas por sabotagem
   E::Fine for sabotage
@@ -496,6 +556,7 @@
   N::Boete voor sabotage
   O::Multa por sabotagem
   S::Multas por sabotaje
+  D::Strafe für Sabotage
 >>0010011
   B::Danos causados por sabotagem
   E::Sabotage damage
@@ -504,6 +565,7 @@
   N::Schade door sabotage
   O::Danos causados por sabotagem
   S::Daños por sabotaje
+  D::Sabotageschaden
 >>0010012
   B::Desconto para guarda-costas
   E::Bodyguard discount
@@ -1220,3 +1282,23 @@
   O::Jogo livre: %s (%s)
   S::Juego libre: %s (%s)
   D::Freies Spiel: %s (%s)
+
+>Tank
+>>0002020
+  B::Reservas
+  E::Réserves
+  F::Réserves
+  I::Riserve
+  N::Reserves
+  O::Reservas
+  S::Reservas
+  D::Reserven
+>>0002022
+  B::Novo conteúdo
+  E::New content
+  F::Nouveau contenu
+  I::Nuovo contenuto
+  N::Nieuwe inhoud
+  O::Novo conteúdo
+  S::Nuevo contenido
+  D::Neuer Inhalt

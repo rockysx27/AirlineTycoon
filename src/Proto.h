@@ -86,6 +86,7 @@ SLONG CalculateFlightCostNoTank(SLONG VonCity, SLONG NachCity, SLONG Verbrauch, 
 void InitEinheiten(const CString &Filename);
 CString Insert1000erDots(SLONG Value);
 CString Insert1000erDots64(__int64 Value);
+CString Shorten1000erDots(SLONG Value);
 CRect PaintTextBubble(SBBM &OffscreenBm, const XY &p1, const XY &p2, const XY &Entry);
 BOOL CheckCursorHighlight(const CRect &rect, UWORD FontColor, SLONG Look = CURSOR_HOT, SLONG TipId = 0, SLONG ClickArea = 0, SLONG ClickId = 0,
                           SLONG ClickPar1 = 0, SLONG ClickPar2 = 0);

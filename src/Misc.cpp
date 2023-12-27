@@ -617,6 +617,8 @@ __int64 CEinheit::Umrechnung64(__int64 Value) const { return (static_cast<__int6
 //--------------------------------------------------------------------------------------------
 char *CEinheit::bString(SLONG Value) const { return (bprintf(Name, (LPCTSTR)Insert1000erDots(Umrechnung(Value)))); }
 
+char *CEinheit::bShortString(SLONG Value) const { return (bprintf(Name, (LPCTSTR)Shorten1000erDots(Umrechnung(Value)))); }
+
 //--------------------------------------------------------------------------------------------
 // Rechnet in String um:
 //--------------------------------------------------------------------------------------------
@@ -1769,6 +1771,30 @@ CString Insert1000erDots64(__int64 Value) {
     String[c] = '\0';
 
     return (String);
+}
+
+CString Shorten1000erDots(SLONG Value) {
+    const long long kThreshold = 1000;
+    const long long millionThreshold = 1000000;
+    const long long billionThreshold = 1000000000;
+
+    CString result, temp;
+
+    if (Value >= billionThreshold) {
+        result.Format("%.3f Mio", Value / static_cast<double>(billionThreshold));
+    } else if (Value >= millionThreshold) {
+        result.Format("%.3fk", Value / static_cast<double>(millionThreshold));
+    } else if (Value >= kThreshold) {
+        temp.Format("%lld", Value);
+        for (int i = temp.GetLength() - 3; i > 0; i -= 3) {
+            temp = temp.Left(i) + "." + temp.Mid(i);
+        }
+        result = temp;
+    } else {
+        result.Format("%lld", Value);
+    }
+
+    return result;
 }
 
 //------------------------------------------------------------------------------
