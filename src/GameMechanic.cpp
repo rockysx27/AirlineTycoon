@@ -830,6 +830,38 @@ bool GameMechanic::expandAirport(PLAYER &qPlayer) {
     return true;
 }
 
+bool GameMechanic::bidOnGate(PLAYER &qPlayer, SLONG idx) {
+    if (idx < 0 || idx >= TafelData.Gate.size()) {
+        hprintf("GameMechanic::bidOnGate: Invalid index.");
+        return false;
+    }
+
+    auto &qGate = TafelData.Gate[idx];
+    if (qGate.Player == qPlayer.PlayerNum) {
+        return false;
+    }
+    qGate.Preis += qGate.Preis / 10;
+    qGate.Player = qPlayer.PlayerNum;
+    qGate.WasInterested = TRUE;
+    return true;
+}
+
+bool GameMechanic::bidOnCity(PLAYER &qPlayer, SLONG idx) {
+    if (idx < 0 || idx >= TafelData.City.size()) {
+        hprintf("GameMechanic::bidOnCity: Invalid index.");
+        return false;
+    }
+
+    auto &qCity = TafelData.City[idx];
+    if (qCity.Player == qPlayer.PlayerNum) {
+        return false;
+    }
+    qCity.Preis += qCity.Preis / 10;
+    qCity.Player = qPlayer.PlayerNum;
+    qCity.WasInterested = TRUE;
+    return true;
+}
+
 SLONG GameMechanic::setMechMode(PLAYER &qPlayer, SLONG mode) {
     if (mode < 0 || mode > 3) {
         hprintf("GameMechanic::setMechMode: Invalid mode.");

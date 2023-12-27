@@ -5496,8 +5496,7 @@ void PLAYER::RobotExecuteAction() {
                         Sim.Players.Players[Sim.localPlayer].Messages.AddMessage(
                             BERATERTYP_INFO, bprintf(StandardTexte.GetS(TOKEN_ADVICE, 9001), (LPCTSTR)NameX, (LPCTSTR)AirlineX));
                     }
-                    TafelData.Gate[n].Preis += TafelData.Gate[n].Preis / 10;
-                    TafelData.Gate[n].Player = PlayerNum;
+                    GameMechanic::bidOnGate(*this, n);
                 }
             }
         }
@@ -5519,8 +5518,7 @@ void PLAYER::RobotExecuteAction() {
                                 BERATERTYP_INFO, bprintf(StandardTexte.GetS(TOKEN_ADVICE, 9002), (LPCTSTR)NameX, (LPCTSTR)AirlineX,
                                                          (LPCTSTR)Cities[TafelData.City[c].ZettelId].Name));
                         }
-                        TafelData.City[c].Preis += TafelData.City[c].Preis / 10;
-                        TafelData.City[c].Player = PlayerNum;
+                        GameMechanic::bidOnCity(*this, c);
                     }
                 }
             }
