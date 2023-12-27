@@ -88,6 +88,10 @@ class GameMechanic {
     /* Ads */
     static bool buyAdvertisement(PLAYER &qPlayer, SLONG adCampaignType, SLONG adCampaignSize, SLONG routeID = -1);
 
+    /* Duty free */
+    enum class BuyItemResult { Ok, DeniedInvalidParam, DeniedVirus1, DeniedVirus2, DeniedVirus3, DeniedLaptopNotYetAvailable, DeniedLaptopAlreadySold };
+    static BuyItemResult buyDutyFreeItem(PLAYER &qPlayer, UBYTE item);
+
     /* Flights */
     static bool takeFlightJob(PLAYER &qPlayer, SLONG par1, SLONG par2, SLONG &outObjectId);
     static bool takeFreightJob(PLAYER &qPlayer, SLONG par1, SLONG par2, SLONG &outObjectId);
