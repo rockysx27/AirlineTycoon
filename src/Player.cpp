@@ -5684,11 +5684,9 @@ void PLAYER::RobotExecuteAction() {
                 plane.Load(fn);
 
                 while (Money - plane.CalcCost() > 6000000) {
-                    TEAKRAND rnd;
-                    rnd.SRand(Sim.Date);
-
-                    // Kauf des Flugzeuges:
-                    BuyPlane(plane, &rnd);
+                    if (!GameMechanic::buyXPlane(*this, fn, 1)) {
+                        break;
+                    }
                 }
             }
         }
