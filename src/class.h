@@ -412,6 +412,8 @@ class /**/ CPlaneType {
     SLONG FirstMissions{};     // Ist erst verfügbar ab Mission x
     SLONG FirstDay{};          //...und auch dort erst ab Tag y
 
+    enum Available { MUSEUM, BROKER };
+
     // Technische Beschreibung
   public:
     CString Hersteller;      // Textstring, z.B. "Boing"
@@ -431,6 +433,7 @@ class /**/ CPlaneType {
     SLONG Verbrauch{};       // Kerosin in l/h
     SLONG Preis{};           // Der Neupreis in DM
     FLOAT Wartungsfaktor{};  // Faktor für die Wartungskosten
+    std::vector<Available> AvailableIn{}; // Availability
     CString Kommentar;       // Ggf. allgemeines über diese Maschine
 };
 
@@ -439,7 +442,7 @@ class /**/ CPlaneTypes : public ALBUM_V<CPlaneType> {
     CPlaneTypes() : ALBUM_V<CPlaneType>("PlaneTypes") {}
     CPlaneTypes(const CString &TabFilename);
     void ReInit(const CString &TabFilename);
-    ULONG GetRandomExistingType(TEAKRAND *pRand);
+    ULONG GetRandomExistingType(TEAKRAND *pRand, CPlaneType::Available in);
     void BlitPlaneAt(SBPRIMARYBM &TargetBm, SLONG PlaneType, SLONG Size, XY Pos, SLONG OwningPlayer);
 };
 

@@ -2549,7 +2549,7 @@ CPlane SIM::CreateRandomUsedPlane(SLONG seed) const {
 
     rnd.SRand((Date + seed) * 0x504020 + static_cast<ULONG>(StartTime));
 
-    auto plane = CPlane(PlaneNames.GetUnused(&rnd), PlaneTypes.GetRandomExistingType(&rnd), UBYTE(rnd.Rand(80) + 11), 1900);
+    auto plane = CPlane(PlaneNames.GetUnused(&rnd), PlaneTypes.GetRandomExistingType(&rnd, CPlaneType::Available::MUSEUM), UBYTE(rnd.Rand(80) + 11), 1900);
 
     // if (PlaneTypes[plane.TypeId].Erstbaujahr<1990)
     if (plane.ptErstbaujahr < 1990) {
