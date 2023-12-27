@@ -93,8 +93,11 @@ class GameMechanic {
     static BuyItemResult buyDutyFreeItem(PLAYER &qPlayer, UBYTE item);
 
     /* Flights */
-    static bool takeFlightJob(PLAYER &qPlayer, SLONG par1, SLONG par2, SLONG &outObjectId);
-    static bool takeFreightJob(PLAYER &qPlayer, SLONG par1, SLONG par2, SLONG &outObjectId);
+    static bool takeFlightJob(PLAYER &qPlayer, SLONG jobId, SLONG &outObjectId);
+    static bool takeLastMinuteJob(PLAYER &qPlayer, SLONG jobId, SLONG &outObjectId);
+    static bool takeFreightJob(PLAYER &qPlayer, SLONG jobId, SLONG &outObjectId);
+    static bool takeInternationalFlightJob(PLAYER &qPlayer, SLONG par1, SLONG par2, SLONG &outObjectId);
+    static bool takeInternationalFreightJob(PLAYER &qPlayer, SLONG par1, SLONG par2, SLONG &outObjectId);
     static bool killFlightJob(PLAYER &qPlayer, SLONG par1, bool payFine);
     static bool killFreightJob(PLAYER &qPlayer, SLONG par1, bool payFine);
     static bool killFlightPlan(PLAYER &qPlayer, SLONG par1);

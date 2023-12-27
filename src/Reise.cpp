@@ -374,23 +374,12 @@ void CReisebuero::OnLButtonDown(UINT nFlags, CPoint point) {
             if (ReisebueroAuftraege[c].Praemie > 0) {
                 if (RoomPos.IfIsWithin(ZettelPos[c * 2], ZettelPos[c * 2 + 1], ZettelPos[c * 2] + gZettelBms[c % 3].Size.x,
                                        ZettelPos[c * 2 + 1] + gZettelBms[c % 3].Size.y)) {
-                    if (qPlayer.Auftraege.GetNumFree() < 3) {
-                        qPlayer.Auftraege.ReSize(qPlayer.Auftraege.AnzEntries() + 10);
-                    }
+
+                    SLONG outId = -1;
+                    GameMechanic::takeFlightJob(qPlayer, c, outId);
 
                     PlayUniversalFx("paptake.raw", Sim.Options.OptionEffekte);
 
-                    qPlayer.Auftraege += ReisebueroAuftraege[c];
-                    qPlayer.NetUpdateOrder(ReisebueroAuftraege[c]);
-
-                    // Für den Statistikscreen:
-                    qPlayer.Statistiken[STAT_AUFTRAEGE].AddAtPastDay(1);
-
-                    SIM::SendSimpleMessage(ATNET_SYNCNUMFLUEGE, 0, Sim.localPlayer, static_cast<SLONG>(qPlayer.Statistiken[STAT_AUFTRAEGE].GetAtPastDay(0)),
-                                           static_cast<SLONG>(qPlayer.Statistiken[STAT_LMAUFTRAEGE].GetAtPastDay(0)));
-
-                    ReisebueroAuftraege[c].Praemie = -1000;
-                    qPlayer.NetUpdateTook(2, c);
                     break;
                 }
             }

@@ -1041,13 +1041,99 @@ GameMechanic::BuyItemResult GameMechanic::buyDutyFreeItem(PLAYER &qPlayer, UBYTE
     return BuyItemResult::Ok;
 }
 
-bool GameMechanic::takeFlightJob(PLAYER &qPlayer, SLONG par1, SLONG par2, SLONG &outObjectId) {
+bool GameMechanic::takeFlightJob(PLAYER &qPlayer, SLONG jobId, SLONG &outObjectId) {
+    if (!ReisebueroAuftraege.IsInAlbum(jobId)) {
+        hprintf("GameMechanic::takeFlightJob: Invalid jobId.");
+        return false;
+    }
+
+    auto &qAuftrag = ReisebueroAuftraege[jobId];
+    if (qAuftrag.Praemie <= 0) {
+        return false;
+    }
+    if (qPlayer.Auftraege.GetNumFree() < 3) {
+        qPlayer.Auftraege.ReSize(qPlayer.Auftraege.AnzEntries() + 10);
+    }
+
+    outObjectId = (qPlayer.Auftraege += qAuftrag);
+    qPlayer.NetUpdateOrder(qAuftrag);
+
+    // Für den Statistikscreen:
+    qPlayer.Statistiken[STAT_AUFTRAEGE].AddAtPastDay(1);
+
+    qAuftrag.Praemie = -1000;
+
+    SIM::SendSimpleMessage(ATNET_SYNCNUMFLUEGE, 0, Sim.localPlayer, static_cast<SLONG>(qPlayer.Statistiken[STAT_AUFTRAEGE].GetAtPastDay(0)),
+                           static_cast<SLONG>(qPlayer.Statistiken[STAT_LMAUFTRAEGE].GetAtPastDay(0)));
+    qPlayer.NetUpdateTook(2, jobId);
+
+    return true;
+}
+
+bool GameMechanic::takeLastMinuteJob(PLAYER &qPlayer, SLONG jobId, SLONG &outObjectId) {
+    if (!LastMinuteAuftraege.IsInAlbum(jobId)) {
+        hprintf("GameMechanic::takeLastMinuteJob: Invalid jobId.");
+        return false;
+    }
+
+    auto &qAuftrag = LastMinuteAuftraege[jobId];
+    if (qAuftrag.Praemie <= 0) {
+        return false;
+    }
+    if (qPlayer.Auftraege.GetNumFree() < 3) {
+        qPlayer.Auftraege.ReSize(qPlayer.Auftraege.AnzEntries() + 10);
+    }
+
+    outObjectId = (qPlayer.Auftraege += qAuftrag);
+    qPlayer.NetUpdateOrder(qAuftrag);
+
+    // Für den Statistikscreen:
+    qPlayer.Statistiken[STAT_AUFTRAEGE].AddAtPastDay(1);
+    qPlayer.Statistiken[STAT_LMAUFTRAEGE].AddAtPastDay(1);
+
+    qAuftrag.Praemie = -1000;
+
+    SIM::SendSimpleMessage(ATNET_SYNCNUMFLUEGE, 0, Sim.localPlayer, static_cast<SLONG>(qPlayer.Statistiken[STAT_AUFTRAEGE].GetAtPastDay(0)),
+                           static_cast<SLONG>(qPlayer.Statistiken[STAT_LMAUFTRAEGE].GetAtPastDay(0)));
+    qPlayer.NetUpdateTook(1, jobId);
+
+    return true;
+}
+
+bool GameMechanic::takeFreightJob(PLAYER &qPlayer, SLONG jobId, SLONG &outObjectId) {
+    if (!gFrachten.IsInAlbum(jobId)) {
+        hprintf("GameMechanic::takeFreightJob: Invalid jobId.");
+        return false;
+    }
+
+    auto &qAuftrag = gFrachten[jobId];
+    if (qAuftrag.Praemie <= 0) {
+        return false;
+    }
+    if (qPlayer.Frachten.GetNumFree() < 3) {
+        qPlayer.Frachten.ReSize(qPlayer.Auftraege.AnzEntries() + 10);
+    }
+
+    outObjectId = (qPlayer.Frachten += qAuftrag);
+    qPlayer.NetUpdateFreightOrder(qAuftrag);
+
+    // Für den Statistikscreen:
+    qPlayer.Statistiken[STAT_FRACHTEN].AddAtPastDay(1);
+
+    qAuftrag.Praemie = -1000;
+
+    qPlayer.NetUpdateTook(3, jobId);
+
+    return true;
+}
+
+bool GameMechanic::takeInternationalFlightJob(PLAYER &qPlayer, SLONG par1, SLONG par2, SLONG &outObjectId) {
     if (par1 < 0 || par1 >= AuslandsAuftraege.size()) {
-        hprintf("GameMechanic::takeFlightJob: Invalid par1.");
+        hprintf("GameMechanic::takeInternationalFlightJob: Invalid par1.");
         return false;
     }
     if (AuslandsAuftraege[par1].IsInAlbum(par2)) {
-        hprintf("GameMechanic::takeFlightJob: Invalid par2.");
+        hprintf("GameMechanic::takeInternationalFlightJob: Invalid par2.");
         return false;
     }
 
@@ -1063,19 +1149,19 @@ bool GameMechanic::takeFlightJob(PLAYER &qPlayer, SLONG par1, SLONG par2, SLONG 
     qPlayer.NetUpdateOrder(qAuftrag);
     qPlayer.Statistiken[STAT_AUFTRAEGE].AddAtPastDay(1);
 
-    qAuftrag.Praemie = 0;
+    qAuftrag.Praemie = -1000;
     qPlayer.NetUpdateTook(4, par2, par1);
 
     return true;
 }
 
-bool GameMechanic::takeFreightJob(PLAYER &qPlayer, SLONG par1, SLONG par2, SLONG &outObjectId) {
+bool GameMechanic::takeInternationalFreightJob(PLAYER &qPlayer, SLONG par1, SLONG par2, SLONG &outObjectId) {
     if (par1 < 0 || par1 >= AuslandsFrachten.size()) {
-        hprintf("GameMechanic::takeFreightJob: Invalid par1.");
+        hprintf("GameMechanic::takeInternationalFreightJob: Invalid par1.");
         return false;
     }
     if (AuslandsFrachten[par1].IsInAlbum(par2)) {
-        hprintf("GameMechanic::takeFreightJob: Invalid par2.");
+        hprintf("GameMechanic::takeInternationalFreightJob: Invalid par2.");
         return false;
     }
 
@@ -1091,7 +1177,7 @@ bool GameMechanic::takeFreightJob(PLAYER &qPlayer, SLONG par1, SLONG par2, SLONG
     qPlayer.NetUpdateFreightOrder(qFracht);
     qPlayer.Statistiken[STAT_AUFTRAEGE].AddAtPastDay(1);
 
-    qFracht.Praemie = 0;
+    qFracht.Praemie = -1000;
     qPlayer.NetUpdateTook(5, par2, par1);
 
     return true;

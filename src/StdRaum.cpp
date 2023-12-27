@@ -6392,7 +6392,7 @@ void CStdRaum::MenuLeftClick(XY Pos) {
             }
         } else if (MouseClickArea == -101 && MouseClickPar2 >= 0 && MouseClickPar2 <= 5) {
             SLONG outId = -1;
-            GameMechanic::takeFlightJob(qPlayer, MenuPar1, MouseClickPar2, outId);
+            GameMechanic::takeInternationalFlightJob(qPlayer, MenuPar1, MouseClickPar2, outId);
 
             // Blöcke refeshen:
             if (qPlayer.GetRoom() == ROOM_LAPTOP) {
@@ -6417,7 +6417,7 @@ void CStdRaum::MenuLeftClick(XY Pos) {
 
         } else if (MouseClickArea == -101 && MouseClickPar2 >= 7 && MouseClickPar2 <= 7 + 5) {
             SLONG outId = -1;
-            GameMechanic::takeFreightJob(qPlayer, MenuPar1, MouseClickPar2 - 7, outId);
+            GameMechanic::takeInternationalFreightJob(qPlayer, MenuPar1, MouseClickPar2 - 7, outId);
 
             // Blöcke refeshen:
             if (qPlayer.GetRoom() == ROOM_LAPTOP) {
