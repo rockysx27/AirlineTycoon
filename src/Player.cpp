@@ -4929,36 +4929,8 @@ void PLAYER::RobotExecuteAction() {
                 // if (Sim.UsedPlanes[0x1000000+c].Name.GetLength()>0 && Sim.UsedPlanes[0x1000000+c].Baujahr>1960 && Sim.UsedPlanes[0x1000000+c].Zustand>40
                 // && Sim.UsedPlanes[0x1000000+c].CalculatePrice()<Money+1000000 && PlaneTypes[Sim.UsedPlanes[0x1000000+c].TypeId].Reichweite>=BuyBigPlane)
                 {
-                    if (Sim.Players.Players[Sim.localPlayer].HasBerater(BERATERTYP_INFO) >= rnd.Rand(100)) {
-                        Sim.Players.Players[Sim.localPlayer].Messages.AddMessage(
-                            BERATERTYP_INFO,
-                            bprintf(StandardTexte.GetS(TOKEN_ADVICE, 9000), (LPCTSTR)NameX, (LPCTSTR)AirlineX, Sim.UsedPlanes[0x1000000 + c].CalculatePrice()));
-                    }
+                    GameMechanic::buyUsedPlane(*this, 0x1000000 + c);
 
-                    if (Planes.GetNumFree() == 0) {
-                        Planes.ReSize(Planes.AnzEntries() + 10);
-                        Planes.RepairReferences();
-                    }
-                    Sim.UsedPlanes[0x1000000 + c].WorstZustand = Sim.UsedPlanes[0x1000000 + c].Zustand - 20;
-                    // Sim.UsedPlanes[0x1000000+c].MaxBegleiter = SLONG(PlaneTypes
-                    // [Sim.UsedPlanes[0x1000000+c].TypeId].AnzBegleiter*Planes.GetAvgBegleiter());
-                    // Sim.UsedPlanes[0x1000000 + c].MaxBegleiter = SLONG(Sim.UsedPlanes[0x1000000 + c].ptAnzBegleiter * Planes.GetAvgBegleiter());
-                    // Sim.UsedPlanes[0x1000000 + c].SitzeTarget = 1 + static_cast<SLONG>(RobotUse(ROBOT_USE_UPGRADE_KOMFORT));
-                    // Sim.UsedPlanes[0x1000000 + c].EssenTarget = 0;
-                    // Sim.UsedPlanes[0x1000000 + c].TablettsTarget = 1 + static_cast<SLONG>(RobotUse(ROBOT_USE_UPGRADE_KOMFORT));
-                    // Sim.UsedPlanes[0x1000000 + c].DecoTarget = 1 + static_cast<SLONG>(RobotUse(ROBOT_USE_UPGRADE_KOMFORT));
-                    // Sim.UsedPlanes[0x1000000 + c].TriebwerkTarget = 1 + static_cast<SLONG>(RobotUse(ROBOT_USE_UPGRADE_TECH));
-                    // Sim.UsedPlanes[0x1000000 + c].ReifenTarget = 1 + static_cast<SLONG>(RobotUse(ROBOT_USE_UPGRADE_TECH));
-                    // Sim.UsedPlanes[0x1000000 + c].ElektronikTarget = 1 + static_cast<SLONG>(RobotUse(ROBOT_USE_UPGRADE_TECH));
-                    // Sim.UsedPlanes[0x1000000 + c].SicherheitTarget = 1 + static_cast<SLONG>(RobotUse(ROBOT_USE_UPGRADE_TECH));
-
-                    Planes += Sim.UsedPlanes[0x1000000 + c];
-                    ChangeMoney(-Sim.UsedPlanes[0x1000000 + c].CalculatePrice(),
-                                2010, // Kauf des Flugzeuges
-                                Sim.UsedPlanes[0x1000000 + c].Name);
-                    Sim.UsedPlanes[0x1000000 + c].Name.Empty();
-
-                    Sim.TickMuseumRefill = 0;
                     BuyBigPlane = 0;
                     SavesForPlane = FALSE;
                     break;
@@ -4972,15 +4944,11 @@ void PLAYER::RobotExecuteAction() {
         break;
 
     case ACTION_VISITDUTYFREE:
-        if (Sim.LaptopSoldTo == -1 && LaptopQuality < 4 && Sim.Date > DAYS_WITHOUT_LAPTOP && Money > 100000) {
-            Sim.LaptopSoldTo = PlayerNum;
-            LaptopQuality++;
-            if (HasItem(ITEM_LAPTOP) == 0) {
-                BuyItem(ITEM_LAPTOP);
-            }
+        if (Money > 100000) {
+            GameMechanic::buyDutyFreeItem(*this, ITEM_LAPTOP);
         }
-        if ((HasItem(ITEM_HANDY) == 0) && Sim.Date > PlayerNum && Money > 100000) {
-            BuyItem(ITEM_HANDY);
+        if (Sim.Date > PlayerNum && Money > 100000) {
+            GameMechanic::buyDutyFreeItem(*this, ITEM_HANDY);
         }
         WorkCountdown = 20 * 5;
         break;

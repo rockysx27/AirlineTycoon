@@ -488,6 +488,14 @@ bool GameMechanic::buyUsedPlane(PLAYER &qPlayer, SLONG planeID) {
     qPlayer.MapWorkers(FALSE);
     qPlayer.UpdatePersonalberater(1);
 
+    if (qPlayer.PlayerNum != Sim.localPlayer) {
+        TEAKRAND rnd;
+        if (Sim.Players.Players[Sim.localPlayer].HasBerater(BERATERTYP_INFO) >= rnd.Rand(100)) {
+            Sim.Players.Players[Sim.localPlayer].Messages.AddMessage(
+                BERATERTYP_INFO, bprintf(StandardTexte.GetS(TOKEN_ADVICE, 9000), (LPCTSTR)qPlayer.NameX, (LPCTSTR)qPlayer.AirlineX, cost));
+        }
+    }
+
     return true;
 }
 
@@ -912,6 +920,79 @@ bool GameMechanic::buyAdvertisement(PLAYER &qPlayer, SLONG adCampaignType, SLONG
     qPlayer.DoBodyguardRabatt(cost);
 
     return true;
+}
+
+GameMechanic::BuyItemResult GameMechanic::buyDutyFreeItem(PLAYER &qPlayer, UBYTE item) {
+    if (item != ITEM_LAPTOP && item != ITEM_MG && item != ITEM_FILOFAX && item != ITEM_HANDY && item != ITEM_BIER) {
+        hprintf("GameMechanic::buyDutyFreeItem: Invalid item.");
+        return BuyItemResult::DeniedInvalidParam;
+    }
+
+    if (item == ITEM_LAPTOP) {
+        if (qPlayer.LaptopVirus == 1) {
+            return BuyItemResult::DeniedVirus1;
+        } else if (qPlayer.LaptopVirus == 2) {
+            return BuyItemResult::DeniedVirus2;
+        } else if (qPlayer.LaptopVirus == 3) {
+            return BuyItemResult::DeniedVirus3;
+        } else if (Sim.Date <= DAYS_WITHOUT_LAPTOP) {
+            // Laptop ist in der ersten 7 Tagen gesperrt:
+            return BuyItemResult::DeniedLaptopNotYetAvailable;
+        } else if (Sim.LaptopSoldTo != -1) {
+            return BuyItemResult::DeniedLaptopAlreadySold;
+        }
+    }
+
+    SLONG delta = 0;
+    char *buf;
+    if (item == ITEM_LAPTOP) {
+        if (qPlayer.HasItem(ITEM_LAPTOP) != 0 && qPlayer.LaptopQuality < 4) {
+            qPlayer.DropItem(ITEM_LAPTOP);
+        }
+        delta = atoi(StandardTexte.GetS(TOKEN_ITEM, 2000 + qPlayer.LaptopQuality));
+        buf = StandardTexte.GetS(TOKEN_ITEM, 1000 + qPlayer.LaptopQuality);
+    } else {
+        delta = atoi(StandardTexte.GetS(TOKEN_ITEM, 2000 + MouseClickId));
+        buf = StandardTexte.GetS(TOKEN_ITEM, 1000 + MouseClickId);
+    }
+
+    if (qPlayer.HasItem(item) || qPlayer.HasSpaceForItem() == 0) {
+        return BuyItemResult::DeniedInvalidParam;
+    }
+
+    qPlayer.ChangeMoney(-delta, 9999, buf);
+    SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -delta, STAT_A_SONSTIGES);
+    qPlayer.DoBodyguardRabatt(delta);
+
+    qPlayer.BuyItem(item);
+
+    if (item == ITEM_LAPTOP) {
+        SIM::SendSimpleMessage(ATNET_TAKETHING, 0, ITEM_LAPTOP, qPlayer.PlayerNum);
+
+        qPlayer.LaptopQuality++;
+
+        switch (qPlayer.LaptopQuality) {
+        case 1:
+            qPlayer.LaptopBattery = 40;
+            break;
+        case 2:
+            qPlayer.LaptopBattery = 80;
+            break;
+        case 3:
+            qPlayer.LaptopBattery = 200;
+            break;
+        case 4:
+            qPlayer.LaptopBattery = 1440;
+            break;
+        default:
+            hprintf("GameMechanic.cpp: Default case should not be reached.");
+            DebugBreak();
+        }
+
+        Sim.LaptopSoldTo = qPlayer.PlayerNum;
+    }
+
+    return BuyItemResult::Ok;
 }
 
 bool GameMechanic::takeFlightJob(PLAYER &qPlayer, SLONG par1, SLONG par2, SLONG &outObjectId) {
