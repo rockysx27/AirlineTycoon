@@ -545,7 +545,7 @@ bool GameMechanic::sellPlane(PLAYER &qPlayer, SLONG planeID) {
 
 bool GameMechanic::buyXPlane(PLAYER &qPlayer, const CString &filename, SLONG amount) {
     CString fn = FullFilename(filename, MyPlanePath);
-    if (fn.empty()) {
+    if (fn.empty() || DoesFileExist(fn) == 0) {
         hprintf("GameMechanic::buyXPlane: Invalid filename.");
         return false;
     }
