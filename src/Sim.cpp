@@ -3473,6 +3473,9 @@ CString SIM::GetSavegameSessionName(SLONG Index) {
             SessionName = bprintf("%-25s", StandardTexte.GetS(TOKEN_NEWGAME, 703));
             ;
         }
+        if (SessionName.size() == 0) {
+            SessionName = bprintf("%-25s", "");
+        }
     }
 
     return (SessionName);
