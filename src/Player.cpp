@@ -4157,7 +4157,7 @@ void PLAYER::RobotExecuteAction() {
 
                                             SLONG Cost = ((CalculateFlightCost(VonCity, qAuftraege[e].VonCity, 8000, 700, -1)) + 99) / 100 * 100;
                                             if (Cost <= qAuftraege[e].Praemie * 8 / 10) {
-                                                SLONG ObjectId;
+                                                SLONG ObjectId = -1;
                                                 GameMechanic::takeInternationalFlightJob(*this, n, e, ObjectId);
 
                                                 NumOrderFlightsToday2++;
@@ -4216,7 +4216,7 @@ void PLAYER::RobotExecuteAction() {
 
                                         SLONG Cost = ((CalculateFlightCost(VonCity, qAuftraege[e].VonCity, 8000, 700, -1)) + 99) / 100 * 100;
                                         if (Cost <= qAuftraege[e].Praemie) {
-                                            SLONG ObjectId;
+                                            SLONG ObjectId = -1;
                                             GameMechanic::takeInternationalFlightJob(*this, n, e, ObjectId);
 
                                             NumOrderFlightsToday2++;
@@ -4307,7 +4307,7 @@ void PLAYER::RobotExecuteAction() {
 
                                                 if ((Cost <= qFracht.Praemie * 8 / 10 + Bewertungsbonus) ||
                                                     (RobotUse(ROBOT_USE_FREE_FRACHT) && qFracht.Praemie == 0)) {
-                                                    SLONG ObjectId;
+                                                    SLONG ObjectId = -1;
                                                     GameMechanic::takeInternationalFreightJob(*this, n, e, ObjectId);
 
                                                     while (qFracht.TonsOpen > 0) {
@@ -4378,7 +4378,7 @@ void PLAYER::RobotExecuteAction() {
                                                 Cost += ((CalculateFlightCost(VonCity, qFracht.VonCity, 8000, 700, -1)) + 99) / 100 * 100;
 
                                                 if ((Cost <= qFracht.Praemie + Bewertungsbonus) || (RobotUse(ROBOT_USE_FREE_FRACHT) && qFracht.Praemie == 0)) {
-                                                    SLONG ObjectId;
+                                                    SLONG ObjectId = -1;
                                                     GameMechanic::takeInternationalFreightJob(*this, n, e, ObjectId);
 
                                                     while (qFracht.TonsOpen > 0) {
@@ -5029,13 +5029,8 @@ void PLAYER::RobotExecuteAction() {
                                                 Statistiken[STAT_AUFTRAEGE].GetAtPastDay(0) < Sim.Date * 2 + 3 + (PlayerNum & 1)) {
                                                 NetGenericAsync(17005 + Cost * 100, c + d + e + level, PlayerNum);
 
-                                                if (Auftraege.GetNumFree() < 2) {
-                                                    Auftraege.ReSize(Auftraege.AnzEntries() + 1);
-                                                }
-                                                SLONG ObjectId = (Auftraege += LastMinuteAuftraege[e]);
-                                                Statistiken[STAT_AUFTRAEGE].AddAtPastDay(1);
-                                                Statistiken[STAT_LMAUFTRAEGE].AddAtPastDay(1);
-                                                LastMinuteAuftraege[e].Praemie = 0;
+                                                SLONG ObjectId = -1;
+                                                GameMechanic::takeLastMinuteJob(*this, e, ObjectId);
 
                                                 CFlugplanEintrag &fpe = Planes[c].Flugplan.Flug[Planes[c].Flugplan.Flug.AnzEntries() - 1];
 
@@ -5090,13 +5085,9 @@ void PLAYER::RobotExecuteAction() {
                                     if (Cost <= LastMinuteAuftraege[e].Praemie) {
                                         if ((!RobotUse(ROBOT_USE_TUTORIALLIMIT)) ||
                                             Statistiken[STAT_AUFTRAEGE].GetAtPastDay(0) < Sim.Date * 2 + 3 + (PlayerNum & 1)) {
-                                            if (Auftraege.GetNumFree() < 2) {
-                                                Auftraege.ReSize(Auftraege.AnzEntries() + 1);
-                                            }
-                                            SLONG ObjectId = (Auftraege += LastMinuteAuftraege[e]);
-                                            Statistiken[STAT_AUFTRAEGE].AddAtPastDay(1);
-                                            Statistiken[STAT_LMAUFTRAEGE].AddAtPastDay(1);
-                                            LastMinuteAuftraege[e].Praemie = 0;
+
+                                            SLONG ObjectId = -1;
+                                            GameMechanic::takeLastMinuteJob(*this, e, ObjectId);
 
                                             if (Auftraege.IsInAlbum(ObjectId) == 0) {
                                                 hprintvar(__LINE__);
@@ -5182,15 +5173,9 @@ void PLAYER::RobotExecuteAction() {
                                         if (Cost <= ReisebueroAuftraege[e].Praemie * 8 / 10) {
                                             if ((!RobotUse(ROBOT_USE_TUTORIALLIMIT)) ||
                                                 Statistiken[STAT_AUFTRAEGE].GetAtPastDay(0) < Sim.Date * 2 + 3 + (PlayerNum & 1)) {
-                                                if (Auftraege.GetNumFree() < 2) {
-                                                    Auftraege.ReSize(Auftraege.AnzEntries() + 1);
-                                                }
-                                                SLONG ObjectId = (Auftraege += ReisebueroAuftraege[e]);
-                                                ReisebueroAuftraege[e].Praemie = 0;
 
-                                                if (Sim.Difficulty != DIFF_ADDON09 || NumOrderFlightsToday2 >= 5) {
-                                                    Statistiken[STAT_AUFTRAEGE].AddAtPastDay(1);
-                                                }
+                                                SLONG ObjectId = -1;
+                                                GameMechanic::takeFlightJob(*this, e, ObjectId);
 
                                                 NumOrderFlightsToday2++;
 
@@ -5252,15 +5237,9 @@ void PLAYER::RobotExecuteAction() {
                                     if (Cost <= ReisebueroAuftraege[e].Praemie) {
                                         if ((!RobotUse(ROBOT_USE_TUTORIALLIMIT)) ||
                                             Statistiken[STAT_AUFTRAEGE].GetAtPastDay(0) < Sim.Date * 2 + 3 + (PlayerNum & 1)) {
-                                            if (Auftraege.GetNumFree() < 2) {
-                                                Auftraege.ReSize(Auftraege.AnzEntries() + 1);
-                                            }
-                                            SLONG ObjectId = (Auftraege += ReisebueroAuftraege[e]);
-                                            ReisebueroAuftraege[e].Praemie = 0;
 
-                                            if (Sim.Difficulty != DIFF_ADDON09 || NumOrderFlightsToday2 >= 5) {
-                                                Statistiken[STAT_AUFTRAEGE].AddAtPastDay(1);
-                                            }
+                                            SLONG ObjectId = -1;
+                                            GameMechanic::takeFlightJob(*this, e, ObjectId);
 
                                             NumOrderFlightsToday2++;
 
@@ -5356,12 +5335,9 @@ void PLAYER::RobotExecuteAction() {
                                         // Cost = Cost*2 * (qFracht.Tons / (PlaneTypes[Planes[c].TypeId].Passagiere/10) + 1);
 
                                         if ((Cost <= qFracht.Praemie * 8 / 10 + Bewertungsbonus) || (RobotUse(ROBOT_USE_FREE_FRACHT) && qFracht.Praemie == 0)) {
-                                            if (Frachten.GetNumFree() < 2) {
-                                                Frachten.ReSize(Frachten.AnzEntries() + 1);
-                                            }
-                                            Statistiken[STAT_FRACHTEN].AddAtPastDay(1);
-                                            SLONG ObjectId = (Frachten += qFracht);
-                                            qFracht.Praemie = -1;
+
+                                            SLONG ObjectId = -1;
+                                            GameMechanic::takeFreightJob(*this, e, ObjectId);
 
                                             while (qFracht.TonsOpen > 0) {
                                                 if (Frachten.IsInAlbum(ObjectId) == 0) {
@@ -5431,12 +5407,9 @@ void PLAYER::RobotExecuteAction() {
                                         Cost += ((CalculateFlightCost(VonCity, qFracht.VonCity, 8000, 700, -1)) + 99) / 100 * 100;
 
                                         if ((Cost <= qFracht.Praemie + Bewertungsbonus) || (RobotUse(ROBOT_USE_FREE_FRACHT) && qFracht.Praemie == 0)) {
-                                            if (Frachten.GetNumFree() < 2) {
-                                                Frachten.ReSize(Frachten.AnzEntries() + 1);
-                                            }
-                                            Statistiken[STAT_FRACHTEN].AddAtPastDay(1);
-                                            SLONG ObjectId = (Frachten += qFracht);
-                                            qFracht.Praemie = -1;
+
+                                            SLONG ObjectId = -1;
+                                            GameMechanic::takeFreightJob(*this, e, ObjectId);
 
                                             while (qFracht.TonsOpen > 0) {
                                                 if (Frachten.IsInAlbum(ObjectId) == 0) {
