@@ -293,17 +293,13 @@ void CTafel::OnLButtonDown(UINT nFlags, CPoint point) {
                                 SIM::SendSimpleMessage(ATNET_ADVISOR, Sim.Players.Players[TafelData.City[c - 7].Player].NetworkID, 0, PlayerNum, c);
                             }
 
-                            TafelData.City[c - 7].Preis += TafelData.City[c - 7].Preis / 10;
-                            TafelData.City[c - 7].Player = PlayerNum;
-                            TafelData.City[c - 7].WasInterested = TRUE;
+                            GameMechanic::bidOnCity(qPlayer, c - 7);
                         } else if (c >= 14 && TafelData.Gate[c - 14].Player != PlayerNum) {
                             if ((Sim.bNetwork != 0) && TafelData.City[c - 7].Player != -1 && Sim.Players.Players[TafelData.City[c - 7].Player].Owner == 2) {
                                 SIM::SendSimpleMessage(ATNET_ADVISOR, Sim.Players.Players[TafelData.City[c - 7].Player].NetworkID, 0, PlayerNum, c);
                             }
 
-                            TafelData.Gate[c - 14].Preis += TafelData.Gate[c - 14].Preis / 10;
-                            TafelData.Gate[c - 14].Player = PlayerNum;
-                            TafelData.Gate[c - 14].WasInterested = TRUE;
+                            GameMechanic::bidOnGate(qPlayer, c - 14);
                         }
                         RepaintZettel(c);
                         return;

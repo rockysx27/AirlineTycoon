@@ -75,6 +75,8 @@ class GameMechanic {
     enum class ExpandAirportResult { Ok, DeniedFreeGates, DeniedLimitReached, DeniedTooEarly, DeniedAlreadyExpanded, DeniedExpandingRightNow };
     static ExpandAirportResult canExpandAirport(PLAYER &qPlayer);
     static bool expandAirport(PLAYER &qPlayer);
+    static bool bidOnGate(PLAYER &qPlayer, SLONG idx);
+    static bool bidOnCity(PLAYER &qPlayer, SLONG idx);
 
     /* Mechanic */
     static SLONG setMechMode(PLAYER &qPlayer, SLONG mode);
