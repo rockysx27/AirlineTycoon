@@ -244,13 +244,6 @@ CPlane::CPlane(const CString &Name, ULONG TypeId, UBYTE Zustand, SLONG Baujahr) 
 }
 
 //--------------------------------------------------------------------------------------------
-// Repairiert die Referenzen in dem CXPlane Objekt. Dort zeigt das Album auf den Buffer und
-// wenn die CPlanes resizet wurden liegt der Buffer woanders und das Album fragt sich warum
-// es davon nichts weiß.
-//--------------------------------------------------------------------------------------------
-void CPlane::RepairReferences() {}
-
-//--------------------------------------------------------------------------------------------
 // Berechnet den Marktwert des Flugzeuges:
 //--------------------------------------------------------------------------------------------
 SLONG CPlane::CalculatePrice() const {
@@ -563,7 +556,7 @@ void CPlane::DoOneStep(SLONG PlayerNum) {
 }
 
 //--------------------------------------------------------------------------------------------
-//Überprüft, die Flugpläne für ein Flugzeug und streicht ggf. Flüge
+// Überprüft, die Flugpläne für ein Flugzeug und streicht ggf. Flüge
 //--------------------------------------------------------------------------------------------
 void CPlane::CheckFlugplaene(SLONG PlayerNum, BOOL Sort, BOOL PlanGates) {
     SLONG c = 0;
@@ -747,7 +740,7 @@ void CPlane::CheckFlugplaene(SLONG PlayerNum, BOOL Sort, BOOL PlanGates) {
         }
     }
 
-    //Überschüssige Flüge abschneiden:
+    // Überschüssige Flüge abschneiden:
     if (gMouseLButton == 0 || Sim.Players.Players[PlayerNum].Owner != 0 || Sim.Players.Players[PlayerNum].LocationWin == nullptr ||
         (Sim.Players.Players[PlayerNum].GetRoom() != ROOM_GLOBE && Sim.Players.Players[PlayerNum].GetRoom() != ROOM_LAPTOP)) {
         for (c = 0; c < Flugplan.Flug.AnzEntries(); c++) {
@@ -1485,21 +1478,6 @@ BOOL CPlanes::IsPlaneNameInUse(const CString &PlaneName) {
     }
 
     return (FALSE);
-}
-
-//--------------------------------------------------------------------------------------------
-// Repairiert die Referenzen in dem CXPlane Objekt. Dort zeigt das Album auf den Buffer und
-// wenn die CPlanes resizet wurden liegt der Buffer woanders und das Album fragt sich warum
-// es davon nichts weiß.
-//--------------------------------------------------------------------------------------------
-void CPlanes::RepairReferences() {
-    SLONG c = 0;
-
-    for (c = 0; c < AnzEntries(); c++) {
-        if (IsInAlbum(c) != 0) {
-            at(c).RepairReferences();
-        }
-    }
 }
 
 //--------------------------------------------------------------------------------------------
