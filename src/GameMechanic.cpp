@@ -481,7 +481,6 @@ bool GameMechanic::buyUsedPlane(PLAYER &qPlayer, SLONG planeID) {
 
     if (qPlayer.Planes.GetNumFree() == 0) {
         qPlayer.Planes.ReSize(qPlayer.Planes.AnzEntries() + 10);
-        qPlayer.Planes.RepairReferences();
     }
     Sim.UsedPlanes[planeID].WorstZustand = UBYTE(Sim.UsedPlanes[planeID].Zustand - 20);
     Sim.UsedPlanes[planeID].GlobeAngle = 0;
@@ -1378,7 +1377,7 @@ bool GameMechanic::killRoute(PLAYER &qPlayer, SLONG routeA, SLONG routeB) {
         hprintf("GameMechanic::killRoute: Invalid routeA.");
         return false;
     }
-    if (routeB < 0 || routeA >= qPlayer.RentRouten.RentRouten.size()) {
+    if (routeB < 0 || routeB >= qPlayer.RentRouten.RentRouten.size()) {
         hprintf("GameMechanic::killRoute: Invalid routeB.");
         return false;
     }
@@ -1521,7 +1520,6 @@ void GameMechanic::executeAirlineOvertake() {
 
                 if (Overtaker.Planes.GetNumFree() <= 0) {
                     Overtaker.Planes.ReSize(Overtaker.Planes.AnzEntries() + 5);
-                    Overtaker.Planes.RepairReferences();
                 }
 
                 d = (Overtaker.Planes += CPlane());
@@ -1529,7 +1527,6 @@ void GameMechanic::executeAirlineOvertake() {
             }
         }
         Overtaken.Planes.ReSize(0);
-        Overtaken.Planes.RepairReferences();
 
         // Ggf. virtuelle Arbeiter erzeugen:
         if (Overtaken.Owner != 0) {
@@ -1641,7 +1638,6 @@ void GameMechanic::executeAirlineOvertake() {
             }
         }
         Overtaken.Planes.ReSize(0);
-        Overtaken.Planes.RepairReferences();
 
         // Gates freigeben:
         for (c = 0; c < Overtaken.Gates.Gates.AnzEntries(); c++) {

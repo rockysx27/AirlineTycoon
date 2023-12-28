@@ -125,7 +125,6 @@ void PLAYER::BuyPlane(ULONG PlaneTypeId, TEAKRAND *pRnd) {
 
     if (Planes.GetNumFree() == 0) {
         Planes.ReSize(Planes.AnzEntries() + 10);
-        Planes.RepairReferences();
     }
     Id = (Planes += CPlane(PlaneNames.GetUnused(pRnd), PlaneTypeId + 0x10000000, 100, 2002 + (Sim.Date / 365)));
 
@@ -155,7 +154,6 @@ void PLAYER::BuyPlane(CXPlane &plane, TEAKRAND *pRnd) {
 
     if (Planes.GetNumFree() == 0) {
         Planes.ReSize(Planes.AnzEntries() + 10);
-        Planes.RepairReferences();
     }
     Id = (Planes += CPlane(PlaneNames.GetUnused(pRnd), -1, 100, 2002 + (Sim.Date / 365)));
 

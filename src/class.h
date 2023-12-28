@@ -872,7 +872,6 @@ class /**/ CPlane {
     void ClearSaldo(void);
     void CalculateHappyPassengers(SLONG PlayerNum, SLONG mod, bool addToQueue = false, XY pos = XY());
     void UpdatePersonalQuality(SLONG PlayerNum);
-    void RepairReferences(void);
 
     const CFlugplanEintrag *GetFlugplanEintrag(void);
 
@@ -889,7 +888,6 @@ class /**/ CPlanes : public ALBUM_V<CPlane> {
     BOOL IsPlaneNameInUse(const CString &PlaneName);
     void DoOneStep(SLONG PlayerNum);
     void UpdateGlobePos(UWORD EarthAlpha);
-    void RepairReferences(void);
     DOUBLE GetAvgBegleiter(void);
     BOOL HasProblemPlane(void);
 
