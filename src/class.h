@@ -354,21 +354,28 @@ class /**/ PERIOD // Eine Zeitperiode vom Datum x bis Datum y
 //--------------------------------------------------------------------------------------------
 class /**/ CTafelZettel {
   public:
-    SLONG ZettelId{}; // 0 oder Key im Routen/City Array
-    SLONG Player{};   //-1 oder der derzeitige Hauptbieter (0-3)
-    SLONG Preis{};    // Gebot (=Monatsmiete)
-    SLONG Rang{};
-    BOOL WasInterested{}; // Hat der Spieler mitgeboten?
+    enum Type { ROUTE, GATE, CITY };
+    SLONG   ZettelId{}; // 0 oder Key im Routen/City Array
+    SLONG   Player{};   //-1 oder der derzeitige Hauptbieter (0-3)
+    SLONG   Preis{};    // Gebot (=Monatsmiete)
+    SLONG   Rang{};
+    BOOL    WasInterested{}; // Hat der Spieler mitgeboten?
+    XY      Position;
+    Type    Type;
 
     friend TEAKFILE &operator<<(TEAKFILE &File, const CTafelZettel &TafelZettel);
     friend TEAKFILE &operator>>(TEAKFILE &File, CTafelZettel &TafelZettel);
+    static bool ComparePositions(CTafelZettel *a, CTafelZettel *b) { return a->Position.x + a->Position.y < b->Position.x + b->Position.y; }
 };
 
 class /**/ CTafelData {
   public:
-    std::array<CTafelZettel, 7> Route; // Bis zu 7 Routen werden versteigert
-    std::array<CTafelZettel, 7> City;  // Bis zu 7 Orte werden versteigert
-    std::array<CTafelZettel, 7> Gate;  // Bis zu 7 Gates werden versteigert
+    std::array<CTafelZettel, 7> Route;          // Bis zu 7 Routen werden versteigert
+    std::array<CTafelZettel, 7> City;           // Bis zu 7 Orte werden versteigert
+    std::array<CTafelZettel, 7> Gate;           // Bis zu 7 Gates werden versteigert
+
+    // <TODO> Rework the whole code to only have "Entities" with a type
+    std::vector<CTafelZettel *> ByPositions; // Bis zu 7 Gates werden versteigert
 
   public:
     void Clear(void);          // Daten alle löschen ==> keine Zettel
@@ -376,6 +383,10 @@ class /**/ CTafelData {
 
     friend TEAKFILE &operator<<(TEAKFILE &File, const CTafelData &TafelData);
     friend TEAKFILE &operator>>(TEAKFILE &File, CTafelData &TafelData);
+
+  private:
+    void GetAvailableCities(std::vector<CTafelZettel> &result, std::vector<ULONG> *excluded);
+    void AssignPositions();
 };
 
 //--------------------------------------------------------------------------------------------
@@ -2414,6 +2425,9 @@ class COptions {
     BOOL OptionRoundNumber{};
     BOOL OptionSpeechBubble{};
     BOOL OptionRandomStartday{};
+    ULONG OptionRentOfficeTriggerPercent{};
+    ULONG OptionRentOfficeMinAvailable{};
+    ULONG OptionRentOfficeMaxAvailable{};
     std::array<CString, 4> OptionPlayerNames{};
     std::array<CString, 4> OptionAirlineNames{};
     std::array<CString, 4> OptionAirlineAbk{};

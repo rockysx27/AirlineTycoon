@@ -3855,6 +3855,15 @@ void COptions::ReadOptions() {
         if (!reg.ReadRegistryKey_b(OptionKeepAspectRatio)) {
             OptionKeepAspectRatio = 1;
         }
+        if (!reg.ReadRegistryKey_u(OptionRentOfficeTriggerPercent)) {
+            OptionRentOfficeTriggerPercent = 20;
+        }
+        if (!reg.ReadRegistryKey_u(OptionRentOfficeMinAvailable)) {
+            OptionRentOfficeMinAvailable = 0;
+        }
+        if (!reg.ReadRegistryKey_u(OptionRentOfficeMaxAvailable)) {
+            OptionRentOfficeMaxAvailable = 3;
+        }
 
         // Falls Setup nicht geladen wurde dann Standard-Parameter initialisieren
         if (!reg.ReadRegistryKey_b(OptionPlanes)) {
@@ -4109,6 +4118,10 @@ void COptions::WriteOptions() {
     // Modded
     reg.WriteRegistryKey_l(OptionFullscreen);
     reg.WriteRegistryKey_b(OptionKeepAspectRatio);
+    reg.WriteRegistryKey_u(OptionRentOfficeTriggerPercent);
+    reg.WriteRegistryKey_u(OptionRentOfficeMinAvailable);
+    reg.WriteRegistryKey_u(OptionRentOfficeMaxAvailable);
+
 
     // Regular
     reg.WriteRegistryKey_b(OptionPlanes);
