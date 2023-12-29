@@ -185,9 +185,23 @@ if (WIN32)
     target_link_libraries(AT PRIVATE ws2_32 Winmm)
 endif()
 
-add_custom_command(TARGET AT POST_BUILD 
-  COMMAND "${CMAKE_COMMAND}" -E copy 
-     "$<TARGET_FILE:AT>"
-     "BUILD/$<TARGET_FILE_NAME:AT>" 
-  COMMENT "Copying to output directory")
+if (WIN32)
+    add_custom_command(
+        TARGET AT POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "./dependencies"
+        "./$(Configuration)"
+        COMMENT "Copying dependencies to $(Configuration) directory"
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    )
+
+    if(EXISTS ${GAMEFILES_FOLDER})
+        add_custom_command(
+            TARGET AT PRE_LINK
+            COMMAND ${CMAKE_COMMAND} -P "${CMAKE_MODULE_PATH}/copy_if_different.cmake" "${GAMEFILES_FOLDER}" "${CMAKE_BINARY_DIR}/$(Configuration)"
+            COMMENT "Copying gamefiles to $(Configuration) directory"
+        )
+    endif()
+endif()
+  
 

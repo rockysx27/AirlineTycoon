@@ -550,7 +550,7 @@ BOOL CTakeOffApp::InitInstance(int argc, char *argv[]) {
             LOADING_TEXT("Chargement des textes (1/4)...")
         else
             LOADING_TEXT("Loading modded texts...");
-        ModdedTexte.Open(FullFilename("modded_ger.res", ModsPath), TEXTRES_CACHED);
+        ModdedTexte.Open(FullFilename("modded_ger.res", PatchPath), TEXTRES_CACHED);
 
         if (gLanguage == LANGUAGE_N)
             LOADING_TEXT("Dialoogteksten worden opgestart...")
@@ -559,7 +559,7 @@ BOOL CTakeOffApp::InitInstance(int argc, char *argv[]) {
         else
             LOADING_TEXT("Loading dialogue texts...");
         DialogTexte.Open(FullFilename("dlg_ger.res", MiscPath), TEXTRES_CACHED);
-        DialogTexte.SetOverrideFile(FullFilename("dlg_ger.modded.res", ModsPath));
+        DialogTexte.SetOverrideFile(FullFilename("dlg_ger.patched.res", PatchPath));
 
         if (gLanguage == LANGUAGE_N)
             LOADING_TEXT("Verscheidene teksten worden opgestart...")
@@ -568,7 +568,7 @@ BOOL CTakeOffApp::InitInstance(int argc, char *argv[]) {
         else
             LOADING_TEXT("Loading miscellanous texts...");
         StandardTexte.Open(FullFilename("std_ger.res", MiscPath), TEXTRES_CACHED);
-        StandardTexte.SetOverrideFile(FullFilename("std_ger.modded.res", ModsPath));
+        StandardTexte.SetOverrideFile(FullFilename("std_ger.patched.res", PatchPath));
 
         if (gLanguage == LANGUAGE_N)
             LOADING_TEXT("Eenheidteksten worden opgestart...")
@@ -577,7 +577,7 @@ BOOL CTakeOffApp::InitInstance(int argc, char *argv[]) {
         else
             LOADING_TEXT("Loading unit texts...");
         InitEinheiten(FullFilename("ein_ger.res", MiscPath));
-        ETexte.SetOverrideFile(FullFilename("ein_ger.modded.res", ModsPath));
+        ETexte.SetOverrideFile(FullFilename("ein_ger.patched.res", PatchPath));
 
         // Großes und kleines Icon setzen:
         // FrameWnd->SetIcon (m_hBigIcon = LoadIcon(IDR_MAINFRAME1), 1);
