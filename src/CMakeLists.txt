@@ -183,25 +183,50 @@ target_link_libraries(AT PRIVATE
 
 if (WIN32)
     target_link_libraries(AT PRIVATE ws2_32 Winmm)
-endif()
 
-if (WIN32)
+    # Copy external deps into our target folder
     add_custom_command(
-        TARGET AT POST_BUILD
+        TARGET AT PRE_LINK
         COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "./dependencies"
-        "./$(Configuration)"
-        COMMENT "Copying dependencies to $(Configuration) directory"
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+        "${CMAKE_BINARY_DIR}/dependencies"
+        "$<TARGET_FILE_DIR:AT>"
+        COMMENT "Copying dependencies to $<TARGET_FILE_DIR:AT>"
     )
-
-    if(EXISTS ${GAMEFILES_FOLDER})
-        add_custom_command(
-            TARGET AT PRE_LINK
-            COMMAND ${CMAKE_COMMAND} -P "${CMAKE_MODULE_PATH}/copy_if_different.cmake" "${GAMEFILES_FOLDER}" "${CMAKE_BINARY_DIR}/$(Configuration)"
-            COMMENT "Copying gamefiles to $(Configuration) directory"
-        )
-    endif()
 endif()
-  
 
+# Does our src folder contains a "gamefiles" folder ? Copy it.
+if(EXISTS ${GAMEFILES_FOLDER} AND CMAKE_BUILD_TYPE STREQUAL "Debug")
+    # Cleanup unusued files
+    add_custom_command(
+        TARGET AT PRE_LINK
+        COMMENT "Cleaning up gamefolder"
+        COMMAND ${CMAKE_COMMAND} -P "${CMAKE_MODULE_PATH}/cleanup_folder.cmake" "${GAMEFILES_FOLDER}"
+    )
+    add_custom_command(
+        TARGET AT PRE_LINK
+        COMMENT "Copying gamefiles to ${CMAKE_BUILD_TYPE} directory"
+        COMMAND ${CMAKE_COMMAND} -P "${CMAKE_MODULE_PATH}/copy_if_different.cmake" "${GAMEFILES_FOLDER}" "$<TARGET_FILE_DIR:AT>"
+    )
+endif()
+
+# Copy patched assets into target
+add_custom_command(
+    TARGET AT PRE_LINK
+    COMMAND ${CMAKE_COMMAND} -P "${CMAKE_MODULE_PATH}/copy_if_different.cmake" "${PATCH_FOLDER}" "$<TARGET_FILE_DIR:AT>/patch"
+    COMMENT "Copying patches to ${CMAKE_BUILD_TYPE} directory"
+)
+
+# Compile patched assets with the freshly build executable
+add_custom_command(
+    TARGET AT POST_BUILD
+    COMMAND $<TARGET_FILE:AT> /update-patched-files-only
+    COMMENT "Compiling patched assets"
+    WORKING_DIRECTORY "$<TARGET_FILE_DIR:AT>"
+)
+
+# Clean up patched assets from folder
+add_custom_command(
+    TARGET AT POST_BUILD
+    COMMENT "Cleaning up patch folder"
+    COMMAND ${CMAKE_COMMAND} -P "${CMAKE_MODULE_PATH}/cleanup_folder.cmake" "$<TARGET_FILE_DIR:AT>/patch" ".txt"
+)

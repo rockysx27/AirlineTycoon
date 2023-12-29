@@ -10,6 +10,7 @@ endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake")
 set(GAMEFILES_FOLDER "${PROJECT_SOURCE_DIR}/gamefiles")
+set(PATCH_FOLDER "${PROJECT_SOURCE_DIR}/patch")
 
 if (WIN32)
     # Set and bind SDL folders
@@ -26,7 +27,7 @@ if (WIN32)
         )
     endif()
 
-    # Copy dependencies for Release
+    # Copy SDL dependencies
     set(DEPENDENCIES_PATH ${DEPENDENCIES_PATH} "${CMAKE_BINARY_DIR}/dependencies")
     file(MAKE_DIRECTORY ${DEPENDENCIES_PATH})
     file(GLOB_RECURSE dll_files ${SDL2_PATH}/*.dll ${SDL2_MIXER_PATH}/*.dll ${SDL2_IMAGE_PATH}/*.dll ${SDL2_TTF_PATH}/*.dll ${PROJECT_SOURCE_DIR}/libs/*.dll ${PROJECT_SOURCE_DIR}/libs/*.exe)
@@ -34,6 +35,9 @@ if (WIN32)
     foreach(file ${dll_files})
         file(COPY ${file} DESTINATION ${DEPENDENCIES_PATH})
     endforeach()
+
+    # Needed on windows as include is not under repo / project
+    include_directories(libs/jansson/include)
 endif()
 
 find_package(SDL2main REQUIRED)
@@ -43,7 +47,6 @@ find_package(SDL2_ttf REQUIRED)
 
 # Include external libs.
 add_subdirectory (libs)
-include_directories(libs/jansson/include)
 
 # Include sub-projects.
 add_subdirectory (src)

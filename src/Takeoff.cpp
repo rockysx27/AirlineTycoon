@@ -422,6 +422,16 @@ BOOL CTakeOffApp::InitInstance(int argc, char *argv[]) {
             UpdateHLinePool();
             exit(0);
         }
+
+        if (stricmp(Argument, "/update-patched-files-only") == 0) {
+            InitPathVars();
+            CRLEReader::ToggleUpdateDataBeforeOpening(true);
+            LoadCompleteFile(FullFilename("modded_ger.res", PatchPath));
+            LoadCompleteFile(FullFilename("std_ger.patched.res", PatchPath));
+            LoadCompleteFile(FullFilename("dlg_ger.patched.res", PatchPath));
+            LoadCompleteFile(FullFilename("ein_ger.patched.res", PatchPath));
+            exit(0);
+        }
     }
 
     Sim.Options.ReadOptions();
