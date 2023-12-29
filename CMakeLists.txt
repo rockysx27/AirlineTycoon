@@ -21,6 +21,7 @@ if (WIN32)
 
     # Download when SDL is not found
     if(NOT EXISTS ${SDL2_TTF_PATH})
+        message(STATUS "Downloading SDL2. This is a (longer) one time operation. Please wait.")
         execute_process(
             COMMAND powershell -ExecutionPolicy Bypass -File ${CMAKE_MODULE_PATH}/dl-sdl2.ps1
             WORKING_DIRECTORY ${CMAKE_MODULE_PATH}
@@ -31,7 +32,7 @@ if (WIN32)
     set(DEPENDENCIES_PATH ${DEPENDENCIES_PATH} "${CMAKE_BINARY_DIR}/dependencies")
     file(MAKE_DIRECTORY ${DEPENDENCIES_PATH})
     file(GLOB_RECURSE dll_files ${SDL2_PATH}/*.dll ${SDL2_MIXER_PATH}/*.dll ${SDL2_IMAGE_PATH}/*.dll ${SDL2_TTF_PATH}/*.dll ${PROJECT_SOURCE_DIR}/libs/*.dll ${PROJECT_SOURCE_DIR}/libs/*.exe)
-    list(FILTER dll_files INCLUDE REGEX "x64")
+    list(FILTER dll_files INCLUDE REGEX "x64|sentry\\.dll|\\.exe$")
     foreach(file ${dll_files})
         file(COPY ${file} DESTINATION ${DEPENDENCIES_PATH})
     endforeach()

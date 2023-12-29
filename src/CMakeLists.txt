@@ -4,7 +4,6 @@ add_library(common INTERFACE)
 
 if(MSVC)
     add_compile_options("/MP")
-    add_compile_options("-m")
 else()
     target_compile_options(common INTERFACE "-Wall")
     target_compile_options(common INTERFACE "-Wextra")
@@ -148,6 +147,14 @@ if(MSVC)
     target_compile_features(AT PUBLIC cxx_std_17)
     target_compile_options(AT PUBLIC "/Zc:__cplusplus")
     target_compile_options(AT PUBLIC "/std:c++17")
+    
+    # Release configurations
+    target_compile_definitions(AT PRIVATE "$<$<CONFIG:Release>:SENTRY;WIN32;_WINDOWS>")
+    target_include_directories(AT PRIVATE "$<$<CONFIG:Release>:${PROJECT_SOURCE_DIR}/../libs/CrashRpt/install/include/>")
+    target_link_libraries(AT PRIVATE "$<$<CONFIG:Release>:${PROJECT_SOURCE_DIR}/../libs/CrashRpt/install/lib/sentry.lib>")
+    set_target_properties(AT PROPERTIES WIN32_EXECUTABLE "true")
+    add_compile_options("$<$<CONFIG:Release>:/O2 /Ob2 /Ot /GF /Oi /Oy")
+    add_link_options("$<$<CONFIG:Release>:/OPT:REF /OPT:ICF /LTCG")
 endif()
 
 if(NOT CMAKE_BUILD_TYPE)
@@ -227,6 +234,8 @@ add_custom_command(
 # Clean up patched assets from folder
 add_custom_command(
     TARGET AT POST_BUILD
-    COMMENT "Cleaning up patch folder"
+    COMMENT "Cleaning up"
+    COMMAND ${CMAKE_COMMAND} -E remove $<TARGET_FILE_DIR:AT>/debug.txt
+    COMMAND ${CMAKE_COMMAND} -E remove_directory $<TARGET_FILE_DIR:AT>/.sentry-native
     COMMAND ${CMAKE_COMMAND} -P "${CMAKE_MODULE_PATH}/cleanup_folder.cmake" "$<TARGET_FILE_DIR:AT>/patch" ".txt"
 )

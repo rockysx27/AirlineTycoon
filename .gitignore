@@ -16,4 +16,5 @@ CMakeCache.txt
 cmake_install.cmake
 /libs/libsmacker/smk2avi
 /libs/libsmacker/driver
-*gamefiles
+gamefiles/*
+!gamefiles/*.md

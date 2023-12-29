@@ -354,7 +354,7 @@ class /**/ PERIOD // Eine Zeitperiode vom Datum x bis Datum y
 //--------------------------------------------------------------------------------------------
 class /**/ CTafelZettel {
   public:
-    enum Type { ROUTE, GATE, CITY };
+    enum    Type { ROUTE, GATE, CITY };
     SLONG   ZettelId{}; // 0 oder Key im Routen/City Array
     SLONG   Player{};   //-1 oder der derzeitige Hauptbieter (0-3)
     SLONG   Preis{};    // Gebot (=Monatsmiete)
