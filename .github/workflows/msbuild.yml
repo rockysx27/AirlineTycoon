@@ -2,9 +2,9 @@ name: MSBuild
 
 on:
   push:
-    branches: [ "main", "develop" ]
+    branches: [ "main", "develop", "cmake-wip" ]
   pull_request:
-    branches: [ "main", "develop" ]
+    branches: [ "main", "develop", "cmake-wip" ]
 
 env:
   # Path to the solution file relative to the root of the project.
