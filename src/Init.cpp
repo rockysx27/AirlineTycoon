@@ -16,8 +16,6 @@ extern std::vector<CPlanePartRelation> gPlanePartRelations;
 
 SB_CFont FontVerySmall;
 
-extern char chRegKeyOld[];
-
 DWORD GetKey();
 
 //--------------------------------------------------------------------------------------------

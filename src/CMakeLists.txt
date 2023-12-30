@@ -203,12 +203,6 @@ endif()
 
 # Does our src folder contains a "gamefiles" folder ? Copy it.
 if(EXISTS ${GAMEFILES_FOLDER} AND CMAKE_BUILD_TYPE STREQUAL "Debug")
-    # Cleanup unusued files
-    add_custom_command(
-        TARGET AT PRE_LINK
-        COMMENT "Cleaning up gamefolder"
-        COMMAND ${CMAKE_COMMAND} -P "${CMAKE_MODULE_PATH}/cleanup_folder.cmake" "${GAMEFILES_FOLDER}"
-    )
     add_custom_command(
         TARGET AT PRE_LINK
         COMMENT "Copying gamefiles to ${CMAKE_BUILD_TYPE} directory"

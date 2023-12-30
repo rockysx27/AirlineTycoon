@@ -41,10 +41,17 @@ CRegistryAccess::CRegistryAccess(const CString &RegistryPath) {
 }
 
 //--------------------------------------------------------------------------------------------
+// Destruktor:
+//--------------------------------------------------------------------------------------------
+CRegistryAccess::~CRegistryAccess() { Close(); }
+
+//--------------------------------------------------------------------------------------------
 // Öffnet den Zugriff auf einen Bereich der Registry; Gibt FALSE im Fehlerfall zurück:
 //--------------------------------------------------------------------------------------------
 bool CRegistryAccess::Open(const CString &RegistryPath) {
-    Close(); // Alten Zugriff schließen
+    if (IsOpen()) {
+        Close();
+    }
 
     json_error_t error;
 
@@ -69,21 +76,10 @@ bool CRegistryAccess::Open(const CString &RegistryPath) {
 }
 
 //--------------------------------------------------------------------------------------------
-// Destruktor:
-//--------------------------------------------------------------------------------------------
-CRegistryAccess::~CRegistryAccess() { Close(); }
-
-//--------------------------------------------------------------------------------------------
 // Alten Zugriff schließen:
 //--------------------------------------------------------------------------------------------
 void CRegistryAccess::Close() {
-    if (gQuickTestRun > 0) {
-        json_decref(settingsJSON);
-        settingsJSON = nullptr;
-        return;
-    }
-    if (settingsJSON != nullptr) {
-        json_dump_file(settingsJSON, settingsPath, JSON_INDENT(3));
+    if (IsOpen()) {
         json_decref(settingsJSON);
 #if USE_REG_MIGRATION
         RegCloseKey(hKey);
@@ -96,6 +92,13 @@ void CRegistryAccess::Close() {
 // Gibt TRUE zurück, wenn z.Zt ein Registry-Zugriff offen ist:
 //--------------------------------------------------------------------------------------------
 bool CRegistryAccess::IsOpen() { return (settingsJSON != nullptr); }
+
+void CRegistryAccess::WriteFile() { 
+    if (!IsOpen()) {
+        return;
+    }
+    json_dump_file(settingsJSON, settingsPath, JSON_INDENT(3));
+}
 
 //--------------------------------------------------------------------------------------------
 // Schreibt einen Registry-Key; Gibt FALSE im Fehlerfall zurück, sonst TRUE

@@ -18,3 +18,5 @@ cmake_install.cmake
 /libs/libsmacker/driver
 gamefiles/*
 !gamefiles/*.md
+.vscode
+!.vscode/extensions.json

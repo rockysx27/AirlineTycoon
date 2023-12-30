@@ -160,7 +160,6 @@ int main(int argc, char *argv[]) {
         theApp.InitInstance(argc, argv);
     } catch (TeakLibException &e) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "AT - Exception", e.what(), nullptr);
-        
         throw;
     }
 #else
@@ -177,22 +176,22 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
+#define LOADING_TEXT(text)                                                                                                                                     \
+    {                                                                                                                                                          \
+        PrimaryBm.BlitFrom(TitleBitmap);                                                                                                                       \
+        FontBigWhite.DrawTextBlock(&PrimaryBm.PrimaryBm, 2, 450 + 8, 640, 480, text);                                                                          \
+        FrameWnd->Invalidate();                                                                                                                                \
+        MessagePump();                                                                                                                                         \
+        PrimaryBm.BlitFrom(TitleBitmap);                                                                                                                       \
+        FontBigWhite.DrawTextBlock(&PrimaryBm.PrimaryBm, 2, 450 + 8, 640, 480, text);                                                                          \
+        FrameWnd->Invalidate();                                                                                                                                \
+        MessagePump();                                                                                                                                         \
+    }
+
 //--------------------------------------------------------------------------------------------
 // CTakeOffApp construction:
 //--------------------------------------------------------------------------------------------
-CTakeOffApp::CTakeOffApp() {
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER) < 0) {
-        printf("SDL could not initialize! SDL Error: %s\n", SDL_GetError());
-    }
-
-    if (TTF_Init() < 0) {
-        printf("SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError());
-    }
-
-    if (Mix_Init(MIX_INIT_OGG) < 0) {
-        printf("SDL_mixer could not initialize! SDL_mixer Error: %s\n", TTF_GetError());
-    }
-}
+CTakeOffApp::CTakeOffApp() {}
 
 //--------------------------------------------------------------------------------------------
 // CTakeOffApp deconstruction:
@@ -216,130 +215,11 @@ CTakeOffApp::~CTakeOffApp() {
     gNetwork.DisConnect();
 }
 
-#define LOADING_TEXT(text)                                                                                                                                     \
-    {                                                                                                                                                          \
-        PrimaryBm.BlitFrom(TitleBitmap);                                                                                                                       \
-        FontBigWhite.DrawTextBlock(&PrimaryBm.PrimaryBm, 2, 450 + 8, 640, 480, text);                                                                          \
-        FrameWnd->Invalidate();                                                                                                                                \
-        MessagePump();                                                                                                                                         \
-        PrimaryBm.BlitFrom(TitleBitmap);                                                                                                                       \
-        FontBigWhite.DrawTextBlock(&PrimaryBm.PrimaryBm, 2, 450 + 8, 640, 480, text);                                                                          \
-        FrameWnd->Invalidate();                                                                                                                                \
-        MessagePump();                                                                                                                                         \
-    }
-
 //--------------------------------------------------------------------------------------------
-// CTakeOffApp initialization:
+// CTakeOffApp CLI
 //--------------------------------------------------------------------------------------------
-BOOL CTakeOffApp::InitInstance(int argc, char *argv[]) {
-
-    char localVersionString[80];
-    strcpy(localVersionString, VersionString);
-
-    // Hdu.Disable();
-    time_t t = time(nullptr);
-    Hdu.HercPrintf(0, "Airline Tycoon Deluxe logfile");
-    Hdu.HercPrintf(0, VersionString);
-    Hdu.HercPrintf(0, "===============================================================================");
-    Hdu.HercPrintf(0, "Copyright (C) 2002 Spellbound Software");
-    Hdu.HercPrintf(0, "TakeOff.Cpp was compiled at %s at %s", __DATE__, __TIME__);
-    Hdu.HercPrintf(0, "===============================================================================");
-    Hdu.HercPrintf(0, "logging starts %s", asctime(localtime(&t)));
-
-    pTakeOffApp = this;
-
-    // Initialisierung:
-    TopWin = nullptr;
-    bFullscreen = TRUE;
-    bCursorCaptured = FALSE;
-    gMouseStartup = TRUE;
-
-    // Die Standardsprachen:
-    // #define LANGUAGE_D       0             //D-Deutsch, inklusive
-    // #define LANGUAGE_E       1             //E-Englisch, bezahlt
-    // #define LANGUAGE_F       2             //F-Französisch, bezahlt
-    // #define LANGUAGE_T       3             //T-Taiwanesisch, gilt als englische
-    // #define LANGUAGE_P       4             //P-Polnisch, inklusive
-    // #define LANGUAGE_N       5             //N-Niederländisch, bezahlt
-    // #define LANGUAGE_I       6             //I-Italienisch, bezahlt
-    // #define LANGUAGE_S       7             //S-Spanisch, bezahlt
-    // #define LANGUAGE_O       8             //O-Portugisisch, bezahlt
-    // #define LANGUAGE_B       9             //B-Brasiliasnisch, nicht von mir
-    // #define LANGUAGE_1      10             //J-Tschechisch
-    // #define LANGUAGE_2      11             //K-noch frei
-    // #define LANGUAGE_3      12             //L-noch frei
-    // #define LANGUAGE_4      13             //M-noch frei
-    // #define LANGUAGE_5      14             //N-noch frei
-    // #define LANGUAGE_6      15             //Q-noch frei
-    // #define LANGUAGE_7      16             //R-noch frei
-    // #define LANGUAGE_8      17             //T-noch frei
-    // #define LANGUAGE_9      18             //U-noch frei
-    // #define LANGUAGE_10     19             //V-noch frei
-
-    gLanguage = LANGUAGE_D;
-    std::ifstream ifil = std::ifstream(AppPath + "misc/sabbel.dat");
-    if (ifil.is_open()) {
-        ifil.read(reinterpret_cast<char *>(&gLanguage), sizeof(gLanguage));
-        ifil.close();
-    }
-
+void CTakeOffApp::CLI(int argc, char *argv[]) {
     // Schneller Mode zum Debuggen?
-    for (int i = 0; i < argc; i++) {
-        char *Argument = argv[i];
-        if (stricmp(Argument, "/quick") == 0) {
-            CheatAutoSkip = 1;
-            gQuickTestRun = 1;
-            gAutoBotDiff = 3;
-
-            i++;
-            if (i < argc) {
-                gQuickTestRun = 2 + atoi(argv[i]);
-            }
-
-            if (gQuickTestRun == 1) {
-                gAutoQuitOnDay = 99; /* auto-quit in freegame */
-            }
-        }
-        if (stricmp(Argument, "/testbot") == 0) {
-            gAutoBotDiff = 3;
-
-            i++;
-            if (i < argc) {
-                gAutoBotDiff = atoi(argv[i]);
-            }
-        }
-    }
-
-    // gUpdatingPools = TRUE; //Zum testen; für Release auskommentieren
-
-    // Flag-Ersatzstücke aus der Registry lesen:
-    {
-        CRegistryAccess reg(chRegKey);
-
-        SLONG bConfigNoVgaRam = 0;
-        SLONG bConfigNoSpeedyMouse = 0;
-        SLONG bConfigWinMouse = 0;
-        SLONG bConfigNoDigiSound = 0;
-
-        reg.ReadRegistryKey_l(bConfigNoVgaRam);
-        reg.ReadRegistryKey_l(bConfigNoSpeedyMouse);
-        reg.ReadRegistryKey_l(bConfigWinMouse);
-        reg.ReadRegistryKey_l(bConfigNoDigiSound);
-
-        if (bConfigNoVgaRam != 0) {
-            bNoVgaRam = TRUE;
-        }
-        if (bConfigNoSpeedyMouse != 0) {
-            bNoQuickMouse = TRUE;
-        }
-        if (bConfigWinMouse != 0) {
-            gUseWindowsMouse = TRUE;
-        }
-        if (bConfigNoDigiSound != 0) {
-            Sim.Options.OptionDigiSound = FALSE;
-        }
-    }
-
     for (int i = 0; i < argc; i++) {
         char *Argument = argv[i];
 
@@ -347,7 +227,8 @@ BOOL CTakeOffApp::InitInstance(int argc, char *argv[]) {
             bFirstClass = TRUE;
         }
         if (stricmp(Argument, "/p") == 0 || stricmp(Argument, "-p") == 0 || stricmp(Argument, "p") == 0) {
-            return (FALSE);
+            exit(0);
+            return;
         }
 
         // if (stricmp (Argument, "/e")==0) gLanguage = LANGUAGE_E;
@@ -409,6 +290,7 @@ BOOL CTakeOffApp::InitInstance(int argc, char *argv[]) {
         }
         if (stricmp(Argument, "/updatepools") == 0) {
             InitPathVars();
+            CreateVideo();
 
             FrameWnd = new GameFrame;
 
@@ -421,6 +303,7 @@ BOOL CTakeOffApp::InitInstance(int argc, char *argv[]) {
 
             UpdateHLinePool();
             exit(0);
+            return;
         }
 
         if (stricmp(Argument, "/update-patched-files-only") == 0) {
@@ -431,16 +314,127 @@ BOOL CTakeOffApp::InitInstance(int argc, char *argv[]) {
             LoadCompleteFile(FullFilename("dlg_ger.patched.res", PatchPath));
             LoadCompleteFile(FullFilename("ein_ger.patched.res", PatchPath));
             exit(0);
+            return;
         }
     }
+}
 
-    Sim.Options.ReadOptions();
+//--------------------------------------------------------------------------------------------
+// CTakeOffApp Read Options from various places (file, registry, cli)
+//--------------------------------------------------------------------------------------------
+void CTakeOffApp::ReadOptions(int argc, char *argv[]) {
+    // Die Standardsprachen:
+    //#define LANGUAGE_D       0             //D-Deutsch, inklusive
+    //#define LANGUAGE_E       1             //E-Englisch, bezahlt
+    //#define LANGUAGE_F       2             //F-Französisch, bezahlt
+    //#define LANGUAGE_T       3             //T-Taiwanesisch, gilt als englische
+    //#define LANGUAGE_P       4             //P-Polnisch, inklusive
+    //#define LANGUAGE_N       5             //N-Niederländisch, bezahlt
+    //#define LANGUAGE_I       6             //I-Italienisch, bezahlt
+    //#define LANGUAGE_S       7             //S-Spanisch, bezahlt
+    //#define LANGUAGE_O       8             //O-Portugisisch, bezahlt
+    //#define LANGUAGE_B       9             //B-Brasiliasnisch, nicht von mir
+    //#define LANGUAGE_1      10             //J-Tschechisch
+    //#define LANGUAGE_2      11             //K-noch frei
+    //#define LANGUAGE_3      12             //L-noch frei
+    //#define LANGUAGE_4      13             //M-noch frei
+    //#define LANGUAGE_5      14             //N-noch frei
+    //#define LANGUAGE_6      15             //Q-noch frei
+    //#define LANGUAGE_7      16             //R-noch frei
+    //#define LANGUAGE_8      17             //T-noch frei
+    //#define LANGUAGE_9      18             //U-noch frei
+    //#define LANGUAGE_10     19             //V-noch frei
+
+    gLanguage = LANGUAGE_E;
+    std::ifstream ifil = std::ifstream(AppPath + "misc/sabbel.dat");
+    if (ifil.is_open()) {
+        ifil.read(reinterpret_cast<char *>(&gLanguage), sizeof(gLanguage));
+        ifil.close();
+    }
+
+    // gUpdatingPools = TRUE; //Zum testen; für Release auskommentieren
+    {
+        CRegistryAccess reg(chRegKey);
+
+        SLONG bConfigNoVgaRam = 0;
+        SLONG bConfigNoSpeedyMouse = 0;
+        SLONG bConfigWinMouse = 0;
+        SLONG bConfigNoDigiSound = 0;
+
+        reg.ReadRegistryKey_l(bConfigNoVgaRam);
+        reg.ReadRegistryKey_l(bConfigNoSpeedyMouse);
+        reg.ReadRegistryKey_l(bConfigWinMouse);
+        reg.ReadRegistryKey_l(bConfigNoDigiSound);
+
+        if (bConfigNoVgaRam != 0) {
+            bNoVgaRam = TRUE;
+        }
+        if (bConfigNoSpeedyMouse != 0) {
+            bNoQuickMouse = TRUE;
+        }
+        if (bConfigWinMouse != 0) {
+            gUseWindowsMouse = TRUE;
+        }
+        if (bConfigNoDigiSound != 0) {
+            Sim.Options.OptionDigiSound = FALSE;
+        }
+
+        // Options from CLI
+        CLI(argc, argv);
+
+        // Write registry and move on
+        reg.WriteFile();
+    
+        bFirstClass |=
+            static_cast<SLONG>((DoesFileExist(FullFilename("builds.csv", ExcelPath)) == 0) && (DoesFileExist(FullFilename("relation.csv", ExcelPath))) == 0);
+    }
+}
+
+void CTakeOffApp::CreateVideo() {
+    if (hasVideo) {
+        return;
+    }
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER) < 0) {
+        printf("SDL could not initialize! SDL Error: %s\n", SDL_GetError());
+    }
+
+    if (TTF_Init() < 0) {
+        printf("SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError());
+    }
+
+    if (Mix_Init(MIX_INIT_OGG) < 0) {
+        printf("SDL_mixer could not initialize! SDL_mixer Error: %s\n", TTF_GetError());
+    }
+    hasVideo = true;
+}
+
+//--------------------------------------------------------------------------------------------
+// CTakeOffApp initialization:
+//--------------------------------------------------------------------------------------------
+void CTakeOffApp::InitInstance(int argc, char *argv[]) {
+    // Header
+    time_t start_time = time(nullptr);
+    Hdu.HercPrintf(0, "Airline Tycoon Deluxe logfile");
+    Hdu.HercPrintf(0, VersionString);
+    Hdu.HercPrintf(0, "===============================================================================");
+    Hdu.HercPrintf(0, "Copyright (C) 2002 Spellbound Software");
+    Hdu.HercPrintf(0, "Application was compiled at %s at %s", __DATE__, __TIME__);
+    Hdu.HercPrintf(0, "===============================================================================");
+    Hdu.HercPrintf(0, "logging starts %s", asctime(localtime(&start_time)));
+
+    pTakeOffApp = this;
+
+    // Run startup flow
+    TopWin = nullptr;
+    bFullscreen = TRUE;
+    bCursorCaptured = FALSE;
+    gMouseStartup = TRUE;
 
     InitPathVars();
-    // UpdateSavegames ();
-
-    bFirstClass |=
-        static_cast<SLONG>((DoesFileExist(FullFilename("builds.csv", ExcelPath)) == 0) && (DoesFileExist(FullFilename("relation.csv", ExcelPath))) == 0);
+    ReadOptions(argc, argv);
+    CreateVideo();
+    Sim.SaveOptions();
+    // UpdateSavegames();
 
     FrameWnd = new GameFrame;
 
@@ -856,11 +850,12 @@ BOOL CTakeOffApp::InitInstance(int argc, char *argv[]) {
 
     GameLoop(nullptr);
 
+    // Closing
+    Sim.SaveOptions();
     if (FrameWnd != nullptr) {
         delete FrameWnd;
         FrameWnd = nullptr;
     }
-    return FALSE;
 }
 
 //--------------------------------------------------------------------------------------------

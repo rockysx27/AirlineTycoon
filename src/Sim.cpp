@@ -45,7 +45,7 @@ static SLONG InitMoney[] = {1500000, 0,        2000000, 0,                      
 static SLONG MonthLength[] = {31, 28, 31, 30, 31, 30, 30, 31, 30, 31, 30, 31};
 
 char chRegKey[] = R"(Software\Spellbound Software\Airline Tycoon Deluxe\1.0)";
-char chRegKeyOld[] = R"(Software\Spellbound Software\Airline Tycoon Evolution\1.0)";
+// char chRegKeyOld[] = R"(Software\Spellbound Software\Airline Tycoon Evolution\1.0)";
 // char chRegKeyOld[] = "Software\\Spellbound Software\\Airline Tycoon FirstClass\\1.0";
 
 extern SLONG NewgameWantsToLoad;
@@ -142,7 +142,7 @@ SIM::SIM() {
 //--------------------------------------------------------------------------------------------
 // Destruktor:
 //--------------------------------------------------------------------------------------------
-SIM::~SIM() { SaveOptions(); }
+SIM::~SIM() {}
 
 //--------------------------------------------------------------------------------------------
 // Fügt einen Smacker im Flughafen hinzu:
@@ -4093,9 +4093,7 @@ void COptions::ReadOptions() {
         }
     }
 
-    if (gQuickTestRun == 0) {
-        WriteOptions();
-    } else {
+    if (gQuickTestRun != 0) {
         Sim.Options.OptionFullscreen = 1;
     }
 }
@@ -4213,6 +4211,7 @@ dont_save_talking:
     Sim.MaxDifficulty = tmp;
     Sim.MaxDifficulty2 = tmp2;
     Sim.MaxDifficulty3 = tmp3;
+    reg.WriteFile();
 }
 
 //--------------------------------------------------------------------------------------------
