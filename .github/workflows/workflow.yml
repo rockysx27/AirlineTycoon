@@ -47,8 +47,8 @@ jobs:
             echo "Setting branch environment variables..."
             echo "build-type=Debug" >> "$GITHUB_OUTPUT"
             echo "release-name=$VERSION Preview" >> "$GITHUB_OUTPUT"
-            echo "artifact-name=AT-$VERSION-${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
-            echo "release-tag=$VERSION-${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+            echo "artifact-name=AT-$VERSION-${{ github.head_ref }}" >> "$GITHUB_OUTPUT"
+            echo "release-tag=$VERSION-${{ github.head_ref }}" >> "$GITHUB_OUTPUT"
         fi
         cat $GITHUB_OUTPUT
     
