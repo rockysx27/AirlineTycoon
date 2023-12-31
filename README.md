@@ -31,6 +31,7 @@ You can see the instructions to build and run the project in [BUILDING.md](BUILD
 
 General:
 * Now runnable on Linux
+* Allow the game to be ran Windowed / Borderless / Fullscreen
 
 Statistics screen:
 * Showing far more categories where money was spent
@@ -106,6 +107,9 @@ Bug fixes:
     * Correctly calculate plane saldo over past 7 days
 * Consider also number of first class passengers for statistics
 * Do not show route utilization for defeated players
+* New sound options (OGG/MIDI) + patched stuttering glich when switching music on Windows 11
+* Patched Space station mission prices and texts in stats
+* Patched various text scrambling on UI
 * Bug fixed in calculation in maximum amount of stock that can be emitted
     * Bug limited max amount of stock to around 2.1 million
     * Intger overflow is fixed now, but the originally intended limit of 250 million was changed to 2.5 million
@@ -160,3 +164,13 @@ Misc:
 * Strikes will start after 9 am now to give player chance to react
 * Make planes in main menu comically long
 * Decryption of data files with the run argument "/savedata"
+* Director's board now allow for more post-it
+* Added options "OptionRentOffice*" to customise the branch number available / day.
+* Director's board post-it system improved and allow for more cities (up to 7)
+
+## Credits and Contributors
+
+- [WizzardMaker](https://github.com/WizzardMaker) - Main contributor and maintainer
+- [CrossVR](https://github.com/CrossVR) - Original contributor
+- [mertenpopp](https://github.com/mertenpopp) - Contributor
+- [wackfx](https://github.com/wackfx) - Contributor
