@@ -47,3 +47,14 @@
   O::[[P1\AA\903]]Levo o de 100.000k litros (60.000.000$).
   S::[[P1\AA\903]]Me quedo con el de 100.000k l (6.000.000.000 Pts).
   D::[[P1\AA\903]]Ich nehme den mit 100.000kl (60.000.000 €).
+
+>Boss
+>>0008600 //ATFS-Mission #02
+  B::[[BO\8600]]Você possui o seguinte número de aviões seguros:
+  E::[[BO\8600]]You've got the following number of safe aircrafts:
+  F::[[BO\8600]]Vous possedez le nombre suivant d'avions sûr:
+  I::[[BO\8600]]Possiedi il seguente numero di aerei sicuri:
+  N::[[BO\8600]]U bezit het volgende aantal veilige vliegtuigen:
+  O::[[BO\8600]]Você possui o seguinte número de aviões seguros:
+  S::[[BO\8600]]Usted posee la siguiente cantidad de aviones seguros:
+  D::[[BO\8600]]Also, Sie haben soviele sichere Flugzeuge wie folgt:

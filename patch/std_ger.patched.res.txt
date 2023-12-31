@@ -1256,14 +1256,14 @@
   D::Routenberater
 >Misc
 >>0003201
-  B::Horário de funcionamento.µ µSeg-Sáb: 10-19µDom: fechado
-  E::Opening hours.µ µMon-Sat: 10-19µSun: closed
-  F::Heures d'ouverture.µ µLun-Sam: 10-19µDim: fermé
-  I::Orari di apertura.µ µLun-Sab: 10-19µDom: chiuso
-  N::Openingstijden.µ µMa t/m za: 10-19µZon: gesloten
-  O::Horário de funcionamento.µ µSeg-Sáb: 10-19µDom: fechado
-  S::Horario de apertura.µ µLun-Sáb: 10-19µDom: cerrado
-  D::Öffnungszeiten.µ µMo-Sa: 10-19µSo: geschlossen
+  B::Horário de funcionamento.µ µSeg-Sáb: 10-19hµDom: fechado
+  E::Opening hours.µ µMon-Sat: 10-19hµSun: closed
+  F::Heures d'ouverture.µ µLun-Sam: 10-19hµDim: fermé
+  I::Orari di apertura.µ µLun-Sab: 10-19hµDom: chiuso
+  N::Openingstijden.µ µMa t/m za: 10-19hµZon: gesloten
+  O::Horário de funcionamento.µ µSeg-Sáb: 10-19hµDom: fechado
+  S::Horario de apertura.µ µLun-Sáb: 10-19hµDom: cerrado
+  D::Öffnungszeiten.µ µMo-Sa: 10-19hµSo: geschlossen
 >>0001152
   B::Missão %li: %s (%s)
   E::Mission %li: %s (%s)
@@ -1302,3 +1302,24 @@
   O::Novo conteúdo
   S::Nuevo contenido
   D::Neuer Inhalt
+
+
+>Tool
+>>0003212
+  B::Aumentar a Primeira Classe
+  E::Upgrade to First Class
+  F::Améliorer en 1ère Classe
+  I::Passare in Prima Classe
+  N::Upgrade naar de Eerste Klasse
+  O::Melhorar para a Primeira Classe
+  S::Actualizar a Primera Clase
+  D::Erste Klasse vergrößern
+>>0003213
+  B::Reduzir a Primeira Classe
+  E::Downgrade from First Class
+  F::Rétrograder de la Première Classe
+  I::Ridurre dalla Prima Classe
+  N::Degraderen van de Eerste Klasse
+  O::Reduzir da Primeira Classe
+  S::Degradar desde Primera Clase
+  D::Erste Klasse verkleinern
