@@ -1,6 +1,11 @@
 //==============================================================================
 //Modded "std_ger" resources
 //==============================================================================
+
+
+//
+// Stat
+//
 >STAT
 >>0010000
   B::Desconto de guarda-costas
@@ -120,6 +125,9 @@
   S::Honorarios de la agencia
   D::Agenturgebühren
 
+//
+// Money
+//
 >Mony
 >>0002021
   B::Querosene para o voo %s
@@ -311,6 +319,9 @@
   S::Paneles solares
   D::Solarmodule
 
+//
+// Akti
+//
 >Akti
 >>0003030
   B::Novo saldo (incl. taxa)
@@ -322,6 +333,9 @@
   S::Nuevo saldo (incl. tarifa)
   D::Neuer Saldo (inkl. Gebühr)
 
+//
+// Expert
+//
 >XPrt
 >>0002001
   B::Resumo
@@ -1244,6 +1258,9 @@
   S::Informe del queroseno
   D::Kerosinbericht
 
+//
+// Jobs
+//
 >Jobs
 >>0002003
   B::Consultor de rotas
@@ -1254,6 +1271,10 @@
   O::Consultor de rotas
   S::Asesor de rutas
   D::Routenberater
+
+//
+// Misc
+//
 >Misc
 >>0003201
   B::Horário de funcionamento.µ µSeg-Sáb: 10-19hµDom: fechado
@@ -1282,7 +1303,19 @@
   O::Jogo livre: %s (%s)
   S::Juego libre: %s (%s)
   D::Freies Spiel: %s (%s)
+>>0003208
+  B::Devido a uma falha de energia, o Escritório de Segurança está atualmente fechado.
+  E::Due to a power outage, the Security Office is currently closed.
+  F::En raison d'une panne de courant, le bureau de sécurité est actuellement fermé.
+  I::A causa di un'interruzione di corrente, l'Ufficio Sicurezza è attualmente chiuso.
+  N::Vanwege een stroomstoring is het beveiligingskantoor momenteel gesloten.
+  O::Devido a uma falha de energia, o Escritório de Segurança está atualmente fechado.
+  S::Debido a un corte de energía, la Oficina de Seguridad está actualmente cerrada.
+  D::Wegen Stromausfall ist das Security Office derzeit geschlossen.
 
+//
+// Tank
+//
 >Tank
 >>0002020
   B::Reservas
@@ -1303,7 +1336,9 @@
   S::Nuevo contenido
   D::Neuer Inhalt
 
-
+//
+// Tool
+//
 >Tool
 >>0003212
   B::Aumentar a Primeira Classe
@@ -1323,3 +1358,17 @@
   O::Reduzir da Primeira Classe
   S::Degradar desde Primera Clase
   D::Erste Klasse verkleinern
+
+//
+// Rout
+//
+>Rout
+>>0001200
+  B::Cancelar rota
+  E::Drop route
+  F::Abandonner la ligne
+  I::Abbandona rotta 
+  N::Route beïndigen
+  O::Deixar rota
+  S::Abandonar la ruta
+  D::Route kündigen
