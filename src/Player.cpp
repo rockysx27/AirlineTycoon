@@ -5702,10 +5702,8 @@ void PLAYER::RobotExecuteAction() {
                     if (RentRouten.RentRouten[c].Rang != 0U) {
                         if (RentRouten.RentRouten[c].Image < 70 || (RentRouten.RentRouten[c].Image < 80 && (SavesForPlane == 0) && (SavesForRocket == 0)) ||
                             (Money > 2000000 && RentRouten.RentRouten[c].Image < 100 && (SavesForPlane == 0) && (SavesForRocket == 0))) {
-                            RentRouten.RentRouten[c].Image += UBYTE(gWerbePrice[6 + 3] / 2000);
-                            Limit(static_cast<UBYTE>(0), RentRouten.RentRouten[c].Image, static_cast<UBYTE>(100));
 
-                            ChangeMoney(-gWerbePrice[6 + 3], 3 + 3120, "");
+                            GameMechanic::buyAdvertisement(*this, 1, 3, c);
                             break;
                         }
                     }
@@ -5750,21 +5748,7 @@ void PLAYER::RobotExecuteAction() {
                     }
                 }
 
-                Image += gWerbePrice[n] / 10000 * (n + 6) / 55;
-                Limit(SLONG(-1000), Image, SLONG(1000));
-
-                if (n == 0) {
-                    for (c = 0; c < Sim.Players.AnzPlayers; c++) {
-                        if (Sim.Players.Players[c].Owner == 0 && (Sim.Players.Players[c].IsOut == 0)) {
-                            Sim.Players.Players[c].Letters.AddLetter(
-                                TRUE, CString(bprintf(StandardTexte.GetS(TOKEN_LETTER, 9900), (LPCTSTR)AirlineX)),
-                                CString(bprintf(StandardTexte.GetS(TOKEN_LETTER, 9901), (LPCTSTR)AirlineX)),
-                                CString(bprintf(StandardTexte.GetS(TOKEN_LETTER, 9902), (LPCTSTR)NameX, (LPCTSTR)AirlineX)), -1);
-                        }
-                    }
-                }
-
-                ChangeMoney(-gWerbePrice[n], n + 3120, "");
+                GameMechanic::buyAdvertisement(*this, 0, n, -1);
             }
         }
         WorkCountdown = 20 * 7;
