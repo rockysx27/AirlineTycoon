@@ -2,6 +2,8 @@
 #include "AtNet.h"
 #include "Sabotage.h"
 
+#include <array>
+
 SLONG TankSize[4] = {100000, 1000000, 10000000, 100000000};
 SLONG TankPrice[4] = {100000, 800000, 7000000, 60000000};
 
@@ -408,6 +410,44 @@ void GameMechanic::setPlaneTargetZustand(PLAYER &qPlayer, SLONG idx, SLONG zusta
 
     qPlayer.Planes[idx].TargetZustand = UBYTE(zustand);
     qPlayer.NetUpdatePlaneProps(idx);
+}
+
+bool GameMechanic::setSecurity(PLAYER &qPlayer, SLONG securityType, bool targetState) {
+    if (securityType < 0 || securityType >= 12 || securityType == 9) {
+        hprintf("GameMechanic::toggleSecurity: Invalid security type.");
+        return false;
+    }
+
+    if (securityType == 1 && (qPlayer.HasItem(ITEM_LAPTOP) == 0)) {
+        return false;
+    }
+
+    if (targetState) {
+        if (securityType >= 8) {
+            std::array<int, 3> list = {8, 10, 11};
+            for (auto i : list) {
+                if (i <= securityType) {
+                    qPlayer.SecurityFlags |= (1 << securityType);
+                }
+            }
+        } else {
+            qPlayer.SecurityFlags |= (1 << securityType);
+        }
+    } else {
+        if (securityType == 8) {
+            std::array<int, 3> list = {8, 10, 11};
+            for (auto i : list) {
+                if (i >= securityType) {
+                    qPlayer.SecurityFlags &= ~(1 << securityType);
+                }
+            }
+        } else {
+            qPlayer.SecurityFlags &= ~(1 << securityType);
+        }
+    }
+
+    PLAYER::NetSynchronizeFlags();
+    return true;
 }
 
 bool GameMechanic::toggleSecurity(PLAYER &qPlayer, SLONG securityType) {

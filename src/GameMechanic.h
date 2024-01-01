@@ -45,6 +45,7 @@ class GameMechanic {
     static void setPlaneTargetZustand(PLAYER &qPlayer, SLONG idx, SLONG zustand);
 
     /* Security */
+    static bool setSecurity(PLAYER &qPlayer, SLONG securityType, bool targetState);
     static bool toggleSecurity(PLAYER &qPlayer, SLONG securityType);
 
     /* Makler */
