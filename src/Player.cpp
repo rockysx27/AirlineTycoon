@@ -5644,13 +5644,9 @@ void PLAYER::RobotExecuteAction() {
     case ACTION_VISITSECURITY: {
         for (SLONG pass = 1; pass <= 2; pass++) {
             if (Money > 1000000) {
-                ULONG newflag = (1 << LocalRandom.Rand(9));
-
-                if ((SecurityNeeded & newflag) != 0U) {
-                    SecurityFlags |= newflag;
-                }
+                GameMechanic::setSecurity(*this, LocalRandom.Rand(9), true);
             } else {
-                SecurityFlags &= ~(1 << LocalRandom.Rand(9));
+                GameMechanic::setSecurity(*this, LocalRandom.Rand(9), false);
             }
         }
     }
