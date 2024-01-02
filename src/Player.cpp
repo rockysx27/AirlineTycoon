@@ -5447,29 +5447,10 @@ void PLAYER::RobotExecuteAction() {
                 }
 
                 if (BestC != -1) {
-                    SLONG Rang = 1;
-
                     // hprintf ("Event: %s (Player %li) buys route %s-%s.", (LPCTSTR)NameX, PlayerNum+1, (LPCTSTR)Cities[Routen[BestC].VonCity].Name,
                     // (LPCTSTR)Cities[Routen[BestC].NachCity].Name);
 
-                    for (SLONG d = 0; d < 4; d++) {
-                        if ((Sim.Players.Players[d].IsOut == 0) && Sim.Players.Players[d].RentRouten.RentRouten[BestC].Rang >= Rang) {
-                            Rang = Sim.Players.Players[d].RentRouten.RentRouten[BestC].Rang + 1;
-                        }
-                    }
-
-                    RentRoute(Routen[BestC].VonCity, Routen[BestC].NachCity, Routen[BestC].Miete);
-
-                    RentRouten.RentRouten[BestC].Rang = UBYTE(Rang);
-                    RentRouten.RentRouten[BestC].TageMitGering = 0;
-
-                    for (c = 0; c < RentRouten.RentRouten.AnzEntries(); c++) {
-                        if ((Routen.IsInAlbum(c) != 0) && Routen[c].VonCity == Routen[BestC].NachCity && Routen[c].NachCity == Routen[BestC].VonCity) {
-                            RentRouten.RentRouten[c].Rang = UBYTE(Rang);
-                            RentRouten.RentRouten[c].TageMitGering = 0;
-                            break;
-                        }
-                    }
+                    GameMechanic::rentRoute(*this, BestC);
                 }
             }
         } while (false);
@@ -5489,19 +5470,7 @@ void PLAYER::RobotExecuteAction() {
         break;
 
     case ACTION_VISITSECURITY2:
-        if (HasItem(ITEM_ZANGE) != 0) {
-            DropItem(ITEM_ZANGE);
-
-            Sim.nSecOutDays = 3;
-            SIM::SendSimpleMessage(ATNET_SYNC_OFFICEFLAG, 0, 55, 3);
-
-            for (SLONG c = 0; c < 4; c++) {
-                if (Sim.Players.Players[c].IsOut == 0) {
-                    Sim.Players.Players[c].SecurityFlags = 0;
-                    Sim.Players.Players[c].NetSynchronizeFlags();
-                }
-            }
-        }
+        GameMechanic::sabotageSecurityOffice(*this);
         WorkCountdown = 20 * 1;
         break;
 
