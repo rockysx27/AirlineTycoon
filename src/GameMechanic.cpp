@@ -1083,7 +1083,10 @@ GameMechanic::BuyItemResult GameMechanic::buyDutyFreeItem(PLAYER &qPlayer, UBYTE
     SLONG delta = 0;
     char *buf;
     if (item == ITEM_LAPTOP) {
-        if (qPlayer.HasItem(ITEM_LAPTOP) != 0 && qPlayer.LaptopQuality < 4) {
+        if (qPlayer.HasItem(ITEM_LAPTOP) != 0) {
+            if (qPlayer.LaptopQuality >= 4) {
+                return BuyItemResult::DeniedInvalidParam;
+            }
             qPlayer.DropItem(ITEM_LAPTOP);
         }
         delta = atoi(StandardTexte.GetS(TOKEN_ITEM, 2000 + qPlayer.LaptopQuality));
