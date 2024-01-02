@@ -1362,6 +1362,49 @@ bool GameMechanic::refillFlightJobs(SLONG cityNum) {
     return true;
 }
 
+bool GameMechanic::planFlightJob(PLAYER &qPlayer, SLONG planeID, SLONG objectID, SLONG date, SLONG time) {
+    return _planFlightJob(qPlayer, planeID, objectID, 2, date, time);
+}
+bool GameMechanic::planFreightJob(PLAYER &qPlayer, SLONG planeID, SLONG objectID, SLONG date, SLONG time) {
+    return _planFlightJob(qPlayer, planeID, objectID, 4, date, time);
+}
+bool GameMechanic::planRouteJob(PLAYER &qPlayer, SLONG planeID, SLONG objectID, SLONG date, SLONG time) {
+    return _planFlightJob(qPlayer, planeID, objectID, 3, date, time);
+}
+bool GameMechanic::_planFlightJob(PLAYER &qPlayer, SLONG planeID, SLONG objectID, SLONG objectType, SLONG date, SLONG time) {
+    if (!qPlayer.Planes.IsInAlbum(planeID)) {
+        hprintf("GameMechanic::planFlightJob: Invalid plane index.");
+        return false;
+    }
+
+    auto &qPlane = qPlayer.Planes[planeID];
+
+    auto lastIdx = qPlane.Flugplan.Flug.AnzEntries() - 1;
+    CFlugplanEintrag &fpe = qPlane.Flugplan.Flug[lastIdx];
+
+    fpe.ObjectType = objectType;
+    fpe.ObjectId = objectID;
+    fpe.Okay = 0;
+    fpe.Startdate = date;
+    fpe.Startzeit = time;
+
+    fpe.FlightChanged();
+    if (objectType != 4) {
+        fpe.CalcPassengers(qPlayer.PlayerNum, qPlane);
+    }
+    fpe.PArrived = 0;
+
+    qPlane.Flugplan.UpdateNextFlight();
+    qPlane.Flugplan.UpdateNextStart();
+    qPlane.CheckFlugplaene(qPlayer.PlayerNum);
+
+    if (objectType != 4) {
+        qPlayer.UpdateAuftragsUsage();
+    }
+
+    return true;
+}
+
 bool GameMechanic::hireWorker(PLAYER &qPlayer, CWorker &qWorker) {
     if (qWorker.Employer != WORKER_JOBLESS) {
         hprintf("GameMechanic::fireWorker: Conditions not met.");
