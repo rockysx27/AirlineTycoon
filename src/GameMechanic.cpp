@@ -1223,7 +1223,7 @@ bool GameMechanic::takeInternationalFlightJob(PLAYER &qPlayer, SLONG par1, SLONG
         hprintf("GameMechanic::takeInternationalFlightJob: Invalid par1.");
         return false;
     }
-    if (AuslandsAuftraege[par1].IsInAlbum(par2)) {
+    if (!AuslandsAuftraege[par1].IsInAlbum(par2)) {
         hprintf("GameMechanic::takeInternationalFlightJob: Invalid par2.");
         return false;
     }
@@ -1251,7 +1251,7 @@ bool GameMechanic::takeInternationalFreightJob(PLAYER &qPlayer, SLONG par1, SLON
         hprintf("GameMechanic::takeInternationalFreightJob: Invalid par1.");
         return false;
     }
-    if (AuslandsFrachten[par1].IsInAlbum(par2)) {
+    if (!AuslandsFrachten[par1].IsInAlbum(par2)) {
         hprintf("GameMechanic::takeInternationalFreightJob: Invalid par2.");
         return false;
     }
@@ -1275,7 +1275,7 @@ bool GameMechanic::takeInternationalFreightJob(PLAYER &qPlayer, SLONG par1, SLON
 }
 
 bool GameMechanic::killFlightJob(PLAYER &qPlayer, SLONG par1, bool payFine) {
-    if (qPlayer.Auftraege.IsInAlbum(par1)) {
+    if (!qPlayer.Auftraege.IsInAlbum(par1)) {
         hprintf("GameMechanic::killFlightJob: Invalid par1.");
         return false;
     }
@@ -1303,7 +1303,7 @@ bool GameMechanic::killFlightJob(PLAYER &qPlayer, SLONG par1, bool payFine) {
 }
 
 bool GameMechanic::killFreightJob(PLAYER &qPlayer, SLONG par1, bool payFine) {
-    if (qPlayer.Frachten.IsInAlbum(par1)) {
+    if (!qPlayer.Frachten.IsInAlbum(par1)) {
         hprintf("GameMechanic::killFreightJob: Invalid par1.");
         return false;
     }
@@ -1334,7 +1334,7 @@ bool GameMechanic::killFreightJob(PLAYER &qPlayer, SLONG par1, bool payFine) {
 }
 
 bool GameMechanic::killFlightPlan(PLAYER &qPlayer, SLONG par1) {
-    if (qPlayer.Planes.IsInAlbum(par1)) {
+    if (!qPlayer.Planes.IsInAlbum(par1)) {
         hprintf("GameMechanic::killFlightPlan: Invalid par1.");
         return false;
     }

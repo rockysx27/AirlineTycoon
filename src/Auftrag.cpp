@@ -116,7 +116,7 @@ void PLAYER::CheckAuftragsBerater(const CAuftrag &Auftrag) {
                 for (d = 0, Okay = FALSE; d < Planes.AnzEntries(); d++) {
                     if (Planes.IsInAlbum(d) != 0) {
                         Okay |= static_cast<SLONG>((SLONG(Auftrag.Personen) <= Planes[d].MaxPassagiere + Planes[d].MaxPassagiereFC) &&
-                                                 (Auftrag.FitsInPlane(Planes[d]) != 0));
+                                                   (Auftrag.FitsInPlane(Planes[d]) != 0));
                         // Auftrag.FitsInPlane (PlaneTypes[(SLONG)Planes[d].TypeId]) );
                     }
                 }
@@ -788,14 +788,16 @@ TEAKFILE &operator>>(TEAKFILE &File, CAuftrag &Auftrag) {
 // Fügt eine Reihe von neuen Aufträgen ein:
 //============================================================================================
 void CAuftraege::FillForLastMinute() {
-    SLONG c = 0;
 
     CalcPlayerMaximums();
 
     ReSize(6); // ex:10
+    FillAlbum();
 
+    SLONG c = 0;
     for (auto &a : *this) {
         a.RefillForLastMinute(c / 2, &Random);
+        c++;
     }
 
     if (Sim.Difficulty == DIFF_ATFS10 && Sim.Date >= 20 && Sim.Date <= 30) {
@@ -809,7 +811,6 @@ void CAuftraege::FillForLastMinute() {
 // Fügt einen neuen Auftrag ein:
 //--------------------------------------------------------------------------------------------
 void CAuftraege::RefillForLastMinute(SLONG Minimum) {
-    SLONG c = 0;
     SLONG Anz = min(AnzEntries(), Sim.TickLastMinuteRefill);
 
     NetGenericSync(7000, Minimum);
@@ -819,7 +820,9 @@ void CAuftraege::RefillForLastMinute(SLONG Minimum) {
     CalcPlayerMaximums();
 
     ReSize(6); // ex:10
+    FillAlbum();
 
+    SLONG c = 0;
     for (auto &a : *this) {
         if (Anz <= 0) {
             break;
@@ -828,6 +831,7 @@ void CAuftraege::RefillForLastMinute(SLONG Minimum) {
             a.RefillForLastMinute(c / 2, &Random);
             Anz--;
         }
+        c++;
     }
 
     for (auto &a : *this) {
@@ -839,6 +843,7 @@ void CAuftraege::RefillForLastMinute(SLONG Minimum) {
         }
     }
 
+    c = 0;
     for (auto &a : *this) {
         if (Anz <= 0) {
             break;
@@ -847,6 +852,7 @@ void CAuftraege::RefillForLastMinute(SLONG Minimum) {
             a.RefillForLastMinute(c / 2, &Random);
             Minimum--;
         }
+        c++;
     }
 
     Sim.TickLastMinuteRefill = 0;
@@ -862,12 +868,13 @@ void CAuftraege::RefillForLastMinute(SLONG Minimum) {
 // Fügt eine Reihe von neuen Aufträgen ein:
 //--------------------------------------------------------------------------------------------
 void CAuftraege::FillForReisebuero() {
-    SLONG c = 0;
 
     CalcPlayerMaximums();
 
     ReSize(6);
+    FillAlbum();
 
+    SLONG c = 0;
     for (auto &a : *this) {
         if (Sim.Date < 5 && c < 5) {
             a.RefillForAusland(4, Sim.HomeAirportId, &Random);
@@ -876,6 +883,7 @@ void CAuftraege::FillForReisebuero() {
         } else {
             a.RefillForAusland(c / 2, Sim.HomeAirportId, &Random);
         }
+        c++;
     }
 
     if (Sim.Difficulty == DIFF_ATFS10 && Sim.Date >= 20 && Sim.Date <= 30) {
@@ -889,7 +897,6 @@ void CAuftraege::FillForReisebuero() {
 // Fügt einen neuen Auftrag ein:
 //--------------------------------------------------------------------------------------------
 void CAuftraege::RefillForReisebuero(SLONG Minimum) {
-    SLONG c = 0;
     SLONG Anz = min(AnzEntries(), Sim.TickReisebueroRefill);
 
     // NetGenericSync (8000, Minimum);
@@ -898,7 +905,9 @@ void CAuftraege::RefillForReisebuero(SLONG Minimum) {
     CalcPlayerMaximums();
 
     ReSize(6);
+    FillAlbum();
 
+    SLONG c = 0;
     for (auto &a : *this) {
         if (Anz <= 0) {
             break;
@@ -914,6 +923,7 @@ void CAuftraege::RefillForReisebuero(SLONG Minimum) {
 
             Anz--;
         }
+        c++;
     }
 
     for (auto &a : *this) {
@@ -925,6 +935,7 @@ void CAuftraege::RefillForReisebuero(SLONG Minimum) {
         }
     }
 
+    c = 0;
     for (auto &a : *this) {
         if (Anz <= 0) {
             break;
@@ -940,6 +951,7 @@ void CAuftraege::RefillForReisebuero(SLONG Minimum) {
 
             Minimum--;
         }
+        c++;
     }
 
     Sim.TickReisebueroRefill = 0;
@@ -955,12 +967,13 @@ void CAuftraege::RefillForReisebuero(SLONG Minimum) {
 // Fügt eine Reihe von neuen Aufträgen ein:
 //--------------------------------------------------------------------------------------------
 void CAuftraege::FillForAusland(SLONG CityNum) {
-    SLONG c = 0;
 
     CalcPlayerMaximums();
 
     ReSize(6); // ex:10
+    FillAlbum();
 
+    SLONG c = 0;
     for (auto &a : *this) {
         if (Sim.Date < 5 && c < 5) {
             a.RefillForAusland(4, CityNum, &Random);
@@ -969,6 +982,7 @@ void CAuftraege::FillForAusland(SLONG CityNum) {
         } else {
             a.RefillForAusland(c / 2, CityNum, &Random);
         }
+        c++;
     }
 }
 
@@ -976,13 +990,14 @@ void CAuftraege::FillForAusland(SLONG CityNum) {
 // Fügt einen neuen Auftrag ein:
 //--------------------------------------------------------------------------------------------
 void CAuftraege::RefillForAusland(SLONG CityNum, SLONG Minimum) {
-    SLONG c = 0;
     SLONG Anz = min(AnzEntries(), AuslandsRefill[CityNum]);
 
     CalcPlayerMaximums();
 
     ReSize(6);
+    FillAlbum();
 
+    SLONG c = 0;
     for (auto &a : *this) {
         if (Anz <= 0) {
             break;
@@ -998,6 +1013,7 @@ void CAuftraege::RefillForAusland(SLONG CityNum, SLONG Minimum) {
 
             Anz--;
         }
+        c++;
     }
 
     for (auto &a : *this) {
@@ -1009,6 +1025,7 @@ void CAuftraege::RefillForAusland(SLONG CityNum, SLONG Minimum) {
         }
     }
 
+    c = 0;
     for (auto &a : *this) {
         if (Anz <= 0) {
             break;
@@ -1024,6 +1041,7 @@ void CAuftraege::RefillForAusland(SLONG CityNum, SLONG Minimum) {
 
             Minimum--;
         }
+        c++;
     }
 
     AuslandsRefill[CityNum] = 0;

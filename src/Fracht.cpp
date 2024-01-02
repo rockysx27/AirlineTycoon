@@ -758,14 +758,16 @@ TEAKFILE &operator>>(TEAKFILE &File, CFracht &Fracht) {
 // Fügt eine Reihe von neuen Aufträgen ein:
 //============================================================================================
 void CFrachten::Fill() {
-    SLONG c = 0;
 
     CalcPlayerMaximums();
 
     ReSize(6);
+    FillAlbum();
 
+    SLONG c = 0;
     for (auto &f : *this) {
         f.Refill(c / 2, &Random);
+        c++;
     }
 
     if (Sim.Difficulty == DIFF_ATFS10 && Sim.Date >= 25 && Sim.Date <= 35) {
@@ -779,13 +781,14 @@ void CFrachten::Fill() {
 // Fügt einen neuen Auftrag ein:
 //--------------------------------------------------------------------------------------------
 void CFrachten::Refill(SLONG Minimum) {
-    SLONG c = 0;
     SLONG Anz = min(AnzEntries(), Sim.TickFrachtRefill);
 
     CalcPlayerMaximums();
 
     ReSize(6);
+    FillAlbum();
 
+    SLONG c = 0;
     for (auto &f : *this) {
         if (Anz <= 0) {
             break;
@@ -801,6 +804,7 @@ void CFrachten::Refill(SLONG Minimum) {
 
             Anz--;
         }
+        c++;
     }
 
     for (auto &f : *this) {
@@ -812,6 +816,7 @@ void CFrachten::Refill(SLONG Minimum) {
         }
     }
 
+    c = 0;
     for (auto &f : *this) {
         if (Anz <= 0) {
             break;
@@ -827,6 +832,7 @@ void CFrachten::Refill(SLONG Minimum) {
 
             Minimum--;
         }
+        c++;
     }
 
     Sim.TickFrachtRefill = 0;
@@ -1084,13 +1090,14 @@ too_large:
 //
 //--------------------------------------------------------------------------------------------
 void CFrachten::RefillForAusland(SLONG CityNum, SLONG Minimum) {
-    SLONG c = 0;
     SLONG Anz = min(AnzEntries(), AuslandsFRefill[CityNum]);
 
     CalcPlayerMaximums();
 
     ReSize(6);
+    FillAlbum();
 
+    SLONG c = 0;
     for (auto &f : *this) {
         if (Anz <= 0) {
             break;
@@ -1106,6 +1113,7 @@ void CFrachten::RefillForAusland(SLONG CityNum, SLONG Minimum) {
 
             Anz--;
         }
+        c++;
     }
 
     for (auto &f : *this) {
@@ -1117,6 +1125,7 @@ void CFrachten::RefillForAusland(SLONG CityNum, SLONG Minimum) {
         }
     }
 
+    c = 0;
     for (auto &f : *this) {
         if (Anz <= 0) {
             break;
@@ -1132,6 +1141,7 @@ void CFrachten::RefillForAusland(SLONG CityNum, SLONG Minimum) {
 
             Minimum--;
         }
+        c++;
     }
 
     AuslandsFRefill[CityNum] = 0;
@@ -1141,12 +1151,13 @@ void CFrachten::RefillForAusland(SLONG CityNum, SLONG Minimum) {
 //
 //--------------------------------------------------------------------------------------------
 void CFrachten::FillForAusland(SLONG CityNum) {
-    SLONG c = 0;
 
     CalcPlayerMaximums();
 
     ReSize(6); // ex:10
+    FillAlbum();
 
+    SLONG c = 0;
     for (auto &f : *this) {
         if (Sim.Date < 5 && c < 5) {
             f.RefillForAusland(4, CityNum, &Random);
@@ -1155,5 +1166,6 @@ void CFrachten::FillForAusland(SLONG CityNum) {
         } else {
             f.RefillForAusland(c / 2, CityNum, &Random);
         }
+        c++;
     }
 }
