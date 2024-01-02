@@ -4164,24 +4164,7 @@ void PLAYER::RobotExecuteAction() {
                                                     Auftraege[ObjectId];
                                                 }
 
-                                                CFlugplanEintrag &fpe = Planes[c].Flugplan.Flug[Planes[c].Flugplan.Flug.AnzEntries() - 1];
-
-                                                fpe.ObjectType = 2;
-                                                fpe.ObjectId = ObjectId;
-                                                fpe.Okay = 0;
-                                                fpe.Startdate = Sim.Date + VonZeit / 24;
-                                                fpe.Startzeit = VonZeit % 24;
-
-                                                fpe.FlightChanged();
-                                                // fpe.CalcPassengers (Planes[c].TypeId, PlayerNum, Planes[c]);
-                                                fpe.CalcPassengers(PlayerNum, Planes[c]);
-                                                fpe.PArrived = 0;
-
-                                                Planes[c].Flugplan.UpdateNextFlight();
-                                                Planes[c].Flugplan.UpdateNextStart();
-
-                                                Planes[c].CheckFlugplaene(PlayerNum);
-                                                UpdateAuftragsUsage();
+                                                GameMechanic::planFlightJob(*this, c, ObjectId, Sim.Date + VonZeit / 24, VonZeit % 24);
                                                 DelayFlightsIfNecessary();
                                                 break;
                                             }
@@ -4224,30 +4207,7 @@ void PLAYER::RobotExecuteAction() {
                                                 Auftraege[ObjectId];
                                             }
 
-                                            CFlugplanEintrag &fpe = Planes[c].Flugplan.Flug[Planes[c].Flugplan.Flug.AnzEntries() - 1];
-
-                                            // DisplayBroadcastMessage (bprintf ("B: %s took Order %s-%s", (LPCTSTR)NameX,
-                                            // (LPCTSTR)Cities[qAuftraege[e].VonCity].Name, (LPCTSTR)Cities[qAuftraege[e].NachCity].Name));
-
-                                            fpe.ObjectType = 2;
-                                            fpe.ObjectId = ObjectId;
-                                            fpe.Okay = 0;
-                                            fpe.Startdate = Sim.Date + VonZeit / 24;
-                                            fpe.Startzeit = VonZeit % 24;
-
-                                            fpe.FlightChanged();
-                                            fpe.CalcPassengers(PlayerNum, Planes[c]);
-                                            // fpe.CalcPassengers (Planes[c].TypeId, PlayerNum, Planes[c]);
-                                            fpe.PArrived = 0;
-
-                                            // log: hprintf ("Player %li takes(2) %li Passengers %li-%li (%li, %li)", PlayerNum, fpe.Passagiere,
-                                            // qAuftraege[e].VonCity, qAuftraege[e].NachCity, n, e);
-
-                                            Planes[c].Flugplan.UpdateNextFlight();
-                                            Planes[c].Flugplan.UpdateNextStart();
-
-                                            Planes[c].CheckFlugplaene(PlayerNum);
-                                            UpdateAuftragsUsage();
+                                            GameMechanic::planFlightJob(*this, c, ObjectId, Sim.Date + VonZeit / 24, VonZeit % 24);
                                             DelayFlightsIfNecessary();
                                         }
                                     }
@@ -4314,21 +4274,7 @@ void PLAYER::RobotExecuteAction() {
                                                             Frachten[ObjectId];
                                                         }
 
-                                                        CFlugplanEintrag &fpe = Planes[c].Flugplan.Flug[Planes[c].Flugplan.Flug.AnzEntries() - 1];
-
-                                                        fpe.ObjectType = 4;
-                                                        fpe.ObjectId = ObjectId;
-                                                        fpe.Okay = 0;
-                                                        fpe.Startdate = Sim.Date + VonZeit / 24;
-                                                        fpe.Startzeit = VonZeit % 24;
-
-                                                        fpe.FlightChanged();
-                                                        fpe.PArrived = 0;
-
-                                                        Planes[c].Flugplan.UpdateNextFlight();
-                                                        Planes[c].Flugplan.UpdateNextStart();
-
-                                                        Planes[c].CheckFlugplaene(PlayerNum);
+                                                        GameMechanic::planFreightJob(*this, c, ObjectId, Sim.Date + VonZeit / 24, VonZeit % 24);
                                                         DelayFlightsIfNecessary();
 
                                                         Sim.Players.CheckFlighplans();
@@ -4384,22 +4330,7 @@ void PLAYER::RobotExecuteAction() {
                                                             hprintvar(__LINE__);
                                                             Frachten[ObjectId];
                                                         }
-
-                                                        CFlugplanEintrag &fpe = Planes[c].Flugplan.Flug[Planes[c].Flugplan.Flug.AnzEntries() - 1];
-
-                                                        fpe.ObjectType = 4;
-                                                        fpe.ObjectId = ObjectId;
-                                                        fpe.Okay = 0;
-                                                        fpe.Startdate = Sim.Date + VonZeit / 24;
-                                                        fpe.Startzeit = VonZeit % 24;
-
-                                                        fpe.FlightChanged();
-                                                        fpe.PArrived = 0;
-
-                                                        Planes[c].Flugplan.UpdateNextFlight();
-                                                        Planes[c].Flugplan.UpdateNextStart();
-
-                                                        Planes[c].CheckFlugplaene(PlayerNum);
+                                                        GameMechanic::planFreightJob(*this, c, ObjectId, Sim.Date + VonZeit / 24, VonZeit % 24);
                                                         DelayFlightsIfNecessary();
 
                                                         Sim.Players.CheckFlighplans();
@@ -5030,24 +4961,7 @@ void PLAYER::RobotExecuteAction() {
                                                 SLONG ObjectId = -1;
                                                 GameMechanic::takeLastMinuteJob(*this, e, ObjectId);
 
-                                                CFlugplanEintrag &fpe = Planes[c].Flugplan.Flug[Planes[c].Flugplan.Flug.AnzEntries() - 1];
-
-                                                fpe.ObjectType = 2;
-                                                fpe.ObjectId = ObjectId;
-                                                fpe.Okay = 0;
-                                                fpe.Startdate = Sim.Date + VonZeit / 24;
-                                                fpe.Startzeit = VonZeit % 24;
-
-                                                fpe.FlightChanged();
-                                                fpe.CalcPassengers(PlayerNum, Planes[c]);
-                                                // fpe.CalcPassengers (Planes[c].TypeId, PlayerNum, Planes[c]);
-                                                fpe.PArrived = 0;
-
-                                                Planes[c].Flugplan.UpdateNextFlight();
-                                                Planes[c].Flugplan.UpdateNextStart();
-
-                                                Planes[c].CheckFlugplaene(PlayerNum);
-                                                UpdateAuftragsUsage();
+                                                GameMechanic::planFlightJob(*this, c, ObjectId, Sim.Date + VonZeit / 24, VonZeit % 24);
                                                 DelayFlightsIfNecessary();
                                                 break;
                                             }
@@ -5092,24 +5006,7 @@ void PLAYER::RobotExecuteAction() {
                                                 Auftraege[ObjectId];
                                             }
 
-                                            CFlugplanEintrag &fpe = Planes[c].Flugplan.Flug[Planes[c].Flugplan.Flug.AnzEntries() - 1];
-
-                                            fpe.ObjectType = 2;
-                                            fpe.ObjectId = ObjectId;
-                                            fpe.Okay = 0;
-                                            fpe.Startdate = Sim.Date + VonZeit / 24;
-                                            fpe.Startzeit = VonZeit % 24;
-
-                                            fpe.FlightChanged();
-                                            fpe.CalcPassengers(PlayerNum, Planes[c]);
-                                            // fpe.CalcPassengers (Planes[c].TypeId, PlayerNum, Planes[c]);
-                                            fpe.PArrived = 0;
-
-                                            Planes[c].Flugplan.UpdateNextFlight();
-                                            Planes[c].Flugplan.UpdateNextStart();
-
-                                            Planes[c].CheckFlugplaene(PlayerNum);
-                                            UpdateAuftragsUsage();
+                                            GameMechanic::planFlightJob(*this, c, ObjectId, Sim.Date + VonZeit / 24, VonZeit % 24);
                                             DelayFlightsIfNecessary();
                                         }
                                     }
@@ -5182,24 +5079,7 @@ void PLAYER::RobotExecuteAction() {
                                                     Auftraege[ObjectId];
                                                 }
 
-                                                CFlugplanEintrag &fpe = Planes[c].Flugplan.Flug[Planes[c].Flugplan.Flug.AnzEntries() - 1];
-
-                                                fpe.ObjectType = 2;
-                                                fpe.ObjectId = ObjectId;
-                                                fpe.Okay = 0;
-                                                fpe.Startdate = Sim.Date + VonZeit / 24;
-                                                fpe.Startzeit = VonZeit % 24;
-
-                                                fpe.FlightChanged();
-                                                fpe.CalcPassengers(PlayerNum, Planes[c]);
-                                                // fpe.CalcPassengers (Planes[c].TypeId, PlayerNum, Planes[c]);
-                                                fpe.PArrived = 0;
-
-                                                Planes[c].Flugplan.UpdateNextFlight();
-                                                Planes[c].Flugplan.UpdateNextStart();
-
-                                                Planes[c].CheckFlugplaene(PlayerNum);
-                                                UpdateAuftragsUsage();
+                                                GameMechanic::planFlightJob(*this, c, ObjectId, Sim.Date + VonZeit / 24, VonZeit % 24);
                                                 DelayFlightsIfNecessary();
                                                 break;
                                             }
@@ -5246,24 +5126,7 @@ void PLAYER::RobotExecuteAction() {
                                                 Auftraege[ObjectId];
                                             }
 
-                                            CFlugplanEintrag &fpe = Planes[c].Flugplan.Flug[Planes[c].Flugplan.Flug.AnzEntries() - 1];
-
-                                            fpe.ObjectType = 2;
-                                            fpe.ObjectId = ObjectId;
-                                            fpe.Okay = 0;
-                                            fpe.Startdate = Sim.Date + VonZeit / 24;
-                                            fpe.Startzeit = VonZeit % 24;
-
-                                            fpe.FlightChanged();
-                                            fpe.CalcPassengers(PlayerNum, Planes[c]);
-                                            // fpe.CalcPassengers (Planes[c].TypeId, PlayerNum, Planes[c]);
-                                            fpe.PArrived = 0;
-
-                                            Planes[c].Flugplan.UpdateNextFlight();
-                                            Planes[c].Flugplan.UpdateNextStart();
-
-                                            Planes[c].CheckFlugplaene(PlayerNum);
-                                            UpdateAuftragsUsage();
+                                            GameMechanic::planFlightJob(*this, c, ObjectId, Sim.Date + VonZeit / 24, VonZeit % 24);
                                             DelayFlightsIfNecessary();
                                         }
                                     }
@@ -5343,21 +5206,7 @@ void PLAYER::RobotExecuteAction() {
                                                     Frachten[ObjectId];
                                                 }
 
-                                                CFlugplanEintrag &fpe = Planes[c].Flugplan.Flug[Planes[c].Flugplan.Flug.AnzEntries() - 1];
-
-                                                fpe.ObjectType = 4;
-                                                fpe.ObjectId = ObjectId;
-                                                fpe.Okay = 0;
-                                                fpe.Startdate = Sim.Date + VonZeit / 24;
-                                                fpe.Startzeit = VonZeit % 24;
-
-                                                fpe.FlightChanged();
-                                                fpe.PArrived = 0;
-
-                                                Planes[c].Flugplan.UpdateNextFlight();
-                                                Planes[c].Flugplan.UpdateNextStart();
-
-                                                Planes[c].CheckFlugplaene(PlayerNum);
+                                                GameMechanic::planFreightJob(*this, c, ObjectId, Sim.Date + VonZeit / 24, VonZeit % 24);
                                                 DelayFlightsIfNecessary();
 
                                                 Sim.Players.CheckFlighplans();
@@ -5415,21 +5264,7 @@ void PLAYER::RobotExecuteAction() {
                                                     Frachten[ObjectId];
                                                 }
 
-                                                CFlugplanEintrag &fpe = Planes[c].Flugplan.Flug[Planes[c].Flugplan.Flug.AnzEntries() - 1];
-
-                                                fpe.ObjectType = 4;
-                                                fpe.ObjectId = ObjectId;
-                                                fpe.Okay = 0;
-                                                fpe.Startdate = Sim.Date + VonZeit / 24;
-                                                fpe.Startzeit = VonZeit % 24;
-
-                                                fpe.FlightChanged();
-                                                fpe.PArrived = 0;
-
-                                                Planes[c].Flugplan.UpdateNextFlight();
-                                                Planes[c].Flugplan.UpdateNextStart();
-
-                                                Planes[c].CheckFlugplaene(PlayerNum);
+                                                GameMechanic::planFreightJob(*this, c, ObjectId, Sim.Date + VonZeit / 24, VonZeit % 24);
                                                 DelayFlightsIfNecessary();
 
                                                 Sim.Players.CheckFlighplans();

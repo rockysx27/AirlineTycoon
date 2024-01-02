@@ -105,6 +105,9 @@ class GameMechanic {
     static bool killFreightJob(PLAYER &qPlayer, SLONG par1, bool payFine);
     static bool killFlightPlan(PLAYER &qPlayer, SLONG par1);
     static bool refillFlightJobs(SLONG cityNum);
+    static bool planFlightJob(PLAYER &qPlayer, SLONG planeID, SLONG objectID, SLONG date, SLONG time);
+    static bool planFreightJob(PLAYER &qPlayer, SLONG planeID, SLONG objectID, SLONG date, SLONG time);
+    static bool planRouteJob(PLAYER &qPlayer, SLONG planeID, SLONG objectID, SLONG date, SLONG time);
 
     /* Crew */
     static bool hireWorker(PLAYER &qPlayer, CWorker &qWorker);
@@ -120,4 +123,7 @@ class GameMechanic {
     static void executeSabotageMode1();
     static void executeSabotageMode2(bool &outBAnyBombs);
     static void executeSabotageMode3();
+
+  private:
+    static bool _planFlightJob(PLAYER &qPlayer, SLONG planeID, SLONG objectID, SLONG objectType, SLONG date, SLONG time);
 };
