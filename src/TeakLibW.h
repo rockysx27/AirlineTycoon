@@ -160,7 +160,7 @@ template <typename T> class BUFFER {
                     MemPointer[i] = *tmp;
                 }
                 DelPointer = m + ((DelPointer - MemPointer) / sizeof(T));
-                delete[](MemPointer);
+                delete[] (MemPointer);
             } else {
                 DelPointer = m;
             }
@@ -998,6 +998,8 @@ extern bool run_regression();
 
 template <typename T> class ALBUM_V {
   public:
+    /* album iter */
+
     using element_type = std::pair<T, ULONG>;
     class Iter {
       public:
@@ -1061,6 +1063,8 @@ template <typename T> class ALBUM_V {
     Iter begin() { return Iter(List.begin(), &Hash); }
     Iter end() { return Iter(List.end(), &Hash); }
 
+    /* constructor */
+
     ALBUM_V(CString str) : Name(str) {}
 
     /* query capacity and resize */
@@ -1087,6 +1091,18 @@ template <typename T> class ALBUM_V {
         Hash = {};
         IdxFront = 0;
         IdxBack = AnzEntries() - 1;
+    }
+
+    void FillAlbum() {
+        for (auto i = 0; i < AnzEntries(); i++) {
+            if (List[i].second == 0) {
+                ULONG id = GetUniqueId();
+                List[i].second = id;
+                Hash[id] = i;
+            }
+        }
+        IdxFront = AnzEntries();
+        IdxBack = -1;
     }
 
     /* accessing elements */
