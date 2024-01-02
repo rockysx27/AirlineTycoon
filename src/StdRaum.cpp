@@ -3684,19 +3684,9 @@ void CStdRaum::OnLButtonDown(UINT /*unused*/, CPoint point) {
                     XY Position = Sim.Persons[Sim.Persons.GetPlayerIndex(qPlayer.PlayerNum)].Position;
 
                     if (ROOM_SECURITY == Airport.GetRuneParNear(XY(Position.x, Position.y), XY(22, 22), RUNE_2SHOP)) {
-                        qPlayer.DropItem(ITEM_ZANGE);
+                        GameMechanic::sabotageSecurityOffice(qPlayer);
                         PLAYER::NetSynchronizeItems();
                         qPlayer.WalkStopEx();
-                        Sim.nSecOutDays = 3;
-
-                        SIM::SendSimpleMessage(ATNET_SYNC_OFFICEFLAG, 0, 55, 3);
-
-                        for (SLONG c = 0; c < 4; c++) {
-                            if (Sim.Players.Players[c].IsOut == 0) {
-                                Sim.Players.Players[c].SecurityFlags = 0;
-                                Sim.Players.Players[c].NetSynchronizeFlags();
-                            }
-                        }
                     }
                 }
                 break;
@@ -6857,7 +6847,7 @@ void CStdRaum::MenuLeftClick(XY Pos) {
 
         case MENU_REQUEST_KILLROUTE:
             if (MouseClickArea == -101 && MouseClickId == MENU_REQUEST && MouseClickPar1 == 1) {
-                GameMechanic::killRoute(qPlayer, MenuPar2, MenuPar3);
+                GameMechanic::killRoute(qPlayer, MenuPar2);
                 if (qPlayer.GetRoom() == ROOM_ROUTEBOX) {
                     if (qPlayer.LocationWin != nullptr) {
                         (dynamic_cast<CRouteBox *>(qPlayer.LocationWin))->UpdateDataTable();
@@ -6871,7 +6861,7 @@ void CStdRaum::MenuLeftClick(XY Pos) {
 
         case MENU_REQUEST_RENTROUTE:
             if (MouseClickArea == -101 && MouseClickId == MENU_REQUEST && MouseClickPar1 == 1) {
-                GameMechanic::rentRoute(qPlayer, MenuPar2, MenuPar3);
+                GameMechanic::rentRoute(qPlayer, MenuPar2);
                 if (qPlayer.GetRoom() == ROOM_ROUTEBOX) {
                     if (qPlayer.LocationWin != nullptr) {
                         (dynamic_cast<CRouteBox *>(qPlayer.LocationWin))->UpdateDataTable();

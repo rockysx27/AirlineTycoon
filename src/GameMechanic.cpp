@@ -478,6 +478,26 @@ bool GameMechanic::toggleSecurity(PLAYER &qPlayer, SLONG securityType) {
     return true;
 }
 
+bool GameMechanic::sabotageSecurityOffice(PLAYER &qPlayer) {
+    if (qPlayer.HasItem(ITEM_ZANGE) == 0) {
+        hprintf("GameMechanic::sabotageSecurityOffice: Player does not have required item.");
+        return false;
+    }
+
+    qPlayer.DropItem(ITEM_ZANGE);
+
+    Sim.nSecOutDays = 3;
+    SIM::SendSimpleMessage(ATNET_SYNC_OFFICEFLAG, 0, 55, 3);
+
+    for (SLONG c = 0; c < 4; c++) {
+        if (Sim.Players.Players[c].IsOut == 0) {
+            Sim.Players.Players[c].SecurityFlags = 0;
+            Sim.Players.Players[c].NetSynchronizeFlags();
+        }
+    }
+    return true;
+}
+
 bool GameMechanic::GameMechanic::buyPlane(PLAYER &qPlayer, SLONG planeType, SLONG amount) {
     if (!PlaneTypes.IsInAlbum(planeType)) {
         hprintf("GameMechanic::buyPlane: Invalid plane type.");
@@ -1455,13 +1475,24 @@ bool GameMechanic::killCity(PLAYER &qPlayer, SLONG cityID) {
     return true;
 }
 
-bool GameMechanic::killRoute(PLAYER &qPlayer, SLONG routeA, SLONG routeB) {
+bool GameMechanic::killRoute(PLAYER &qPlayer, SLONG routeA) {
     if (routeA < 0 || routeA >= qPlayer.RentRouten.RentRouten.size()) {
         hprintf("GameMechanic::killRoute: Invalid routeA.");
         return false;
     }
-    if (routeB < 0 || routeB >= qPlayer.RentRouten.RentRouten.size()) {
-        hprintf("GameMechanic::killRoute: Invalid routeB.");
+
+    auto &qRentRouten = qPlayer.RentRouten.RentRouten;
+
+    /* find route in reverse direction */
+    SLONG routeB = -1;
+    for (SLONG c = 0; c < qRentRouten.AnzEntries(); c++) {
+        if ((Routen.IsInAlbum(c) != 0) && Routen[c].VonCity == Routen[routeA].NachCity && Routen[c].NachCity == Routen[routeA].VonCity) {
+            routeB = routeA;
+            break;
+        }
+    }
+    if (-1 == routeB) {
+        hprintf("GameMechanic::rentRoute: Unable to find route in reverse direction.");
         return false;
     }
 
@@ -1477,11 +1508,11 @@ bool GameMechanic::killRoute(PLAYER &qPlayer, SLONG routeA, SLONG routeB) {
     }
 
     for (SLONG e = 0; e < 4; e++) {
-        if ((Sim.Players.Players[e].IsOut == 0) && Sim.Players.Players[e].RentRouten.RentRouten[routeA].Rang > qPlayer.RentRouten.RentRouten[routeA].Rang) {
+        if ((Sim.Players.Players[e].IsOut == 0) && Sim.Players.Players[e].RentRouten.RentRouten[routeA].Rang > qRentRouten[routeA].Rang) {
             Sim.Players.Players[e].RentRouten.RentRouten[routeA].Rang--;
         }
 
-        if ((Sim.Players.Players[e].IsOut == 0) && Sim.Players.Players[e].RentRouten.RentRouten[routeB].Rang > qPlayer.RentRouten.RentRouten[routeB].Rang) {
+        if ((Sim.Players.Players[e].IsOut == 0) && Sim.Players.Players[e].RentRouten.RentRouten[routeB].Rang > qRentRouten[routeB].Rang) {
             Sim.Players.Players[e].RentRouten.RentRouten[routeB].Rang--;
         }
     }
@@ -1495,10 +1526,10 @@ bool GameMechanic::killRoute(PLAYER &qPlayer, SLONG routeA, SLONG routeB) {
         }
     }
 
-    qPlayer.RentRouten.RentRouten[routeA].Rang = 0;
-    qPlayer.RentRouten.RentRouten[routeB].Rang = 0;
-    qPlayer.RentRouten.RentRouten[routeA].TageMitGering = 99;
-    qPlayer.RentRouten.RentRouten[routeB].TageMitGering = 99;
+    qRentRouten[routeA].Rang = 0;
+    qRentRouten[routeB].Rang = 0;
+    qRentRouten[routeA].TageMitGering = 99;
+    qRentRouten[routeB].TageMitGering = 99;
     qPlayer.Blocks.RepaintAll = TRUE;
 
     qPlayer.NetUpdateRentRoute(routeA, routeB);
@@ -1506,13 +1537,24 @@ bool GameMechanic::killRoute(PLAYER &qPlayer, SLONG routeA, SLONG routeB) {
     return true;
 }
 
-bool GameMechanic::rentRoute(PLAYER &qPlayer, SLONG routeA, SLONG routeB) {
+bool GameMechanic::rentRoute(PLAYER &qPlayer, SLONG routeA) {
     if (routeA < 0 || routeA >= qPlayer.RentRouten.RentRouten.size()) {
         hprintf("GameMechanic::rentRoute: Invalid routeA.");
         return false;
     }
-    if (routeB < 0 || routeA >= qPlayer.RentRouten.RentRouten.size()) {
-        hprintf("GameMechanic::rentRoute: Invalid routeB.");
+
+    auto &qRentRouten = qPlayer.RentRouten.RentRouten;
+
+    /* find route in reverse direction */
+    SLONG routeB = -1;
+    for (SLONG c = 0; c < qRentRouten.AnzEntries(); c++) {
+        if ((Routen.IsInAlbum(c) != 0) && Routen[c].VonCity == Routen[routeA].NachCity && Routen[c].NachCity == Routen[routeA].VonCity) {
+            routeB = routeA;
+            break;
+        }
+    }
+    if (-1 == routeB) {
+        hprintf("GameMechanic::rentRoute: Unable to find route in reverse direction.");
         return false;
     }
 
@@ -1527,10 +1569,10 @@ bool GameMechanic::rentRoute(PLAYER &qPlayer, SLONG routeA, SLONG routeB) {
 
     qPlayer.RentRoute(Routen[routeA].VonCity, Routen[routeA].NachCity, Routen[routeA].Miete);
 
-    qPlayer.RentRouten.RentRouten[routeA].TageMitGering = 0;
-    qPlayer.RentRouten.RentRouten[routeB].TageMitGering = 0;
-    qPlayer.RentRouten.RentRouten[routeA].Rang = UBYTE(Rang);
-    qPlayer.RentRouten.RentRouten[routeB].Rang = UBYTE(Rang);
+    qRentRouten[routeA].TageMitGering = 0;
+    qRentRouten[routeB].TageMitGering = 0;
+    qRentRouten[routeA].Rang = UBYTE(Rang);
+    qRentRouten[routeB].Rang = UBYTE(Rang);
 
     qPlayer.Blocks.RepaintAll = TRUE;
 

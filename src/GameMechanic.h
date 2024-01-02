@@ -47,6 +47,7 @@ class GameMechanic {
     /* Security */
     static bool setSecurity(PLAYER &qPlayer, SLONG securityType, bool targetState);
     static bool toggleSecurity(PLAYER &qPlayer, SLONG securityType);
+    static bool sabotageSecurityOffice(PLAYER &qPlayer);
 
     /* Makler */
     static bool buyPlane(PLAYER &qPlayer, SLONG planeType, SLONG amount);
@@ -115,8 +116,8 @@ class GameMechanic {
 
     /* Routes */
     static bool killCity(PLAYER &qPlayer, SLONG cityID);
-    static bool killRoute(PLAYER &qPlayer, SLONG routeA, SLONG routeB);
-    static bool rentRoute(PLAYER &qPlayer, SLONG routeA, SLONG routeB);
+    static bool killRoute(PLAYER &qPlayer, SLONG routeA);
+    static bool rentRoute(PLAYER &qPlayer, SLONG routeA);
 
     /* Execution routines */
     static void executeAirlineOvertake();
