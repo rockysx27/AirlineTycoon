@@ -4,12 +4,44 @@
 #include <iostream>
 #include <vector>
 
+class PlaneTime {
+  public:
+    PlaneTime() = default;
+    PlaneTime(int date, int time) : mDate(date), mTime(time) {}
+
+    int GetDate() const { return mDate; }
+    int GetHour() const { return mTime; }
+
+    PlaneTime &operator+=(int delta) {
+        mTime += delta;
+        while (mTime >= 24) {
+            mDate += 1;
+            mTime -= 24;
+        }
+        return *this;
+    }
+
+    PlaneTime &operator-=(int delta) {
+        mTime -= delta;
+        while (mTime < 0) {
+            mDate -= 1;
+            mTime += 24;
+        }
+        return *this;
+    }
+
+  private:
+    int mDate{0};
+    int mTime{0};
+};
+
 struct State {
     bool visited{false};
     int outIdx{0};
     int cameFrom{-1};
 };
 struct Solution {
+    int totalPremium{0};
     int totalCost{0};
     std::vector<int> nodeIDs;
 };
@@ -24,37 +56,15 @@ void printAuftrag(CString str, const CAuftrag &qAuftrag) {
             qAuftrag.Personen, (LPCTSTR)strDist, buf, (LPCTSTR)strPraemie, (LPCTSTR)strStrafe);
 }
 
-bool Bot::planFlightsForPlane(PLAYER &qPlayer, SLONG planeId) {
-    hprintf("Bot::planFlightsForPlane: Start.");
-    if (qPlayer.Planes.IsInAlbum(planeId) == 0) {
-        hprintf("Bot::planFlightsForPlane: Invalid plane ID.");
-        return false;
+std::vector<std::pair<int, CAuftrag>> Bot::gatherFlightsForPlane(PLAYER &qPlayer, int planeId, bool killFlightPlan) {
+    if (killFlightPlan) {
+        GameMechanic::killFlightPlan(qPlayer, planeId);
     }
-
-    auto &qPlane = qPlayer.Planes[planeId];
-    CFlugplan &qPlan = qPlane.Flugplan;
-
-    hprintf("Bot::planFlightsForPlane: Planning for plane %s (%li)", (LPCTSTR)qPlane.Name, planeId);
-
-    /* kill current flight plan and determine when and where the plane will be available */
-    GameMechanic::killFlightPlan(qPlayer, planeId);
-    SLONG availDate = Sim.Date;
-    SLONG availTime = Sim.GetHour() + 2;
-    SLONG availPlace = qPlane.Ort;
-    for (SLONG c = qPlan.Flug.AnzEntries() - 1; c >= 0; c--) {
-        if (qPlan.Flug[c].ObjectType == 0) {
-            continue;
-        }
-        availDate = qPlan.Flug[c].Landedate;
-        availTime = qPlan.Flug[c].Landezeit + 1;
-        availPlace = qPlan.Flug[c].NachCity;
-        break;
-    }
-    hprintf("Bot::planFlightsForPlane: Plane is in %s @ %li %li", (LPCTSTR)Cities[availPlace].Kuerzel, availDate, availTime);
 
     /* gather current open flights and print to log */
+    auto &qPlane = qPlayer.Planes[planeId];
     std::vector<std::pair<int, CAuftrag>> openJobs;
-    for (SLONG i = 0; i < qPlayer.Auftraege.AnzEntries(); i++) {
+    for (int i = 0; i < qPlayer.Auftraege.AnzEntries(); i++) {
         if (!qPlayer.Auftraege.IsInAlbum(i)) {
             continue;
         }
@@ -70,7 +80,35 @@ bool Bot::planFlightsForPlane(PLAYER &qPlayer, SLONG planeId) {
 
         printAuftrag(CString(), qAuftrag);
     }
+    return openJobs;
+}
 
+bool Bot::planFlightsForPlane(PLAYER &qPlayer, int planeId) {
+    hprintf("Bot::planFlightsForPlane: Start.");
+    if (qPlayer.Planes.IsInAlbum(planeId) == 0) {
+        hprintf("Bot::planFlightsForPlane: Invalid plane ID.");
+        return false;
+    }
+
+    auto &qPlane = qPlayer.Planes[planeId];
+    CFlugplan &qPlan = qPlane.Flugplan;
+
+    hprintf("Bot::planFlightsForPlane: Planning for plane %s (%li)", (LPCTSTR)qPlane.Name, planeId);
+
+    /* determine when and where the plane will be available */
+    PlaneTime availTime{Sim.Date, Sim.GetHour() + 2};
+    int availPlace = qPlane.Ort;
+    for (int c = qPlan.Flug.AnzEntries() - 1; c >= 0; c--) {
+        if (qPlan.Flug[c].ObjectType == 0) {
+            continue;
+        }
+        availTime = {qPlan.Flug[c].Landedate, qPlan.Flug[c].Landezeit + 1};
+        availPlace = qPlan.Flug[c].NachCity;
+        break;
+    }
+    hprintf("Bot::planFlightsForPlane: Plane is in %s @ %li %li", (LPCTSTR)Cities[availPlace].Kuerzel, availTime.GetDate(), availTime.GetHour());
+
+    auto openJobs = gatherFlightsForPlane(qPlayer, planeId, true);
     if (openJobs.size() < 2) {
         return false;
     }
@@ -78,20 +116,36 @@ bool Bot::planFlightsForPlane(PLAYER &qPlayer, SLONG planeId) {
     /* prepare graph */
     int nJobs = openJobs.size();
     int nNodes = nJobs + 1;
-    std::vector<std::vector<int>> adjMatrix(nNodes);
+    std::vector<std::pair<int, int>> nodeWeight(nNodes);
+    std::vector<std::vector<int>> adjMatrixCost(nNodes);
+    std::vector<std::vector<int>> adjMatrixDuration(nNodes);
     for (int i = 0; i < nNodes; i++) {
-        adjMatrix[i].resize(nNodes);
+        if (i != 0) {
+            const auto &qAuftrag = openJobs[i - 1].second;
+            nodeWeight[i] = {qAuftrag.Praemie, Cities.CalcFlugdauer(qAuftrag.VonCity, qAuftrag.NachCity, qPlane.ptGeschwindigkeit) + 1};
+        }
+
+        adjMatrixCost[i].resize(nNodes);
+        adjMatrixDuration[i].resize(nNodes);
         for (int j = 0; j < nNodes; j++) {
             auto from = (i == 0) ? availPlace : openJobs[i - 1].second.NachCity;
             auto to = (j == 0) ? availPlace : openJobs[j - 1].second.VonCity;
-            adjMatrix[i][j] = CalculateFlightCostNoTank(from, to, qPlane.ptVerbrauch, qPlane.ptGeschwindigkeit);
+            if (from != to) {
+                adjMatrixCost[i][j] = CalculateFlightCostNoTank(from, to, qPlane.ptVerbrauch, qPlane.ptGeschwindigkeit);
+                adjMatrixDuration[i][j] = Cities.CalcFlugdauer(from, to, qPlane.ptGeschwindigkeit) + 1;
+            } else {
+                adjMatrixCost[i][j] = 0;
+                adjMatrixDuration[i][j] = 0;
+            }
         }
     }
 
     /* simple backtracing algo */
-    int nVisited = 0;
-    int currentCost = 0;
     int currentNode = 0;
+    int nVisited = 0;
+    int currentPremium = 0;
+    int currentCost = 0;
+    PlaneTime currentTime{availTime};
     std::vector<State> nodeState(nNodes);
     std::vector<Solution> solutions;
     int bestCost = INT_MAX;
@@ -101,6 +155,9 @@ bool Bot::planFlightsForPlane(PLAYER &qPlayer, SLONG planeId) {
         if (state.visited == 0) {
             state.visited = 1;
             nVisited++;
+
+            currentPremium += nodeWeight[currentNode].first;
+            currentTime += nodeWeight[currentNode].second;
         }
 
         /* print current path */
@@ -129,8 +186,10 @@ bool Bot::planFlightsForPlane(PLAYER &qPlayer, SLONG planeId) {
         if (state.outIdx < nNodes) {
             /* visit next node */
             int nextNode = state.outIdx++;
-            currentCost += adjMatrix[currentNode][nextNode];
+            currentCost += adjMatrixCost[currentNode][nextNode];
+            currentTime += adjMatrixDuration[currentNode][nextNode];
             nodeState[nextNode].cameFrom = currentNode;
+
             currentNode = nextNode;
         } else {
             /* no nodes left to visit, back-track */
@@ -140,8 +199,10 @@ bool Bot::planFlightsForPlane(PLAYER &qPlayer, SLONG planeId) {
                 break;
             }
 
+            /* solution found */
             if (nVisited == nNodes) {
                 Solution solution;
+                solution.totalPremium = currentPremium;
                 solution.totalCost = currentCost;
 
                 /* reconstruct path */
@@ -168,11 +229,18 @@ bool Bot::planFlightsForPlane(PLAYER &qPlayer, SLONG planeId) {
                 }
             }
 
-            currentCost -= adjMatrix[state.cameFrom][currentNode];
+            /* backtrack */
+            currentCost -= adjMatrixCost[state.cameFrom][currentNode];
+            currentTime -= adjMatrixDuration[state.cameFrom][currentNode];
+
             assert(state.visited == 1);
             state.visited = 0;
             state.outIdx = 0;
             nVisited--;
+
+            currentPremium -= nodeWeight[currentNode].first;
+            currentTime -= nodeWeight[currentNode].second;
+
             currentNode = state.cameFrom;
         }
     }
@@ -183,36 +251,28 @@ bool Bot::planFlightsForPlane(PLAYER &qPlayer, SLONG planeId) {
 
     /* apply best solution */
     const auto &bestSolution = solutions[bestSolutionIdx];
+    int prevNode = -1;
     for (int i = bestSolution.nodeIDs.size() - 1; i >= 0; i--) {
         int nID = bestSolution.nodeIDs[i];
         if (nID == 0) {
+            prevNode = nID;
             continue;
         }
 
-        const auto &qAuftrag = openJobs[nID - 1];
-        if (availPlace != qAuftrag.second.VonCity) {
-            /* auto flight */
-            availTime += Cities.CalcFlugdauer(availPlace, qAuftrag.second.VonCity, qPlane.ptGeschwindigkeit) + 1;
-            if (availTime >= 24) {
-                availDate += 1;
-                availTime -= 24;
-            }
-            availPlace = qAuftrag.second.VonCity;
-        }
+        availTime += adjMatrixDuration[prevNode][nID];
 
-        if (!GameMechanic::planFlightJob(qPlayer, planeId, qAuftrag.first, availDate, availTime)) {
+        const auto &qAuftrag = openJobs[nID - 1];
+        if (!GameMechanic::planFlightJob(qPlayer, planeId, qAuftrag.first, availTime.GetDate(), availTime.GetHour())) {
             hprintf("GameMechanic::planFlightJob returned error!");
             return false;
         }
-        availTime += Cities.CalcFlugdauer(qAuftrag.second.VonCity, qAuftrag.second.NachCity, qPlane.ptGeschwindigkeit) + 1;
-        if (availTime >= 24) {
-            availDate += 1;
-            availTime -= 24;
-        }
+        availTime += nodeWeight[nID].second;
         availPlace = qAuftrag.second.NachCity;
+
+        prevNode = nID;
     }
 
-    hprintf("Plane scheduled until %s @ %li %li", (LPCTSTR)Cities[availPlace].Kuerzel, availDate, availTime);
+    hprintf("Plane scheduled until %s @ %li %li", (LPCTSTR)Cities[availPlace].Kuerzel, availTime.GetDate(), availTime.GetHour());
 
     return true;
 }
