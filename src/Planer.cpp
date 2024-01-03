@@ -270,10 +270,7 @@ void CPlaner::PaintGlobeRoutes() {
                     f = 0;
                 }
 
-                SB_Hardwarecolor color = GlobeBm.pBitmap->GetHardwarecolor((c >= 2) ? f : 0,
-                                                                           (c == 1 || c == 3) ? f : 0,
-                                                                           (c == 0) ? f : 0);
-
+                SB_Hardwarecolor color = GlobeBm.pBitmap->GetHardwarecolor((c >= 2) ? f : 0, (c == 1 || c == 3) ? f : 0, (c == 0) ? f : 0);
 
                 GlobeBm.pBitmap->SetPixel(pxy.x - 6, pxy.y, color);
                 GlobeBm.pBitmap->SetPixel(pxy.x - 6 - 1, pxy.y, color);
@@ -341,9 +338,7 @@ void CPlaner::PaintGlobeRoutes() {
                         f = 0;
                     }
 
-                    SB_Hardwarecolor color = GlobeBm.pBitmap->GetHardwarecolor((c >= 2) ? f : 0,
-                                                                               (c == 1 || c == 3) ? f : 0,
-                                                                               (c == 0) ? f : 0);
+                    SB_Hardwarecolor color = GlobeBm.pBitmap->GetHardwarecolor((c >= 2) ? f : 0, (c == 1 || c == 3) ? f : 0, (c == 0) ? f : 0);
 
                     GlobeBm.pBitmap->Line(pxy.x - 6, pxy.y, lastpxy.x - 6, lastpxy.y, color);
                 }
@@ -415,9 +410,7 @@ void CPlaner::PaintGlobeRoutes() {
                         f = 0;
                     }
 
-                    SB_Hardwarecolor color = GlobeBm.pBitmap->GetHardwarecolor((c >= 2) ? f : 0,
-                                                                               (c == 1 || c == 3) ? f : 0,
-                                                                               (c == 0) ? f : 0);
+                    SB_Hardwarecolor color = GlobeBm.pBitmap->GetHardwarecolor((c >= 2) ? f : 0, (c == 1 || c == 3) ? f : 0, (c == 0) ? f : 0);
 
                     GlobeBm.pBitmap->Line(pxy.x - 6, pxy.y, lastpxy.x - 6, lastpxy.y, color);
                 }
@@ -2996,4 +2989,26 @@ void CPlaner::HandleLButtonDouble() {
             }
         }
     }
+}
+
+void CPlaner::AutoPlan() {
+    SLONG playerNum = CStdRaum::PlayerNum;
+    auto &qPlayer = Sim.Players.Players[playerNum];
+
+    SLONG planeId = -1;
+    for (SLONG c = qPlayer.Blocks.AnzEntries() - 1; c >= 0; c--) {
+        if (qPlayer.Blocks.IsInAlbum(ULONG(c)) != 0) {
+            auto &qBlock = qPlayer.Blocks[c];
+            if (qPlayer.Planes.IsInAlbum(qBlock.SelectedId) != 0) {
+                planeId = qBlock.SelectedId;
+                break;
+            }
+        }
+    }
+
+    if (-1 == planeId) {
+        return;
+    }
+
+    Bot::planFlightsForPlane(qPlayer, planeId);
 }

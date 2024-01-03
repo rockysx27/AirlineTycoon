@@ -59,6 +59,7 @@ add_executable (AT
     Auftrag.cpp
     Bank.cpp
     Block.cpp
+    Bot.cpp
     Brick.cpp
     Checkup.cpp
     ColorFx.cpp
