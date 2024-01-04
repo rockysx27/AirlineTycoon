@@ -35,7 +35,9 @@ General:
 
 Statistics screen:
 * Showing far more categories where money was spent
-* Information visible depends on skill of financial advisor (own data) or skill of spy (competitors)
+* Accurate summation of money spent
+   * Fixed many bugs where especially money earned / spent by competitor would not show up in balance
+* Information visible depends on skill of financial advisor (for yourself) or skill of spy (competitors)
 * Unlimited statistics: Store statistics data for each day without limit
 * Fix rendering of graph when zooming out
 
@@ -51,7 +53,7 @@ Keyboard navigation:
 * Allow Enter/Backspace in calculator
 * Enable keyboard navigation in Laptop / Globe (arrow keys)
 * Enable keyboard navigation in HR folder
-    * Flip using arrow keys
+    * Flip pages using arrow keys
     * Jump 10/100 pages in HR files using Shift/Ctrl
     * Change salary using +/-
     * Hire/fire using Enter/Backspace
@@ -82,7 +84,7 @@ Bug fixes:
 * Fixed formula for credit limit
 * Stock trading: Show correct new account balance in form (including fee)
 * Fix saving/reloading of plane equipment configuration
-* Fix bug in gate planning ('no gate' warning depite plenty of free gates available)
+* Fix bug in gate planning ('no gate' warning despite plenty of free gates available)
 * Fix distant rendering of sticky notes in the boss office
 * Use correct security measure to protect against route stealing
 * Fix calculation of passenger happiness
@@ -111,10 +113,10 @@ AI:
     * Align calculation of arab trust for player and computer
 * Remove strange reduction of flight cost in calculation of image change (was a disadvantage for computer player)
 * Computer player pays real cost for plane upgrades
-* Reduce (~ half) cost of plane security upgrades
-* Fix random crash (during checking of flight plans)
 
 Misc:
+* Reduce (~ half) cost of plane security upgrades
+* Fix random crash (during checking of flight plans)
 * Spy reports enemy activity based on skill
 * ArabAir opens one hour earlier
 * Calculate route utilization as average of previous 7 days
