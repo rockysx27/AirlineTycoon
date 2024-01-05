@@ -725,6 +725,7 @@ void SIM::ChooseStartup(BOOL /*GameModeQuick*/) {
         }
 
         if ((Difficulty == DIFF_ATFS09 || Difficulty == DIFF_ATFS10) && qPlayer.Owner == 1) {
+            // MP: Bonus for computer, not controlled by switch
             qPlayer.Tank = 5000;
             qPlayer.TankOpen = 1;
         }
@@ -819,6 +820,9 @@ void SIM::ChooseStartup(BOOL /*GameModeQuick*/) {
             if (qPlayer.Bonus < 0) {
                 qPlayer.Bonus = -qPlayer.Bonus;
             }
+        }
+        if (qPlayer.Owner == 1 && !qPlayer.RobotUse(ROBOT_USE_BONUS)) {
+            qPlayer.Bonus = 0;
         }
 
         qPlayer.MoneyPast.ReSize(20);
@@ -958,6 +962,7 @@ void SIM::ChooseStartup(BOOL /*GameModeQuick*/) {
         qPlayer.PlayerDialogState = -1;
 
         if (qPlayer.Owner == 1) {
+            // MP: Bonus for computer, not controlled by switch
             qPlayer.Kooperation.FillWith(1);
             for (SLONG c = 0; c < 4; c++) {
                 if (Players.Players[c].Owner != 1) {
@@ -2466,6 +2471,7 @@ void SIM::NewDay() {
     Workers.NewDay();
 
     // Gute Spieler sind den anderen unsympatisch:
+    // MP: Bonus for computer, not controlled by switch
     for (c = 0; c < Players.AnzPlayers; c++) {
         for (d = 0; d < Players.AnzPlayers; d++) {
             if (c != d && Players.Players[c].Sympathie[d] < 25 && Players.Players[d].Bilanz.GetSumme() > 0) {

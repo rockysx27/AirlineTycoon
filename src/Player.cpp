@@ -1389,6 +1389,7 @@ void PLAYER::NewDay() {
         LaptopVirus = 3;
     }
     if ((LaptopVirus != 0) && Owner == 1) {
+        // MP: Bonus for computer, not controlled by switch
         LaptopVirus = 0;
     }
 
@@ -1729,6 +1730,7 @@ void PLAYER::NewDay() {
         }
 
         if (Owner != 1 && (Sim.Date == 20 || Sim.Date == 45)) {
+            // MP: No malus for computer, not controlled by switch
             Workers.AddHappiness(PlayerNum, -45);
         }
     }
