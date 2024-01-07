@@ -1,5 +1,33 @@
+#include <cassert>
 #include <climits>
 #include <deque>
+#include <string>
+#include <vector>
+
+// Game interface
+
+class CPlane {
+  public:
+    std::string Name;
+    int ptPassagiere{300};
+    int ptReichweite{10000};
+    int TypeId{0};
+    int mSpeed{1000};
+    int mFuelCostPerKM{1};
+};
+
+class CAuftrag {
+  public:
+    int Personen{300};
+    int VonCity{0};
+    int NachCity{0};
+
+    int Praemie{50000};
+    int Strafe{100000};
+
+    int Date{0};
+    int BisDate{6};
+};
 
 class PlaneTime {
   public:
@@ -45,6 +73,9 @@ class PlaneTime {
     int mDate{0};
     int mTime{0};
 };
+
+using CPlanes = std::vector<CPlane>;
+using CAuftraege = std::vector<CAuftrag>;
 
 class Graph {
   public:
@@ -104,9 +135,9 @@ class Bot {
         int totalPremium{0};
     };
 
-    Bot(PLAYER &player, const CPlanes &planes, JobOwner jobOwner, int intJobSource = -1);
+    Bot(const CPlanes &planes, JobOwner jobOwner, int intJobSource = -1);
 
-    bool planFlights(int planeId);
+    bool planFlights(CAuftraege qAuftraege, int planeId);
 
   private:
     struct PlaneState {
@@ -134,9 +165,7 @@ class Bot {
     void findPlaneTypes(std::vector<int> &planeIdToType, std::vector<const CPlane *> &planeTypeToPlane);
     Solution findFlightPlan(Graph &g, int p, int planeId, PlaneTime availTime, const std::vector<int> &eligibleJobIds);
     void gatherAndPlanJobs(std::vector<FlightJob> &jobList, std::vector<PlaneState> &planeStates);
-    bool applySolution(int planeId, const Bot::Solution &solution, std::vector<FlightJob> &jobList);
 
-    PLAYER &qPlayer;
     JobOwner mJobOwner;
     int mIntJobSource;
     const CPlanes &qPlanes;

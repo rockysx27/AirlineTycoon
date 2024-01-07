@@ -2991,24 +2991,40 @@ void CPlaner::HandleLButtonDouble() {
     }
 }
 
-void CPlaner::AutoPlan() {
+void CPlaner::AutoPlan(SLONG mode) {
     SLONG playerNum = CStdRaum::PlayerNum;
     auto &qPlayer = Sim.Players.Players[playerNum];
 
-    SLONG planeId = -1;
-    for (SLONG c = qPlayer.Blocks.AnzEntries() - 1; c >= 0; c--) {
-        if (qPlayer.Blocks.IsInAlbum(ULONG(c)) != 0) {
-            auto &qBlock = qPlayer.Blocks[c];
-            if (qPlayer.Planes.IsInAlbum(qBlock.SelectedId) != 0) {
-                planeId = qBlock.SelectedId;
-                break;
+    if (mode == 0) {
+        SLONG planeId = -1;
+        for (SLONG c = qPlayer.Blocks.AnzEntries() - 1; c >= 0; c--) {
+            if (qPlayer.Blocks.IsInAlbum(ULONG(c)) != 0) {
+                auto &qBlock = qPlayer.Blocks[c];
+                if (qPlayer.Planes.IsInAlbum(qBlock.SelectedId) != 0) {
+                    planeId = qBlock.SelectedId;
+                    break;
+                }
             }
         }
-    }
 
-    if (-1 == planeId) {
+        if (-1 == planeId) {
+            return;
+        }
+
+        Bot bot(qPlayer, qPlayer.Planes, Bot::JobOwner::Player);
+        bot.planFlights(planeId);
         return;
     }
 
-    Bot::planFlightsForPlane(qPlayer, planeId);
+    if (mode == 1) {
+        Bot bot(qPlayer, qPlayer.Planes, Bot::JobOwner::Player);
+        bot.planFlights(-1);
+        return;
+    }
+
+    if (mode == 2) {
+        Bot bot(qPlayer, qPlayer.Planes, Bot::JobOwner::TravelAgency);
+        bot.planFlights(-1);
+        return;
+    }
 }

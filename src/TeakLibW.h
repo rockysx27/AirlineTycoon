@@ -1135,10 +1135,13 @@ template <typename T> class ALBUM_V {
 
 #ifdef DEBUG_ALBUM
     T &operator[](ULONG id) { return List.at(find(id)).first; }
+    const T &operator[](ULONG id) const { return List.at(find(id)).first; }
 #else
     T &operator[](ULONG id) { return List[find(id)].first; }
+    const T &operator[](ULONG id) const { return List[find(id)].first; }
 #endif
     T &at(ULONG id) { return List.at(find(id)).first; }
+    const T &at(ULONG id) const { return List.at(find(id)).first; }
 
     /* comparison */
 

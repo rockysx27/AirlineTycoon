@@ -74,7 +74,7 @@ class CPlaner : public CStdRaum {
     void ButtonPrevB(void);
     void ButtonIndexB(void);
     void TurnGlobe(SLONG Angle);
-    void AutoPlan(void);
+    void AutoPlan(SLONG mode);
 
     // Implementation
   public:

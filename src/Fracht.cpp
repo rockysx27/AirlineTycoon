@@ -403,19 +403,17 @@ void CFrachtRaum::OnRButtonDown(UINT nFlags, CPoint point) {
 // void CFrachtRaum::RepaintZettel (SLONG n)
 //--------------------------------------------------------------------------------------------
 void CFrachtRaum::RepaintZettel(SLONG n) {
-    if (gFrachten[n].Praemie >= 0) {
-        ZettelBms[n].ReSize(KistenBms[n].Size);
-        ZettelBms[n].BlitFrom(KistenBms[n]);
+    ZettelBms[n].ReSize(KistenBms[n].Size);
+    ZettelBms[n].BlitFrom(KistenBms[n]);
 
-        ZettelBms[n].PrintAt(bprintf("%s-%s", (LPCTSTR)Cities[gFrachten[n].VonCity].Kuerzel, (LPCTSTR)Cities[gFrachten[n].NachCity].Kuerzel), FontSmallBlack,
-                             TEC_FONT_CENTERED, XY(3, 10) + ZettelOffset[n], XY(ZettelBms[n].Size.x - 3, 29) + ZettelOffset[n]);
+    ZettelBms[n].PrintAt(bprintf("%s-%s", (LPCTSTR)Cities[gFrachten[n].VonCity].Kuerzel, (LPCTSTR)Cities[gFrachten[n].NachCity].Kuerzel), FontSmallBlack,
+                         TEC_FONT_CENTERED, XY(3, 10) + ZettelOffset[n], XY(ZettelBms[n].Size.x - 3, 29) + ZettelOffset[n]);
 
-        ZettelBms[n].PrintAt(ShortenLongCities(Cities[gFrachten[n].VonCity].Name), FontSmallBlack, TEC_FONT_CENTERED, XY(3, 31) + ZettelOffset[n],
-                             XY(ZettelBms[n].Size.x - 3, 102) + ZettelOffset[n]);
-        ZettelBms[n].PrintAt("-", FontSmallBlack, TEC_FONT_CENTERED, XY(3, 41) + ZettelOffset[n], XY(ZettelBms[n].Size.x - 3, 102) + ZettelOffset[n]);
-        ZettelBms[n].PrintAt(ShortenLongCities(Cities[gFrachten[n].NachCity].Name), FontSmallBlack, TEC_FONT_CENTERED, XY(3, 52) + ZettelOffset[n],
-                             XY(ZettelBms[n].Size.x - 3, 102) + ZettelOffset[n]);
-    }
+    ZettelBms[n].PrintAt(ShortenLongCities(Cities[gFrachten[n].VonCity].Name), FontSmallBlack, TEC_FONT_CENTERED, XY(3, 31) + ZettelOffset[n],
+                         XY(ZettelBms[n].Size.x - 3, 102) + ZettelOffset[n]);
+    ZettelBms[n].PrintAt("-", FontSmallBlack, TEC_FONT_CENTERED, XY(3, 41) + ZettelOffset[n], XY(ZettelBms[n].Size.x - 3, 102) + ZettelOffset[n]);
+    ZettelBms[n].PrintAt(ShortenLongCities(Cities[gFrachten[n].NachCity].Name), FontSmallBlack, TEC_FONT_CENTERED, XY(3, 52) + ZettelOffset[n],
+                         XY(ZettelBms[n].Size.x - 3, 102) + ZettelOffset[n]);
 }
 
 //--------------------------------------------------------------------------------------------

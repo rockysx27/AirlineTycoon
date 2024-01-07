@@ -1426,8 +1426,14 @@ void CLaptop::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) {
     case ATKEY_RIGHT:
         QuickJump(171);
         return;
-    case SDLK_F1:
-        CPlaner::AutoPlan();
+    case SDLK_F6:
+        CPlaner::AutoPlan(0);
+        return;
+    case SDLK_F7:
+        CPlaner::AutoPlan(1);
+        return;
+    case SDLK_F8:
+        CPlaner::AutoPlan(2);
         return;
     default:
         CStdRaum::OnKeyDown(nChar, nRepCnt, nFlags);

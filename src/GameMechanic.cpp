@@ -1136,6 +1136,7 @@ GameMechanic::BuyItemResult GameMechanic::buyDutyFreeItem(PLAYER &qPlayer, UBYTE
 }
 
 bool GameMechanic::takeFlightJob(PLAYER &qPlayer, SLONG jobId, SLONG &outObjectId) {
+    outObjectId = -1;
     if (!ReisebueroAuftraege.IsInAlbum(jobId)) {
         hprintf("GameMechanic::takeFlightJob: Invalid jobId.");
         return false;
@@ -1165,6 +1166,7 @@ bool GameMechanic::takeFlightJob(PLAYER &qPlayer, SLONG jobId, SLONG &outObjectI
 }
 
 bool GameMechanic::takeLastMinuteJob(PLAYER &qPlayer, SLONG jobId, SLONG &outObjectId) {
+    outObjectId = -1;
     if (!LastMinuteAuftraege.IsInAlbum(jobId)) {
         hprintf("GameMechanic::takeLastMinuteJob: Invalid jobId.");
         return false;
@@ -1195,6 +1197,7 @@ bool GameMechanic::takeLastMinuteJob(PLAYER &qPlayer, SLONG jobId, SLONG &outObj
 }
 
 bool GameMechanic::takeFreightJob(PLAYER &qPlayer, SLONG jobId, SLONG &outObjectId) {
+    outObjectId = -1;
     if (!gFrachten.IsInAlbum(jobId)) {
         hprintf("GameMechanic::takeFreightJob: Invalid jobId.");
         return false;
@@ -1222,6 +1225,7 @@ bool GameMechanic::takeFreightJob(PLAYER &qPlayer, SLONG jobId, SLONG &outObject
 }
 
 bool GameMechanic::takeInternationalFlightJob(PLAYER &qPlayer, SLONG par1, SLONG par2, SLONG &outObjectId) {
+    outObjectId = -1;
     if (par1 < 0 || par1 >= AuslandsAuftraege.size()) {
         hprintf("GameMechanic::takeInternationalFlightJob: Invalid par1.");
         return false;
@@ -1250,6 +1254,7 @@ bool GameMechanic::takeInternationalFlightJob(PLAYER &qPlayer, SLONG par1, SLONG
 }
 
 bool GameMechanic::takeInternationalFreightJob(PLAYER &qPlayer, SLONG par1, SLONG par2, SLONG &outObjectId) {
+    outObjectId = -1;
     if (par1 < 0 || par1 >= AuslandsFrachten.size()) {
         hprintf("GameMechanic::takeInternationalFreightJob: Invalid par1.");
         return false;
@@ -1386,17 +1391,29 @@ bool GameMechanic::refillFlightJobs(SLONG cityNum) {
 }
 
 bool GameMechanic::planFlightJob(PLAYER &qPlayer, SLONG planeID, SLONG objectID, SLONG date, SLONG time) {
+    if (!qPlayer.Auftraege.IsInAlbum(objectID)) {
+        hprintf("GameMechanic::planFlightJob: Invalid job index.");
+        return false;
+    }
     return _planFlightJob(qPlayer, planeID, objectID, 2, date, time);
 }
 bool GameMechanic::planFreightJob(PLAYER &qPlayer, SLONG planeID, SLONG objectID, SLONG date, SLONG time) {
+    if (!qPlayer.Frachten.IsInAlbum(objectID)) {
+        hprintf("GameMechanic::planFreightJob: Invalid job index.");
+        return false;
+    }
     return _planFlightJob(qPlayer, planeID, objectID, 4, date, time);
 }
 bool GameMechanic::planRouteJob(PLAYER &qPlayer, SLONG planeID, SLONG objectID, SLONG date, SLONG time) {
+    if (!Routen.IsInAlbum(objectID)) {
+        hprintf("GameMechanic::planRouteJob: Invalid job index.");
+        return false;
+    }
     return _planFlightJob(qPlayer, planeID, objectID, 3, date, time);
 }
 bool GameMechanic::_planFlightJob(PLAYER &qPlayer, SLONG planeID, SLONG objectID, SLONG objectType, SLONG date, SLONG time) {
     if (!qPlayer.Planes.IsInAlbum(planeID)) {
-        hprintf("GameMechanic::planFlightJob: Invalid plane index.");
+        hprintf("GameMechanic::_planFlightJob: Invalid plane index.");
         return false;
     }
 
