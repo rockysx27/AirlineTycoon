@@ -60,6 +60,7 @@ add_executable (AT
     Bank.cpp
     Block.cpp
     Bot.cpp
+    BotPlaner.cpp
     Brick.cpp
     Checkup.cpp
     ColorFx.cpp

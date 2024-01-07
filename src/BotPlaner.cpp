@@ -7,26 +7,26 @@
 
 static const int kMinPremium = 1000;
 
-Bot::Bot(PLAYER &player, const CPlanes &planes, JobOwner jobOwner, int intJobSource)
+BotPlaner::BotPlaner(PLAYER &player, const CPlanes &planes, JobOwner jobOwner, int intJobSource)
     : qPlayer(player), mJobOwner(jobOwner), mIntJobSource(intJobSource), qPlanes(planes) {
     if (jobOwner == JobOwner::International) {
         if (intJobSource < 0 || intJobSource >= AuslandsAuftraege.size()) {
-            hprintf("Bot::Bot(): Invalid intJobSource given.");
+            hprintf("BotPlaner::BotPlaner(): Invalid intJobSource given.");
             mJobOwner = JobOwner::Player;
         }
     } else if (jobOwner == JobOwner::InternationalFreight) {
         if (intJobSource < 0 || intJobSource >= AuslandsFrachten.size()) {
-            hprintf("Bot::Bot(): Invalid intJobSource given.");
+            hprintf("BotPlaner::BotPlaner(): Invalid intJobSource given.");
             mJobOwner = JobOwner::PlayerFreight;
         }
     } else {
         if (intJobSource != -1) {
-            hprintf("Bot::Bot(): intJobSource does not need to be given for this job source.");
+            hprintf("BotPlaner::BotPlaner(): intJobSource does not need to be given for this job source.");
         }
     }
 }
 
-void Bot::printJob(const CAuftrag &qAuftrag) {
+void BotPlaner::printJob(const CAuftrag &qAuftrag) {
     const char *buf = (qAuftrag.Date == qAuftrag.BisDate ? StandardTexte.GetS(TOKEN_SCHED, 3010 + (qAuftrag.Date + Sim.StartWeekday) % 7)
                                                          : StandardTexte.GetS(TOKEN_SCHED, 3010 + (qAuftrag.BisDate + Sim.StartWeekday) % 7));
     CString strDist(Einheiten[EINH_KM].bString(Cities.CalcDistance(qAuftrag.VonCity, qAuftrag.NachCity) / 1000));
@@ -36,9 +36,11 @@ void Bot::printJob(const CAuftrag &qAuftrag) {
            (LPCTSTR)strDist, buf, (LPCTSTR)strPraemie, (LPCTSTR)strStrafe);
 }
 
-void Bot::printJobShort(const CAuftrag &qAuftrag) { printf("%s - %s", (LPCTSTR)Cities[qAuftrag.VonCity].Kuerzel, (LPCTSTR)Cities[qAuftrag.NachCity].Kuerzel); }
+void BotPlaner::printJobShort(const CAuftrag &qAuftrag) {
+    printf("%s - %s", (LPCTSTR)Cities[qAuftrag.VonCity].Kuerzel, (LPCTSTR)Cities[qAuftrag.NachCity].Kuerzel);
+}
 
-void Bot::printSolution(const Solution &solution, const std::vector<FlightJob> &list) {
+void BotPlaner::printSolution(const Solution &solution, const std::vector<FlightJob> &list) {
     std::cout << "Solution has premium = " << solution.totalPremium << std::endl;
     for (const auto &i : solution.jobs) {
         std::cout << i.second.getDate() << ":" << i.second.getHour() << "  ";
@@ -48,7 +50,7 @@ void Bot::printSolution(const Solution &solution, const std::vector<FlightJob> &
     std::cout << std::endl;
 }
 
-void Bot::printGraph(const std::vector<FlightJob> &list, const Graph &g, int pt) {
+void BotPlaner::printGraph(const std::vector<FlightJob> &list, const Graph &g, int pt) {
     std::cout << "digraph G {" << std::endl;
     for (int i = 0; i < g.nNodes; i++) {
         auto &curInfo = g.nodeInfo[pt][i];
@@ -77,7 +79,7 @@ void Bot::printGraph(const std::vector<FlightJob> &list, const Graph &g, int pt)
     std::cout << "}" << std::endl;
 }
 
-void Bot::findPlaneTypes(std::vector<int> &planeIdToType, std::vector<const CPlane *> &planeTypeToPlane) {
+void BotPlaner::findPlaneTypes(std::vector<int> &planeIdToType, std::vector<const CPlane *> &planeTypeToPlane) {
     int nPlaneTypes = 0;
     std::unordered_map<int, int> mapOldType2NewType;
     for (int i = 0; i < qPlanes.AnzEntries(); i++) {
@@ -100,7 +102,7 @@ void Bot::findPlaneTypes(std::vector<int> &planeIdToType, std::vector<const CPla
     std::cout << "There are " << qPlanes.AnzEntries() << " planes of " << planeTypeToPlane.size() << " types" << std::endl;
 }
 
-Bot::Solution Bot::findFlightPlan(Graph &g, int pt, int planeId, PlaneTime availTime, const std::vector<int> &eligibleJobIds) {
+BotPlaner::Solution BotPlaner::findFlightPlan(Graph &g, int pt, int planeId, PlaneTime availTime, const std::vector<int> &eligibleJobIds) {
     // std::cout << ">>> Scheduling plane " << planeId << " for " << eligibleJobIds.size() << " jobs." << std::endl;
 
     auto t_begin = std::chrono::steady_clock::now();
@@ -225,7 +227,7 @@ Bot::Solution Bot::findFlightPlan(Graph &g, int pt, int planeId, PlaneTime avail
     return solutions[bestPremiumIdx];
 }
 
-void Bot::gatherAndPlanJobs(std::vector<FlightJob> &jobList, std::vector<PlaneState> &planeStates) {
+void BotPlaner::gatherAndPlanJobs(std::vector<FlightJob> &jobList, std::vector<PlaneState> &planeStates) {
     int nPlanes = qPlanes.AnzEntries();
 
     auto t_begin = std::chrono::steady_clock::now();
@@ -355,7 +357,7 @@ void Bot::gatherAndPlanJobs(std::vector<FlightJob> &jobList, std::vector<PlaneSt
     // printGraph(jobList, g, 0);
 }
 
-bool Bot::applySolution(int planeId, const Bot::Solution &solution, std::vector<FlightJob> &jobList) {
+bool BotPlaner::applySolution(int planeId, const BotPlaner::Solution &solution, std::vector<FlightJob> &jobList) {
     for (auto &i : solution.jobs) {
         auto &job = jobList[i.first];
         const auto &time = i.second;
@@ -405,8 +407,8 @@ bool Bot::applySolution(int planeId, const Bot::Solution &solution, std::vector<
     return true;
 }
 
-bool Bot::planFlights(int planeId) {
-    hprintf("Bot::planFlights: Start.");
+bool BotPlaner::planFlights(int planeId) {
+    hprintf("BotPlaner::planFlights: Start.");
 
     /* prepare list of planes */
     std::vector<PlaneState> planeStates(qPlanes.AnzEntries());
@@ -437,7 +439,7 @@ bool Bot::planFlights(int planeId) {
             planeState.availCity = qPlan.Flug[c].NachCity;
             break;
         }
-        hprintf("Bot::planFlightsForPlane: Plane %s is in %s @ %li %li", (LPCTSTR)qPlane.Name, (LPCTSTR)Cities[planeState.availCity].Kuerzel,
+        hprintf("BotPlaner::planFlightsForPlane: Plane %s is in %s @ %li %li", (LPCTSTR)qPlane.Name, (LPCTSTR)Cities[planeState.availCity].Kuerzel,
                 planeState.availTime.getDate(), planeState.availTime.getHour());
     }
 

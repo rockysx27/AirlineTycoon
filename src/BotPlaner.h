@@ -96,7 +96,7 @@ class Graph {
     std::vector<NodeState> nodeState;
 };
 
-class Bot {
+class BotPlaner {
   public:
     enum class JobOwner { Player, PlayerFreight, TravelAgency, LastMinute, Freight, International, InternationalFreight };
     struct Solution {
@@ -104,7 +104,7 @@ class Bot {
         int totalPremium{0};
     };
 
-    Bot(PLAYER &player, const CPlanes &planes, JobOwner jobOwner, int intJobSource = -1);
+    BotPlaner(PLAYER &player, const CPlanes &planes, JobOwner jobOwner, int intJobSource = -1);
 
     bool planFlights(int planeId);
 
@@ -134,7 +134,7 @@ class Bot {
     void findPlaneTypes(std::vector<int> &planeIdToType, std::vector<const CPlane *> &planeTypeToPlane);
     Solution findFlightPlan(Graph &g, int p, int planeId, PlaneTime availTime, const std::vector<int> &eligibleJobIds);
     void gatherAndPlanJobs(std::vector<FlightJob> &jobList, std::vector<PlaneState> &planeStates);
-    bool applySolution(int planeId, const Bot::Solution &solution, std::vector<FlightJob> &jobList);
+    bool applySolution(int planeId, const BotPlaner::Solution &solution, std::vector<FlightJob> &jobList);
 
     PLAYER &qPlayer;
     JobOwner mJobOwner;

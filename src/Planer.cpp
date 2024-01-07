@@ -3011,19 +3011,19 @@ void CPlaner::AutoPlan(SLONG mode) {
             return;
         }
 
-        Bot bot(qPlayer, qPlayer.Planes, Bot::JobOwner::Player);
+        BotPlaner bot(qPlayer, qPlayer.Planes, BotPlaner::JobOwner::Player);
         bot.planFlights(planeId);
         return;
     }
 
     if (mode == 1) {
-        Bot bot(qPlayer, qPlayer.Planes, Bot::JobOwner::Player);
+        BotPlaner bot(qPlayer, qPlayer.Planes, BotPlaner::JobOwner::Player);
         bot.planFlights(-1);
         return;
     }
 
     if (mode == 2) {
-        Bot bot(qPlayer, qPlayer.Planes, Bot::JobOwner::TravelAgency);
+        BotPlaner bot(qPlayer, qPlayer.Planes, BotPlaner::JobOwner::TravelAgency);
         bot.planFlights(-1);
         return;
     }

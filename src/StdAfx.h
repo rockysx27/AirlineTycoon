@@ -50,6 +50,7 @@ typedef CStdStringA CString;
 
 #include "GameMechanic.h"
 #include "Bot.h"
+#include "BotPlaner.h"
 
 #include "global.h" //Deklarationen der globalen Variablen
 
