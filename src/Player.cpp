@@ -3198,8 +3198,7 @@ void PLAYER::RobotPump() {
             DebugBreak();
         }
 
-        if ((PlayerNum == 2 && Sim.GetMinute() > 0 && RobotActions[0].ActionId != ACTION_VISITROUTEBOX && ((Sim.GetMinute() / 5) % 2) == 0) ||
-            (RobotUse(ROBOT_USE_ALLRUN) && Sim.GetMinute() > 0 && RobotActions[0].ActionId != ACTION_VISITROUTEBOX)) {
+        if (RobotUse(ROBOT_USE_ALLRUN) && Sim.GetMinute() > 0) {
             Sim.Persons[Sim.Persons.GetPlayerIndex(PlayerNum)].Running = TRUE;
             BroadcastPosition();
         } else {
@@ -5320,7 +5319,7 @@ void PLAYER::RobotExecuteAction() {
                 Cheapest = 99999999;
                 for (c = 0; c < 7; c++) {
                     if ((TafelData.Gate[c].ZettelId > -1) && TafelData.Gate[c].Player != PlayerNum &&
-                        (TafelData.Gate[c].Preis < Cheapest || TafelData.Gate[c].Player == dislike || PlayerNum == 0)) {
+                        (TafelData.Gate[c].Preis < Cheapest || TafelData.Gate[c].Player == dislike || RobotUse(ROBOT_ALWAYS_BUY_GATES))) {
                         Cheapest = TafelData.Gate[c].Preis;
                         n = c;
                     }
@@ -7748,6 +7747,8 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
     case ROBOT_USE_UPGRADE_TECH:
         return (PlayerNum == 1);
     case ROBOT_USE_BUY_MORE_ABROAD:
+        return (PlayerNum == 0);
+    case ROBOT_ALWAYS_BUY_GATES:
         return (PlayerNum == 0);
 
     default:
