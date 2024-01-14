@@ -5919,7 +5919,7 @@ void CStdRaum::MenuLeftClick(XY Pos) {
 
     case MENU_KEROSIN:
         if (MouseClickArea == -102 && MouseClickId == MENU_KEROSIN && MouseClickPar1 == -20) {
-            GameMechanic::toggleKerosinTank(qPlayer);
+            GameMechanic::toggleKerosinTankOpen(qPlayer);
             MenuRepaint();
         } else if (MouseClickArea == -102 && MouseClickId == MENU_KEROSIN && MouseClickPar1 == -99) {
             MenuStop();
@@ -6454,10 +6454,10 @@ void CStdRaum::MenuLeftClick(XY Pos) {
                 }
                 gMovePaper.Play(DSBPLAY_NOSTOP, Sim.Options.OptionEffekte * 100 / 7);
             } else if (MouseClickPar1 == -3) {
-                GameMechanic::hireWorker(qPlayer, qWorker);
+                GameMechanic::hireWorker(qPlayer, MenuRemapper[MenuPage - 1]);
                 qPlayer.UpdateWalkSpeed();
             } else if (MouseClickPar1 == -4) {
-                GameMechanic::fireWorker(qPlayer, qWorker);
+                GameMechanic::fireWorker(qPlayer, MenuRemapper[MenuPage - 1]);
                 qPlayer.UpdateWalkSpeed();
             }
             // Gehalt erhöhen/kürzen:
@@ -7863,7 +7863,6 @@ void CStdRaum::OnKeyDown(UINT nChar, UINT /*nRepCnt*/, UINT /*nFlags*/) {
         break;
 
     case MENU_PERSONAL: {
-        auto &qWorker = Workers.Workers[MenuRemapper[MenuPage - 1]];
         switch (nChar) {
         case ATKEY_LEFT:
             if (AtGetAsyncKeyState(ATKEY_CONTROL) / 256 != 0) {
@@ -7888,12 +7887,12 @@ void CStdRaum::OnKeyDown(UINT nChar, UINT /*nRepCnt*/, UINT /*nFlags*/) {
             change = true;
             break;
         case ATKEY_RETURN:
-            GameMechanic::hireWorker(qPlayer, qWorker);
+            GameMechanic::hireWorker(qPlayer, MenuRemapper[MenuPage - 1]);
             qPlayer.UpdateWalkSpeed();
             change = true;
             break;
         case ATKEY_BACK:
-            GameMechanic::fireWorker(qPlayer, qWorker);
+            GameMechanic::fireWorker(qPlayer, MenuRemapper[MenuPage - 1]);
             qPlayer.UpdateWalkSpeed();
             change = true;
             break;

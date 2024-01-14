@@ -836,6 +836,8 @@ class HDU {
     void ClearScreen();
     void HercPrintf(SLONG, const char *Format, ...);
     void HercPrintf(const char *Format, ...);
+    void HercPrintfRed(const char *Format, ...);
+    void HercPrintfGreen(const char *Format, ...);
     void LogPosition(const char *, SLONG);
 
   private:
@@ -846,6 +848,8 @@ extern HDU Hdu;
 
 #define hprintf Hdu.HercPrintf
 #define hprintvar(x) Hdu.HercPrintf("%d\n", x)
+#define redprintf Hdu.HercPrintfRed
+#define greenprintf Hdu.HercPrintfGreen
 
 class XID {
   public:

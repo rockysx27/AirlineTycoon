@@ -2090,8 +2090,6 @@ const char *getRobotActionName(SLONG a) {
         return "ACTION_CHECKAGENT2";
     case ACTION_CHECKAGENT3:
         return "ACTION_CHECKAGENT3";
-    case ACTION_MEETING:
-        return "ACTION_MEETING";
     case ACTION_STARTDAY:
         return "ACTION_STARTDAY / ACTION_BUERO";
     case ACTION_PERSONAL:
@@ -2132,6 +2130,22 @@ const char *getRobotActionName(SLONG a) {
         return "ACTION_BUYNEWPLANE";
     case ACTION_WERBUNG:
         return "ACTION_WERBUNG";
+    case ACTION_UPGRADE_PLANES:
+        return "ACTION_UPGRADE_PLANES";
+    case ACTION_BUY_KEROSIN:
+        return "ACTION_BUY_KEROSIN";
+    case ACTION_BUY_KEROSIN_TANKS:
+        return "ACTION_BUY_KEROSIN_TANKS";
+    case ACTION_SET_DIVIDEND:
+        return "ACTION_SET_DIVIDEND";
+    case ACTION_BUYSHARES:
+        return "ACTION_BUYSHARES";
+    case ACTION_SELLSHARES:
+        return "ACTION_SELLSHARES";
+    case ACTION_WERBUNG_ROUTES:
+        return "ACTION_WERBUNG_ROUTES";
+    case ACTION_CALL_INTERNATIONAL:
+        return "ACTION_CALL_INTERNATIONAL";
     default:
         hprintf("Misc.cpp: Default case should not be reached.");
         DebugBreak();

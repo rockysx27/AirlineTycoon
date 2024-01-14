@@ -7,6 +7,8 @@
 #include "HLine.h"
 #include <array>
 
+#include "Bot.h"
+
 typedef BUFFER_V<UBYTE> BUFFER_UBYTE;
 
 class CPlane;
@@ -1490,6 +1492,7 @@ class /**/ PERSON {
     friend class SIM;
     friend class GameMechanic;
     friend class AIRPORT;
+    friend class Bot;
 };
 
 class /**/ PERSONS : public ALBUM_V<PERSON> {
@@ -1598,13 +1601,14 @@ class /**/ CRobotAction {
     SLONG ActionId{};
     UBYTE TargetRoom{};
     SLONG Par1{}, Par2{};
+    BOOL Running{FALSE};
 
     friend TEAKFILE &operator<<(TEAKFILE &File, const CRobotAction &r) {
-        File << r.ActionId << r.TargetRoom << r.Par1 << r.Par2;
+        File << r.ActionId << r.TargetRoom << r.Par1 << r.Par2 << r.Running;
         return (File);
     }
     friend TEAKFILE &operator>>(TEAKFILE &File, CRobotAction &r) {
-        File >> r.ActionId >> r.TargetRoom >> r.Par1 >> r.Par2;
+        File >> r.ActionId >> r.TargetRoom >> r.Par1 >> r.Par2 >> r.Running;
         return (File);
     }
 };
@@ -2244,6 +2248,10 @@ class PLAYER {
     static void NetSynchronizeMeeting(void);
     void NetBuyXPlane(SLONG Anzahl, CXPlane &plane) const;
     static void NetSave(DWORD UniqueGameId, SLONG CursorY, const CString &Name);
+
+    /* methods and data for improved robot */
+    bool IsSuperBot() const;
+    Bot mBot;
 
     friend TEAKFILE &operator<<(TEAKFILE &File, const PLAYER &Player);
     friend TEAKFILE &operator>>(TEAKFILE &File, PLAYER &Player);

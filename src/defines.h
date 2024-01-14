@@ -525,7 +525,6 @@ inline bool operator!=(const CPoint &lhs, const CPoint &rhs) { return !(lhs == r
 #define ACTION_CHECKAGENT1 210 // Last-Minute
 #define ACTION_CHECKAGENT2 211 // Reisebüro
 #define ACTION_CHECKAGENT3 212 // Frachtraum
-#define ACTION_MEETING 220     // Geht zur morgentlichen Besprechung
 #define ACTION_STARTDAY 221    // Geht ins Büro
 #define ACTION_BUERO 221       // Geht ins Büro
 #define ACTION_PERSONAL 222    // Geht ins Personalbüro
@@ -544,10 +543,19 @@ inline bool operator!=(const CPoint &lhs, const CPoint &rhs) { return !(lhs == r
 #define ACTION_VISITDESIGNER 242
 #define ACTION_VISITSECURITY2 243
 
-#define ACTION_SABOTAGE 500
 #define ACTION_BUYUSEDPLANE 300
 #define ACTION_BUYNEWPLANE 301
 #define ACTION_WERBUNG 400
+#define ACTION_SABOTAGE 500
+
+#define ACTION_UPGRADE_PLANES 600
+#define ACTION_BUY_KEROSIN 601
+#define ACTION_BUY_KEROSIN_TANKS 602
+#define ACTION_SET_DIVIDEND 603
+#define ACTION_BUYSHARES 604
+#define ACTION_SELLSHARES 605
+#define ACTION_WERBUNG_ROUTES 606
+#define ACTION_CALL_INTERNATIONAL 607
 
 // Die Arten von Beratern:
 #define BERATERTYP_GIRL 0 // Die Sekretärin

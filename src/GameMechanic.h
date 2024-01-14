@@ -15,7 +15,8 @@ class GameMechanic {
 
     /* Kerosin */
     static bool buyKerosinTank(PLAYER &qPlayer, SLONG type, SLONG amount);
-    static bool toggleKerosinTank(PLAYER &qPlayer);
+    static bool toggleKerosinTankOpen(PLAYER &qPlayer);
+    static bool setKerosinTankOpen(PLAYER &qPlayer, BOOL open);
     static bool buyKerosin(PLAYER &qPlayer, SLONG type, SLONG amount);
     struct KerosinTransaction {
         __int64 Kosten{};
@@ -38,8 +39,8 @@ class GameMechanic {
     static void paySaboteurFine(SLONG player, SLONG opfer);
 
     /* Kredite */
-    static bool takeOutCredit(PLAYER &qPlayer, SLONG target);
-    static bool payBackCredit(PLAYER &qPlayer, SLONG target);
+    static bool takeOutCredit(PLAYER &qPlayer, __int64 amount);
+    static bool payBackCredit(PLAYER &qPlayer, __int64 amount);
 
     /* Flugzeuge */
     static void setPlaneTargetZustand(PLAYER &qPlayer, SLONG idx, SLONG zustand);
@@ -50,6 +51,7 @@ class GameMechanic {
     static bool sabotageSecurityOffice(PLAYER &qPlayer);
 
     /* Makler */
+    static bool checkPlaneTypeAvailable(SLONG planeType);
     static bool buyPlane(PLAYER &qPlayer, SLONG planeType, SLONG amount);
 
     /* Museum */
@@ -111,8 +113,8 @@ class GameMechanic {
     static bool planRouteJob(PLAYER &qPlayer, SLONG planeID, SLONG objectID, SLONG date, SLONG time);
 
     /* Crew */
-    static bool hireWorker(PLAYER &qPlayer, CWorker &qWorker);
-    static bool fireWorker(PLAYER &qPlayer, CWorker &qWorker);
+    static bool hireWorker(PLAYER &qPlayer, SLONG workerId);
+    static bool fireWorker(PLAYER &qPlayer, SLONG workerId);
 
     /* Routes */
     static bool killCity(PLAYER &qPlayer, SLONG cityID);

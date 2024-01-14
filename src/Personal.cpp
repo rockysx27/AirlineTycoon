@@ -434,7 +434,7 @@ void CWorkers::NewDay() {
         if (Workers[c].Employer == WORKER_RESERVE || Workers[c].Employer == WORKER_JOBLESS) {
             if (Workers[c].TimeInPool >= 7) {
                 Workers[c].Employer = WORKER_EXPIRED;
-                hprintf("Removing %s from pool", (const char *)Workers[c].Name);
+                // hprintf("Removing %s from pool", (const char *)Workers[c].Name);
             } else if (Workers[c].TimeInPool >= 0) {
                 Workers[c].TimeInPool++;
             }
@@ -452,7 +452,7 @@ void CWorkers::NewDay() {
             auto &qPlayer = Sim.Players.Players[Workers[c].Employer];
 
             // Worker u.U. mehrfach um 1%-Punkt unglücklicher machen
-            if (qPlayer.Owner == 0 || (qPlayer.Owner == 1 && !qPlayer.RobotUse(ROBOT_USE_FAKE_PERSONAL))) {
+            if (qPlayer.Owner != 2) {
                 if (qPlayer.Image < 500) {
                     Workers[c].Happyness--;
                 }
@@ -482,9 +482,8 @@ void CWorkers::NewDay() {
             if (Workers[c].Happyness < -100) {
                 // Ihm reicht's! Er kündigt:
                 if (qPlayer.Owner == 0) {
-                    qPlayer.Messages.AddMessage(
-                        BERATERTYP_GIRL,
-                        bprintf(StandardTexte.GetS(TOKEN_ADVICE, 2000 + Workers[c].Typ + Workers[c].Geschlecht * 100), Workers[c].Name.c_str()));
+                    qPlayer.Messages.AddMessage(BERATERTYP_GIRL, bprintf(StandardTexte.GetS(TOKEN_ADVICE, 2000 + Workers[c].Typ + Workers[c].Geschlecht * 100),
+                                                                         Workers[c].Name.c_str()));
                 }
 
                 SLONG ExEmployer = Workers[c].Employer;
@@ -671,8 +670,8 @@ SLONG CWorkers::AddToPool(SLONG typ, TEAKRAND &LocalRand, SLONG zielAnzahlKompet
         }
     }
 
-    hprintf("Num expired workers: %li (Typ: %li)", nExpired, typ);
-    hprintf("Num competent workers: %li / %li (Typ: %li)", anzKompetent, anz, typ);
+    // hprintf("Num expired workers: %li (Typ: %li)", nExpired, typ);
+    // hprintf("Num competent workers: %li / %li (Typ: %li)", anzKompetent, anz, typ);
 
     if (anzKompetent < zielAnzahlKompetent) {
         // Zielwert ist 80 kompetente Leute, aber generiere nie mehr als 10 pro Tag
@@ -702,9 +701,9 @@ SLONG CWorkers::AddToPool(SLONG typ, TEAKRAND &LocalRand, SLONG zielAnzahlKompet
             }
 
             if (isNew != 0) {
-                hprintf("Adding new worker: %s (Typ: %li)", (const char *)Workers[c].Name, Workers[c].Typ);
+                // hprintf("Adding new worker: %s (Typ: %li)", (const char *)Workers[c].Name, Workers[c].Typ);
             } else {
-                hprintf("Replacing expired worker: %s (Typ: %li)", (const char *)Workers[c].Name, Workers[c].Typ);
+                // hprintf("Replacing expired worker: %s (Typ: %li)", (const char *)Workers[c].Name, Workers[c].Typ);
                 --nExpired;
             }
 
@@ -716,7 +715,7 @@ SLONG CWorkers::AddToPool(SLONG typ, TEAKRAND &LocalRand, SLONG zielAnzahlKompet
 void CWorkers::CheckShortageAndSort() {
     TEAKRAND LocalRand(Sim.Date + Sim.StartTime);
 
-    hprintf("Worker pool size: %li", Workers.AnzEntries());
+    // hprintf("Worker pool size: %li", Workers.AnzEntries());
 
     SLONG nExpired = 0;
     for (SLONG i = BERATERTYP_PERSONAL; i <= BERATERTYP_SICHERHEIT; i++) {
@@ -727,13 +726,13 @@ void CWorkers::CheckShortageAndSort() {
 
     std::sort(Workers.begin(), Workers.end());
 
-    hprintf("Still %li expired Workers in pool", nExpired);
+    // hprintf("Still %li expired Workers in pool", nExpired);
     if (nExpired > 100) {
         SLONG i = Workers.AnzEntries() - 1;
         while (Workers[i].Employer == WORKER_EXPIRED) {
             --i;
         }
-        hprintf("Shrinking pool from %li to %li", Workers.AnzEntries(), i + 1);
+        // hprintf("Shrinking pool from %li to %li", Workers.AnzEntries(), i + 1);
         Workers.ReSize(i + 1);
     }
 }

@@ -466,7 +466,7 @@ void CPlaneProps::OnPaint() {
             RoomBm.pBitmap->SetClipRect(CRect(0, 0, 640, 480));
         }
     } else {
-        SLONG ScrollOffsetX = -(ActivePage)*229 / 100;
+        SLONG ScrollOffsetX = -(ActivePage) * 229 / 100;
         XY ScrollOffset = XY(ScrollOffsetX, 0);
 
         RoomBm.BlitFrom(Back2, ScrollOffsetX, 0);
@@ -681,7 +681,7 @@ void CPlaneProps::OnPaint() {
         }
     }
 
-    //Überschrift:
+    // Überschrift:
     SLONG HeadlineOffset = 229 * (100 - ActivePage) / 100;
     RoomBm.BlitFromT(MenuMaskBm, HeadlineOffset, 2);
 

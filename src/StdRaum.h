@@ -250,6 +250,7 @@ class CStdRaum {
     friend class PERSON;
     friend class PLAYER;
     friend class SIM;
+    friend class Bot;
 
   private:
     void MenuPrevPage();

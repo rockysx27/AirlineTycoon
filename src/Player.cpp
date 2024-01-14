@@ -59,7 +59,7 @@ __int64 abs64(__int64 v) {
 //============================================================================================
 // Konstruktor:
 //============================================================================================
-PLAYER::PLAYER() {
+PLAYER::PLAYER() : mBot(*this) {
     SLONG c = 0;
 
     NewDir = 8;
@@ -202,11 +202,11 @@ void PLAYER::BuyPlane(CXPlane &plane, TEAKRAND *pRnd) {
 //--------------------------------------------------------------------------------------------
 void PLAYER::ChangeMoney(__int64 Money, SLONG Reason, const CString &Par1, char *Par2) {
 
-    if (Money > 0) {
+    /*if (Money > 0) {
         hprintf("ChangeMoney: player %li: Erhält %lld wegen %li", PlayerNum, Money, Reason);
     } else if (Money < 0) {
         hprintf("ChangeMoney: player %li: Gibt %lld für %li aus", PlayerNum, -Money, Reason);
-    }
+    }*/
 
     if (LocationWin != nullptr) {
         (LocationWin)->StatusCount = 3;
@@ -570,7 +570,7 @@ void PLAYER::ChangeMoney(__int64 Money, SLONG Reason, const CString &Par1, char 
         Bilanz.SonstigeAusgaben += Money;
         break;
     default:
-        hprintf("ChangeMoney: Keine Kategorie für %d", Reason);
+        hprintf("ChangeMoney: No category for %d", Reason);
     }
 
     if (LocationWin != nullptr) {
@@ -881,7 +881,7 @@ void PLAYER::BookSalary() {
     SLONG c = 0;
     SLONG Money = 0;
 
-    if (Owner == 0 || (Owner == 1 && !RobotUse(ROBOT_USE_FAKE_PERSONAL))) {
+    if (Owner != 2) {
         for (c = 0; c < Workers.Workers.AnzEntries(); c++) {
             if (Workers.Workers[c].Employer == PlayerNum) {
                 // Gehaltssumme berechnen:
@@ -1687,7 +1687,7 @@ void PLAYER::NewDay() {
 
                     if (delta < 0) {
                         delta = 0;
-                        hprintf("Player.cpp: Repair cost for Player %li negative!", PlayerNum);
+                        redprintf("Player.cpp: Repair cost for Player %li negative!", PlayerNum);
                     }
 
                     Summe += delta;
@@ -1736,7 +1736,7 @@ void PLAYER::NewDay() {
     }
 
     // Den Flugplan für die Routen updaten:
-    if (DoRoutes != 0) {
+    if (DoRoutes != 0 && !IsSuperBot()) {
         RobotPlanRoutes();
     }
 
@@ -2151,7 +2151,7 @@ SLONG PLAYER::HasBerater(SLONG Berater) const {
     SLONG c = 0;
     SLONG Max = 0;
 
-    if (CheatBerater != 0) {
+    if (CheatBerater != 0 && PlayerNum == Sim.localPlayer) {
         Max = CheatBerater;
     }
 
@@ -3115,23 +3115,48 @@ void PLAYER::RobotPump() {
 
         BOOL rc = 0;
         switch (RobotActions[0].ActionId) {
+        case ACTION_WAIT:
+            break;
+        case ACTION_RAISEMONEY:
+            [[fallthrough]];
+        case ACTION_DROPMONEY:
+            [[fallthrough]];
+        case ACTION_VISITBANK:
+            [[fallthrough]];
+        case ACTION_EMITSHARES:
+            [[fallthrough]];
+        case ACTION_SET_DIVIDEND:
+            [[fallthrough]];
+        case ACTION_BUYSHARES:
+            [[fallthrough]];
+        case ACTION_SELLSHARES:
+            rc = WalkToRoom(ROOM_BANK);
+            break;
+        case ACTION_CHECKAGENT1:
+            rc = WalkToRoom(ROOM_LAST_MINUTE);
+            break;
+        case ACTION_CHECKAGENT2:
+            rc = WalkToRoom(ROOM_REISEBUERO);
+            break;
+        case ACTION_CHECKAGENT3:
+            rc = WalkToRoom(ROOM_FRACHT);
+            break;
         case ACTION_STARTDAY:
+            [[fallthrough]];
+        case ACTION_UPGRADE_PLANES:
+            [[fallthrough]];
+        case ACTION_CALL_INTERNATIONAL:
             rc = WalkToRoom(UBYTE(PlayerNum * 10 + 10));
             break;
-
         case ACTION_PERSONAL:
             rc = WalkToRoom(UBYTE(PlayerNum * 10 + 11));
             break;
-
-            // Default-Visitroutinen
-        case ACTION_VISITBANK:
-            rc = WalkToRoom(ROOM_BANK);
-            break;
         case ACTION_VISITARAB:
+            [[fallthrough]];
+        case ACTION_BUY_KEROSIN:
+            [[fallthrough]];
+        case ACTION_BUY_KEROSIN_TANKS:
             rc = WalkToRoom(ROOM_ARAB_AIR);
-            break;
-        case ACTION_SABOTAGE:
-            rc = WalkToRoom(ROOM_SABOTAGE);
             break;
         case ACTION_VISITKIOSK:
             rc = WalkToRoom(ROOM_KIOSK);
@@ -3148,17 +3173,15 @@ void PLAYER::RobotPump() {
         case ACTION_VISITAUFSICHT:
             rc = WalkToRoom(ROOM_AUFSICHT);
             break;
-        case ACTION_BUYUSEDPLANE:
-            rc = WalkToRoom(ROOM_MUSEUM);
-            break;
-        case ACTION_EMITSHARES:
-            rc = WalkToRoom(ROOM_BANK);
-            break;
-        case ACTION_WERBUNG:
-            rc = WalkToRoom(ROOM_WERBUNG);
-            break;
         case ACTION_VISITNASA:
             rc = WalkToRoom(ROOM_NASA);
+            break;
+        case ACTION_VISITTELESCOPE:
+            if (Sim.Difficulty == DIFF_FINAL) {
+                rc = WalkToRoom(ROOM_INSEL);
+            } else {
+                rc = WalkToRoom(ROOM_RUSHMORE);
+            }
             break;
         case ACTION_VISITMAKLER:
             rc = WalkToRoom(ROOM_MAKLER);
@@ -3172,33 +3195,31 @@ void PLAYER::RobotPump() {
         case ACTION_VISITSECURITY:
             rc = WalkToRoom(ROOM_SECURITY);
             break;
-        case ACTION_VISITSECURITY2:
-            rc = WalkToRoom(ROOM_SECURITY);
-            break;
-        case ACTION_CHECKAGENT1:
-            rc = WalkToRoom(ROOM_LAST_MINUTE);
-            break;
-        case ACTION_CHECKAGENT2:
-            rc = WalkToRoom(ROOM_REISEBUERO);
-            break;
-        case ACTION_CHECKAGENT3:
-            rc = WalkToRoom(ROOM_FRACHT);
-            break;
         case ACTION_VISITDESIGNER:
             rc = WalkToRoom(ROOM_DESIGNER);
             break;
-        case ACTION_VISITTELESCOPE:
-            if (Sim.Difficulty == DIFF_FINAL) {
-                rc = WalkToRoom(ROOM_INSEL);
-            } else {
-                rc = WalkToRoom(ROOM_RUSHMORE);
-            }
+        case ACTION_VISITSECURITY2:
+            rc = WalkToRoom(ROOM_SECURITY);
+            break;
+        case ACTION_SABOTAGE:
+            rc = WalkToRoom(ROOM_SABOTAGE);
+            break;
+        case ACTION_BUYUSEDPLANE:
+            rc = WalkToRoom(ROOM_MUSEUM);
+            break;
+        case ACTION_BUYNEWPLANE:
+            rc = WalkToRoom(ROOM_MAKLER);
+            break;
+        case ACTION_WERBUNG:
+            [[fallthrough]];
+        case ACTION_WERBUNG_ROUTES:
+            rc = WalkToRoom(ROOM_WERBUNG);
             break;
         default:
             DebugBreak();
         }
 
-        if (RobotUse(ROBOT_USE_ALLRUN) && Sim.GetMinute() > 0) {
+        if ((RobotActions[0].Running || RobotUse(ROBOT_USE_ALLRUN)) && Sim.GetMinute() > 0) {
             Sim.Persons[Sim.Persons.GetPlayerIndex(PlayerNum)].Running = TRUE;
             BroadcastPosition();
         } else {
@@ -3228,36 +3249,40 @@ void PLAYER::RobotInit() {
     SLONG c = 0;
 
     WorkCountdown = 10 + PlayerNum * 10;
+    WaitWorkTill = -1;
 
     for (c = 0; c < 5; c++) {
         RobotActions[c].ActionId = ACTION_NONE;
     }
 
-    WaitWorkTill = -1;
-    RobotActions[1].ActionId = ACTION_STARTDAY;
-    RobotActions[2].ActionId = ACTION_PERSONAL;
+    if (IsSuperBot()) {
+        mBot.RobotInit();
+    } else {
+        RobotActions[1].ActionId = ACTION_STARTDAY;
+        RobotActions[2].ActionId = ACTION_PERSONAL;
 
-    if (DoRoutes == 0) {
-        if (GlobalUse(USE_TRAVELHOLDING)) {
-            if (((PlayerNum + Sim.Date) & 1) != 0) {
-                RobotActions[3].ActionId = ACTION_CHECKAGENT1;
-                RobotActions[4].ActionId = ACTION_CHECKAGENT2;
+        if (DoRoutes == 0) {
+            if (GlobalUse(USE_TRAVELHOLDING)) {
+                if (((PlayerNum + Sim.Date) & 1) != 0) {
+                    RobotActions[3].ActionId = ACTION_CHECKAGENT1;
+                    RobotActions[4].ActionId = ACTION_CHECKAGENT2;
 
-                if (RobotUse(ROBOT_USE_MUCH_FRACHT) || (((PlayerNum + Sim.Date) & 3) == 0 && RobotUse(ROBOT_USE_FRACHT))) {
-                    RobotActions[2].ActionId = ACTION_CHECKAGENT3;
+                    if (RobotUse(ROBOT_USE_MUCH_FRACHT) || (((PlayerNum + Sim.Date) & 3) == 0 && RobotUse(ROBOT_USE_FRACHT))) {
+                        RobotActions[2].ActionId = ACTION_CHECKAGENT3;
+                    }
+                } else {
+                    RobotActions[4].ActionId = ACTION_CHECKAGENT1;
+                    RobotActions[3].ActionId = ACTION_CHECKAGENT2;
+
+                    if (RobotUse(ROBOT_USE_RUN_FRACHT)) {
+                        RobotActions[1].ActionId = ACTION_CHECKAGENT3;
+                    } else if (RobotUse(ROBOT_USE_MUCH_FRACHT) || (((PlayerNum + Sim.Date) & 3) == 0 && RobotUse(ROBOT_USE_FRACHT))) {
+                        RobotActions[2].ActionId = ACTION_CHECKAGENT3;
+                    }
                 }
-            } else {
-                RobotActions[4].ActionId = ACTION_CHECKAGENT1;
-                RobotActions[3].ActionId = ACTION_CHECKAGENT2;
-
-                if (RobotUse(ROBOT_USE_RUN_FRACHT)) {
-                    RobotActions[1].ActionId = ACTION_CHECKAGENT3;
-                } else if (RobotUse(ROBOT_USE_MUCH_FRACHT) || (((PlayerNum + Sim.Date) & 3) == 0 && RobotUse(ROBOT_USE_FRACHT))) {
-                    RobotActions[2].ActionId = ACTION_CHECKAGENT3;
-                }
+            } else if (RobotUse(ROBOT_USE_FRACHT)) {
+                RobotActions[3].ActionId = ACTION_CHECKAGENT3;
             }
-        } else if (RobotUse(ROBOT_USE_FRACHT)) {
-            RobotActions[3].ActionId = ACTION_CHECKAGENT3;
         }
     }
 
@@ -3278,6 +3303,11 @@ void PLAYER::RobotPlan() {
 
     if (Owner != 1 || (IsOut != 0)) {
         return; // War Irtum, kein Computerspieler
+    }
+
+    if (IsSuperBot()) {
+        mBot.RobotPlan();
+        return;
     }
 
     if (RobotActions[0].ActionId == ACTION_NONE && RobotActions[1].ActionId == ACTION_NONE) {
@@ -3929,30 +3959,6 @@ void PLAYER::RobotExecuteAction() {
     // NetGenericSync (100, LocalRandom.GetSeed());
     // NetGenericSync (101, PlayerNum);
 
-    n = 0;
-    dislike = -1;
-    for (c = 0; c < 4; c++) {
-        if (Sympathie[c] < 0 && (Sim.Players.Players[c].IsOut == 0)) {
-            n++;
-        }
-    }
-
-    if (n != 0) {
-        n = (LocalRandom.Rand(n)) + 1;
-        for (c = 0; c < 4; c++) {
-            if (Sympathie[c] < 0 && (Sim.Players.Players[c].IsOut == 0)) {
-                n--;
-                if (n == 0) {
-                    dislike = c;
-                    break;
-                }
-            }
-        }
-    } else {
-        LocalRandom.Rand(2); // Sicherheitshalber, damit wir immer genau ein Random ausführen
-    }
-    TargetedPlayer = dislike;
-
     // NetGenericSync (100, LocalRandom.GetSeed());
     // NetGenericSync (101, RobotActions[0].ActionId);
 
@@ -4011,14 +4017,56 @@ void PLAYER::RobotExecuteAction() {
     // Die exakte Zeit des Ausführens auf dem Server simulieren
     SLONG RealLocalTime = Sim.Time;
 
-    Hdu.HercPrintf("Player %li: %s, %s at %li/%li\n", PlayerNum, getRobotActionName(RobotActions[0].ActionId), getRobotActionName(RobotActions[1].ActionId),
-                   WaitWorkTill, WaitWorkTill2);
+    /* Hdu.HercPrintf("Player %li: %s, %s at %li/%li\n", PlayerNum, getRobotActionName(RobotActions[0].ActionId), getRobotActionName(RobotActions[1].ActionId),
+                   WaitWorkTill, WaitWorkTill2);*/
     NetGenericSync(770 + PlayerNum, RobotActions[0].ActionId);
     NetGenericSync(740 + PlayerNum, RobotActions[1].ActionId);
 
     if (Sim.bNetwork != 0) {
         Sim.Time = WaitWorkTill2;
         WaitWorkTill = -1;
+    }
+
+    if (IsSuperBot()) {
+        mBot.RobotExecuteAction();
+
+        Sim.Players.CheckFlighplans();
+
+        RobotActions[0].ActionId = ACTION_NONE;
+
+        // Die exakte Zeit des Ausführens auf dem Server simulieren (Ende):
+        if (Sim.bNetwork != 0) {
+            Sim.Time = RealLocalTime;
+        }
+
+        NetGenericSync(680 + PlayerNum, RobotActions[0].ActionId);
+        return;
+    }
+
+    {
+        n = 0;
+        dislike = -1;
+        for (c = 0; c < 4; c++) {
+            if (Sympathie[c] < 0 && (Sim.Players.Players[c].IsOut == 0)) {
+                n++;
+            }
+        }
+
+        if (n != 0) {
+            n = (LocalRandom.Rand(n)) + 1;
+            for (c = 0; c < 4; c++) {
+                if (Sympathie[c] < 0 && (Sim.Players.Players[c].IsOut == 0)) {
+                    n--;
+                    if (n == 0) {
+                        dislike = c;
+                        break;
+                    }
+                }
+            }
+        } else {
+            LocalRandom.Rand(2); // Sicherheitshalber, damit wir immer genau ein Random ausführen
+        }
+        TargetedPlayer = dislike;
     }
 
     switch (RobotActions[0].ActionId) {
@@ -4781,8 +4829,7 @@ void PLAYER::RobotExecuteAction() {
                 }
             }
 
-            MechMode = 3;
-            break;
+            GameMechanic::setMechMode(*this, 3);
         } else if (RobotUse(ROBOT_USE_GOODPLANES)) {
             SLONG c = 0;
 
@@ -4792,8 +4839,7 @@ void PLAYER::RobotExecuteAction() {
                 }
             }
 
-            MechMode = 3;
-            break;
+            GameMechanic::setMechMode(*this, 3);
         } else {
             SLONG c = 0;
 
@@ -4808,9 +4854,8 @@ void PLAYER::RobotExecuteAction() {
             }
 
             if (MechMode == 2) {
-                MechMode = 3;
+                GameMechanic::setMechMode(*this, 3);
             }
-            break;
         }
         WorkCountdown = 20 * 5;
         break;
@@ -5017,7 +5062,7 @@ void PLAYER::RobotExecuteAction() {
                     }
                 }
             }
-            LastMinuteAuftraege.RefillForLastMinute(3);
+            LastMinuteAuftraege.RefillForLastMinute();
         }
         WorkCountdown = 20 * 7;
         TimeReiseburo = Sim.Time;
@@ -5137,7 +5182,7 @@ void PLAYER::RobotExecuteAction() {
                     }
                 }
             }
-            ReisebueroAuftraege.RefillForReisebuero(3);
+            ReisebueroAuftraege.RefillForReisebuero();
         }
         WorkCountdown = 20 * 7;
         TimeReiseburo = Sim.Time;
@@ -6617,6 +6662,8 @@ void PLAYER::BroadcastPosition(bool bForce) {
     }
 }
 
+bool PLAYER::IsSuperBot() const { return (3 == PlayerNum); }
+
 //============================================================================================
 // PLAYERS::
 //============================================================================================
@@ -7108,6 +7155,9 @@ TEAKFILE &operator<<(TEAKFILE &File, const PLAYER &Player) {
     File << Player.CalledPlayer << Player.BoredOfPlayer;
     File << Player.IsTalking << Player.IsWalking2Player;
 
+    // For improved bot
+    File << Player.mBot;
+
     return (File);
 }
 
@@ -7291,6 +7341,10 @@ TEAKFILE &operator>>(TEAKFILE &File, PLAYER &Player) {
     File >> Player.PlayerDialog >> Player.PlayerDialogState;
     File >> Player.CalledPlayer >> Player.BoredOfPlayer;
     File >> Player.IsTalking >> Player.IsWalking2Player;
+
+    // For improved bot
+    File >> Player.mBot;
+    // Player.Owner = (Player.PlayerNum == 3) ? 0 : 1;
 
     return (File);
 }
@@ -7516,6 +7570,9 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
                        "----------";
         break;
     case ROBOT_USE_LUXERY:
+        if (IsSuperBot()) {
+            return true;
+        }
         pFeatureDesc = "------"
                        "."
                        "----X-----"
@@ -7540,7 +7597,7 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
                        "----------";
         break;
     case ROBOT_USE_HIGHSHAREPRICE:
-        if (PlayerNum == 3) {
+        if (PlayerNum == 3 || IsSuperBot()) {
             return true;
         }
         pFeatureDesc = "------"
@@ -7657,6 +7714,9 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
                        "XXXXX-XXXX";
         break;
     case ROBOT_USE_TANKS:
+        if (IsSuperBot()) {
+            return true;
+        }
         pFeatureDesc = "------"
                        "."
                        "----------"
