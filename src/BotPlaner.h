@@ -3,6 +3,7 @@
 
 #include <climits>
 #include <deque>
+#include <string>
 
 class PlaneTime {
   public:
@@ -98,8 +99,14 @@ class Graph {
 class BotPlaner {
   public:
     enum class JobOwner { Player, PlayerFreight, TravelAgency, LastMinute, Freight, International, InternationalFreight };
+    struct JobScheduled {
+        JobScheduled(int id, PlaneTime a, PlaneTime b) : jobId(id), start(a), end(b) {}
+        int jobId{};
+        PlaneTime start;
+        PlaneTime end;
+    };
     struct Solution {
-        std::deque<std::pair<int, PlaneTime>> jobs;
+        std::deque<JobScheduled> jobs;
         int totalPremium{0};
     };
 
@@ -119,6 +126,9 @@ class BotPlaner {
 
     struct FlightJob {
         FlightJob(int i, int j, CAuftrag a, JobOwner o) : id(i), sourceId(j), auftrag(a), owner(o) {}
+        bool wasTaken() const { return owner == JobOwner::Player || owner == JobOwner::PlayerFreight; }
+        bool isFreight() const { return owner == JobOwner::Freight || owner == JobOwner::InternationalFreight || owner == JobOwner::PlayerFreight; }
+
         int id{};
         int sourceId{-1};
         CAuftrag auftrag;
@@ -132,13 +142,12 @@ class BotPlaner {
         JobSource(CFrachten *ptr, JobOwner o) : freight(ptr), owner(o) {}
         CAuftraege *jobs{nullptr};
         CFrachten *freight{nullptr};
-        bool isNewJob{true};
         int sourceId{-1};
         JobOwner owner{JobOwner::Player};
     };
 
     void printJob(const CAuftrag &qAuftrag);
-    void printJobShort(const CAuftrag &qAuftrag);
+    std::string printJobShort(const CAuftrag &qAuftrag);
     void printSolution(const Solution &solution, const std::vector<FlightJob> &list);
     void printGraph(const std::vector<PlaneState> &planeStates, const std::vector<FlightJob> &list, const Graph &g);
 

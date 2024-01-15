@@ -7735,36 +7735,54 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
                        "----X--X--";
         break;
     case ROBOT_USE_BONUS:
+        if (IsSuperBot()) {
+            return false;
+        }
         pFeatureDesc = "XXXXXX"
                        "X"
                        "XXXXXXXXXX"
                        "XXXXXXXXXX";
         break;
     case ROBOT_USE_ROUTE_BONUS:
+        if (IsSuperBot()) {
+            return false;
+        }
         pFeatureDesc = "XXXXXX"
                        "X"
                        "XXXXXXXXXX"
                        "XXXXXXXXXX";
         break;
     case ROBOT_USE_FAKE_PERSONAL:
+        if (IsSuperBot()) {
+            return false;
+        }
         pFeatureDesc = "XXXXXX"
                        "X"
                        "XXXXXXXXXX"
                        "XXXXXXXXXX";
         break;
     case ROBOT_USE_NO_FINE:
+        if (IsSuperBot()) {
+            return false;
+        }
         pFeatureDesc = "XXXXXX"
                        "X"
                        "XXXXXXXXXX"
                        "XXXXXXXXXX";
         break;
     case ROBOT_USE_NO_CHECK_FLIGHT:
+        if (IsSuperBot()) {
+            return false;
+        }
         pFeatureDesc = "XXXXXX"
                        "X"
                        "XXXXXXXXXX"
                        "XXXXXXXXXX";
         break;
     case ROBOT_USE_NO_CHECK_FFLIGHT:
+        if (IsSuperBot()) {
+            return false;
+        }
         pFeatureDesc = "XXXXXX"
                        "X"
                        "XXXXXXXXXX"

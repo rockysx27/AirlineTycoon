@@ -55,6 +55,7 @@ class Bot {
     SLONG findBestAvailablePlaneType();
     SLONG calcNumberOfShares(__int64 moneyAvailable, DOUBLE kurs);
     SLONG calcNumOfFreeShares(SLONG playerId);
+    SLONG checkFlightJobs();
 
     PLAYER &qPlayer;
 
