@@ -1,6 +1,7 @@
 #include "Bot.h"
 
 #include "AtNet.h"
+#include "BotHelper.h"
 
 #include <unordered_map>
 
@@ -15,16 +16,6 @@ extern SLONG TriebwerkCosts[];
 extern SLONG ReifenCosts[];
 extern SLONG ElektronikCosts[];
 extern SLONG SicherheitCosts[];
-
-// Öffnungszeiten:
-extern SLONG timeDutyOpen;
-extern SLONG timeDutyClose;
-extern SLONG timeArabOpen;
-extern SLONG timeLastClose;
-extern SLONG timeMuseOpen;
-extern SLONG timeReisClose;
-extern SLONG timeMaklClose;
-extern SLONG timeWerbOpen;
 
 static const SLONG kMoneyEmergencyFund = 100000;
 static const SLONG kSmallestAdCampaign = 3;
@@ -49,8 +40,6 @@ static const char *getPrioName(Bot::Prio prio) {
     return "INVALID";
 }
 
-static CString getWeekday(UWORD date) { return StandardTexte.GetS(TOKEN_SCHED, 3010 + (date + Sim.StartWeekday) % 7); }
-
 bool Bot::hoursPassed(SLONG room, SLONG hours) {
     const auto it = mLastTimeInRoom.find(room);
     if (it == mLastTimeInRoom.end()) {
@@ -59,35 +48,135 @@ bool Bot::hoursPassed(SLONG room, SLONG hours) {
     return (Sim.Time - it->second > hours * 60000);
 }
 
-bool Bot::checkRoomOpen(SLONG roomId) {
-    SLONG time = Sim.Time;
-    switch (roomId) {
-    case ACTION_VISITDUTYFREE:
-        return (time >= timeDutyOpen && ((Sim.Weekday != 5 && Sim.Weekday != 6) || time <= timeDutyClose - 60000));
-    case ACTION_BUY_KEROSIN:
-        [[fallthrough]];
-    case ACTION_BUY_KEROSIN_TANKS:
-        return (time >= timeArabOpen && Sim.Weekday != 6);
-    case ACTION_CHECKAGENT1:
-        return (time <= timeLastClose - 60000 && Sim.Weekday != 5);
-    case ACTION_BUYUSEDPLANE:
-        return (time >= timeMuseOpen && Sim.Weekday != 5 && Sim.Weekday != 6);
-    case ACTION_CHECKAGENT2:
-        return (time <= timeReisClose - 60000);
-    case ACTION_BUYNEWPLANE:
-        return (time <= timeMaklClose - 60000);
-    case ACTION_WERBUNG:
-        [[fallthrough]];
-    case ACTION_WERBUNG_ROUTES:
-        return (Sim.Difficulty >= DIFF_NORMAL || Sim.Difficulty == DIFF_FREEGAME) && (time >= timeWerbOpen && Sim.Weekday != 5 && Sim.Weekday != 6);
-    case ACTION_VISITSECURITY:
-        [[fallthrough]];
-    case ACTION_VISITSECURITY2:
-        return (Sim.nSecOutDays <= 0);
-    default:
-        return true;
+std::pair<SLONG, SLONG> Bot::kerosineQualiOptimization(__int64 moneyAvailable, DOUBLE targetFillRatio) {
+    hprintf("Bot::kerosineQualiOptimization(): Buying kerosine for no more than %lld $ and %.2f %% of capacity", moneyAvailable, targetFillRatio * 100);
+
+    std::pair<SLONG, SLONG> res{};
+    DOUBLE priceGood = Sim.HoleKerosinPreis(1);
+    DOUBLE priceBad = Sim.HoleKerosinPreis(2);
+    if (qPlayer.HasBerater(BERATERTYP_KEROSIN) < 70) {
+        /* just buy normal kerosine */
+        res.first = static_cast<SLONG>(std::floor(moneyAvailable / priceGood));
+        res.second = 0;
+        return res;
     }
-    return true;
+
+    DOUBLE qualiZiel = 1.0;
+    if (qPlayer.HasBerater(BERATERTYP_KEROSIN) >= 90) {
+        qualiZiel = 1.3;
+    } else if (qPlayer.HasBerater(BERATERTYP_KEROSIN) >= 80) {
+        qualiZiel = 1.2;
+    } else if (qPlayer.HasBerater(BERATERTYP_KEROSIN) >= 70) {
+        qualiZiel = 1.1;
+    }
+
+    DOUBLE qualiStart = qPlayer.KerosinQuali;
+    DOUBLE amountGood = 0;
+    DOUBLE amountBad = 0;
+    DOUBLE tankContent = qPlayer.TankInhalt;
+    DOUBLE tankMax = qPlayer.Tank * targetFillRatio;
+
+    if (tankContent >= tankMax) {
+        return res;
+    }
+
+    // Definitions:
+    // aG := amountGood, aB := amountBad, mA := moneyAvailable, pG := priceGood, pB := priceBaD,
+    // T := tankMax, Ti := tankContent, qS := qualiStart, qZ := qualiZiel
+    // Given are the following two equations:
+    // I: aG*pG + aB*pB = mA    (spend all money for either good are bad kerosine)
+    // II: qZ = (Ti*qS + aB*2 + aG) / (Ti + aB + aG)   (new quality qZ depends on amounts bought)
+    // Solve I for aG:
+    // aG = (mA - aB*pB) / pG
+    // Solve II for aB:
+    // qZ*(Ti + aB + aG) = Ti*qS + aB*2 + aG;
+    // qZ*Ti + qZ*(aB + aG) = Ti*qS + aB*2 + aG;
+    // qZ*Ti - Ti*qS = aB*2 + aG - qZ*(aB + aG);
+    // Ti*(qZ - qS) = aB*(2 - qZ) + aG*(1 - qZ);
+    // Insert I in II to eliminate aG
+    // Ti*(qZ - qS) = aB*(2 - qZ) + ((mA - aB*pB) / pG)*(1 - qZ);
+    // Ti*(qZ - qS) = aB*(2 - qZ) + mA*(1 - qZ) / pG - aB*pB*(1 - qZ) / pG;
+    // Ti*(qZ - qS) - mA*(1 - qZ) / pG = aB*((2 - qZ) - pB*(1 - qZ) / pG);
+    // (Ti*(qZ - qS) - mA*(1 - qZ) / pG) / ((2 - qZ) - pB*(1 - qZ) / pG) = aB;
+    DOUBLE nominator = (tankContent * (qualiZiel - qualiStart) - moneyAvailable * (1 - qualiZiel) / priceGood);
+    DOUBLE denominator = ((2 - qualiZiel) - priceBad * (1 - qualiZiel) / priceGood);
+
+    // Limit:
+    amountBad = std::max(0.0, nominator / denominator);               // equation II
+    amountGood = (moneyAvailable - amountBad * priceBad) / priceGood; // equation I
+    if (amountGood < 0) {
+        amountGood = 0;
+        amountBad = moneyAvailable / priceBad;
+    }
+
+    // Round:
+    res.first = static_cast<SLONG>(std::floor(amountGood));
+    res.second = static_cast<SLONG>(std::floor(amountBad));
+
+    // we have more than enough money to fill the tank, calculate again using this for equation I:
+    // I: aG = (T - Ti - aB)  (cannot exceed tank capacity)
+    // Insert I in II
+    // Ti*(qZ - qS) = aB*(2 - qZ) + (T - Ti - aB)*(1 - qZ);
+    // Ti*(qZ - qS) = aB*(2 - qZ) + (T - Ti)*(1 - qZ) - aB*(1 - qZ);
+    // Ti*(qZ - qS) - (T - Ti)*(1 - qZ) = aB*(2 - qZ) - aB*(1 - qZ);
+    // Ti*(qZ - qS) - (T - Ti)*(1 - qZ) = aB*((2 - qZ) - (1 - qZ));
+    // (Ti*(qZ - qS) - (T - Ti)*(1 - qZ)) / ((2 - qZ) - (1 - qZ)) = aB;
+    if (res.first + res.second + tankContent > tankMax) {
+        DOUBLE nominator = (tankContent * (qualiZiel - qualiStart) - (tankMax - tankContent) * (1 - qualiZiel));
+        DOUBLE denominator = ((2 - qualiZiel) - (1 - qualiZiel));
+
+        // Limit:
+        amountBad = std::min(tankMax - tankContent, std::max(0.0, nominator / denominator));
+        amountGood = (tankMax - tankContent - amountBad);
+
+        // Round:
+        res.first = static_cast<SLONG>(std::floor(amountGood));
+        res.second = static_cast<SLONG>(std::floor(amountBad));
+    }
+
+    return res;
+}
+
+SLONG Bot::findBestAvailablePlaneType() {
+    CDataTable planeTable;
+    planeTable.FillWithPlaneTypes();
+    SLONG bestId = -1;
+    SLONG bestScore = 0;
+    for (const auto &i : planeTable.LineIndex) {
+        if (!PlaneTypes.IsInAlbum(i)) {
+            continue;
+        }
+        const auto &planeType = PlaneTypes[i];
+
+        if (!GameMechanic::checkPlaneTypeAvailable(i)) {
+            continue;
+        }
+
+        SLONG score = planeType.Passagiere * planeType.Passagiere;
+        score += planeType.Reichweite;
+        score /= planeType.Verbrauch;
+
+        hprintf("Bot::findBestAvailablePlaneType(): Plane type %s: %ld", (LPCTSTR)planeType.Name, score);
+
+        if (score > bestScore) {
+            bestScore = score;
+            bestId = i;
+        }
+    }
+    const auto &bestPlaneType = PlaneTypes[bestId];
+    hprintf("Bot::findBestAvailablePlaneType(): Best plane type is %s", (LPCTSTR)bestPlaneType.Name);
+    return bestId;
+}
+
+SLONG Bot::calcNumberOfShares(__int64 moneyAvailable, DOUBLE kurs) { return static_cast<SLONG>(std::floor((moneyAvailable - 100) / (1.1 * kurs))); }
+
+SLONG Bot::calcNumOfFreeShares(SLONG playerId) {
+    auto &player = Sim.Players.Players[playerId];
+    SLONG amount = player.AnzAktien;
+    for (SLONG c = 0; c < 4; c++) {
+        amount -= Sim.Players.Players[c].OwnsAktien[playerId];
+    }
+    return amount;
 }
 
 Bot::Prio Bot::condAll(SLONG actionId, __int64 moneyAvailable, SLONG dislike, SLONG bestPlaneTypeId) {
@@ -527,180 +616,6 @@ Bot::Prio Bot::condBuyAds(__int64 &moneyAvailable) {
     return Prio::None;
 }
 
-std::pair<SLONG, SLONG> Bot::kerosineQualiOptimization(__int64 moneyAvailable, DOUBLE targetFillRatio) {
-    hprintf("Bot::kerosineQualiOptimization(): Buying kerosine for no more than %lld $ and %.2f %% of capacity", moneyAvailable, targetFillRatio * 100);
-
-    std::pair<SLONG, SLONG> res{};
-    DOUBLE priceGood = Sim.HoleKerosinPreis(1);
-    DOUBLE priceBad = Sim.HoleKerosinPreis(2);
-    if (qPlayer.HasBerater(BERATERTYP_KEROSIN) < 70) {
-        /* just buy normal kerosine */
-        res.first = static_cast<SLONG>(std::floor(moneyAvailable / priceGood));
-        res.second = 0;
-        return res;
-    }
-
-    DOUBLE qualiZiel = 1.0;
-    if (qPlayer.HasBerater(BERATERTYP_KEROSIN) >= 90) {
-        qualiZiel = 1.3;
-    } else if (qPlayer.HasBerater(BERATERTYP_KEROSIN) >= 80) {
-        qualiZiel = 1.2;
-    } else if (qPlayer.HasBerater(BERATERTYP_KEROSIN) >= 70) {
-        qualiZiel = 1.1;
-    }
-
-    DOUBLE qualiStart = qPlayer.KerosinQuali;
-    DOUBLE amountGood = 0;
-    DOUBLE amountBad = 0;
-    DOUBLE tankContent = qPlayer.TankInhalt;
-    DOUBLE tankMax = qPlayer.Tank * targetFillRatio;
-
-    if (tankContent >= tankMax) {
-        return res;
-    }
-
-    // Definitions:
-    // aG := amountGood, aB := amountBad, mA := moneyAvailable, pG := priceGood, pB := priceBaD,
-    // T := tankMax, Ti := tankContent, qS := qualiStart, qZ := qualiZiel
-    // Given are the following two equations:
-    // I: aG*pG + aB*pB = mA    (spend all money for either good are bad kerosine)
-    // II: qZ = (Ti*qS + aB*2 + aG) / (Ti + aB + aG)   (new quality qZ depends on amounts bought)
-    // Solve I for aG:
-    // aG = (mA - aB*pB) / pG
-    // Solve II for aB:
-    // qZ*(Ti + aB + aG) = Ti*qS + aB*2 + aG;
-    // qZ*Ti + qZ*(aB + aG) = Ti*qS + aB*2 + aG;
-    // qZ*Ti - Ti*qS = aB*2 + aG - qZ*(aB + aG);
-    // Ti*(qZ - qS) = aB*(2 - qZ) + aG*(1 - qZ);
-    // Insert I in II to eliminate aG
-    // Ti*(qZ - qS) = aB*(2 - qZ) + ((mA - aB*pB) / pG)*(1 - qZ);
-    // Ti*(qZ - qS) = aB*(2 - qZ) + mA*(1 - qZ) / pG - aB*pB*(1 - qZ) / pG;
-    // Ti*(qZ - qS) - mA*(1 - qZ) / pG = aB*((2 - qZ) - pB*(1 - qZ) / pG);
-    // (Ti*(qZ - qS) - mA*(1 - qZ) / pG) / ((2 - qZ) - pB*(1 - qZ) / pG) = aB;
-    DOUBLE nominator = (tankContent * (qualiZiel - qualiStart) - moneyAvailable * (1 - qualiZiel) / priceGood);
-    DOUBLE denominator = ((2 - qualiZiel) - priceBad * (1 - qualiZiel) / priceGood);
-
-    // Limit:
-    amountBad = std::max(0.0, nominator / denominator);               // equation II
-    amountGood = (moneyAvailable - amountBad * priceBad) / priceGood; // equation I
-    if (amountGood < 0) {
-        amountGood = 0;
-        amountBad = moneyAvailable / priceBad;
-    }
-
-    // Round:
-    res.first = static_cast<SLONG>(std::floor(amountGood));
-    res.second = static_cast<SLONG>(std::floor(amountBad));
-
-    // we have more than enough money to fill the tank, calculate again using this for equation I:
-    // I: aG = (T - Ti - aB)  (cannot exceed tank capacity)
-    // Insert I in II
-    // Ti*(qZ - qS) = aB*(2 - qZ) + (T - Ti - aB)*(1 - qZ);
-    // Ti*(qZ - qS) = aB*(2 - qZ) + (T - Ti)*(1 - qZ) - aB*(1 - qZ);
-    // Ti*(qZ - qS) - (T - Ti)*(1 - qZ) = aB*(2 - qZ) - aB*(1 - qZ);
-    // Ti*(qZ - qS) - (T - Ti)*(1 - qZ) = aB*((2 - qZ) - (1 - qZ));
-    // (Ti*(qZ - qS) - (T - Ti)*(1 - qZ)) / ((2 - qZ) - (1 - qZ)) = aB;
-    if (res.first + res.second + tankContent > tankMax) {
-        DOUBLE nominator = (tankContent * (qualiZiel - qualiStart) - (tankMax - tankContent) * (1 - qualiZiel));
-        DOUBLE denominator = ((2 - qualiZiel) - (1 - qualiZiel));
-
-        // Limit:
-        amountBad = std::min(tankMax - tankContent, std::max(0.0, nominator / denominator));
-        amountGood = (tankMax - tankContent - amountBad);
-
-        // Round:
-        res.first = static_cast<SLONG>(std::floor(amountGood));
-        res.second = static_cast<SLONG>(std::floor(amountBad));
-    }
-
-    return res;
-}
-
-SLONG Bot::findBestAvailablePlaneType() {
-    CDataTable planeTable;
-    planeTable.FillWithPlaneTypes();
-    SLONG bestId = -1;
-    SLONG bestScore = 0;
-    for (const auto &i : planeTable.LineIndex) {
-        if (!PlaneTypes.IsInAlbum(i)) {
-            continue;
-        }
-        const auto &planeType = PlaneTypes[i];
-
-        if (!GameMechanic::checkPlaneTypeAvailable(i)) {
-            continue;
-        }
-
-        SLONG score = planeType.Passagiere * planeType.Passagiere;
-        score += planeType.Reichweite;
-        score /= planeType.Verbrauch;
-
-        if (score > bestScore) {
-            bestScore = score;
-            bestId = i;
-        }
-    }
-    const auto &bestPlaneType = PlaneTypes[bestId];
-    hprintf("Bot::findBestAvailablePlaneType(): Best plane type is %s", (LPCTSTR)bestPlaneType.Name);
-    return bestId;
-}
-
-SLONG Bot::calcNumberOfShares(__int64 moneyAvailable, DOUBLE kurs) { return static_cast<SLONG>(std::floor((moneyAvailable - 100) / (1.1 * kurs))); }
-
-SLONG Bot::calcNumOfFreeShares(SLONG playerId) {
-    auto &player = Sim.Players.Players[playerId];
-    SLONG amount = player.AnzAktien;
-    for (SLONG c = 0; c < 4; c++) {
-        amount -= Sim.Players.Players[c].OwnsAktien[playerId];
-    }
-    return amount;
-}
-
-SLONG Bot::checkFlightJobs() {
-    auto &qAuftraege = qPlayer.Auftraege;
-    int nIncorrect = 0;
-    for (SLONG c = 0; c < qPlayer.Planes.AnzEntries(); c++) {
-        if (qPlayer.Planes.IsInAlbum(c) == 0) {
-            continue;
-        }
-
-        auto &qPlane = qPlayer.Planes[c];
-        CFlugplan *Plan = &qPlane.Flugplan;
-
-        for (SLONG d = Plan->Flug.AnzEntries() - 1; d >= 0; d--) {
-            if (Plan->Flug[d].ObjectType != 2) {
-                continue;
-            }
-
-            auto &qAuftrag = qAuftraege[Plan->Flug[d].ObjectId];
-
-            if (Plan->Flug[d].Okay != 0) {
-                nIncorrect++;
-                redprintf("Bot::checkFlightJobs(): Job (%s -> %s) for plane %s is not scheduled correctly", (LPCTSTR)Cities[qAuftrag.VonCity].Kuerzel,
-                          (LPCTSTR)Cities[qAuftrag.NachCity].Kuerzel, (LPCTSTR)qPlane.Name);
-            }
-
-            if (qPlane.ptPassagiere < SLONG(qAuftrag.Personen)) {
-                redprintf("Bot::checkFlightJobs(): Job (%s -> %s) exceeds number of seats for plane %s", (LPCTSTR)Cities[qAuftrag.VonCity].Kuerzel,
-                          (LPCTSTR)Cities[qAuftrag.NachCity].Kuerzel, (LPCTSTR)qPlane.Name);
-            }
-
-            if (Plan->Flug[d].Startdate < qAuftrag.Date) {
-                redprintf("Bot::checkFlightJobs(): Job (%s -> %s) starts too early (%s instead of %s) for plane %s", (LPCTSTR)Cities[qAuftrag.VonCity].Kuerzel,
-                          (LPCTSTR)Cities[qAuftrag.NachCity].Kuerzel, (LPCTSTR)getWeekday(Plan->Flug[d].Startdate), (LPCTSTR)getWeekday(qAuftrag.Date),
-                          (LPCTSTR)qPlane.Name);
-            }
-
-            if (Plan->Flug[d].Startdate > qAuftrag.BisDate) {
-                redprintf("Bot::checkFlightJobs(): Job (%s -> %s) starts too late (%s instead of %s) for plane %s", (LPCTSTR)Cities[qAuftrag.VonCity].Kuerzel,
-                          (LPCTSTR)Cities[qAuftrag.NachCity].Kuerzel, (LPCTSTR)getWeekday(Plan->Flug[d].Startdate), (LPCTSTR)getWeekday(qAuftrag.BisDate),
-                          (LPCTSTR)qPlane.Name);
-            }
-        }
-    }
-    return nIncorrect;
-}
-
 Bot::Bot(PLAYER &player) : qPlayer(player) {}
 
 void Bot::RobotInit() {
@@ -735,10 +650,18 @@ void Bot::RobotInit() {
               [](const RouteInfo &a, const RouteInfo &b) { return a.utilization < b.utilization; });
 
     RobotPlan();
+    hprintf("Bot.cpp: Leaving RobotInit()");
 }
 
 void Bot::RobotPlan() {
     hprintf("Bot.cpp: Enter RobotPlan()");
+
+    if (mFirstRun) {
+        redprintf("Bot::RobotPlan(): Bot was not initialized!");
+        RobotInit();
+        hprintf("Bot.cpp: Leaving RobotPlan() (not initialized)\n");
+        return;
+    }
 
     auto &qRobotActions = qPlayer.RobotActions;
 
@@ -751,6 +674,7 @@ void Bot::RobotPlan() {
                        ACTION_WERBUNG};
 
     if (qRobotActions[0].ActionId != ACTION_NONE || qRobotActions[1].ActionId != ACTION_NONE) {
+        hprintf("Bot.cpp: Leaving RobotPlan() (actions already planned)\n");
         return;
     }
     qRobotActions[1].ActionId = ACTION_NONE;
@@ -787,7 +711,7 @@ void Bot::RobotPlan() {
     /* populate prio list */
     std::vector<std::pair<SLONG, Prio>> prioList;
     for (auto &action : actions) {
-        if (!checkRoomOpen(action)) {
+        if (!Helper::checkRoomOpen(action)) {
             continue;
         }
         auto prio = condAll(action, moneyAvailable, mDislike, mBestPlaneTypeId);
@@ -806,7 +730,7 @@ void Bot::RobotPlan() {
     /* sort by priority */
     std::sort(prioList.begin(), prioList.end(), [](const std::pair<SLONG, Prio> &a, const std::pair<SLONG, Prio> &b) { return a.second > b.second; });
     for (const auto &i : prioList) {
-        greenprintf("Bot.cpp: %s: %s", getRobotActionName(i.first), getPrioName(i.second));
+        hprintf("Bot.cpp: %s: %s", getRobotActionName(i.first), getPrioName(i.second));
     }
 
     /* randomized tie-breaking */
@@ -848,6 +772,7 @@ void Bot::RobotPlan() {
         endIdx--;
     }
 
+    hprintf("Action 0: %s", getRobotActionName(qRobotActions[0].ActionId));
     greenprintf("Action 1: %s with prio %s", getRobotActionName(qRobotActions[1].ActionId), getPrioName(prioAction1));
     greenprintf("Action 2: %s with prio %s", getRobotActionName(qRobotActions[2].ActionId), getPrioName(prioAction2));
 
@@ -855,6 +780,13 @@ void Bot::RobotPlan() {
 }
 
 void Bot::RobotExecuteAction() {
+    if (mFirstRun) {
+        redprintf("Bot::RobotExecuteAction(): Bot was not initialized!");
+        RobotInit();
+        hprintf("Bot.cpp: Leaving RobotExecuteAction() (not initialized)\n");
+        return;
+    }
+
     /* handy references to player data (ro) */
     const auto &qPlanes = qPlayer.Planes;
     const auto &qKurse = qPlayer.Kurse;
@@ -918,28 +850,8 @@ void Bot::RobotExecuteAction() {
         if (condCallInternational() != Prio::None) {
             std::vector<int> cities;
             for (SLONG n = 0; n < Cities.AnzEntries(); n++) {
-                if (n == Cities.find(Sim.HomeAirportId)) {
+                if (!GameMechanic::canCallInternational(qPlayer, n)) {
                     continue;
-                }
-
-                if ((Sim.Players.Players[Sim.localPlayer].LocationWin != nullptr) &&
-                    (Sim.Players.Players[Sim.localPlayer].LocationWin)->CurrentMenu == MENU_AUSLANDSAUFTRAG &&
-                    Cities.GetIdFromIndex((Sim.Players.Players[Sim.localPlayer].LocationWin)->MenuPar1) == Cities.GetIdFromIndex(n)) {
-                    continue; // Skip it, because Player is just phoning it.
-                }
-
-                bool goAhead = false;
-                if (qPlayer.RentCities.RentCities[n].Rang != 0U) {
-                    goAhead = true;
-                }
-                for (SLONG c = 0; c < 4; c++) {
-                    if ((Sim.Players.Players[c].IsOut == 0) && (qPlayer.Kooperation[c] != 0) && (Sim.Players.Players[c].RentCities.RentCities[n].Rang != 0U)) {
-                        goAhead = true;
-                        break;
-                    }
-                }
-                if (!goAhead) {
-                    continue; // Skip that city, 'cause we're not present here
                 }
 
                 GameMechanic::refillFlightJobs(n);
@@ -952,7 +864,7 @@ void Bot::RobotExecuteAction() {
                 auto oldGain = mCurrentGain;
                 mCurrentGain = planer.planFlights(mPlanesForJobs);
                 hprintf("Gain from flight jobs changed %ld => %ld", oldGain, mCurrentGain);
-                checkFlightJobs();
+                Helper::checkFlightJobs(qPlayer);
 
                 // Frachtaufträge:
                 // RobotUse(ROBOT_USE_MUCH_FRACHT)
@@ -974,7 +886,7 @@ void Bot::RobotExecuteAction() {
             auto oldGain = mCurrentGain;
             mCurrentGain = planer.planFlights(mPlanesForJobs);
             hprintf("Gain from flight jobs changed %ld => %ld", oldGain, mCurrentGain);
-            checkFlightJobs();
+            Helper::checkFlightJobs(qPlayer);
 
             LastMinuteAuftraege.RefillForLastMinute();
         } else {
@@ -992,7 +904,7 @@ void Bot::RobotExecuteAction() {
             auto oldGain = mCurrentGain;
             mCurrentGain = planer.planFlights(mPlanesForJobs);
             hprintf("Gain from flight jobs changed %ld => %ld", oldGain, mCurrentGain);
-            checkFlightJobs();
+            Helper::checkFlightJobs(qPlayer);
 
             ReisebueroAuftraege.RefillForReisebuero();
         } else {
@@ -1010,7 +922,7 @@ void Bot::RobotExecuteAction() {
             auto oldGain = mCurrentGain;
             mCurrentGain = planer.planFlights(mPlanesForJobs);
             hprintf("Gain from flight jobs changed %ld => %ld", oldGain, mCurrentGain);
-            checkFlightJobs();
+            Helper::checkFlightJobs(qPlayer);
 
             gFrachten.Refill();
         } else {
@@ -1593,7 +1505,8 @@ void Bot::RobotExecuteAction() {
         break;
 
     default:
-        DebugBreak();
+        redprintf("Bot::RobotExecuteAction(): Trying to execute invalid action: %s", getRobotActionName(qRobotActions[0].ActionId));
+        // DebugBreak();
     }
 
     mLastTimeInRoom[qRobotActions[0].ActionId] = Sim.Time;

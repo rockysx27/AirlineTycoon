@@ -16,8 +16,6 @@ class Bot {
 
     // private:
     enum class Prio { None, Low, Medium, High, Top };
-    bool hoursPassed(SLONG room, SLONG hours);
-    bool checkRoomOpen(SLONG roomId);
 
     Prio condAll(SLONG actionId, __int64 moneyAvailable, SLONG dislike, SLONG bestPlaneTypeId);
     Prio condStartDay();
@@ -51,11 +49,11 @@ class Bot {
     Prio condBuyAdsForRoutes(__int64 &moneyAvailable);
     Prio condBuyAds(__int64 &moneyAvailable);
 
+    bool hoursPassed(SLONG room, SLONG hours);
     std::pair<SLONG, SLONG> kerosineQualiOptimization(__int64 moneyAvailable, DOUBLE targetFillRatio);
     SLONG findBestAvailablePlaneType();
     SLONG calcNumberOfShares(__int64 moneyAvailable, DOUBLE kurs);
     SLONG calcNumOfFreeShares(SLONG playerId);
-    SLONG checkFlightJobs();
 
     PLAYER &qPlayer;
 

@@ -146,8 +146,6 @@ class BotPlaner {
         JobOwner owner{JobOwner::Player};
     };
 
-    void printJob(const CAuftrag &qAuftrag);
-    std::string printJobShort(const CAuftrag &qAuftrag);
     void printSolution(const Solution &solution, const std::vector<FlightJob> &list);
     void printGraph(const std::vector<PlaneState> &planeStates, const std::vector<FlightJob> &list, const Graph &g);
 

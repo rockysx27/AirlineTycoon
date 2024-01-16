@@ -102,8 +102,9 @@ class GameMechanic {
     static bool takeFlightJob(PLAYER &qPlayer, SLONG jobId, SLONG &outObjectId);
     static bool takeLastMinuteJob(PLAYER &qPlayer, SLONG jobId, SLONG &outObjectId);
     static bool takeFreightJob(PLAYER &qPlayer, SLONG jobId, SLONG &outObjectId);
-    static bool takeInternationalFlightJob(PLAYER &qPlayer, SLONG par1, SLONG par2, SLONG &outObjectId);
-    static bool takeInternationalFreightJob(PLAYER &qPlayer, SLONG par1, SLONG par2, SLONG &outObjectId);
+    static bool canCallInternational(PLAYER &qPlayer, SLONG cityId);
+    static bool takeInternationalFlightJob(PLAYER &qPlayer, SLONG cityId, SLONG jobId, SLONG &outObjectId);
+    static bool takeInternationalFreightJob(PLAYER &qPlayer, SLONG cityId, SLONG jobId, SLONG &outObjectId);
     static bool killFlightJob(PLAYER &qPlayer, SLONG par1, bool payFine);
     static bool killFreightJob(PLAYER &qPlayer, SLONG par1, bool payFine);
     static bool killFlightPlan(PLAYER &qPlayer, SLONG par1);

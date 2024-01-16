@@ -1,5 +1,7 @@
 #include "StdAfx.h"
 
+#include "BotHelper.h"
+
 #include <algorithm>
 #include <chrono>
 #include <iostream>
@@ -15,8 +17,6 @@
 static const int kMinPremium = 1000;
 static const int kMaxTimesVisited = 3;
 static const bool kCanDropJobs = false;
-
-static CString getWeekday(UWORD date) { return StandardTexte.GetS(TOKEN_SCHED, 3010 + (date + Sim.StartWeekday) % 7); }
 
 BotPlaner::BotPlaner(PLAYER &player, const CPlanes &planes, JobOwner jobOwner, std::vector<int> intJobSource)
     : qPlayer(player), mJobOwner(jobOwner), mIntJobSource(std::move(intJobSource)), qPlanes(planes) {
@@ -49,26 +49,12 @@ BotPlaner::BotPlaner(PLAYER &player, const CPlanes &planes, JobOwner jobOwner, s
     }
 }
 
-void BotPlaner::printJob(const CAuftrag &qAuftrag) {
-    const char *buf = (qAuftrag.Date == qAuftrag.BisDate ? StandardTexte.GetS(TOKEN_SCHED, 3010 + (qAuftrag.Date + Sim.StartWeekday) % 7)
-                                                         : StandardTexte.GetS(TOKEN_SCHED, 3010 + (qAuftrag.BisDate + Sim.StartWeekday) % 7));
-    CString strDist(Einheiten[EINH_KM].bString(Cities.CalcDistance(qAuftrag.VonCity, qAuftrag.NachCity) / 1000));
-    CString strPraemie(Insert1000erDots(qAuftrag.Strafe));
-    CString strStrafe(Insert1000erDots(qAuftrag.Praemie));
-    printf("%s - %s (%u, %s, %s, P: %s $, S: %s $)\n", (LPCTSTR)Cities[qAuftrag.VonCity].Kuerzel, (LPCTSTR)Cities[qAuftrag.NachCity].Kuerzel, qAuftrag.Personen,
-           (LPCTSTR)strDist, buf, (LPCTSTR)strPraemie, (LPCTSTR)strStrafe);
-}
-
-std::string BotPlaner::printJobShort(const CAuftrag &qAuftrag) {
-    return {bprintf("%s - %s", (LPCTSTR)Cities[qAuftrag.VonCity].Kuerzel, (LPCTSTR)Cities[qAuftrag.NachCity].Kuerzel)};
-}
-
 void BotPlaner::printSolution(const Solution &solution, const std::vector<FlightJob> &list) {
     std::cout << "Solution has premium = " << solution.totalPremium << std::endl;
     for (const auto &i : solution.jobs) {
         std::cout << i.start.getDate() << ":" << i.start.getHour() << "  ";
         const auto &job = list[i.jobId];
-        printJob(job.auftrag);
+        Helper::printJob(job.auftrag);
     }
     std::cout << std::endl;
 }
@@ -368,7 +354,7 @@ std::pair<int, int> BotPlaner::gatherAndPlanJobs(std::vector<FlightJob> &jobList
         auto &jobState = jobList[i];
 
 #ifdef PRINT_OVERALL
-        std::cout << "Evaluating job " << printJobShort(jobState.auftrag) << std::endl;
+        std::cout << "Evaluating job " << Helper::getJobName(jobState.auftrag) << std::endl;
 #endif
 
         int bestDelta = INT_MIN;
@@ -408,7 +394,7 @@ std::pair<int, int> BotPlaner::gatherAndPlanJobs(std::vector<FlightJob> &jobList
             }
         } else {
 #ifdef PRINT_OVERALL
-            std::cout << "Cannot find plane for job " << printJobShort(jobList[i].auftrag) << std::endl;
+            std::cout << "Cannot find plane for job " << Helper::getJobName(jobList[i].auftrag) << std::endl;
 #endif
         }
     }
@@ -496,26 +482,26 @@ bool BotPlaner::applySolution(int planeId, const BotPlaner::Solution &solution, 
         }
 
         /* check flight time */
-        const auto &flugplan = qPlanes[planeId].Flugplan.Flug;
-        for (SLONG d = flugplan.AnzEntries() - 1; d >= 0; d--) {
-            const auto &flug = flugplan[d];
-            if (flug.ObjectId != job.id) {
+        const auto &qFlightPlan = qPlanes[planeId].Flugplan.Flug;
+        for (SLONG d = 0; d < qFlightPlan.AnzEntries(); d++) {
+            const auto &flug = qFlightPlan[d];
+            if (flug.ObjectType != 2) {
                 continue;
             }
-            if (flug.ObjectType == 3) {
-                continue; /* skip auto flights */
+            if (flug.ObjectId != job.id) {
+                continue;
             }
             if (flug.Startdate != startTime.getDate()) {
                 redprintf(
                     "BotPlaner::applySolution(): Plane %s, schedule entry %ld: GameMechanic scheduled job (%s) at different start time (%s instead of %s)!",
-                    (LPCTSTR)qPlanes[planeId].Name, d, printJobShort(job.auftrag).c_str(), (LPCTSTR)getWeekday(flug.Startdate),
-                    (LPCTSTR)getWeekday(startTime.getDate()));
+                    (LPCTSTR)qPlanes[planeId].Name, d, Helper::getJobName(job.auftrag).c_str(), (LPCTSTR)Helper::getWeekday(flug.Startdate),
+                    (LPCTSTR)Helper::getWeekday(startTime.getDate()));
             }
             if (flug.Landedate != endTime.getDate()) {
                 redprintf(
                     "BotPlaner::applySolution(): Plane %s, schedule entry %ld: GameMechanic scheduled job (%s) with different landing time (%s instead of %s)!",
-                    (LPCTSTR)qPlanes[planeId].Name, d, printJobShort(job.auftrag).c_str(), (LPCTSTR)getWeekday(flug.Landedate),
-                    (LPCTSTR)getWeekday(endTime.getDate()));
+                    (LPCTSTR)qPlanes[planeId].Name, d, Helper::getJobName(job.auftrag).c_str(), (LPCTSTR)Helper::getWeekday(flug.Landedate),
+                    (LPCTSTR)Helper::getWeekday(endTime.getDate()));
             }
         }
     }
@@ -538,17 +524,17 @@ int BotPlaner::planFlights(const std::vector<int> &planeIds) {
         GameMechanic::killFlightPlan(qPlayer, i);
 
         const auto qPlane = qPlanes[i];
-        const CFlugplan &qPlan = qPlane.Flugplan;
+        const CFlugplan &qFlightPlan = qPlane.Flugplan;
 
         /* determine when and where the plane will be available */
         planeState.availTime = {Sim.Date, Sim.GetHour() + 2};
         planeState.availCity = qPlane.Ort;
-        for (int c = qPlan.Flug.AnzEntries() - 1; c >= 0; c--) {
-            if (qPlan.Flug[c].ObjectType == 0) {
+        for (int c = qFlightPlan.Flug.AnzEntries() - 1; c >= 0; c--) {
+            if (qFlightPlan.Flug[c].ObjectType == 0) {
                 continue;
             }
-            planeState.availTime = {qPlan.Flug[c].Landedate, qPlan.Flug[c].Landezeit + 1};
-            planeState.availCity = qPlan.Flug[c].NachCity;
+            planeState.availTime = {qFlightPlan.Flug[c].Landedate, qFlightPlan.Flug[c].Landezeit + 1};
+            planeState.availCity = qFlightPlan.Flug[c].NachCity;
             break;
         }
         assert(planeState.availCity >= 0);

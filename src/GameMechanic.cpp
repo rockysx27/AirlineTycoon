@@ -1005,7 +1005,7 @@ bool GameMechanic::buyAdvertisement(PLAYER &qPlayer, SLONG adCampaignType, SLONG
         redprintf("GameMechanic::buyAdvertisement: Invalid adCampaignSize (%ld).", adCampaignSize);
         return false;
     }
-    if (adCampaignType == 1 && routeID == -1) {
+    if (adCampaignType == 1 && (routeID < 0 || routeID >= qPlayer.RentRouten.RentRouten.AnzEntries())) {
         redprintf("GameMechanic::buyAdvertisement: Invalid routeID (%ld).", routeID);
         return false;
     }
@@ -1260,18 +1260,49 @@ bool GameMechanic::takeFreightJob(PLAYER &qPlayer, SLONG jobId, SLONG &outObject
     return true;
 }
 
-bool GameMechanic::takeInternationalFlightJob(PLAYER &qPlayer, SLONG par1, SLONG par2, SLONG &outObjectId) {
-    outObjectId = -1;
-    if (par1 < 0 || par1 >= AuslandsAuftraege.size()) {
-        redprintf("GameMechanic::takeInternationalFlightJob: Invalid par1 (%ld).", par1);
-        return false;
-    }
-    if (!AuslandsAuftraege[par1].IsInAlbum(par2)) {
-        redprintf("GameMechanic::takeInternationalFlightJob: Invalid par2 (%ld).", par2);
+bool GameMechanic::canCallInternational(PLAYER &qPlayer, SLONG cityId) {
+    if (!Cities.IsInAlbum(cityId)) {
+        redprintf("GameMechanic::canCallInternational: Invalid cityId (%ld).", cityId);
         return false;
     }
 
-    auto &qAuftrag = AuslandsAuftraege[par1][par2];
+    SLONG idx = Cities.find(cityId);
+    if (idx == Cities.find(Sim.HomeAirportId)) {
+        return false;
+    }
+
+    auto *qLocationWin = Sim.Players.Players[Sim.localPlayer].LocationWin;
+    if ((qLocationWin != nullptr) && (qLocationWin)->CurrentMenu == MENU_AUSLANDSAUFTRAG && Cities.find((qLocationWin)->MenuPar1) == idx) {
+        return false; // Skip it, because Player is just phoning it.
+    }
+
+    if (qPlayer.RentCities.RentCities[idx].Rang != 0U) {
+        return true;
+    }
+    for (SLONG c = 0; c < 4; c++) {
+        if ((Sim.Players.Players[c].IsOut == 0) && (qPlayer.Kooperation[c] != 0) && (Sim.Players.Players[c].RentCities.RentCities[idx].Rang != 0U)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool GameMechanic::takeInternationalFlightJob(PLAYER &qPlayer, SLONG cityId, SLONG jobId, SLONG &outObjectId) {
+    outObjectId = -1;
+    if (cityId < 0 || cityId >= AuslandsAuftraege.size()) {
+        redprintf("GameMechanic::takeInternationalFlightJob: Invalid cityId (%ld).", cityId);
+        return false;
+    }
+    if (!AuslandsAuftraege[cityId].IsInAlbum(jobId)) {
+        redprintf("GameMechanic::takeInternationalFlightJob: Invalid jobId (%ld).", jobId);
+        return false;
+    }
+    if (!canCallInternational(qPlayer, cityId)) {
+        redprintf("GameMechanic::takeInternationalFlightJob: Impossible to call this location (%ld).", cityId);
+        return false;
+    }
+
+    auto &qAuftrag = AuslandsAuftraege[cityId][jobId];
     if (qAuftrag.Praemie <= 0) {
         return false;
     }
@@ -1284,23 +1315,23 @@ bool GameMechanic::takeInternationalFlightJob(PLAYER &qPlayer, SLONG par1, SLONG
     qPlayer.Statistiken[STAT_AUFTRAEGE].AddAtPastDay(1);
 
     qAuftrag.Praemie = -1000;
-    qPlayer.NetUpdateTook(4, par2, par1);
+    qPlayer.NetUpdateTook(4, jobId, cityId);
 
     return true;
 }
 
-bool GameMechanic::takeInternationalFreightJob(PLAYER &qPlayer, SLONG par1, SLONG par2, SLONG &outObjectId) {
+bool GameMechanic::takeInternationalFreightJob(PLAYER &qPlayer, SLONG cityId, SLONG jobId, SLONG &outObjectId) {
     outObjectId = -1;
-    if (par1 < 0 || par1 >= AuslandsFrachten.size()) {
-        redprintf("GameMechanic::takeInternationalFreightJob: Invalid par1 (%ld).", par1);
+    if (cityId < 0 || cityId >= AuslandsFrachten.size()) {
+        redprintf("GameMechanic::takeInternationalFreightJob: Invalid cityId (%ld).", cityId);
         return false;
     }
-    if (!AuslandsFrachten[par1].IsInAlbum(par2)) {
-        redprintf("GameMechanic::takeInternationalFreightJob: Invalid par2 (%ld).", par2);
+    if (!AuslandsFrachten[cityId].IsInAlbum(jobId)) {
+        redprintf("GameMechanic::takeInternationalFreightJob: Invalid jobId (%ld).", jobId);
         return false;
     }
 
-    auto &qFracht = AuslandsFrachten[par1][par2];
+    auto &qFracht = AuslandsFrachten[cityId][jobId];
     if (qFracht.Praemie <= 0) {
         return false;
     }
@@ -1313,7 +1344,7 @@ bool GameMechanic::takeInternationalFreightJob(PLAYER &qPlayer, SLONG par1, SLON
     qPlayer.Statistiken[STAT_AUFTRAEGE].AddAtPastDay(1);
 
     qFracht.Praemie = -1000;
-    qPlayer.NetUpdateTook(5, par2, par1);
+    qPlayer.NetUpdateTook(5, jobId, cityId);
 
     return true;
 }

@@ -6,6 +6,8 @@
 #include "StdAfx.h"
 #include "glglobe.h"
 
+#include "BotHelper.h"
+
 #define RDTSC __asm _emit 0x0F __asm _emit 0x31
 
 #ifdef _DEBUG
@@ -2994,9 +2996,16 @@ void CPlaner::HandleLButtonDouble() {
 void CPlaner::AutoPlan(SLONG mode) {
     SLONG playerNum = CStdRaum::PlayerNum;
     auto &qPlayer = Sim.Players.Players[playerNum];
-    std::vector<int> planeIds;
 
     if (mode == 0) {
+        /* only check current plane */
+        Helper::checkFlightJobs(qPlayer);
+        return;
+    }
+
+    if (mode == 1) {
+        /* schedule current plane */
+        std::vector<int> planeIds;
         for (SLONG c = qPlayer.Blocks.AnzEntries() - 1; c >= 0; c--) {
             if (qPlayer.Blocks.IsInAlbum(ULONG(c)) != 0) {
                 auto &qBlock = qPlayer.Blocks[c];
@@ -3009,24 +3018,22 @@ void CPlaner::AutoPlan(SLONG mode) {
 
         BotPlaner bot(qPlayer, qPlayer.Planes, BotPlaner::JobOwner::Player, {});
         bot.planFlights(planeIds);
-        return;
-    }
-
-    for (SLONG i = 0; i < qPlayer.Planes.AnzEntries(); i++) {
-        if (qPlayer.Planes.IsInAlbum(i)) {
-            planeIds.push_back(i);
-        }
-    }
-
-    if (mode == 1) {
-        BotPlaner bot(qPlayer, qPlayer.Planes, BotPlaner::JobOwner::Player, {});
-        bot.planFlights(planeIds);
+        Helper::checkFlightJobs(qPlayer);
         return;
     }
 
     if (mode == 2) {
+        /* schedule all planes and get jobs from agency */
+        std::vector<int> planeIds;
+        for (SLONG i = 0; i < qPlayer.Planes.AnzEntries(); i++) {
+            if (qPlayer.Planes.IsInAlbum(i)) {
+                planeIds.push_back(i);
+            }
+        }
+
         BotPlaner bot(qPlayer, qPlayer.Planes, BotPlaner::JobOwner::TravelAgency, {});
         bot.planFlights(planeIds);
+        Helper::checkFlightJobs(qPlayer);
         return;
     }
 }
