@@ -20,6 +20,10 @@ static const int kMinPremium = 1000;
 static const int kMaxTimesVisited = 3;
 static const bool kCanDropJobs = false;
 
+static SLONG getPremiumEmptyFlight(const CPlane *qPlane, SLONG VonCity, SLONG NachCity) {
+    return (qPlane->ptPassagiere * Cities.CalcDistance(VonCity, NachCity) / 1000 / 40);
+}
+
 BotPlaner::BotPlaner(PLAYER &player, const CPlanes &planes, JobOwner jobOwner, std::vector<int> intJobSource)
     : qPlayer(player), mJobOwner(jobOwner), mIntJobSource(std::move(intJobSource)), qPlanes(planes) {
     if (jobOwner == JobOwner::International) {
@@ -55,7 +59,7 @@ void BotPlaner::printSolution(const Solution &solution, const std::vector<Flight
     std::cout << "Solution has premium = " << solution.totalPremium << std::endl;
     for (const auto &i : solution.jobs) {
         std::cout << i.start.getDate() << ":" << i.start.getHour() << "  ";
-        const auto &job = list[i.jobId];
+        const auto &job = list[i.jobIdx];
         Helper::printJob(job.auftrag);
     }
     std::cout << std::endl;
@@ -85,6 +89,9 @@ void BotPlaner::printGraph(const std::vector<PlaneState> &planeStates, const std
     for (int i = 0; i < g.nNodes; i++) {
         auto &curInfo = g.nodeInfo[i];
         for (int j = 0; j < g.nNodes; j++) {
+            if (g.adjMatrix[i][j].cost < 0) {
+                continue;
+            }
             std::cout << "node" << i << " -> "
                       << "node" << j << " [";
             std::cout << "label=\"" << g.adjMatrix[i][j].cost << " $, " << g.adjMatrix[i][j].duration << " h\"";
@@ -100,26 +107,26 @@ void BotPlaner::printGraph(const std::vector<PlaneState> &planeStates, const std
     std::cout << "}" << std::endl;
 }
 
-void BotPlaner::findPlaneTypes(std::vector<PlaneState> &planeStates, std::vector<const CPlane *> &planeTypeToPlane) {
+void BotPlaner::findPlaneTypes(std::vector<PlaneState> &planeStates) {
     int nPlaneTypes = 0;
     std::unordered_map<int, int> mapOldType2NewType;
     for (auto &planeState : planeStates) {
         const auto &qPlane = qPlanes[planeState.planeId];
         if (qPlane.TypeId == -1) {
             planeState.planeTypeId = nPlaneTypes++;
-            planeTypeToPlane.push_back(&qPlane);
+            mPlaneTypeToPlane.push_back(&qPlane);
             continue;
         }
         if (mapOldType2NewType.end() == mapOldType2NewType.find(qPlane.TypeId)) {
             mapOldType2NewType[qPlane.TypeId] = nPlaneTypes++;
-            planeTypeToPlane.push_back(&qPlane);
+            mPlaneTypeToPlane.push_back(&qPlane);
         }
         planeState.planeTypeId = mapOldType2NewType[qPlane.TypeId];
     }
-    assert(planeTypeToPlane.size() == nPlaneTypes);
+    assert(mPlaneTypeToPlane.size() == nPlaneTypes);
 
 #ifdef PRINT_OVERALL
-    std::cout << "There are " << planeStates.size() << " planes of " << planeTypeToPlane.size() << " types" << std::endl;
+    std::cout << "There are " << planeStates.size() << " planes of " << mPlaneTypeToPlane.size() << " types" << std::endl;
 #endif
 }
 
@@ -180,9 +187,9 @@ BotPlaner::Solution BotPlaner::findFlightPlan(Graph &g, int planeId, PlaneTime a
             solution.totalPremium = currentPremium - currentCost;
             int n = currentNode;
             while (g.nodeState[n].cameFrom != -1) {
-                int jobID = g.nodeToJob(n);
-                assert(jobID >= 0);
-                solution.jobs.emplace_front(jobID, g.nodeState[n].startTime, g.nodeState[n].startTime + g.nodeInfo[n].duration);
+                int jobIdx = g.nodeInfo[n].jobIdx;
+                assert(jobIdx >= 0);
+                solution.jobs.emplace_front(jobIdx, g.nodeState[n].startTime, g.nodeState[n].startTime + g.nodeInfo[n].duration);
                 n = g.nodeState[n].cameFrom;
             }
             solutions.emplace_back(std::move(solution));
@@ -199,8 +206,9 @@ BotPlaner::Solution BotPlaner::findFlightPlan(Graph &g, int planeId, PlaneTime a
         }
         while (curState.outIdx < curInfo.bestNeighbors.size()) {
             int n = curInfo.bestNeighbors[curState.outIdx];
+            int jobIdx = g.nodeInfo[n].jobIdx;
             assert(n >= g.nPlanes && n < g.nNodes);
-            if (eligibleJobIds[g.nodeToJob(n)] == 0) {
+            if (eligibleJobIds[jobIdx] == 0) {
                 curState.outIdx++;
                 continue;
             }
@@ -224,6 +232,8 @@ BotPlaner::Solution BotPlaner::findFlightPlan(Graph &g, int planeId, PlaneTime a
             g.nodeState[nextNode].cameFrom = currentNode;
             currentCost += g.adjMatrix[currentNode][nextNode].cost;
             currentTime += g.adjMatrix[currentNode][nextNode].duration;
+            assert(g.adjMatrix[currentNode][nextNode].cost >= 0);
+            assert(g.adjMatrix[currentNode][nextNode].duration >= 0);
 
             currentNode = nextNode;
         } else {
@@ -243,6 +253,8 @@ BotPlaner::Solution BotPlaner::findFlightPlan(Graph &g, int planeId, PlaneTime a
 
             currentCost -= g.adjMatrix[prevNode][currentNode].cost;
             currentTime -= g.adjMatrix[prevNode][currentNode].duration;
+            assert(g.adjMatrix[prevNode][currentNode].cost >= 0);
+            assert(g.adjMatrix[prevNode][currentNode].duration >= 0);
 
             curState.outIdx = 0;
 
@@ -273,36 +285,11 @@ BotPlaner::Solution BotPlaner::findFlightPlan(Graph &g, int planeId, PlaneTime a
 
 std::pair<int, int> BotPlaner::gatherAndPlanJobs(std::vector<FlightJob> &jobList, std::vector<PlaneState> &planeStates) {
     int nPlanes = planeStates.size();
+    int nPlaneTypes = mPlaneTypeToPlane.size();
 
 #ifdef PRINT_OVERALL
     auto t_begin = std::chrono::steady_clock::now();
 #endif
-
-    /* find number of unique plane types */
-    std::vector<const CPlane *> planeTypeToPlane;
-    findPlaneTypes(planeStates, planeTypeToPlane);
-    int nPlaneTypes = planeTypeToPlane.size();
-
-    /* prepare job list */
-    for (int p = 0; p < nPlanes; p++) {
-        auto &qPlaneState = planeStates[p];
-        const auto &qPlane = qPlanes[qPlaneState.planeId];
-
-        qPlaneState.assignedJobIds.resize(jobList.size());
-
-        /* filter jobs that exceed range / seats */
-        int eligibleJobs = 0;
-        for (int j = 0; j < jobList.size(); j++) {
-            const auto &job = jobList[j].auftrag;
-            if (job.Personen <= qPlane.ptPassagiere && job.FitsInPlane(qPlane)) {
-                jobList[j].eligiblePlanes.push_back(p);
-                eligibleJobs++;
-            }
-        }
-#ifdef PRINT_OVERALL
-        std::cout << "Plane " << qPlane.Name << " is able to fly " << eligibleJobs << " / " << jobList.size() << " jobs" << std::endl;
-#endif
-    }
 
     /* prepare graph */
     std::vector<Graph> graphs(nPlaneTypes, Graph(nPlanes, jobList.size()));
@@ -313,16 +300,14 @@ std::pair<int, int> BotPlaner::gatherAndPlanJobs(std::vector<FlightJob> &jobList
         for (int i = 0; i < g.nNodes; i++) {
             auto &qNodeInfo = g.nodeInfo[i];
 
-            if (i >= nPlanes) {
+            if (i >= nPlanes && (jobList[i - nPlanes].bPlaneTypeEligible[pt] == 1)) {
                 auto &job = jobList[i - nPlanes].auftrag;
-                qNodeInfo.premium = job.Praemie - CalculateFlightCostNoTank(job.VonCity, job.NachCity, planeTypeToPlane[pt]->ptVerbrauch,
-                                                                            planeTypeToPlane[pt]->ptGeschwindigkeit);
-                qNodeInfo.duration = kDurationExtra + Cities.CalcFlugdauer(job.VonCity, job.NachCity, planeTypeToPlane[pt]->ptGeschwindigkeit);
+                const auto *plane = mPlaneTypeToPlane[pt];
+                qNodeInfo.jobIdx = i - nPlanes;
+                qNodeInfo.premium = job.Praemie - CalculateFlightCostNoTank(job.VonCity, job.NachCity, plane->ptVerbrauch, plane->ptGeschwindigkeit);
+                qNodeInfo.duration = kDurationExtra + Cities.CalcFlugdauer(job.VonCity, job.NachCity, plane->ptGeschwindigkeit);
                 qNodeInfo.earliest = job.Date;
                 qNodeInfo.latest = job.BisDate;
-            } else {
-                qNodeInfo.earliest = 0;
-                qNodeInfo.latest = INT_MAX;
             }
         }
 
@@ -331,21 +316,22 @@ std::pair<int, int> BotPlaner::gatherAndPlanJobs(std::vector<FlightJob> &jobList
             auto &qNodeInfo = g.nodeInfo[i];
             std::vector<std::pair<int, int>> neighborList;
             neighborList.reserve(g.nNodes);
-            for (int j = 0; j < g.nNodes; j++) {
+            for (int j = nPlanes; j < g.nNodes; j++) {
+                if (i == j) {
+                    continue;
+                }
                 int startCity = (i >= nPlanes) ? jobList[i - nPlanes].auftrag.NachCity : planeStates[i].availCity;
-                int destCity = (j >= nPlanes) ? jobList[j - nPlanes].auftrag.VonCity : planeStates[j].availCity;
+                int destCity = jobList[j - nPlanes].auftrag.VonCity;
                 if (startCity != destCity) {
-                    g.adjMatrix[i][j].cost =
-                        CalculateFlightCostNoTank(startCity, destCity, planeTypeToPlane[pt]->ptVerbrauch, planeTypeToPlane[pt]->ptGeschwindigkeit);
-                    g.adjMatrix[i][j].duration = kDurationExtra + Cities.CalcFlugdauer(startCity, destCity, planeTypeToPlane[pt]->ptGeschwindigkeit);
+                    const auto *plane = mPlaneTypeToPlane[pt];
+                    g.adjMatrix[i][j].cost = CalculateFlightCostNoTank(startCity, destCity, plane->ptVerbrauch, plane->ptGeschwindigkeit);
+                    g.adjMatrix[i][j].cost -= getPremiumEmptyFlight(plane, startCity, destCity);
+                    g.adjMatrix[i][j].duration = kDurationExtra + Cities.CalcFlugdauer(startCity, destCity, plane->ptGeschwindigkeit);
                 } else {
                     g.adjMatrix[i][j].cost = 0;
                     g.adjMatrix[i][j].duration = 0;
                 }
-
-                if (j >= nPlanes) {
-                    neighborList.emplace_back(j, g.nodeInfo[j].premium - g.adjMatrix[i][j].cost);
-                }
+                neighborList.emplace_back(j, g.nodeInfo[j].premium - g.adjMatrix[i][j].cost);
             }
 
             std::sort(neighborList.begin(), neighborList.end(), [](const std::pair<int, int> &a, const std::pair<int, int> &b) { return a.second > b.second; });
@@ -353,6 +339,7 @@ std::pair<int, int> BotPlaner::gatherAndPlanJobs(std::vector<FlightJob> &jobList
                 qNodeInfo.bestNeighbors.push_back(n.first);
             }
         }
+        printGraph(planeStates, jobList, graphs[pt]);
     }
 
 #ifdef PRINT_OVERALL
@@ -376,26 +363,29 @@ std::pair<int, int> BotPlaner::gatherAndPlanJobs(std::vector<FlightJob> &jobList
         int bestDelta = INT_MIN;
         int bestPlane = -1;
         Solution bestSolution;
-        for (int p : jobState.eligiblePlanes) {
-            auto &planeState = planeStates[p];
-            auto pt = planeState.planeTypeId;
+        for (int p = 0; p < nPlanes; p++) {
+            auto &qPlaneState = planeStates[p];
+            auto pt = qPlaneState.planeTypeId;
+            if (jobState.bPlaneTypeEligible[pt] == 0) {
+                continue;
+            }
 
-            planeState.assignedJobIds[i] = 1;
+            qPlaneState.bJobIdAssigned[i] = 1;
 
-            auto newSolution = findFlightPlan(graphs[pt], planeState.planeTypeId, planeState.availTime, planeState.assignedJobIds);
-            int delta = newSolution.totalPremium - planeState.currentSolution.totalPremium;
+            auto newSolution = findFlightPlan(graphs[pt], qPlaneState.planeTypeId, qPlaneState.availTime, qPlaneState.bJobIdAssigned);
+            int delta = newSolution.totalPremium - qPlaneState.currentSolution.totalPremium;
             if (delta > bestDelta) {
                 bestDelta = delta;
                 bestPlane = p;
                 bestSolution = newSolution;
             }
-            planeState.assignedJobIds[i] = 0;
+            qPlaneState.bJobIdAssigned[i] = 0;
         }
 
         if (bestPlane != -1) {
             auto &planeState = planeStates[bestPlane];
             if (bestDelta >= kMinPremium) {
-                planeState.assignedJobIds[i] = 1;
+                planeState.bJobIdAssigned[i] = 1;
                 planeState.currentSolution = std::move(bestSolution);
                 jobState.assignedtoPlaneId = bestPlane;
                 totalDelta += bestDelta;
@@ -439,9 +429,6 @@ std::pair<int, int> BotPlaner::gatherAndPlanJobs(std::vector<FlightJob> &jobList
         std::cout << "Schedule of plane " << qPlane.Name << std::endl;
         printSolution(bestSolution, jobList);
 #endif
-
-        auto pt = planeStates[p].planeTypeId;
-        printGraph(planeStates, jobList, graphs[pt]);
     }
 
     return {nJobsScheduled, totalDelta};
@@ -449,7 +436,7 @@ std::pair<int, int> BotPlaner::gatherAndPlanJobs(std::vector<FlightJob> &jobList
 
 bool BotPlaner::applySolution(int planeId, const BotPlaner::Solution &solution, std::vector<FlightJob> &jobList) {
     for (auto &iter : solution.jobs) {
-        auto &job = jobList[iter.jobId];
+        auto &job = jobList[iter.jobIdx];
         const auto &startTime = iter.start;
         const auto &endTime = iter.end;
 
@@ -539,48 +526,8 @@ bool BotPlaner::applySolution(int planeId, const BotPlaner::Solution &solution, 
 int BotPlaner::planFlights(const std::vector<int> &planeIds) {
     hprintf("BotPlaner::planFlights(): Current time: %d", Sim.GetHour());
 
-    /* prepare list of planes */
-    std::vector<PlaneState> planeStates;
-    planeStates.reserve(planeIds.size());
-    for (auto i : planeIds) {
-        if (qPlanes.IsInAlbum(i) == 0) {
-            continue;
-        }
-
-        planeStates.push_back({});
-        auto &planeState = planeStates.back();
-        planeState.planeId = i;
-
-        GameMechanic::killFlightPlanFrom(qPlayer, i, kAvailTimeExtra);
-
-        const auto qPlane = qPlanes[i];
-        const auto &qFlightPlan = qPlane.Flugplan.Flug;
-
-        /* determine when and where the plane will be available */
-        planeState.availTime = {Sim.Date, Sim.GetHour() + kAvailTimeExtra};
-        planeState.availCity = qPlane.Ort;
-        if (planeState.availCity < 0) {
-            planeState.availCity = Sim.HomeAirportId;
-        }
-        for (int c = qFlightPlan.AnzEntries() - 1; c >= 0; c--) {
-            if (qFlightPlan[c].ObjectType == 0) {
-                continue;
-            }
-            PlaneTime time{qFlightPlan[c].Landedate, qFlightPlan[c].Landezeit + kDurationExtra};
-            if (time > planeState.availTime) {
-                planeState.availTime = time;
-                planeState.availCity = qFlightPlan[c].NachCity;
-            }
-            Helper::printFPE(qFlightPlan[c]);
-            break;
-        }
-        assert(planeState.availCity >= 0);
-        hprintf("BotPlaner::planFlights(): Plane %s is in %s @ %s %d", (LPCTSTR)qPlane.Name, (LPCTSTR)Cities[planeState.availCity].Kuerzel,
-                (LPCTSTR)Helper::getWeekday(planeState.availTime.getDate()), planeState.availTime.getHour());
-    }
-
     /* prepare list of jobs */
-    std::vector<FlightJob> openJobs;
+    std::vector<FlightJob> jobList;
     std::vector<JobSource> sources;
     if (mJobOwner == JobOwner::TravelAgency) {
         sources.emplace_back(&ReisebueroAuftraege, JobOwner::TravelAgency);
@@ -606,6 +553,7 @@ int BotPlaner::planFlights(const std::vector<int> &planeIds) {
     /* freight jobs already in planer */
     sources.emplace_back(&qPlayer.Frachten, JobOwner::PlayerFreight);
 
+    /* create list of open jobs */
     for (const auto &source : sources) {
         for (int i = 0; source.jobs && i < source.jobs->AnzEntries(); i++) {
             if (source.jobs->IsInAlbum(i) == 0) {
@@ -614,7 +562,7 @@ int BotPlaner::planFlights(const std::vector<int> &planeIds) {
             if (source.jobs->at(i).InPlan != 0) {
                 continue;
             }
-            openJobs.emplace_back(source.jobs->GetIdFromIndex(i), source.sourceId, source.jobs->at(i), source.owner);
+            jobList.emplace_back(source.jobs->GetIdFromIndex(i), source.sourceId, source.jobs->at(i), source.owner);
         }
         /* job source B: Freight */
         for (int i = 0; source.freight && i < source.freight->AnzEntries(); i++) {
@@ -624,11 +572,10 @@ int BotPlaner::planFlights(const std::vector<int> &planeIds) {
             if (source.freight->at(i).InPlan != 0) {
                 continue;
             }
-            // openJobs.emplace_back(source.jobs->GetIdFromIndex(i), source.sourceId, source.freight->at(i), source.owner);
+            // jobList.emplace_back(source.jobs->GetIdFromIndex(i), source.sourceId, source.freight->at(i), source.owner);
         }
     }
-
-    std::sort(openJobs.begin(), openJobs.end(), [](const FlightJob &a, const FlightJob &b) {
+    std::sort(jobList.begin(), jobList.end(), [](const FlightJob &a, const FlightJob &b) {
         if (kCanDropJobs) {
             return (a.auftrag.Praemie + (a.wasTaken() ? a.auftrag.Strafe : 0)) > (b.auftrag.Praemie + (b.wasTaken() ? b.auftrag.Strafe : 0));
         }
@@ -641,7 +588,7 @@ int BotPlaner::planFlights(const std::vector<int> &planeIds) {
     /* statistics of existing jobs */
     int nPreviouslyOwned = 0;
     int nNewJobs = 0;
-    for (const auto &job : openJobs) {
+    for (const auto &job : jobList) {
         if (job.owner == JobOwner::Player || job.owner == JobOwner::PlayerFreight) {
             nPreviouslyOwned++;
         } else {
@@ -649,14 +596,82 @@ int BotPlaner::planFlights(const std::vector<int> &planeIds) {
         }
     }
 
+    /* kill existing flight plans */
+    for (auto i : planeIds) {
+        if (qPlanes.IsInAlbum(i) != 0) {
+            GameMechanic::killFlightPlanFrom(qPlayer, i, kAvailTimeExtra);
+        }
+    }
+
+    /* prepare list of planes */
+    std::vector<PlaneState> planeStates;
+    planeStates.reserve(planeIds.size());
+    for (auto i : planeIds) {
+        if (qPlanes.IsInAlbum(i) == 0) {
+            continue;
+        }
+
+        planeStates.push_back({});
+        auto &planeState = planeStates.back();
+        planeState.planeId = i;
+        planeState.bJobIdAssigned.resize(jobList.size());
+
+        /* determine when and where the plane will be available */
+        const auto &qFlightPlan = qPlanes[i].Flugplan.Flug;
+        planeState.availTime = {Sim.Date, Sim.GetHour() + kAvailTimeExtra};
+        planeState.availCity = qPlanes[i].Ort;
+        if (planeState.availCity < 0) {
+            planeState.availCity = Sim.HomeAirportId;
+        }
+        for (int c = qFlightPlan.AnzEntries() - 1; c >= 0; c--) {
+            if (qFlightPlan[c].ObjectType == 0) {
+                continue;
+            }
+            PlaneTime time{qFlightPlan[c].Landedate, qFlightPlan[c].Landezeit + kDurationExtra};
+            if (time > planeState.availTime) {
+                planeState.availTime = time;
+                planeState.availCity = qFlightPlan[c].NachCity;
+            }
+            Helper::printFPE(qFlightPlan[c]);
+            break;
+        }
+        assert(planeState.availCity >= 0);
+        hprintf("BotPlaner::planFlights(): Plane %s is in %s @ %s %d", (LPCTSTR)qPlanes[i].Name, (LPCTSTR)Cities[planeState.availCity].Kuerzel,
+                (LPCTSTR)Helper::getWeekday(planeState.availTime.getDate()), planeState.availTime.getHour());
+    }
+
+    /* find number of unique plane types */
+    findPlaneTypes(planeStates);
+    int nPlaneTypes = mPlaneTypeToPlane.size();
+    for (auto &job : jobList) {
+        job.bPlaneTypeEligible.resize(nPlaneTypes);
+    }
+
+    /* figure out which jobs are eligible for which plane */
+    for (auto &planeState : planeStates) {
+        const auto &qPlane = qPlanes[planeState.planeId];
+
+        /* filter jobs that exceed range / seats */
+        int eligibleJobs = 0;
+        for (auto &job : jobList) {
+            if (job.auftrag.Personen <= qPlane.ptPassagiere && job.auftrag.FitsInPlane(qPlane)) {
+                job.bPlaneTypeEligible[planeState.planeTypeId] = 1;
+                eligibleJobs++;
+            }
+        }
+#ifdef PRINT_OVERALL
+        std::cout << "Plane " << qPlane.Name << " is able to fly " << eligibleJobs << " / " << jobList.size() << " jobs" << std::endl;
+#endif
+    }
+
     /* start algo */
     int nJobsScheduled, totalGain;
-    std::tie(nJobsScheduled, totalGain) = gatherAndPlanJobs(openJobs, planeStates);
+    std::tie(nJobsScheduled, totalGain) = gatherAndPlanJobs(jobList, planeStates);
 
     /* check statistics */
     int nPreviouslyOwnedScheduled = 0;
     int nNewJobsScheduled = 0;
-    for (const auto &job : openJobs) {
+    for (const auto &job : jobList) {
         if (job.assignedtoPlaneId < 0) {
             continue;
         }

@@ -61,16 +61,17 @@ class PlaneTime {
 class Graph {
   public:
     struct Node {
+        int jobIdx{-1};
         int premium{0};
         int duration{0};
         int earliest{0};
-        int latest{0};
+        int latest{INT_MAX};
         std::vector<int> bestNeighbors;
     };
 
     struct Edge {
-        int cost{0};
-        int duration{0};
+        int cost{-1};
+        int duration{-1};
     };
 
     struct NodeState {
@@ -94,9 +95,6 @@ class Graph {
         }
     }
 
-    inline constexpr int jobToNode(int i) { return i + nPlanes; }
-    inline constexpr int nodeToJob(int i) { return i - nPlanes; }
-
     int nPlanes;
     int nNodes;
     std::vector<Node> nodeInfo;
@@ -108,8 +106,8 @@ class BotPlaner {
   public:
     enum class JobOwner { Player, PlayerFreight, TravelAgency, LastMinute, Freight, International, InternationalFreight };
     struct JobScheduled {
-        JobScheduled(int id, PlaneTime a, PlaneTime b) : jobId(id), start(a), end(b) {}
-        int jobId{};
+        JobScheduled(int idx, PlaneTime a, PlaneTime b) : jobIdx(idx), start(a), end(b) {}
+        int jobIdx{};
         PlaneTime start;
         PlaneTime end;
     };
@@ -128,7 +126,7 @@ class BotPlaner {
         int planeTypeId{-1};
         PlaneTime availTime{};
         int availCity{};
-        std::vector<int> assignedJobIds;
+        std::vector<int> bJobIdAssigned;
         Solution currentSolution{};
     };
 
@@ -141,7 +139,7 @@ class BotPlaner {
         int sourceId{-1};
         CAuftrag auftrag;
         JobOwner owner;
-        std::vector<int> eligiblePlanes;
+        std::vector<int> bPlaneTypeEligible;
         int assignedtoPlaneId{-1};
     };
 
@@ -157,7 +155,7 @@ class BotPlaner {
     void printSolution(const Solution &solution, const std::vector<FlightJob> &list);
     void printGraph(const std::vector<PlaneState> &planeStates, const std::vector<FlightJob> &list, const Graph &g);
 
-    void findPlaneTypes(std::vector<PlaneState> &planeStates, std::vector<const CPlane *> &planeTypeToPlane);
+    void findPlaneTypes(std::vector<PlaneState> &planeStates);
     Solution findFlightPlan(Graph &g, int planeId, PlaneTime availTime, const std::vector<int> &eligibleJobIds);
     std::pair<int, int> gatherAndPlanJobs(std::vector<FlightJob> &jobList, std::vector<PlaneState> &planeStates);
     bool applySolution(int planeId, const BotPlaner::Solution &solution, std::vector<FlightJob> &jobList);
@@ -166,6 +164,7 @@ class BotPlaner {
     JobOwner mJobOwner;
     std::vector<int> mIntJobSource;
     const CPlanes &qPlanes;
+    std::vector<const CPlane *> mPlaneTypeToPlane;
 };
 
 #endif // BOT_PLANER_H_
