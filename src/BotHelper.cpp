@@ -17,34 +17,32 @@ namespace Helper {
 CString getWeekday(UWORD date) { return StandardTexte.GetS(TOKEN_SCHED, 3010 + (date + Sim.StartWeekday) % 7); }
 
 void printJob(const CAuftrag &qAuftrag) {
-    const char *buf = (qAuftrag.Date == qAuftrag.BisDate ? StandardTexte.GetS(TOKEN_SCHED, 3010 + (qAuftrag.Date + Sim.StartWeekday) % 7)
-                                                         : StandardTexte.GetS(TOKEN_SCHED, 3010 + (qAuftrag.BisDate + Sim.StartWeekday) % 7));
+    CString strDate = (qAuftrag.Date == qAuftrag.BisDate) ? getWeekday(qAuftrag.Date) : getWeekday(qAuftrag.BisDate);
     CString strDist(Einheiten[EINH_KM].bString(Cities.CalcDistance(qAuftrag.VonCity, qAuftrag.NachCity) / 1000));
     CString strPraemie(Insert1000erDots(qAuftrag.Strafe));
     CString strStrafe(Insert1000erDots(qAuftrag.Praemie));
     hprintf("%s -> %s (%u, %s, %s, P: %s $, S: %s $)", (LPCTSTR)Cities[qAuftrag.VonCity].Kuerzel, (LPCTSTR)Cities[qAuftrag.NachCity].Kuerzel, qAuftrag.Personen,
-            (LPCTSTR)strDist, buf, (LPCTSTR)strPraemie, (LPCTSTR)strStrafe);
+            (LPCTSTR)strDist, (LPCTSTR)strDate, (LPCTSTR)strPraemie, (LPCTSTR)strStrafe);
 }
 
 void printFPE(const CFlugplanEintrag &qFPE) {
     CString strInfo = bprintf("%s -> %s (%s %ld -> %s %ld)", (LPCTSTR)Cities[qFPE.VonCity].Kuerzel, (LPCTSTR)Cities[qFPE.NachCity].Kuerzel,
-                              StandardTexte.GetS(TOKEN_SCHED, 3010 + (qFPE.Startdate + Sim.StartWeekday) % 7), qFPE.Startzeit,
-                              StandardTexte.GetS(TOKEN_SCHED, 3010 + (qFPE.Landedate + Sim.StartWeekday) % 7), qFPE.Landezeit);
+                              (LPCTSTR)getWeekday(qFPE.Startdate), qFPE.Startzeit, (LPCTSTR)getWeekday(qFPE.Landedate), qFPE.Landezeit);
 
-    CString strType = "Auto";
+    CString strType = "Auto   ";
     if (qFPE.ObjectType == 1) {
-        strType = "Route";
+        strType = "Route  ";
     } else if (qFPE.ObjectType == 2) {
         strType = "Auftrag";
     } else if (qFPE.ObjectType == 4) {
-        strType = "Fracht";
+        strType = "Fracht ";
     }
     CString strDist(Einheiten[EINH_KM].bString(Cities.CalcDistance(qFPE.VonCity, qFPE.NachCity) / 1000));
     hprintf("%s: %s (%u, %s)", (LPCTSTR)strType, (LPCTSTR)strInfo, qFPE.Passagiere, (LPCTSTR)strDist);
 }
 
 std::string getJobName(const CAuftrag &qAuftrag) {
-    return {bprintf("%s - %s", (LPCTSTR)Cities[qAuftrag.VonCity].Kuerzel, (LPCTSTR)Cities[qAuftrag.NachCity].Kuerzel)};
+    return {bprintf("%s -> %s", (LPCTSTR)Cities[qAuftrag.VonCity].Kuerzel, (LPCTSTR)Cities[qAuftrag.NachCity].Kuerzel)};
 }
 
 SLONG checkFlightJobs(const PLAYER &qPlayer) {
@@ -58,7 +56,7 @@ SLONG checkFlightJobs(const PLAYER &qPlayer) {
         auto &qPlane = qPlayer.Planes[c];
         auto &qFluege = qPlane.Flugplan.Flug;
 
-        hprintf("=== Check schedule for plane %s ===", (LPCTSTR)qPlane.Name);
+        hprintf("\n=== Check schedule for plane %s ===", (LPCTSTR)qPlane.Name);
 
         printFlightJobs(qPlayer, c);
 
@@ -67,6 +65,7 @@ SLONG checkFlightJobs(const PLAYER &qPlayer) {
                 continue;
             }
 
+            printf("%c> ", 'A' + (d % 26));
             printFPE(qFluege[d]);
 
             if (d > 0) {
@@ -76,6 +75,11 @@ SLONG checkFlightJobs(const PLAYER &qPlayer) {
                               (LPCTSTR)Cities[qFluege[d].NachCity].Kuerzel, (LPCTSTR)Cities[qFluege[d - 1].VonCity].Kuerzel,
                               (LPCTSTR)Cities[qFluege[d - 1].NachCity].Kuerzel);
                 }
+                if (qFluege[d].VonCity != qFluege[d - 1].NachCity) {
+                    redprintf("Bot::checkFlightJobs(): Start location of job (%s -> %s) does not matching landing location of previous job (%s -> %s)",
+                              (LPCTSTR)Cities[qFluege[d].VonCity].Kuerzel, (LPCTSTR)Cities[qFluege[d].NachCity].Kuerzel,
+                              (LPCTSTR)Cities[qFluege[d - 1].VonCity].Kuerzel, (LPCTSTR)Cities[qFluege[d - 1].NachCity].Kuerzel);
+                }
             }
 
             if (qFluege[d].ObjectType == 3) {
@@ -83,6 +87,7 @@ SLONG checkFlightJobs(const PLAYER &qPlayer) {
             }
 
             auto &qAuftrag = qAuftraege[qFluege[d].ObjectId];
+            printf("%c>          ", 'A' + (d % 26));
             printJob(qAuftrag);
 
             if (qFluege[d].VonCity != qAuftrag.VonCity || qFluege[d].NachCity != qAuftrag.NachCity || qFluege[d].Passagiere != qAuftrag.Personen) {
@@ -134,7 +139,6 @@ void printFlightJobs(const PLAYER &qPlayer, SLONG planeId) {
     SLONG idx = 0;
     auto &qPlane = qPlayer.Planes[planeId];
     auto &qFluege = qPlane.Flugplan.Flug;
-    auto &qAuftraege = qPlayer.Auftraege;
     for (SLONG day = Sim.Date; day < Sim.Date + 7; day++) {
         for (SLONG i = 0; i < 24; i++) {
             while ((idx < qFluege.AnzEntries()) &&
@@ -152,7 +156,6 @@ void printFlightJobs(const PLAYER &qPlayer, SLONG planeId) {
                 continue;
             }
 
-            auto &qAuftrag = qAuftraege[id];
             if (qFluege[idx].Startdate < day || (qFluege[idx].Startdate == day && qFluege[idx].Startzeit <= i)) {
                 std::cout << "\e[1;";
                 if (qFluege[idx].ObjectType == 1) {
@@ -166,7 +169,7 @@ void printFlightJobs(const PLAYER &qPlayer, SLONG planeId) {
                 }
                 std::cout << "m";
 
-                std::cout << "X";
+                std::cout << static_cast<char>('A' + (idx % 26));
 
                 std::cout << "\e[m";
             } else {

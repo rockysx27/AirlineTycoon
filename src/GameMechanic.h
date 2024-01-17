@@ -108,6 +108,7 @@ class GameMechanic {
     static bool killFlightJob(PLAYER &qPlayer, SLONG par1, bool payFine);
     static bool killFreightJob(PLAYER &qPlayer, SLONG par1, bool payFine);
     static bool killFlightPlan(PLAYER &qPlayer, SLONG par1);
+    static bool killFlightPlanFrom(PLAYER &qPlayer, SLONG planeId, SLONG hours);
     static bool refillFlightJobs(SLONG cityNum);
     static bool planFlightJob(PLAYER &qPlayer, SLONG planeID, SLONG objectID, SLONG date, SLONG time);
     static bool planFreightJob(PLAYER &qPlayer, SLONG planeID, SLONG objectID, SLONG date, SLONG time);

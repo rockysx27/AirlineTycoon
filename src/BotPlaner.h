@@ -40,6 +40,14 @@ class PlaneTime {
         t -= delta;
         return t;
     }
+    bool operator==(const PlaneTime &other) { return (mDate == other.mDate && mTime == other.mTime); }
+    bool operator!=(const PlaneTime &other) { return (mDate != other.mDate || mTime != other.mTime); }
+    bool operator>(const PlaneTime &other) {
+        if (mDate == other.mDate) {
+            return (mTime > other.mTime);
+        }
+        return (mDate > other.mDate);
+    }
     void setDate(int date) {
         mDate = date;
         mTime = 0;
@@ -57,7 +65,7 @@ class Graph {
         int duration{0};
         int earliest{0};
         int latest{0};
-        std::vector<int> closestNeighbors;
+        std::vector<int> bestNeighbors;
     };
 
     struct Edge {
@@ -125,7 +133,7 @@ class BotPlaner {
     };
 
     struct FlightJob {
-        FlightJob(int i, int j, CAuftrag a, JobOwner o) : id(i), sourceId(j), auftrag(a), owner(o) {}
+        FlightJob(int i, int j, CAuftrag a, JobOwner o) : id(i), sourceId(j), auftrag(a), owner(o) { assert(i >= 0x1000000); }
         bool wasTaken() const { return owner == JobOwner::Player || owner == JobOwner::PlayerFreight; }
         bool isFreight() const { return owner == JobOwner::Freight || owner == JobOwner::InternationalFreight || owner == JobOwner::PlayerFreight; }
 

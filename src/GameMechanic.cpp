@@ -1408,17 +1408,23 @@ bool GameMechanic::killFreightJob(PLAYER &qPlayer, SLONG par1, bool payFine) {
     return true;
 }
 
-bool GameMechanic::killFlightPlan(PLAYER &qPlayer, SLONG par1) {
-    if (!qPlayer.Planes.IsInAlbum(par1)) {
-        redprintf("GameMechanic::killFlightPlan: Invalid par1 (%ld).", par1);
+bool GameMechanic::killFlightPlan(PLAYER &qPlayer, SLONG planeId) { return killFlightPlanFrom(qPlayer, planeId, 0); }
+
+bool GameMechanic::killFlightPlanFrom(PLAYER &qPlayer, SLONG planeId, SLONG hours) {
+    if (!qPlayer.Planes.IsInAlbum(planeId)) {
+        redprintf("GameMechanic::killFlightPlanFrom: Invalid planeId (%ld).", planeId);
+        return false;
+    }
+    if (hours < 0) {
+        redprintf("GameMechanic::killFlightPlanFrom: Offset must not be negative (%ld).", hours);
         return false;
     }
 
-    CFlugplan &qPlan = qPlayer.Planes[par1].Flugplan;
+    CFlugplan &qPlan = qPlayer.Planes[planeId].Flugplan;
 
     for (SLONG c = qPlan.Flug.AnzEntries() - 1; c >= 0; c--) {
         if (qPlan.Flug[c].ObjectType != 0) {
-            if (qPlan.Flug[c].Startdate > Sim.Date || (qPlan.Flug[c].Startdate == Sim.Date && qPlan.Flug[c].Startzeit > Sim.GetHour() + 1)) {
+            if (qPlan.Flug[c].Startdate > Sim.Date || (qPlan.Flug[c].Startdate == Sim.Date && qPlan.Flug[c].Startzeit > Sim.GetHour() + 1 + hours)) {
                 qPlan.Flug[c].ObjectType = 0;
             }
         }
@@ -1428,7 +1434,7 @@ bool GameMechanic::killFlightPlan(PLAYER &qPlayer, SLONG par1) {
     qPlan.UpdateNextStart();
 
     if (Sim.bNetwork != 0) {
-        SLONG key = par1;
+        SLONG key = planeId;
 
         if (key < 0x1000000) {
             key = qPlayer.Planes.GetIdFromIndex(key);
@@ -1439,7 +1445,7 @@ bool GameMechanic::killFlightPlan(PLAYER &qPlayer, SLONG par1) {
 
     qPlayer.UpdateAuftragsUsage();
     qPlayer.UpdateFrachtauftragsUsage();
-    qPlayer.Planes[par1].CheckFlugplaene(qPlayer.PlayerNum, FALSE);
+    qPlayer.Planes[planeId].CheckFlugplaene(qPlayer.PlayerNum, FALSE);
     qPlayer.Blocks.RepaintAll = TRUE;
 
     return true;
@@ -1462,12 +1468,18 @@ bool GameMechanic::planFlightJob(PLAYER &qPlayer, SLONG planeID, SLONG objectID,
         redprintf("GameMechanic::planFlightJob: Invalid job index (%ld).", objectID);
         return false;
     }
+    if (objectID < 0x1000000) {
+        objectID = qPlayer.Auftraege.GetIdFromIndex(objectID);
+    }
     return _planFlightJob(qPlayer, planeID, objectID, 2, date, time);
 }
 bool GameMechanic::planFreightJob(PLAYER &qPlayer, SLONG planeID, SLONG objectID, SLONG date, SLONG time) {
     if (!qPlayer.Frachten.IsInAlbum(objectID)) {
         redprintf("GameMechanic::planFreightJob: Invalid job index (%ld).", objectID);
         return false;
+    }
+    if (objectID < 0x1000000) {
+        objectID = qPlayer.Frachten.GetIdFromIndex(objectID);
     }
     return _planFlightJob(qPlayer, planeID, objectID, 4, date, time);
 }
@@ -1476,11 +1488,30 @@ bool GameMechanic::planRouteJob(PLAYER &qPlayer, SLONG planeID, SLONG objectID, 
         redprintf("GameMechanic::planRouteJob: Invalid job index (%ld).", objectID);
         return false;
     }
+    if (objectID < 0x1000000) {
+        objectID = Routen.GetIdFromIndex(objectID);
+    }
     return _planFlightJob(qPlayer, planeID, objectID, 3, date, time);
 }
 bool GameMechanic::_planFlightJob(PLAYER &qPlayer, SLONG planeID, SLONG objectID, SLONG objectType, SLONG date, SLONG time) {
     if (!qPlayer.Planes.IsInAlbum(planeID)) {
         redprintf("GameMechanic::_planFlightJob: Invalid plane index (%ld).", objectID);
+        return false;
+    }
+    if (date < Sim.Date) {
+        redprintf("GameMechanic::_planFlightJob: Invalid day (too early, %ld).", date);
+        return false;
+    }
+    if (date >= Sim.Date + 7) {
+        redprintf("GameMechanic::_planFlightJob: Invalid day (too late, %ld).", date);
+        return false;
+    }
+    if (time < 0 || (date == Sim.Date && time < Sim.GetHour() + 2)) {
+        redprintf("GameMechanic::_planFlightJob: Invalid time (too early, %ld).", time);
+        return false;
+    }
+    if (time >= 24) {
+        redprintf("GameMechanic::_planFlightJob: Invalid time (%ld).", time);
         return false;
     }
 

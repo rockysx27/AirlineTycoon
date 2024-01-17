@@ -156,7 +156,7 @@ SLONG Bot::findBestAvailablePlaneType() {
         score += planeType.Reichweite;
         score /= planeType.Verbrauch;
 
-        hprintf("Bot::findBestAvailablePlaneType(): Plane type %s: %ld", (LPCTSTR)planeType.Name, score);
+        // hprintf("Bot::findBestAvailablePlaneType(): Plane type %s: %ld", (LPCTSTR)planeType.Name, score);
 
         if (score > bestScore) {
             bestScore = score;
