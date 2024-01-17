@@ -90,7 +90,7 @@ bool GameMechanic::buyKerosin(PLAYER &qPlayer, SLONG type, SLONG amount) {
     qPlayer.TankInhalt += amount;
 
     qPlayer.TankPreis = (oldAmount * qPlayer.TankPreis + cost) / qPlayer.TankInhalt;
-    qPlayer.KerosinQuali = (oldAmount * qPlayer.KerosinQuali + amount * qPlayer.KerosinKind) / qPlayer.TankInhalt;
+    qPlayer.KerosinQuali = (oldAmount * qPlayer.KerosinQuali + amount * type) / qPlayer.TankInhalt;
     qPlayer.NetUpdateKerosin();
 
     qPlayer.ChangeMoney(-cost, 2020, "");

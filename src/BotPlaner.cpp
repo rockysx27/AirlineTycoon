@@ -12,13 +12,13 @@
 /////////////////////
 
 // #define PRINT_DETAIL 1
-#define PRINT_OVERALL 1
+// #define PRINT_OVERALL 1
 
 static const int kAvailTimeExtra = 6;
-static const int kDurationExtra = 3;
+static const int kDurationExtra = 1;
 static const int kMinPremium = 1000;
-static const int kMaxTimesVisited = 3;
-static const bool kCanDropJobs = false;
+static const int kMaxTimesVisited = 4;
+static const bool kCanDropJobs = true;
 
 static SLONG getPremiumEmptyFlight(const CPlane *qPlane, SLONG VonCity, SLONG NachCity) {
     return (qPlane->ptPassagiere * Cities.CalcDistance(VonCity, NachCity) / 1000 / 40);
@@ -318,8 +318,15 @@ std::pair<int, int> BotPlaner::gatherAndPlanJobs(std::vector<FlightJob> &jobList
             neighborList.reserve(g.nNodes);
             for (int j = nPlanes; j < g.nNodes; j++) {
                 if (i == j) {
-                    continue;
+                    continue; /* self edge not allowed */
                 }
+                if (g.nodeInfo[j].premium <= 0) {
+                    continue; /* job has no premium / not eligible for plane */
+                }
+                if (g.nodeInfo[i].earliest > g.nodeInfo[j].latest) {
+                    continue; /* not possible because date constraints */
+                }
+
                 int startCity = (i >= nPlanes) ? jobList[i - nPlanes].auftrag.NachCity : planeStates[i].availCity;
                 int destCity = jobList[j - nPlanes].auftrag.VonCity;
                 if (startCity != destCity) {
@@ -339,7 +346,9 @@ std::pair<int, int> BotPlaner::gatherAndPlanJobs(std::vector<FlightJob> &jobList
                 qNodeInfo.bestNeighbors.push_back(n.first);
             }
         }
+#ifdef PRINT_OVERALL
         printGraph(planeStates, jobList, graphs[pt]);
+#endif
     }
 
 #ifdef PRINT_OVERALL
@@ -526,6 +535,13 @@ bool BotPlaner::applySolution(int planeId, const BotPlaner::Solution &solution, 
 int BotPlaner::planFlights(const std::vector<int> &planeIds) {
     hprintf("BotPlaner::planFlights(): Current time: %d", Sim.GetHour());
 
+    /* kill existing flight plans */
+    for (auto i : planeIds) {
+        if (qPlanes.IsInAlbum(i) != 0) {
+            GameMechanic::killFlightPlanFrom(qPlayer, i, kAvailTimeExtra);
+        }
+    }
+
     /* prepare list of jobs */
     std::vector<FlightJob> jobList;
     std::vector<JobSource> sources;
@@ -593,13 +609,6 @@ int BotPlaner::planFlights(const std::vector<int> &planeIds) {
             nPreviouslyOwned++;
         } else {
             nNewJobs++;
-        }
-    }
-
-    /* kill existing flight plans */
-    for (auto i : planeIds) {
-        if (qPlanes.IsInAlbum(i) != 0) {
-            GameMechanic::killFlightPlanFrom(qPlayer, i, kAvailTimeExtra);
         }
     }
 

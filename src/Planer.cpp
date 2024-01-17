@@ -2488,7 +2488,7 @@ void CPlaner::HandleLButtonUp() {
 
     if ((gMouseClickPosition - gMousePosition).abs() > 10 && (TookUnderCursorWithThisClick != 0) && (CurrentPostItType != 0) && (Sim.IsTutorial == 0)) {
         if (pBlock != nullptr) {
-            CFlugplan &qPlan = Sim.Players.Players[PlayerNum].Planes[pBlock->SelectedId].Flugplan;
+            CFlugplan &qPlan = qPlayer.Planes[pBlock->SelectedId].Flugplan;
 
             if (pBlock->Index == 0 && pBlock->BlockType == 2 && pBlock->Page == 0) {
                 if ((IsInClientArea != 0) && ClientPos.IfIsWithin(24, 17, 167, 149)) {
@@ -2519,21 +2519,21 @@ void CPlaner::HandleLButtonUp() {
 
                         if (CurrentPostItType == 2) // Auftrag
                         {
-                            VonCityId = Sim.Players.Players[PlayerNum].Auftraege[CurrentPostItId].VonCity;
-                            NachCityId = Sim.Players.Players[PlayerNum].Auftraege[CurrentPostItId].NachCity;
+                            VonCityId = qPlayer.Auftraege[CurrentPostItId].VonCity;
+                            NachCityId = qPlayer.Auftraege[CurrentPostItId].NachCity;
                         } else if (CurrentPostItType == 1) // Route
                         {
                             VonCityId = Routen[CurrentPostItId].VonCity;
                             NachCityId = Routen[CurrentPostItId].NachCity;
                         } else if (CurrentPostItType == 4) // Frachtauftrag
                         {
-                            VonCityId = Sim.Players.Players[PlayerNum].Frachten[CurrentPostItId].VonCity;
-                            NachCityId = Sim.Players.Players[PlayerNum].Frachten[CurrentPostItId].NachCity;
+                            VonCityId = qPlayer.Frachten[CurrentPostItId].VonCity;
+                            NachCityId = qPlayer.Frachten[CurrentPostItId].NachCity;
                         }
 
                         // if (Cities.CalcDistance (VonCityId, NachCityId)>PlaneTypes[qPlayer.Planes[pBlock->SelectedId].TypeId].Reichweite*1000)
                         if (Cities.CalcDistance(VonCityId, NachCityId) > qPlayer.Planes[pBlock->SelectedId].ptReichweite * 1000) {
-                            Sim.Players.Players[PlayerNum].Messages.AddMessage(BERATERTYP_GIRL, StandardTexte.GetS(TOKEN_ADVICE, 2310));
+                            qPlayer.Messages.AddMessage(BERATERTYP_GIRL, StandardTexte.GetS(TOKEN_ADVICE, 2310));
                             return;
                         }
 
@@ -2542,7 +2542,7 @@ void CPlaner::HandleLButtonUp() {
                         SLONG Dauer = Cities.CalcFlugdauer(VonCityId, NachCityId, Speed);
 
                         if (Dauer >= 24) {
-                            Sim.Players.Players[PlayerNum].Messages.AddMessage(BERATERTYP_GIRL, StandardTexte.GetS(TOKEN_ADVICE, 2310));
+                            qPlayer.Messages.AddMessage(BERATERTYP_GIRL, StandardTexte.GetS(TOKEN_ADVICE, 2310));
                             return;
                         }
                     }
@@ -2592,8 +2592,8 @@ void CPlaner::HandleLButtonUp() {
                             }
 
                             if (qPlan.Flug[c].ObjectType == 1) {
-                                qPlan.Flug[c].Ticketpreis = Sim.Players.Players[PlayerNum].RentRouten.RentRouten[Routen(CurrentPostItId)].Ticketpreis;
-                                qPlan.Flug[c].TicketpreisFC = Sim.Players.Players[PlayerNum].RentRouten.RentRouten[Routen(CurrentPostItId)].TicketpreisFC;
+                                qPlan.Flug[c].Ticketpreis = qPlayer.RentRouten.RentRouten[Routen(CurrentPostItId)].Ticketpreis;
+                                qPlan.Flug[c].TicketpreisFC = qPlayer.RentRouten.RentRouten[Routen(CurrentPostItId)].TicketpreisFC;
                             }
 
                             // Zahl der Passagiere berechnen:
@@ -2619,8 +2619,8 @@ void CPlaner::HandleLButtonUp() {
                                 CurrentPostItType = 0;
                             }
 
-                            Sim.Players.Players[PlayerNum].Blocks[CurrentBlock].RefreshData(PlayerNum);
-                            Sim.Players.Players[PlayerNum].Blocks[CurrentBlock].Refresh(PlayerNum, IsLaptop);
+                            qPlayer.Blocks[CurrentBlock].RefreshData(PlayerNum);
+                            qPlayer.Blocks[CurrentBlock].Refresh(PlayerNum, IsLaptop);
                             if (CurrentPostItType != 0) {
                                 PaintPostIt();
                             }
