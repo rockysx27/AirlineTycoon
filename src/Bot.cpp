@@ -163,8 +163,7 @@ SLONG Bot::findBestAvailablePlaneType() {
             bestId = i;
         }
     }
-    const auto &bestPlaneType = PlaneTypes[bestId];
-    hprintf("Bot::findBestAvailablePlaneType(): Best plane type is %s", (LPCTSTR)bestPlaneType.Name);
+    // hprintf("Bot::findBestAvailablePlaneType(): Best plane type is %s", (LPCTSTR)PlaneTypes[bestId].Name);
     return bestId;
 }
 
@@ -626,7 +625,7 @@ void Bot::RobotInit() {
     if (mFirstRun) {
         for (SLONG i = 0; i < qPlayer.Planes.AnzEntries(); i++) {
             if (qPlayer.Planes.IsInAlbum(i)) {
-                mPlanesForJobs.push_back(i);
+                mPlanesForJobs.push_back(qPlayer.Planes.GetIdFromIndex(i));
             }
         }
         mFirstRun = false;
@@ -747,7 +746,7 @@ void Bot::RobotPlan() {
         startIdx++;
         endIdx++;
     }
-    while (prioList[startIdx].second == prioList[endIdx].second) {
+    while (prioList[startIdx].second == prioList[endIdx].second && endIdx < prioList.size()) {
         endIdx++;
     }
     endIdx--;
@@ -822,12 +821,12 @@ void Bot::RobotExecuteAction() {
                 SLONG costRouteAd = gWerbePrice[1 * 6 + 5];
                 __int64 moneyNeeded = 2 * costRouteAd + bestPlaneType.Preis + kMoneyEmergencyFund;
                 if (moneyAvailable >= moneyNeeded) {
-                    mDoRoutes = TRUE;
+                    // mDoRoutes = TRUE;
                     hprintf("Bot::RobotExecuteAction(): Switching to routes.");
                 }
 
                 if (qPlayer.RobotUse(ROBOT_USE_FORCEROUTES)) {
-                    mDoRoutes = TRUE;
+                    // mDoRoutes = TRUE;
                     hprintf("Bot::RobotExecuteAction(): Switching to routes (forced).");
                 }
             }
@@ -998,8 +997,14 @@ void Bot::RobotExecuteAction() {
 
     case ACTION_BUYNEWPLANE:
         if (condBuyNewPlane(moneyAvailable, mBestPlaneTypeId) != Prio::None) {
-            hprintf("Bot::RobotExecuteAction(): Buying plane %s", PlaneTypes[mBestPlaneTypeId].Name);
-            GameMechanic::buyPlane(qPlayer, mBestPlaneTypeId, 1);
+            hprintf("Bot::RobotExecuteAction(): Buying plane %s", (LPCTSTR)PlaneTypes[mBestPlaneTypeId].Name);
+            for (auto i : GameMechanic::buyPlane(qPlayer, mBestPlaneTypeId, 1)) {
+                if (mDoRoutes) {
+                    mPlanesForRoutes.push_back(i);
+                } else {
+                    mPlanesForJobs.push_back(i);
+                }
+            }
             moneyAvailable = qPlayer.Money - kMoneyEmergencyFund;
         } else {
             redprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");

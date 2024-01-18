@@ -120,7 +120,7 @@ void PLAYER::Add5UhrigFlights() {
 //--------------------------------------------------------------------------------------------
 // Der Spieler kauft ein Flugzeug:
 //--------------------------------------------------------------------------------------------
-void PLAYER::BuyPlane(ULONG PlaneTypeId, TEAKRAND *pRnd) {
+ULONG PLAYER::BuyPlane(ULONG PlaneTypeId, TEAKRAND *pRnd) {
     ULONG Id = 0;
 
     if (Planes.GetNumFree() == 0) {
@@ -144,6 +144,8 @@ void PLAYER::BuyPlane(ULONG PlaneTypeId, TEAKRAND *pRnd) {
                 Planes[Id].Name);
 
     Planes.Sort();
+
+    return Id;
 }
 
 //--------------------------------------------------------------------------------------------
@@ -7762,7 +7764,7 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
                        "XXXXXXXXXX";
         break;
     case ROBOT_USE_NO_FINE:
-        if (IsSuperBot()) {
+        if (IsSuperBot() && false) { // TODO
             return false;
         }
         pFeatureDesc = "XXXXXX"

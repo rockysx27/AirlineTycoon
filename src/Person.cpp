@@ -515,6 +515,11 @@ UBYTE CLANS::GetCustomerId(SLONG Browned, SLONG Koffer, TEAKRAND *pRand) {
         }
     }
 
+    if (Num == 0) {
+        /* MP: Hotfix: Sometimes Num is 0, leading to assertion failure below */
+        return (UBYTE(AnzEntries() - 1));
+    }
+
     if (pRand != nullptr) {
         Rnd = pRand->Rand(Num);
     } else {
@@ -3826,7 +3831,7 @@ void CPersonQueue::SetSpotTime(XY Position, SLONG TimeSlice) {
 }
 
 //--------------------------------------------------------------------------------------------
-//Überwacht die Queue:
+// Überwacht die Queue:
 //--------------------------------------------------------------------------------------------
 void CPersonQueue::Pump() {
     SLONG c = 0;

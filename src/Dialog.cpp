@@ -4126,7 +4126,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
             case 143:
             case 144:
             case 145:
-                if (GameMechanic::buyPlane(qPlayer, DialogPar2, "\x1\x2\x3\x5\xa"[id - 141])) {
+                if (!GameMechanic::buyPlane(qPlayer, DialogPar2, "\x1\x2\x3\x5\xa"[id - 141]).empty()) {
                     MakeSayWindow(0, TOKEN_MAKLER, 150, pFontPartner);
                 } else {
                     MakeSayWindow(0, TOKEN_MAKLER, 6000, pFontPartner);

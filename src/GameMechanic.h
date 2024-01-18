@@ -52,7 +52,7 @@ class GameMechanic {
 
     /* Makler */
     static bool checkPlaneTypeAvailable(SLONG planeType);
-    static bool buyPlane(PLAYER &qPlayer, SLONG planeType, SLONG amount);
+    static std::vector<SLONG> buyPlane(PLAYER &qPlayer, SLONG planeType, SLONG amount);
 
     /* Museum */
     static bool buyUsedPlane(PLAYER &qPlayer, SLONG planeID);

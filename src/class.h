@@ -2166,7 +2166,7 @@ class PLAYER {
     void BroadcastPosition(bool bForce = false);
     void BroadcastRooms(SLONG Message, SLONG RoomLeft = -1);
     void BuyPlane(CXPlane &plane, TEAKRAND *pRnd);
-    void BuyPlane(ULONG PlaneTypeId, TEAKRAND *pRnd);
+    ULONG BuyPlane(ULONG PlaneTypeId, TEAKRAND *pRnd);
     void BuyItem(UBYTE Item);
     SLONG CalcSecurityCosts(bool bFixOnly = false, bool bPlaneOnly = false);
     void DisplayAsTelefoning(void) const;

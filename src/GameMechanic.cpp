@@ -523,22 +523,23 @@ bool GameMechanic::checkPlaneTypeAvailable(SLONG planeType) {
     return found;
 }
 
-bool GameMechanic::buyPlane(PLAYER &qPlayer, SLONG planeType, SLONG amount) {
+std::vector<SLONG> GameMechanic::buyPlane(PLAYER &qPlayer, SLONG planeType, SLONG amount) {
+    std::vector<SLONG> planeIds;
     if (!PlaneTypes.IsInAlbum(planeType)) {
         redprintf("GameMechanic::buyPlane: Invalid plane type (%ld).", planeType);
-        return false;
+        return planeIds;
     }
     if (amount < 0 || amount > 10) {
         redprintf("GameMechanic::buyPlane: Invalid amount (%ld).", amount);
-        return false;
+        return planeIds;
     }
     if (!checkPlaneTypeAvailable(planeType)) {
         redprintf("GameMechanic::buyPlane: Plane type not available yet (%ld).", planeType);
-        return false;
+        return planeIds;
     }
 
     if (qPlayer.Money - PlaneTypes[planeType].Preis * amount < DEBT_LIMIT) {
-        return false;
+        return planeIds;
     }
 
     SLONG idx = planeType - 0x10000000;
@@ -546,7 +547,7 @@ bool GameMechanic::buyPlane(PLAYER &qPlayer, SLONG planeType, SLONG amount) {
     rnd.SRand(Sim.Date);
 
     for (SLONG c = 0; c < amount; c++) {
-        qPlayer.BuyPlane(idx, &rnd);
+        planeIds.push_back(qPlayer.BuyPlane(idx, &rnd));
     }
 
     SIM::SendSimpleMessage(ATNET_BUY_NEW, 0, qPlayer.PlayerNum, amount, idx);
@@ -555,7 +556,7 @@ bool GameMechanic::buyPlane(PLAYER &qPlayer, SLONG planeType, SLONG amount) {
     qPlayer.MapWorkers(FALSE);
     qPlayer.UpdatePersonalberater(1);
 
-    return true;
+    return planeIds;
 }
 
 bool GameMechanic::buyUsedPlane(PLAYER &qPlayer, SLONG planeID) {
