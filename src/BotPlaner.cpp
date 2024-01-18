@@ -429,16 +429,21 @@ std::pair<int, int> BotPlaner::gatherAndPlanJobs(std::vector<FlightJob> &jobList
         auto delta = std::chrono::duration_cast<std::chrono::milliseconds>(t_end - t_begin).count();
         std::cout << "Elapsed time in total in gatherAndPlanJobs(): " << delta << " ms" << std::endl;
     }
-    std::cout << "Improved gain by " << totalDelta << std::endl;
 #endif
 
+    std::cout << "Improved gain in total by " << totalDelta << std::endl;
+
     for (int p = 0; p < nPlanes; p++) {
+        int planeId = planeStates[p].planeId;
         auto &bestSolution = planeStates[p].currentSolution;
         if (bestSolution.totalPremium < kMinPremium) {
             continue;
         }
 
-        applySolution(planeStates[p].planeId, bestSolution, jobList);
+        SLONG oldGain = Helper::calculateScheduleGain(qPlayer, planeId);
+        applySolution(planeId, bestSolution, jobList);
+        SLONG newGain = Helper::calculateScheduleGain(qPlayer, planeId);
+        std::cout << qPlanes[planeId].Name << ": Improved gain " << oldGain << " => " << newGain << std::endl;
 
 #ifdef PRINT_DETAIL
         const auto &qPlane = qPlanes[planeState.planeId];
@@ -644,21 +649,17 @@ int BotPlaner::planFlights(const std::vector<int> &planeIdsInput) {
             }
             planeState.availTime = {qFlightPlan[c].Landedate, qFlightPlan[c].Landezeit + kDurationExtra};
             planeState.availCity = qFlightPlan[c].NachCity;
-            std::cout << "found FPE" << std::endl;
             Helper::printFPE(qFlightPlan[c]);
             break;
         }
         PlaneTime currentTime{Sim.Date, Sim.GetHour() + kAvailTimeExtra};
         if (currentTime > planeState.availTime) {
-            std::cout << "current time >" << std::endl;
             planeState.availTime = currentTime;
         }
         if (planeState.availCity < 0) {
             if (qPlanes[i].Ort < 0) {
-                std::cout << "home" << std::endl;
                 planeState.availCity = Sim.HomeAirportId;
             } else {
-                std::cout << "ort" << std::endl;
                 planeState.availCity = qPlanes[i].Ort;
             }
         }

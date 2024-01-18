@@ -47,7 +47,7 @@ std::string getJobName(const CAuftrag &qAuftrag) {
 
 SLONG checkFlightJobs(const PLAYER &qPlayer) {
     auto &qAuftraege = qPlayer.Auftraege;
-    int nIncorrect = 0;
+    SLONG nIncorrect = 0;
     for (SLONG c = 0; c < qPlayer.Planes.AnzEntries(); c++) {
         if (qPlayer.Planes.IsInAlbum(c) == 0) {
             continue;
@@ -178,6 +178,24 @@ void printFlightJobs(const PLAYER &qPlayer, SLONG planeId) {
         }
         std::cout << std::endl;
     }
+}
+
+SLONG calculateScheduleGain(const PLAYER &qPlayer, SLONG planeId) {
+    if (qPlayer.Planes.IsInAlbum(planeId) == 0) {
+        return 0;
+    }
+
+    SLONG gain = 0;
+    auto &qPlane = qPlayer.Planes[planeId];
+    auto &qFlightPlan = qPlane.Flugplan.Flug;
+    for (SLONG c = qFlightPlan.AnzEntries() - 1; c >= 0; c--) {
+        if (qFlightPlan[c].ObjectType <= 0) {
+            continue;
+        }
+        gain += qFlightPlan[c].GetEinnahmen(qPlayer.PlayerNum, qPlane);
+        gain -= CalculateFlightCostNoTank(qFlightPlan[c].VonCity, qFlightPlan[c].NachCity, qPlane.ptVerbrauch, qPlane.ptGeschwindigkeit);
+    }
+    return gain;
 }
 
 bool checkRoomOpen(SLONG roomId) {

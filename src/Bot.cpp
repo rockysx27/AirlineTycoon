@@ -167,6 +167,22 @@ SLONG Bot::findBestAvailablePlaneType() {
     return bestId;
 }
 
+SLONG Bot::calcCurrentGainFromJobs() {
+    SLONG gain = 0;
+    for (auto planeId : mPlanesForJobs) {
+        gain += Helper::calculateScheduleGain(qPlayer, planeId);
+    }
+    return gain;
+}
+
+void Bot::printGainFromJobs(SLONG oldGain) {
+    SLONG gain = 0;
+    for (auto planeId : mPlanesForJobs) {
+        gain += Helper::calculateScheduleGain(qPlayer, planeId);
+    }
+    hprintf("Bot::printGainFromJobs(): Improved gain from jobs from %ld to %ld.", oldGain, gain);
+}
+
 SLONG Bot::calcNumberOfShares(__int64 moneyAvailable, DOUBLE kurs) { return static_cast<SLONG>(std::floor((moneyAvailable - 100) / (1.1 * kurs))); }
 
 SLONG Bot::calcNumOfFreeShares(SLONG playerId) {
@@ -859,10 +875,10 @@ void Bot::RobotExecuteAction() {
 
             if (!cities.empty()) {
                 // Normale Aufträge:
+                SLONG oldGain = calcCurrentGainFromJobs();
                 BotPlaner planer(qPlayer, qPlanes, BotPlaner::JobOwner::International, cities);
-                auto oldGain = mCurrentGain;
-                mCurrentGain = planer.planFlights(mPlanesForJobs);
-                hprintf("Gain from flight jobs changed %ld => %ld", oldGain, mCurrentGain);
+                planer.planFlights(mPlanesForJobs);
+                printGainFromJobs(oldGain);
                 Helper::checkFlightJobs(qPlayer);
 
                 // Frachtaufträge:
@@ -881,10 +897,10 @@ void Bot::RobotExecuteAction() {
         if (condCheckLastMinute() != Prio::None) {
             LastMinuteAuftraege.RefillForLastMinute();
 
+            SLONG oldGain = calcCurrentGainFromJobs();
             BotPlaner planer(qPlayer, qPlanes, BotPlaner::JobOwner::LastMinute, {});
-            auto oldGain = mCurrentGain;
-            mCurrentGain = planer.planFlights(mPlanesForJobs);
-            hprintf("Gain from flight jobs changed %ld => %ld", oldGain, mCurrentGain);
+            planer.planFlights(mPlanesForJobs);
+            printGainFromJobs(oldGain);
             Helper::checkFlightJobs(qPlayer);
 
             LastMinuteAuftraege.RefillForLastMinute();
@@ -899,10 +915,10 @@ void Bot::RobotExecuteAction() {
         if (condCheckTravelAgency() != Prio::None) {
             ReisebueroAuftraege.RefillForReisebuero();
 
+            SLONG oldGain = calcCurrentGainFromJobs();
             BotPlaner planer(qPlayer, qPlanes, BotPlaner::JobOwner::TravelAgency, {});
-            auto oldGain = mCurrentGain;
-            mCurrentGain = planer.planFlights(mPlanesForJobs);
-            hprintf("Gain from flight jobs changed %ld => %ld", oldGain, mCurrentGain);
+            planer.planFlights(mPlanesForJobs);
+            printGainFromJobs(oldGain);
             Helper::checkFlightJobs(qPlayer);
 
             ReisebueroAuftraege.RefillForReisebuero();
@@ -917,10 +933,10 @@ void Bot::RobotExecuteAction() {
         if (condCheckFreight() != Prio::None) {
             gFrachten.Refill();
 
+            SLONG oldGain = calcCurrentGainFromJobs();
             BotPlaner planer(qPlayer, qPlanes, BotPlaner::JobOwner::Freight, {});
-            auto oldGain = mCurrentGain;
-            mCurrentGain = planer.planFlights(mPlanesForJobs);
-            hprintf("Gain from flight jobs changed %ld => %ld", oldGain, mCurrentGain);
+            planer.planFlights(mPlanesForJobs);
+            printGainFromJobs(oldGain);
             Helper::checkFlightJobs(qPlayer);
 
             gFrachten.Refill();
@@ -1560,8 +1576,6 @@ TEAKFILE &operator<<(TEAKFILE &File, const Bot &bot) {
     File << bot.mTanksFilledToday;
     File << bot.mTankWasEmpty;
 
-    File << bot.mCurrentGain;
-
     File << static_cast<SLONG>(bot.mRoutesSortedByUtilization.size());
     for (const auto &i : bot.mRoutesSortedByUtilization) {
         File << i.routeId << i.utilization;
@@ -1611,8 +1625,6 @@ TEAKFILE &operator>>(TEAKFILE &File, Bot &bot) {
     File >> bot.mTanksFilledYesterday;
     File >> bot.mTanksFilledToday;
     File >> bot.mTankWasEmpty;
-
-    File >> bot.mCurrentGain;
 
     File >> size;
     bot.mRoutesSortedByUtilization.resize(size);

@@ -52,6 +52,8 @@ class Bot {
     bool hoursPassed(SLONG room, SLONG hours);
     std::pair<SLONG, SLONG> kerosineQualiOptimization(__int64 moneyAvailable, DOUBLE targetFillRatio);
     SLONG findBestAvailablePlaneType();
+    SLONG calcCurrentGainFromJobs();
+    void printGainFromJobs(SLONG oldGain);
     SLONG calcNumberOfShares(__int64 moneyAvailable, DOUBLE kurs);
     SLONG calcNumOfFreeShares(SLONG playerId);
 
@@ -81,9 +83,6 @@ class Bot {
     DOUBLE mTanksFilledYesterday{0.0};
     DOUBLE mTanksFilledToday{0.0};
     bool mTankWasEmpty{false};
-
-    /* jobs*/
-    SLONG mCurrentGain{0};
 
     /* routes */
     struct RouteInfo {
