@@ -857,7 +857,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                 break;
 
             case 1003: { // Aktien ausgeben:
-                auto res = GameMechanic::canEmitStock(qPlayer);
+                auto res = GameMechanic::canEmitStock(qPlayer, &tmp);
                 if (res == GameMechanic::EmitStockResult::DeniedTooMuch) {
                     MakeSayWindow(0, TOKEN_BANK, 3000, pFontPartner);
                 } else if (res == GameMechanic::EmitStockResult::DeniedValueTooLow) {

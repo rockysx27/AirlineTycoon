@@ -789,9 +789,12 @@ bool GameMechanic::overtakeAirline(PLAYER &qPlayer, SLONG targetAirline, bool li
     return true;
 }
 
-GameMechanic::EmitStockResult GameMechanic::canEmitStock(PLAYER &qPlayer) {
-    auto tmp = (qPlayer.MaxAktien - qPlayer.AnzAktien) / 100 * 100;
-    if (tmp < 10000) {
+GameMechanic::EmitStockResult GameMechanic::canEmitStock(PLAYER &qPlayer, SLONG *outHowMany) {
+    SLONG num = (qPlayer.MaxAktien - qPlayer.AnzAktien) / 100 * 100;
+    if (outHowMany) {
+        *outHowMany = num;
+    }
+    if (num < 10000) {
         return EmitStockResult::DeniedTooMuch;
     } else if (qPlayer.Kurse[0] < 10) {
         return EmitStockResult::DeniedValueTooLow;
@@ -800,23 +803,21 @@ GameMechanic::EmitStockResult GameMechanic::canEmitStock(PLAYER &qPlayer) {
 }
 
 bool GameMechanic::emitStock(PLAYER &qPlayer, SLONG neueAktien, SLONG mode) {
-    auto cond = canEmitStock(qPlayer);
+    SLONG maxAmount = 0;
+    auto cond = canEmitStock(qPlayer, &maxAmount);
     if (EmitStockResult::Ok != cond) {
         redprintf("GameMechanic::emitStock: Conditions not met (%d).", cond);
         return false;
     }
 
-    {
-        SLONG maxAmount = (qPlayer.MaxAktien - qPlayer.AnzAktien) / 100 * 100;
-        SLONG minAmount = 10 * maxAmount / 100;
-        if (neueAktien < minAmount) {
-            redprintf("GameMechanic::emitStock: Amount too low (%ld, min. is %ld).", neueAktien, minAmount);
-            return false;
-        }
-        if (neueAktien > maxAmount) {
-            redprintf("GameMechanic::emitStock: Amount too high (%ld, max. is %ld).", neueAktien, maxAmount);
-            return false;
-        }
+    SLONG minAmount = 10 * maxAmount / 100;
+    if (neueAktien < minAmount) {
+        redprintf("GameMechanic::emitStock: Amount too low (%ld, min. is %ld).", neueAktien, minAmount);
+        return false;
+    }
+    if (neueAktien > maxAmount) {
+        redprintf("GameMechanic::emitStock: Amount too high (%ld, max. is %ld).", neueAktien, maxAmount);
+        return false;
     }
 
     SLONG emissionsKurs = 0;

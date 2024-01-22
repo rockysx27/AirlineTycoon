@@ -70,7 +70,7 @@ class GameMechanic {
     static bool overtakeAirline(PLAYER &qPlayer, SLONG targetAirline, bool liquidate);
 
     enum class EmitStockResult { Ok, DeniedTooMuch, DeniedValueTooLow };
-    static EmitStockResult canEmitStock(PLAYER &qPlayer);
+    static EmitStockResult canEmitStock(PLAYER &qPlayer, SLONG *outHowMany = nullptr);
     static bool emitStock(PLAYER &qPlayer, SLONG neueAktien, SLONG mode);
 
     static bool setDividend(PLAYER &qPlayer, SLONG dividend);

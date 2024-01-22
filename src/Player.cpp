@@ -4731,13 +4731,19 @@ void PLAYER::RobotExecuteAction() {
                 SLONG limitNPC = 1000000 + Sim.Date * 50000;
                 if ((RobotUse(ROBOT_USE_ALT_KREDIT) || RobotUse(ROBOT_USE_MAXKREDIT)) && Credit < limitNPC) {
                     SLONG m = min(limit, limitNPC - Credit);
-                    GameMechanic::takeOutCredit(*this, m);
+                    if (m > 0) {
+                        GameMechanic::takeOutCredit(*this, m);
+                    }
                 } else if (Money > 1500000 && Credit > 0 && !RobotUse(ROBOT_USE_ALT_KREDIT) && !RobotUse(ROBOT_USE_MAXKREDIT)) {
                     SLONG m = min(limit, min(Credit, Money - 1500000));
-                    GameMechanic::payBackCredit(*this, m);
+                    if (m > 0) {
+                        GameMechanic::payBackCredit(*this, m);
+                    }
                 } else if (Money < 1000000 && !RobotUse(ROBOT_USE_ALT_KREDIT)) {
                     SLONG m = min(limit, 1400000 - Money);
-                    GameMechanic::takeOutCredit(*this, m);
+                    if (m > 0) {
+                        GameMechanic::takeOutCredit(*this, m);
+                    }
                 }
             }
         }

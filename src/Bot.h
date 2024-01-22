@@ -67,7 +67,7 @@ class Bot {
 
     void actionWerbungRoutes(__int64 moneyAvailable);
 
-    bool haveDiscount();
+    bool haveDiscount() const;
     bool hoursPassed(SLONG room, SLONG hours) const;
     SLONG numPlanes() const { return mPlanesForJobs.size() + mPlanesForRoutes.size() + mPlanesForRoutesUnassigned.size(); }
     std::pair<SLONG, SLONG> kerosineQualiOptimization(__int64 moneyAvailable, DOUBLE targetFillRatio) const;
