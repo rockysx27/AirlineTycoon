@@ -5,6 +5,9 @@
 #include <deque>
 #include <string>
 
+extern const int kAvailTimeExtra;
+extern const int kDurationExtra;
+
 class PlaneTime {
   public:
     PlaneTime() = default;

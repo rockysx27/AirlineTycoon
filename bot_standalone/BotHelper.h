@@ -1,18 +1,6 @@
-#include "BotHelper.h"
+#include "compat.h"
 
 #include <iostream>
-
-// Öffnungszeiten:
-extern SLONG timeDutyOpen;
-extern SLONG timeDutyClose;
-extern SLONG timeArabOpen;
-extern SLONG timeLastClose;
-extern SLONG timeMuseOpen;
-extern SLONG timeReisClose;
-extern SLONG timeMaklClose;
-extern SLONG timeWerbOpen;
-
-// #define PRINT_OVERALL 1
 
 namespace Helper {
 
@@ -25,16 +13,6 @@ void printJob(const CAuftrag &qAuftrag) {
     CString strStrafe(Insert1000erDots(qAuftrag.Praemie));
     hprintf("%s -> %s (%u, %s, %s, P: %s $, S: %s $)", (LPCTSTR)Cities[qAuftrag.VonCity].Kuerzel, (LPCTSTR)Cities[qAuftrag.NachCity].Kuerzel, qAuftrag.Personen,
             (LPCTSTR)strDist, (LPCTSTR)strDate, (LPCTSTR)strPraemie, (LPCTSTR)strStrafe);
-}
-
-void printRoute(const CRoute &qRoute) {
-    CString strDist(Einheiten[EINH_KM].bString(Cities.CalcDistance(qRoute.VonCity, qRoute.NachCity) / 1000));
-    hprintf("%s -> %s (Bedarf: %ld, Faktor: %f, %s)", (LPCTSTR)Cities[qRoute.VonCity].Kuerzel, (LPCTSTR)Cities[qRoute.NachCity].Kuerzel, qRoute.Bedarf,
-            qRoute.Faktor, (LPCTSTR)strDist);
-}
-
-std::string getRouteName(const CRoute &qRoute) {
-    return {bprintf("%s -> %s", (LPCTSTR)Cities[qRoute.VonCity].Kuerzel, (LPCTSTR)Cities[qRoute.NachCity].Kuerzel)};
 }
 
 void printFPE(const CFlugplanEintrag &qFPE) {
@@ -57,31 +35,6 @@ std::string getJobName(const CAuftrag &qAuftrag) {
     return {bprintf("%s -> %s", (LPCTSTR)Cities[qAuftrag.VonCity].Kuerzel, (LPCTSTR)Cities[qAuftrag.NachCity].Kuerzel)};
 }
 
-std::pair<PlaneTime, int> getPlaneAvailableTimeLoc(const CPlane &qPlane) {
-    std::pair<PlaneTime, int> res{};
-    const auto &qFlightPlan = qPlane.Flugplan.Flug;
-    for (int c = qFlightPlan.AnzEntries() - 1; c >= 0; c--) {
-        if (qFlightPlan[c].ObjectType <= 0) {
-            continue;
-        }
-        res.first = {qFlightPlan[c].Landedate, qFlightPlan[c].Landezeit + kDurationExtra};
-        res.second = qFlightPlan[c].NachCity;
-        break;
-    }
-    PlaneTime currentTime{Sim.Date, Sim.GetHour() + kAvailTimeExtra};
-    if (currentTime > res.first) {
-        res.first = currentTime;
-    }
-    if (res.second < 0) {
-        if (qPlane.Ort < 0) {
-            res.second = Sim.HomeAirportId;
-        } else {
-            res.second = qPlane.Ort;
-        }
-    }
-    return res;
-}
-
 SLONG checkFlightJobs(const PLAYER &qPlayer) {
     auto &qAuftraege = qPlayer.Auftraege;
     SLONG nIncorrect = 0;
@@ -93,21 +46,17 @@ SLONG checkFlightJobs(const PLAYER &qPlayer) {
         auto &qPlane = qPlayer.Planes[c];
         auto &qFluege = qPlane.Flugplan.Flug;
 
-#ifdef PRINT_OVERALL
         hprintf("\n=== Check schedule for plane %s ===", (LPCTSTR)qPlane.Name);
 
         printFlightJobs(qPlayer, c);
-#endif
 
         for (SLONG d = 0; d < qFluege.AnzEntries(); d++) {
             if (qFluege[d].ObjectType == 0) {
                 continue;
             }
 
-#ifdef PRINT_OVERALL
             printf("%c> ", 'A' + (d % 26));
             printFPE(qFluege[d]);
-#endif
 
             if (d > 0) {
                 if (qFluege[d].Startdate < qFluege[d - 1].Landedate ||
@@ -128,10 +77,8 @@ SLONG checkFlightJobs(const PLAYER &qPlayer) {
             }
 
             auto &qAuftrag = qAuftraege[qFluege[d].ObjectId];
-#ifdef PRINT_OVERALL
             printf("%c>          ", 'A' + (d % 26));
             printJob(qAuftrag);
-#endif
 
             if (qFluege[d].VonCity != qAuftrag.VonCity || qFluege[d].NachCity != qAuftrag.NachCity || qFluege[d].Passagiere != qAuftrag.Personen) {
                 redprintf("Bot::checkFlightJobs(): CFlugplanEintrag does not match CAuftrag for job (%s)", getJobName(qAuftrag).c_str());

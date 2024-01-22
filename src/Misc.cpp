@@ -2116,6 +2116,8 @@ const char *getRobotActionName(SLONG a) {
         return "ACTION_VISITRICK";
     case ACTION_VISITROUTEBOX:
         return "ACTION_VISITROUTEBOX";
+    case ACTION_VISITROUTEBOX2:
+        return "ACTION_VISITROUTEBOX2";
     case ACTION_VISITSECURITY:
         return "ACTION_VISITSECURITY";
     case ACTION_VISITDESIGNER:

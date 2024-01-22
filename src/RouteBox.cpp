@@ -79,37 +79,7 @@ CRouteBox::CRouteBox(BOOL bHandy, ULONG PlayerNum) : CStdRaum(bHandy, PlayerNum,
     HereBm.ReSize(pRoomLib, "HERE");
     NoPaperBm.ReSize(pRoomLib, "NOPAPER");
 
-    IsBuyable.ReSize(Routen.AnzEntries());
-    IsBuyable.FillWith(0);
-
-    CRentRouten &qRRouten = Sim.Players.Players[static_cast<SLONG>(PlayerNum)].RentRouten;
-
-    for (SLONG d = Routen.AnzEntries() - 1; d >= 0; d--) {
-        if ((Routen.IsInAlbum(d) != 0) && qRRouten.RentRouten[d].Rang == 0) {
-            if (Routen[d].VonCity == static_cast<ULONG>(Sim.HomeAirportId) || Routen[d].NachCity == static_cast<ULONG>(Sim.HomeAirportId)) {
-                IsBuyable[d] = TRUE;
-            }
-        }
-    }
-    for (SLONG c = Routen.AnzEntries() - 1; c >= 0; c--) {
-        if (Routen.IsInAlbum(c) != 0) {
-            if (qRRouten.RentRouten[c].RoutenAuslastung >= 20) {
-                for (SLONG d = Routen.AnzEntries() - 1; d >= 0; d--) {
-                    if (Routen.IsInAlbum(d) != 0) {
-                        if (Routen[c].VonCity == Routen[d].VonCity || Routen[c].VonCity == Routen[d].NachCity || Routen[c].NachCity == Routen[d].VonCity ||
-                            Routen[c].NachCity == Routen[d].NachCity) {
-                            IsBuyable[d] = TRUE;
-                        }
-                    }
-                }
-            }
-        }
-    }
-    for (SLONG d = Routen.AnzEntries() - 1; d >= 0; d--) {
-        if ((Routen.IsInAlbum(d) != 0) && qRRouten.RentRouten[d].Rang == 0 && qRRouten.RentRouten[d].TageMitGering < 7) {
-            IsBuyable[d] = FALSE;
-        }
-    }
+    IsBuyable = GameMechanic::getBuyableRoutes(Sim.Players.Players[static_cast<SLONG>(PlayerNum)]);
 
     UpdateDataTable();
     RepaintList();
@@ -501,21 +471,15 @@ void CRouteBox::RepaintTip() {
             }
             if (qPlayer.RentRouten.RentRouten[Routen(CurrentTip)].Rang != 0U) {
                 if (Sim.Players.Players[PlayerNum].HasBerater(BERATERTYP_INFO) != 0) {
-                    TipBm.PrintAt(CString(bprintf("%li. %s (%li%%)", qPlayer.RentRouten.RentRouten[Routen(CurrentTip)].Rang,
-                                                  (LPCTSTR)qPlayer.AirlineX,
+                    TipBm.PrintAt(CString(bprintf("%li. %s (%li%%)", qPlayer.RentRouten.RentRouten[Routen(CurrentTip)].Rang, (LPCTSTR)qPlayer.AirlineX,
                                                   qPlayer.RentRouten.RentRouten[Routen(CurrentTip)].RoutenAuslastung)),
-                                  FontSmallBlack, TEC_FONT_LEFT,
-                                  XY(4, 114 + qPlayer.RentRouten.RentRouten[Routen(CurrentTip)].Rang * 12), XY(172, 166));
+                                  FontSmallBlack, TEC_FONT_LEFT, XY(4, 114 + qPlayer.RentRouten.RentRouten[Routen(CurrentTip)].Rang * 12), XY(172, 166));
                 } else if (c == PlayerNum) {
-                    TipBm.PrintAt(CString(bprintf("%li. %s", qPlayer.RentRouten.RentRouten[Routen(CurrentTip)].Rang,
-                                                  (LPCTSTR)qPlayer.AirlineX)),
-                                  FontSmallBlack, TEC_FONT_LEFT,
-                                  XY(4, 114 + qPlayer.RentRouten.RentRouten[Routen(CurrentTip)].Rang * 12), XY(172, 166));
+                    TipBm.PrintAt(CString(bprintf("%li. %s", qPlayer.RentRouten.RentRouten[Routen(CurrentTip)].Rang, (LPCTSTR)qPlayer.AirlineX)),
+                                  FontSmallBlack, TEC_FONT_LEFT, XY(4, 114 + qPlayer.RentRouten.RentRouten[Routen(CurrentTip)].Rang * 12), XY(172, 166));
                 } else {
-                    TipBm.PrintAt(CString(bprintf("%li. %s", qPlayer.RentRouten.RentRouten[Routen(CurrentTip)].Rang,
-                                                  StandardTexte.GetS(TOKEN_ROUTE, 997))),
-                                  FontSmallBlack, TEC_FONT_LEFT,
-                                  XY(4, 114 + qPlayer.RentRouten.RentRouten[Routen(CurrentTip)].Rang * 12), XY(172, 166));
+                    TipBm.PrintAt(CString(bprintf("%li. %s", qPlayer.RentRouten.RentRouten[Routen(CurrentTip)].Rang, StandardTexte.GetS(TOKEN_ROUTE, 997))),
+                                  FontSmallBlack, TEC_FONT_LEFT, XY(4, 114 + qPlayer.RentRouten.RentRouten[Routen(CurrentTip)].Rang * 12), XY(172, 166));
                 }
             }
         }

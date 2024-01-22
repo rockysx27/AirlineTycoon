@@ -1128,9 +1128,18 @@ GameMechanic::BuyItemResult GameMechanic::buyDutyFreeItem(PLAYER &qPlayer, UBYTE
         }
         delta = atoi(StandardTexte.GetS(TOKEN_ITEM, 2000 + qPlayer.LaptopQuality));
         buf = StandardTexte.GetS(TOKEN_ITEM, 1000 + qPlayer.LaptopQuality);
-    } else {
-        delta = atoi(StandardTexte.GetS(TOKEN_ITEM, 2000 + MouseClickId));
-        buf = StandardTexte.GetS(TOKEN_ITEM, 1000 + MouseClickId);
+    } else if (item == ITEM_MG) {
+        delta = atoi(StandardTexte.GetS(TOKEN_ITEM, 2000 + 400));
+        buf = StandardTexte.GetS(TOKEN_ITEM, 1000 + 400);
+    } else if (item == ITEM_FILOFAX) {
+        delta = atoi(StandardTexte.GetS(TOKEN_ITEM, 2000 + 500));
+        buf = StandardTexte.GetS(TOKEN_ITEM, 1000 + 500);
+    } else if (item == ITEM_HANDY) {
+        delta = atoi(StandardTexte.GetS(TOKEN_ITEM, 2000 + 600));
+        buf = StandardTexte.GetS(TOKEN_ITEM, 1000 + 600);
+    } else if (item == ITEM_BIER) {
+        delta = atoi(StandardTexte.GetS(TOKEN_ITEM, 2000 + 700));
+        buf = StandardTexte.GetS(TOKEN_ITEM, 1000 + 700);
     }
 
     if (qPlayer.HasItem(item) || qPlayer.HasSpaceForItem() == 0) {
@@ -1604,6 +1613,42 @@ bool GameMechanic::killCity(PLAYER &qPlayer, SLONG cityID) {
     return true;
 }
 
+BUFFER_V<BOOL> GameMechanic::getBuyableRoutes(PLAYER &qPlayer) {
+    BUFFER_V<BOOL> IsBuyable;
+    IsBuyable.ReSize(Routen.AnzEntries());
+    IsBuyable.FillWith(0);
+
+    CRentRouten &qRRouten = qPlayer.RentRouten;
+
+    for (SLONG d = Routen.AnzEntries() - 1; d >= 0; d--) {
+        if ((Routen.IsInAlbum(d) != 0) && qRRouten.RentRouten[d].Rang == 0) {
+            if (Routen[d].VonCity == static_cast<ULONG>(Sim.HomeAirportId) || Routen[d].NachCity == static_cast<ULONG>(Sim.HomeAirportId)) {
+                IsBuyable[d] = TRUE;
+            }
+        }
+    }
+    for (SLONG c = Routen.AnzEntries() - 1; c >= 0; c--) {
+        if (Routen.IsInAlbum(c) != 0) {
+            if (qRRouten.RentRouten[c].RoutenAuslastung >= 20) {
+                for (SLONG d = Routen.AnzEntries() - 1; d >= 0; d--) {
+                    if (Routen.IsInAlbum(d) != 0 && qRRouten.RentRouten[d].Rang == 0) {
+                        if (Routen[c].VonCity == Routen[d].VonCity || Routen[c].VonCity == Routen[d].NachCity || Routen[c].NachCity == Routen[d].VonCity ||
+                            Routen[c].NachCity == Routen[d].NachCity) {
+                            IsBuyable[d] = TRUE;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    for (SLONG d = Routen.AnzEntries() - 1; d >= 0; d--) {
+        if ((Routen.IsInAlbum(d) != 0) && qRRouten.RentRouten[d].Rang == 0 && qRRouten.RentRouten[d].TageMitGering < 7) {
+            IsBuyable[d] = FALSE;
+        }
+    }
+    return IsBuyable;
+}
+
 bool GameMechanic::killRoute(PLAYER &qPlayer, SLONG routeA) {
     if (routeA < 0 || routeA >= qPlayer.RentRouten.RentRouten.size()) {
         redprintf("GameMechanic::killRoute: Invalid routeA (%ld).", routeA);
@@ -1616,7 +1661,7 @@ bool GameMechanic::killRoute(PLAYER &qPlayer, SLONG routeA) {
     SLONG routeB = -1;
     for (SLONG c = 0; c < qRentRouten.AnzEntries(); c++) {
         if ((Routen.IsInAlbum(c) != 0) && Routen[c].VonCity == Routen[routeA].NachCity && Routen[c].NachCity == Routen[routeA].VonCity) {
-            routeB = routeA;
+            routeB = c;
             break;
         }
     }
@@ -1678,7 +1723,7 @@ bool GameMechanic::rentRoute(PLAYER &qPlayer, SLONG routeA) {
     SLONG routeB = -1;
     for (SLONG c = 0; c < qRentRouten.AnzEntries(); c++) {
         if ((Routen.IsInAlbum(c) != 0) && Routen[c].VonCity == Routen[routeA].NachCity && Routen[c].NachCity == Routen[routeA].VonCity) {
-            routeB = routeA;
+            routeB = c;
             break;
         }
     }

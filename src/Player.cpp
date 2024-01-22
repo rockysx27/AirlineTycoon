@@ -3192,6 +3192,8 @@ void PLAYER::RobotPump() {
             rc = WalkToRoom(ROOM_RICKS);
             break;
         case ACTION_VISITROUTEBOX:
+            [[fallthrough]];
+        case ACTION_VISITROUTEBOX2:
             rc = WalkToRoom(ROOM_ROUTEBOX);
             break;
         case ACTION_VISITSECURITY:
@@ -5432,36 +5434,8 @@ void PLAYER::RobotExecuteAction() {
 
             // Neue Route kaufen:
             if (((DoRoutes != 0) || (WantToDoRoutes != 0)) && SLONG(Planes.GetNumUsed()) > (Anz / 2) * 3 / 2 && Anz < SLONG(Routen.GetNumUsed())) {
-                IsBuyable.ReSize(Routen.AnzEntries());
-                IsBuyable.FillWith(0);
 
-                // Mal sehen, was wir kaufen können:
-                for (SLONG d = Routen.AnzEntries() - 1; d >= 0; d--) {
-                    if ((Routen.IsInAlbum(d) != 0) && RentRouten.RentRouten[d].Rang == 0) {
-                        if (Routen[d].VonCity == static_cast<ULONG>(Sim.HomeAirportId) || Routen[d].NachCity == static_cast<ULONG>(Sim.HomeAirportId)) {
-                            IsBuyable[d] = TRUE;
-                        }
-                    }
-                }
-                for (SLONG c = Routen.AnzEntries() - 1; c >= 0; c--) {
-                    if (Routen.IsInAlbum(c) != 0) {
-                        if (RentRouten.RentRouten[c].RoutenAuslastung >= 20) {
-                            for (SLONG d = Routen.AnzEntries() - 1; d >= 0; d--) {
-                                if ((Routen.IsInAlbum(d) != 0) && RentRouten.RentRouten[d].Rang == 0) {
-                                    if (Routen[c].VonCity == Routen[d].VonCity || Routen[c].VonCity == Routen[d].NachCity ||
-                                        Routen[c].NachCity == Routen[d].VonCity || Routen[c].NachCity == Routen[d].NachCity) {
-                                        IsBuyable[d] = TRUE;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                for (SLONG d = Routen.AnzEntries() - 1; d >= 0; d--) {
-                    if ((Routen.IsInAlbum(d) != 0) && RentRouten.RentRouten[d].Rang == 0 && RentRouten.RentRouten[d].TageMitGering < 7) {
-                        IsBuyable[d] = FALSE;
-                    }
-                }
+                IsBuyable = GameMechanic::getBuyableRoutes(*this);
 
                 SLONG Best = 0;
                 SLONG BestC = -1;

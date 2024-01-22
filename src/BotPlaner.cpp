@@ -7,15 +7,11 @@
 #include <iostream>
 #include <unordered_map>
 
-/////////////////////
-// BEGIN
-/////////////////////
-
 // #define PRINT_DETAIL 1
 // #define PRINT_OVERALL 1
 
-static const int kAvailTimeExtra = 2;
-static const int kDurationExtra = 1;
+const int kAvailTimeExtra = 2;
+const int kDurationExtra = 1;
 static const int kMinPremium = 1000;
 static const int kMaxTimesVisited = 4;
 static const bool kCanDropJobs = false;
@@ -642,28 +638,7 @@ int BotPlaner::planFlights(const std::vector<int> &planeIdsInput) {
         planeState.bJobIdAssigned.resize(jobList.size());
 
         /* determine when and where the plane will be available */
-        const auto &qFlightPlan = qPlanes[i].Flugplan.Flug;
-        for (int c = qFlightPlan.AnzEntries() - 1; c >= 0; c--) {
-            if (qFlightPlan[c].ObjectType <= 0) {
-                continue;
-            }
-            planeState.availTime = {qFlightPlan[c].Landedate, qFlightPlan[c].Landezeit + kDurationExtra};
-            planeState.availCity = qFlightPlan[c].NachCity;
-            Helper::printFPE(qFlightPlan[c]);
-            break;
-        }
-        PlaneTime currentTime{Sim.Date, Sim.GetHour() + kAvailTimeExtra};
-        if (currentTime > planeState.availTime) {
-            planeState.availTime = currentTime;
-        }
-        if (planeState.availCity < 0) {
-            if (qPlanes[i].Ort < 0) {
-                planeState.availCity = Sim.HomeAirportId;
-            } else {
-                planeState.availCity = qPlanes[i].Ort;
-            }
-        }
-
+        std::tie(planeState.availTime, planeState.availCity) = Helper::getPlaneAvailableTimeLoc(qPlanes[i]);
         assert(planeState.availCity >= 0);
 #ifdef PRINT_OVERALL
         hprintf("BotPlaner::planFlights(): Plane %s is in %s @ %s %d", (LPCTSTR)qPlanes[i].Name, (LPCTSTR)Cities[planeState.availCity].Kuerzel,
