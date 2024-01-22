@@ -997,7 +997,8 @@ void GameMechanic::endStrike(PLAYER &qPlayer, EndStrikeMode mode) {
     }
 }
 
-bool GameMechanic::buyAdvertisement(PLAYER &qPlayer, SLONG adCampaignType, SLONG adCampaignSize, SLONG routeID) {
+bool GameMechanic::buyAdvertisement(PLAYER &qPlayer, SLONG adCampaignType, SLONG adCampaignSize, SLONG routeA) {
+    SLONG routeB = -1;
     if (adCampaignType < 0 || adCampaignType >= 3) {
         redprintf("GameMechanic::buyAdvertisement: Invalid adCampaignType (%ld).", adCampaignType);
         return false;
@@ -1006,11 +1007,19 @@ bool GameMechanic::buyAdvertisement(PLAYER &qPlayer, SLONG adCampaignType, SLONG
         redprintf("GameMechanic::buyAdvertisement: Invalid adCampaignSize (%ld).", adCampaignSize);
         return false;
     }
-    if (adCampaignType == 1 && (routeID < 0 || routeID >= qPlayer.RentRouten.RentRouten.AnzEntries())) {
-        redprintf("GameMechanic::buyAdvertisement: Invalid routeID (%ld).", routeID);
-        return false;
+    if (adCampaignType == 1) {
+        if (routeA < 0 || routeA >= qPlayer.RentRouten.RentRouten.AnzEntries()) {
+            redprintf("GameMechanic::buyAdvertisement: Invalid routeA (%ld).", routeA);
+            return false;
+        }
+
+        routeB = findRouteInReverse(qPlayer, routeA);
+        if (-1 == routeB) {
+            redprintf("GameMechanic::buyAdvertisement: Unable to find route in reverse direction.");
+            return false;
+        }
     }
-    if (adCampaignType != 1 && routeID != -1) {
+    if (adCampaignType != 1 && routeA != -1) {
         redprintf("GameMechanic::buyAdvertisement: RouteID must not be given for this mode (%ld).", adCampaignType);
         return false;
     }
@@ -1035,29 +1044,23 @@ bool GameMechanic::buyAdvertisement(PLAYER &qPlayer, SLONG adCampaignType, SLONG
             }
         }
     } else if (adCampaignType == 1) {
-        auto &qRoute = qPlayer.RentRouten.RentRouten[routeID];
-        qRoute.Image += UBYTE(cost / 30000);
-        Limit(static_cast<UBYTE>(0), qRoute.Image, static_cast<UBYTE>(100));
+        auto &qRouteA = qPlayer.RentRouten.RentRouten[routeA];
+        qRouteA.Image += UBYTE(cost / 30000);
+        Limit(static_cast<UBYTE>(0), qRouteA.Image, static_cast<UBYTE>(100));
 
-        /*for (SLONG c = qPlayer.RentRouten.RentRouten.AnzEntries() - 1; c >= 0; c--) {
-            if (Routen.IsInAlbum(c) != 0) {
-                if (Routen[c].VonCity == Routen[routeID].NachCity && Routen[c].NachCity == Routen[routeID].VonCity) {
-                    qPlayer.RentRouten.RentRouten[c].Image += UBYTE(cost / 30000);
-                    Limit(static_cast<UBYTE>(0), qPlayer.RentRouten.RentRouten[c].Image, static_cast<UBYTE>(100));
-                    break;
-                }
-            }
-        }*/
+        auto &qRouteB = qPlayer.RentRouten.RentRouten[routeB];
+        qRouteB.Image += UBYTE(cost / 30000);
+        Limit(static_cast<UBYTE>(0), qRouteB.Image, static_cast<UBYTE>(100));
 
         if (adCampaignSize == 0) {
             for (SLONG c = 0; c < Sim.Players.AnzPlayers; c++) {
                 if ((Sim.Players.Players[c].Owner == 0U) && (Sim.Players.Players[c].IsOut == 0)) {
                     Sim.Players.Players[c].Letters.AddLetter(
                         TRUE,
-                        CString(bprintf(StandardTexte.GetS(TOKEN_LETTER, 9910), (LPCTSTR)Cities[Routen[routeID].VonCity].Name,
-                                        (LPCTSTR)Cities[Routen[routeID].NachCity].Name, (LPCTSTR)qPlayer.AirlineX)),
-                        CString(bprintf(StandardTexte.GetS(TOKEN_LETTER, 9911), (LPCTSTR)Cities[Routen[routeID].VonCity].Name,
-                                        (LPCTSTR)Cities[Routen[routeID].NachCity].Name, (LPCTSTR)qPlayer.AirlineX)),
+                        CString(bprintf(StandardTexte.GetS(TOKEN_LETTER, 9910), (LPCTSTR)Cities[Routen[routeA].VonCity].Name,
+                                        (LPCTSTR)Cities[Routen[routeA].NachCity].Name, (LPCTSTR)qPlayer.AirlineX)),
+                        CString(bprintf(StandardTexte.GetS(TOKEN_LETTER, 9911), (LPCTSTR)Cities[Routen[routeA].VonCity].Name,
+                                        (LPCTSTR)Cities[Routen[routeA].NachCity].Name, (LPCTSTR)qPlayer.AirlineX)),
                         CString(bprintf(StandardTexte.GetS(TOKEN_LETTER, 9912), (LPCTSTR)qPlayer.NameX, (LPCTSTR)qPlayer.AirlineX)), -1);
                 }
             }
@@ -1501,7 +1504,7 @@ bool GameMechanic::planRouteJob(PLAYER &qPlayer, SLONG planeID, SLONG objectID, 
     if (objectID < 0x1000000) {
         objectID = Routen.GetIdFromIndex(objectID);
     }
-    return _planFlightJob(qPlayer, planeID, objectID, 3, date, time);
+    return _planFlightJob(qPlayer, planeID, objectID, 1, date, time);
 }
 bool GameMechanic::_planFlightJob(PLAYER &qPlayer, SLONG planeID, SLONG objectID, SLONG objectType, SLONG date, SLONG time) {
     if (!qPlayer.Planes.IsInAlbum(planeID)) {
@@ -1536,6 +1539,11 @@ bool GameMechanic::_planFlightJob(PLAYER &qPlayer, SLONG planeID, SLONG objectID
     fpe.Startdate = date;
     fpe.Startzeit = time;
 
+    if (objectType == 1) {
+        fpe.Ticketpreis = qPlayer.RentRouten.RentRouten[Routen(objectID)].Ticketpreis;
+        fpe.TicketpreisFC = qPlayer.RentRouten.RentRouten[Routen(objectID)].TicketpreisFC;
+    }
+
     fpe.FlightChanged();
     if (objectType != 4) {
         fpe.CalcPassengers(qPlayer.PlayerNum, qPlane);
@@ -1546,8 +1554,12 @@ bool GameMechanic::_planFlightJob(PLAYER &qPlayer, SLONG planeID, SLONG objectID
     qPlane.Flugplan.UpdateNextStart();
     qPlane.CheckFlugplaene(qPlayer.PlayerNum);
 
-    if (objectType != 4) {
+    qPlayer.NetUpdateFlightplan(planeID);
+
+    if (objectType == 2) {
         qPlayer.UpdateAuftragsUsage();
+    } else if (objectType == 4) {
+        qPlayer.UpdateFrachtauftragsUsage();
     }
 
     return true;
@@ -1658,13 +1670,7 @@ bool GameMechanic::killRoute(PLAYER &qPlayer, SLONG routeA) {
     auto &qRentRouten = qPlayer.RentRouten.RentRouten;
 
     /* find route in reverse direction */
-    SLONG routeB = -1;
-    for (SLONG c = 0; c < qRentRouten.AnzEntries(); c++) {
-        if ((Routen.IsInAlbum(c) != 0) && Routen[c].VonCity == Routen[routeA].NachCity && Routen[c].NachCity == Routen[routeA].VonCity) {
-            routeB = c;
-            break;
-        }
-    }
+    SLONG routeB = findRouteInReverse(qPlayer, routeA);
     if (-1 == routeB) {
         redprintf("GameMechanic::rentRoute: Unable to find route in reverse direction.");
         return false;
@@ -1720,13 +1726,7 @@ bool GameMechanic::rentRoute(PLAYER &qPlayer, SLONG routeA) {
     auto &qRentRouten = qPlayer.RentRouten.RentRouten;
 
     /* find route in reverse direction */
-    SLONG routeB = -1;
-    for (SLONG c = 0; c < qRentRouten.AnzEntries(); c++) {
-        if ((Routen.IsInAlbum(c) != 0) && Routen[c].VonCity == Routen[routeA].NachCity && Routen[c].NachCity == Routen[routeA].VonCity) {
-            routeB = c;
-            break;
-        }
-    }
+    SLONG routeB = findRouteInReverse(qPlayer, routeA);
     if (-1 == routeB) {
         redprintf("GameMechanic::rentRoute: Unable to find route in reverse direction.");
         return false;
@@ -1753,6 +1753,19 @@ bool GameMechanic::rentRoute(PLAYER &qPlayer, SLONG routeA) {
     qPlayer.NetUpdateRentRoute(routeA, routeB);
 
     return true;
+}
+
+SLONG GameMechanic::findRouteInReverse(PLAYER &qPlayer, SLONG routeA) {
+    /* find route in reverse direction */
+    auto &qRentRouten = qPlayer.RentRouten.RentRouten;
+    SLONG routeB = -1;
+    for (SLONG c = 0; c < qRentRouten.AnzEntries(); c++) {
+        if ((Routen.IsInAlbum(c) != 0) && Routen[c].VonCity == Routen[routeA].NachCity && Routen[c].NachCity == Routen[routeA].VonCity) {
+            routeB = c;
+            break;
+        }
+    }
+    return routeB;
 }
 
 void GameMechanic::executeAirlineOvertake() {

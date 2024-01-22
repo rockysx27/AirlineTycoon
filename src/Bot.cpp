@@ -118,6 +118,12 @@ std::pair<SLONG, SLONG> Bot::kerosineQualiOptimization(__int64 moneyAvailable, D
     }
 
     // Round:
+    if (amountGood > INT_MAX) {
+        amountGood = INT_MAX;
+    }
+    if (amountBad > INT_MAX) {
+        amountBad = INT_MAX;
+    }
     res.first = static_cast<SLONG>(std::floor(amountGood));
     res.second = static_cast<SLONG>(std::floor(amountBad));
 
@@ -138,6 +144,12 @@ std::pair<SLONG, SLONG> Bot::kerosineQualiOptimization(__int64 moneyAvailable, D
         amountGood = (tankMax - tankContent - amountBad);
 
         // Round:
+        if (amountGood > INT_MAX) {
+            amountGood = INT_MAX;
+        }
+        if (amountBad > INT_MAX) {
+            amountBad = INT_MAX;
+        }
         res.first = static_cast<SLONG>(std::floor(amountGood));
         res.second = static_cast<SLONG>(std::floor(amountBad));
     }
@@ -836,7 +848,10 @@ Bot::Prio Bot::condVisitRouteBoxPlanning() {
         return Prio::None;
     }
     if (mWantToRentRouteId != -1) {
-        return Prio::None;
+        return Prio::None; /* we already want to rent a route */
+    }
+    if (!Helper::checkRoomOpen(ACTION_WERBUNG_ROUTES)) {
+        return Prio::None; /* let's wait until we are able to buy ads for the route */
     }
     if (mRoutes.empty() || mRoutes[mRoutesSortedByUtilization[0]].utilization >= kMaximumRouteUtilization) {
         return Prio::Medium;
@@ -915,6 +930,7 @@ Bot::Prio Bot::condBuyAdsForRoutes(__int64 &moneyAvailable) {
     }
     return Prio::None;
 }
+
 Bot::Prio Bot::condBuyAds(__int64 &moneyAvailable) {
     moneyAvailable = qPlayer.Money - kMoneyEmergencyFund;
     if (!hoursPassed(ACTION_WERBUNG, 4)) {
@@ -1418,6 +1434,8 @@ void Bot::RobotExecuteAction() {
             /* crew */
             SLONG pilotsTarget = 0;
             SLONG stewardessTarget = 0;
+            SLONG numPilotsHires = 0;
+            SLONG numStewardessHires = 0;
             SLONG bestPlaneTypeId = mDoRoutes ? mBuyPlaneForRouteId : mBestPlaneTypeId;
             if (bestPlaneTypeId >= 0) {
                 const auto &bestPlaneType = PlaneTypes[bestPlaneTypeId];
@@ -1434,9 +1452,14 @@ void Bot::RobotExecuteAction() {
                 }
                 if (qWorker.Typ == WORKER_PILOT && qPlayer.xPiloten < pilotsTarget) {
                     GameMechanic::hireWorker(qPlayer, c);
+                    numPilotsHires++;
                 } else if (qWorker.Typ == WORKER_STEWARDESS && qPlayer.xBegleiter < stewardessTarget) {
                     GameMechanic::hireWorker(qPlayer, c);
+                    numStewardessHires++;
                 }
+            }
+            if (numPilotsHires > 0 || numStewardessHires > 0) {
+                hprintf("Bot::RobotExecuteAction(): Hiring %ld pilots and %ld attendants", numPilotsHires, numStewardessHires);
             }
         } else {
             redprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");

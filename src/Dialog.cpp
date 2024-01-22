@@ -4486,7 +4486,6 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                 break;
             case 3501: // Alles:
                 DialogPar1 = 1;
-                DialogPar2 = -1;
                 MakeSayWindow(0, TOKEN_WERBUNG, 3001, pFontPartner);
                 break;
 

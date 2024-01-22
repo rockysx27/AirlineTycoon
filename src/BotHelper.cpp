@@ -23,8 +23,8 @@ void printJob(const CAuftrag &qAuftrag) {
     CString strDist(Einheiten[EINH_KM].bString(Cities.CalcDistance(qAuftrag.VonCity, qAuftrag.NachCity) / 1000));
     CString strPraemie(Insert1000erDots(qAuftrag.Strafe));
     CString strStrafe(Insert1000erDots(qAuftrag.Praemie));
-    hprintf("%s -> %s (%u, %s, %s, P: %s $, S: %s $)", (LPCTSTR)Cities[qAuftrag.VonCity].Kuerzel, (LPCTSTR)Cities[qAuftrag.NachCity].Kuerzel, qAuftrag.Personen,
-            (LPCTSTR)strDist, (LPCTSTR)strDate, (LPCTSTR)strPraemie, (LPCTSTR)strStrafe);
+    hprintf("%s -> %s (%u) (%s, %s, P: %s $, S: %s $)", (LPCTSTR)Cities[qAuftrag.VonCity].Kuerzel, (LPCTSTR)Cities[qAuftrag.NachCity].Kuerzel,
+            qAuftrag.Personen, (LPCTSTR)strDist, (LPCTSTR)strDate, (LPCTSTR)strPraemie, (LPCTSTR)strStrafe);
 }
 
 void printRoute(const CRoute &qRoute) {
@@ -33,8 +33,26 @@ void printRoute(const CRoute &qRoute) {
             qRoute.Faktor, (LPCTSTR)strDist);
 }
 
+void printFreight(const CFracht &qAuftrag) {
+    CString strDate = (qAuftrag.Date == qAuftrag.BisDate) ? getWeekday(qAuftrag.Date) : getWeekday(qAuftrag.BisDate);
+    CString strDist(Einheiten[EINH_KM].bString(Cities.CalcDistance(qAuftrag.VonCity, qAuftrag.NachCity) / 1000));
+    CString strPraemie(Insert1000erDots(qAuftrag.Strafe));
+    CString strStrafe(Insert1000erDots(qAuftrag.Praemie));
+    hprintf("%s -> %s (%ld tons total, %ld left, %ld open) (%s, %s, P: %s $, S: %s $)", (LPCTSTR)Cities[qAuftrag.VonCity].Kuerzel,
+            (LPCTSTR)Cities[qAuftrag.NachCity].Kuerzel, qAuftrag.Tons, qAuftrag.TonsLeft, qAuftrag.TonsOpen, (LPCTSTR)strDist, (LPCTSTR)strDate,
+            (LPCTSTR)strPraemie, (LPCTSTR)strStrafe);
+}
+
 std::string getRouteName(const CRoute &qRoute) {
     return {bprintf("%s -> %s", (LPCTSTR)Cities[qRoute.VonCity].Kuerzel, (LPCTSTR)Cities[qRoute.NachCity].Kuerzel)};
+}
+
+std::string getJobName(const CAuftrag &qAuftrag) {
+    return {bprintf("%s -> %s", (LPCTSTR)Cities[qAuftrag.VonCity].Kuerzel, (LPCTSTR)Cities[qAuftrag.NachCity].Kuerzel)};
+}
+
+std::string getFreightName(const CFracht &qAuftrag) {
+    return {bprintf("%s -> %s", (LPCTSTR)Cities[qAuftrag.VonCity].Kuerzel, (LPCTSTR)Cities[qAuftrag.NachCity].Kuerzel)};
 }
 
 void printFPE(const CFlugplanEintrag &qFPE) {
@@ -53,12 +71,9 @@ void printFPE(const CFlugplanEintrag &qFPE) {
     hprintf("%s: %s (%u, %s)", (LPCTSTR)strType, (LPCTSTR)strInfo, qFPE.Passagiere, (LPCTSTR)strDist);
 }
 
-std::string getJobName(const CAuftrag &qAuftrag) {
-    return {bprintf("%s -> %s", (LPCTSTR)Cities[qAuftrag.VonCity].Kuerzel, (LPCTSTR)Cities[qAuftrag.NachCity].Kuerzel)};
-}
-
 std::pair<PlaneTime, int> getPlaneAvailableTimeLoc(const CPlane &qPlane) {
     std::pair<PlaneTime, int> res{};
+    res.second = -1;
     const auto &qFlightPlan = qPlane.Flugplan.Flug;
     for (int c = qFlightPlan.AnzEntries() - 1; c >= 0; c--) {
         if (qFlightPlan[c].ObjectType <= 0) {
@@ -83,7 +98,6 @@ std::pair<PlaneTime, int> getPlaneAvailableTimeLoc(const CPlane &qPlane) {
 }
 
 SLONG checkFlightJobs(const PLAYER &qPlayer) {
-    auto &qAuftraege = qPlayer.Auftraege;
     SLONG nIncorrect = 0;
     for (SLONG c = 0; c < qPlayer.Planes.AnzEntries(); c++) {
         if (qPlayer.Planes.IsInAlbum(c) == 0) {
@@ -123,51 +137,102 @@ SLONG checkFlightJobs(const PLAYER &qPlayer) {
                 }
             }
 
-            if (qFluege[d].ObjectType == 3) {
-                continue; /* we are done with automatic flights */
-            }
-
-            auto &qAuftrag = qAuftraege[qFluege[d].ObjectId];
+            /* check route jobs */
+            if (qFluege[d].ObjectType == 1) {
+                auto &qAuftrag = Routen[qFluege[d].ObjectId];
 #ifdef PRINT_OVERALL
-            printf("%c>          ", 'A' + (d % 26));
-            printJob(qAuftrag);
+                printf("%c>          ", 'A' + (d % 26));
+                printRoute(qAuftrag);
 #endif
 
-            if (qFluege[d].VonCity != qAuftrag.VonCity || qFluege[d].NachCity != qAuftrag.NachCity || qFluege[d].Passagiere != qAuftrag.Personen) {
-                redprintf("Bot::checkFlightJobs(): CFlugplanEintrag does not match CAuftrag for job (%s)", getJobName(qAuftrag).c_str());
+                if (qFluege[d].VonCity != qAuftrag.VonCity || qFluege[d].NachCity != qAuftrag.NachCity) {
+                    redprintf("Bot::checkFlightJobs(): CFlugplanEintrag does not match CRoute for job (%s)", getRouteName(qAuftrag).c_str());
+                    printRoute(qAuftrag);
+                    printFPE(qFluege[d]);
+                }
+
+                if (qFluege[d].Okay != 0) {
+                    nIncorrect++;
+                    redprintf("Bot::checkFlightJobs(): Route (%s) for plane %s is not scheduled correctly", getRouteName(qAuftrag).c_str(),
+                              (LPCTSTR)qPlane.Name);
+                }
+
+                if (qPlane.ptReichweite * 1000 < Cities.CalcDistance(qAuftrag.VonCity, qAuftrag.NachCity)) {
+                    redprintf("Bot::checkFlightJobs(): Route (%s) exceeds range for plane %s", getRouteName(qAuftrag).c_str(), (LPCTSTR)qPlane.Name);
+                }
+            }
+
+            /* check flight jobs */
+            if (qFluege[d].ObjectType == 2) {
+                auto &qAuftrag = qPlayer.Auftraege[qFluege[d].ObjectId];
+#ifdef PRINT_OVERALL
+                printf("%c>          ", 'A' + (d % 26));
                 printJob(qAuftrag);
-                printFPE(qFluege[d]);
+#endif
+
+                if (qFluege[d].VonCity != qAuftrag.VonCity || qFluege[d].NachCity != qAuftrag.NachCity || qFluege[d].Passagiere != qAuftrag.Personen) {
+                    redprintf("Bot::checkFlightJobs(): CFlugplanEintrag does not match CAuftrag for job (%s)", getJobName(qAuftrag).c_str());
+                    printJob(qAuftrag);
+                    printFPE(qFluege[d]);
+                }
+
+                if (qFluege[d].Okay != 0) {
+                    nIncorrect++;
+                    redprintf("Bot::checkFlightJobs(): Job (%s) for plane %s is not scheduled correctly", getJobName(qAuftrag).c_str(), (LPCTSTR)qPlane.Name);
+                }
+
+                if (qPlane.ptReichweite * 1000 < Cities.CalcDistance(qAuftrag.VonCity, qAuftrag.NachCity)) {
+                    redprintf("Bot::checkFlightJobs(): Job (%s) exceeds range for plane %s", getJobName(qAuftrag).c_str(), (LPCTSTR)qPlane.Name);
+                }
+
+                if (qFluege[d].Startdate < qAuftrag.Date) {
+                    redprintf("Bot::checkFlightJobs(): Job (%s) starts too early (%s instead of %s) for plane %s", getJobName(qAuftrag).c_str(),
+                              (LPCTSTR)getWeekday(qFluege[d].Startdate), (LPCTSTR)getWeekday(qAuftrag.Date), (LPCTSTR)qPlane.Name);
+                }
+
+                if (qFluege[d].Startdate > qAuftrag.BisDate) {
+                    redprintf("Bot::checkFlightJobs(): Job (%s) starts too late (%s instead of %s) for plane %s", getJobName(qAuftrag).c_str(),
+                              (LPCTSTR)getWeekday(qFluege[d].Startdate), (LPCTSTR)getWeekday(qAuftrag.BisDate), (LPCTSTR)qPlane.Name);
+                }
+
+                if (qPlane.ptPassagiere < SLONG(qAuftrag.Personen)) {
+                    redprintf("Bot::checkFlightJobs(): Job (%s) exceeds number of seats for plane %s", getJobName(qAuftrag).c_str(), (LPCTSTR)qPlane.Name);
+                }
             }
 
-            if (qFluege[d].Okay != 0) {
-                nIncorrect++;
-                redprintf("Bot::checkFlightJobs(): Job (%s) for plane %s is not scheduled correctly", getJobName(qAuftrag).c_str(), (LPCTSTR)qPlane.Name);
-            }
-
-            if (qPlane.ptReichweite * 1000 < Cities.CalcDistance(qAuftrag.VonCity, qAuftrag.NachCity)) {
-                redprintf("Bot::checkFlightJobs(): Job (%s) exceeds range for plane %s", getJobName(qAuftrag).c_str(), (LPCTSTR)qPlane.Name);
-            }
-
-            if (qFluege[d].ObjectType == 1) {
-                continue; /* we are done with route flights */
-            }
-
-            if (qFluege[d].Startdate < qAuftrag.Date) {
-                redprintf("Bot::checkFlightJobs(): Job (%s) starts too early (%s instead of %s) for plane %s", getJobName(qAuftrag).c_str(),
-                          (LPCTSTR)getWeekday(qFluege[d].Startdate), (LPCTSTR)getWeekday(qAuftrag.Date), (LPCTSTR)qPlane.Name);
-            }
-
-            if (qFluege[d].Startdate > qAuftrag.BisDate) {
-                redprintf("Bot::checkFlightJobs(): Job (%s) starts too late (%s instead of %s) for plane %s", getJobName(qAuftrag).c_str(),
-                          (LPCTSTR)getWeekday(qFluege[d].Startdate), (LPCTSTR)getWeekday(qAuftrag.BisDate), (LPCTSTR)qPlane.Name);
-            }
-
+            /* check freight jobs */
             if (qFluege[d].ObjectType == 4) {
-                continue; /* we are done with freight flights */
-            }
+                auto &qAuftrag = qPlayer.Frachten[qFluege[d].ObjectId];
+#ifdef PRINT_OVERALL
+                printf("%c>          ", 'A' + (d % 26));
+                printFreight(qAuftrag);
+#endif
 
-            if (qPlane.ptPassagiere < SLONG(qAuftrag.Personen)) {
-                redprintf("Bot::checkFlightJobs(): Job (%s) exceeds number of seats for plane %s", getJobName(qAuftrag).c_str(), (LPCTSTR)qPlane.Name);
+                if (qFluege[d].VonCity != qAuftrag.VonCity || qFluege[d].NachCity != qAuftrag.NachCity) {
+                    redprintf("Bot::checkFlightJobs(): CFlugplanEintrag does not match CFracht for job (%s)", getFreightName(qAuftrag).c_str());
+                    printFreight(qAuftrag);
+                    printFPE(qFluege[d]);
+                }
+
+                if (qFluege[d].Okay != 0) {
+                    nIncorrect++;
+                    redprintf("Bot::checkFlightJobs(): Freight job (%s) for plane %s is not scheduled correctly", getFreightName(qAuftrag).c_str(),
+                              (LPCTSTR)qPlane.Name);
+                }
+
+                if (qPlane.ptReichweite * 1000 < Cities.CalcDistance(qAuftrag.VonCity, qAuftrag.NachCity)) {
+                    redprintf("Bot::checkFlightJobs(): Freight job (%s) exceeds range for plane %s", getFreightName(qAuftrag).c_str(), (LPCTSTR)qPlane.Name);
+                }
+
+                if (qFluege[d].Startdate < qAuftrag.Date) {
+                    redprintf("Bot::checkFlightJobs(): Freight job (%s) starts too early (%s instead of %s) for plane %s", getFreightName(qAuftrag).c_str(),
+                              (LPCTSTR)getWeekday(qFluege[d].Startdate), (LPCTSTR)getWeekday(qAuftrag.Date), (LPCTSTR)qPlane.Name);
+                }
+
+                if (qFluege[d].Startdate > qAuftrag.BisDate) {
+                    redprintf("Bot::checkFlightJobs(): Freight job (%s) starts too late (%s instead of %s) for plane %s", getFreightName(qAuftrag).c_str(),
+                              (LPCTSTR)getWeekday(qFluege[d].Startdate), (LPCTSTR)getWeekday(qAuftrag.BisDate), (LPCTSTR)qPlane.Name);
+                }
             }
         }
     }

@@ -92,7 +92,7 @@ class GameMechanic {
     static void endStrike(PLAYER &qPlayer, EndStrikeMode mode);
 
     /* Ads */
-    static bool buyAdvertisement(PLAYER &qPlayer, SLONG adCampaignType, SLONG adCampaignSize, SLONG routeID = -1);
+    static bool buyAdvertisement(PLAYER &qPlayer, SLONG adCampaignType, SLONG adCampaignSize, SLONG routeA = -1);
 
     /* Duty free */
     enum class BuyItemResult { Ok, DeniedInvalidParam, DeniedVirus1, DeniedVirus2, DeniedVirus3, DeniedLaptopNotYetAvailable, DeniedLaptopAlreadySold };
@@ -123,6 +123,7 @@ class GameMechanic {
     static BUFFER_V<BOOL> getBuyableRoutes(PLAYER &qPlayer);
     static bool killRoute(PLAYER &qPlayer, SLONG routeA);
     static bool rentRoute(PLAYER &qPlayer, SLONG routeA);
+    static SLONG findRouteInReverse(PLAYER &qPlayer, SLONG routeA);
 
     /* Execution routines */
     static void executeAirlineOvertake();

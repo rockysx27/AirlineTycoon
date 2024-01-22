@@ -640,10 +640,10 @@ int BotPlaner::planFlights(const std::vector<int> &planeIdsInput) {
         /* determine when and where the plane will be available */
         std::tie(planeState.availTime, planeState.availCity) = Helper::getPlaneAvailableTimeLoc(qPlanes[i]);
         assert(planeState.availCity >= 0);
-#ifdef PRINT_OVERALL
+        // #ifdef PRINT_OVERALL
         hprintf("BotPlaner::planFlights(): Plane %s is in %s @ %s %d", (LPCTSTR)qPlanes[i].Name, (LPCTSTR)Cities[planeState.availCity].Kuerzel,
                 (LPCTSTR)Helper::getWeekday(planeState.availTime.getDate()), planeState.availTime.getHour());
-#endif
+        // #endif
     }
 
     /* find number of unique plane types */
