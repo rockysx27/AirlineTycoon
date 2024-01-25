@@ -1,3 +1,6 @@
+#ifndef GAMEMECHANIC_H_
+#define GAMEMECHANIC_H_
+
 extern SLONG TankSize[4];
 extern SLONG TankPrice[4];
 
@@ -134,3 +137,5 @@ class GameMechanic {
   private:
     static bool _planFlightJob(PLAYER &qPlayer, SLONG planeID, SLONG objectID, SLONG objectType, SLONG date, SLONG time);
 };
+
+#endif // GAMEMECHANIC_H_

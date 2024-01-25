@@ -49,7 +49,6 @@ typedef CStdStringA CString;
 #include "Werkstat.h"    //Die Werkstatthalle
 
 #include "GameMechanic.h"
-#include "BotPlaner.h"
 
 #include "global.h" //Deklarationen der globalen Variablen
 

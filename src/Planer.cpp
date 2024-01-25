@@ -7,6 +7,7 @@
 #include "glglobe.h"
 
 #include "BotHelper.h"
+#include "BotPlaner.h"
 
 #define RDTSC __asm _emit 0x0F __asm _emit 0x31
 

@@ -2091,7 +2091,9 @@ const char *getRobotActionName(SLONG a) {
     case ACTION_CHECKAGENT3:
         return "ACTION_CHECKAGENT3";
     case ACTION_STARTDAY:
-        return "ACTION_STARTDAY / ACTION_BUERO";
+        return "ACTION_STARTDAY";
+    case ACTION_BUERO:
+        return "ACTION_BUERO";
     case ACTION_PERSONAL:
         return "ACTION_PERSONAL";
     case ACTION_VISITARAB:

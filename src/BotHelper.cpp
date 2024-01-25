@@ -1,5 +1,7 @@
 #include "BotHelper.h"
 
+#include "BotPlaner.h"
+
 #include <iostream>
 
 // Öffnungszeiten:

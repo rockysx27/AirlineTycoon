@@ -2,6 +2,7 @@
 #define BOT_H_
 
 #include <deque>
+#include <unordered_map>
 #include <vector>
 
 class CPlaneType;
@@ -10,6 +11,10 @@ class CRentRoute;
 class PLAYER;
 
 typedef long long __int64;
+
+extern const SLONG kMoneyEmergencyFund;
+extern const SLONG kSmallestAdCampaign;
+extern const SLONG kMaximumRouteUtilization;
 
 class Bot {
   public:
@@ -32,8 +37,13 @@ class Bot {
         std::vector<SLONG> planeIds;
     };
 
+    /* in BotConditions.cpp */
+    SLONG getMoneyAvailable() const;
+    bool haveDiscount() const;
+    bool hoursPassed(SLONG room, SLONG hours);
     Prio condAll(SLONG actionId);
     Prio condStartDay();
+    Prio condBuero();
     Prio condCallInternational();
     Prio condCheckLastMinute();
     Prio condCheckTravelAgency();
@@ -47,8 +57,9 @@ class Bot {
     Prio condIncreaseDividend(__int64 &moneyAvailable);
     Prio condRaiseMoney(__int64 &moneyAvailable);
     Prio condDropMoney(__int64 &moneyAvailable);
-    Prio condEmitShares(__int64 &moneyAvailable);
+    Prio condEmitShares();
     Prio condSellShares(__int64 &moneyAvailable);
+    Prio condBuyShares(__int64 &moneyAvailable, SLONG dislike);
     Prio condBuyOwnShares(__int64 &moneyAvailable);
     Prio condBuyNemesisShares(__int64 &moneyAvailable, SLONG dislike);
     Prio condVisitMech(__int64 &moneyAvailable);
@@ -65,24 +76,35 @@ class Bot {
     Prio condBuyAdsForRoutes(__int64 &moneyAvailable);
     Prio condBuyAds(__int64 &moneyAvailable);
 
-    void actionWerbungRoutes(__int64 moneyAvailable);
-
-    bool haveDiscount() const;
-    bool hoursPassed(SLONG room, SLONG hours) const;
-    SLONG numPlanes() const { return mPlanesForJobs.size() + mPlanesForRoutes.size() + mPlanesForRoutesUnassigned.size(); }
+    /* in BotActions.cpp */
+    void actionStartDay(__int64 moneyAvailable);
+    void actionBuero();
+    void actionUpgradePlanes(__int64 moneyAvailable);
+    void actionVisitHR();
     std::pair<SLONG, SLONG> kerosineQualiOptimization(__int64 moneyAvailable, DOUBLE targetFillRatio) const;
+    void actionBuyKerosine(__int64 moneyAvailable);
+    void actionBuyKerosineTank(__int64 moneyAvailable);
+    SLONG calcNumberOfShares(__int64 moneyAvailable, DOUBLE kurs) const;
+    SLONG calcNumOfFreeShares(SLONG playerId) const;
+    void actionEmitShares();
+    void actionBuyShares(__int64 moneyAvailable);
+    void actionVisitBoss(__int64 moneyAvailable);
+    void checkLostRoutes();
+    void updateRouteInfo();
+    std::pair<SLONG, SLONG> actionFindBestRoute(TEAKRAND &rnd) const;
+    void actionRentRoute(SLONG routeA, SLONG planeTypeId);
+    void actionPlanRoutes();
+    void actionWerbungRoutes(__int64 moneyAvailable);
+    void actionWerbung(__int64 moneyAvailable);
+
+    SLONG numPlanes() const { return mPlanesForJobs.size() + mPlanesForRoutes.size() + mPlanesForRoutesUnassigned.size(); }
     std::vector<SLONG> findBestAvailablePlaneType() const;
     SLONG calcCurrentGainFromJobs() const;
     void printGainFromJobs(SLONG oldGain) const;
     const CRentRoute &getRentRoute(const RouteInfo &routeInfo) const;
     const CRoute &getRoute(const RouteInfo &routeInfo) const;
-    std::pair<SLONG, SLONG> findBestRoute(TEAKRAND &rnd) const;
-    void rentRoute(SLONG routeA, SLONG planeTypeId);
-    void updateRouteInfo();
-    void planRoutes();
-    SLONG calcNumberOfShares(__int64 moneyAvailable, DOUBLE kurs) const;
-    SLONG calcNumOfFreeShares(SLONG playerId) const;
 
+    TEAKRAND LocalRandom;
     PLAYER &qPlayer;
 
     /* to not keep doing the same thing */
@@ -100,8 +122,8 @@ class Bot {
     SLONG mWantToRentRouteId{-1};
     bool mFirstRun{true};
     bool mDoRoutes{false};
-    bool mSavingForPlane{false};
     bool mOutOfGates{false};
+    bool mNeedToDoPlanning{false};
 
     /* visit boss office */
     SLONG mBossNumCitiesAvailable{-1};

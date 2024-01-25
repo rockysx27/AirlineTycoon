@@ -1,16 +1,20 @@
+#ifndef CLASS_H_
+#define CLASS_H_
+
 //============================================================================================
 // Class.h - Prototypen von Klassen, die nicht vom ClassWizard stammen:
 //============================================================================================
 // CAuftrag CFlugplan CPlane PLAYER
 //============================================================================================
+#include "Bot.h"
 #include "defines.h"
 #include "HLine.h"
-#include <array>
 
-#include "Bot.h"
+#include <array>
 
 typedef BUFFER_V<UBYTE> BUFFER_UBYTE;
 
+class Bot;
 class CPlane;
 class CPlaner;
 class CStdRaum;
@@ -2639,3 +2643,5 @@ class SIM // Die Simulationswelt; alles was zur aktuellen Partie gehört
     friend TEAKFILE &operator<<(TEAKFILE &File, const SIM &Sim);
     friend TEAKFILE &operator>>(TEAKFILE &File, SIM &Sim);
 };
+
+#endif // CLASS_H_

@@ -1,9 +1,11 @@
 #ifndef BOT_PLANER_H_
 #define BOT_PLANER_H_
 
+#include <cassert>
 #include <climits>
 #include <deque>
 #include <string>
+#include <vector>
 
 extern const int kAvailTimeExtra;
 extern const int kDurationExtra;

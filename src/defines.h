@@ -526,7 +526,7 @@ inline bool operator!=(const CPoint &lhs, const CPoint &rhs) { return !(lhs == r
 #define ACTION_CHECKAGENT2 211 // Reisebüro
 #define ACTION_CHECKAGENT3 212 // Frachtraum
 #define ACTION_STARTDAY 221    // Geht ins Büro
-#define ACTION_BUERO 221       // Geht ins Büro
+#define ACTION_BUERO 244       // Geht ins Büro (MP: Changed to unique number, was same as ACTION_STARTDAY)
 #define ACTION_PERSONAL 222    // Geht ins Personalbüro
 #define ACTION_VISITARAB 230
 #define ACTION_VISITKIOSK 231

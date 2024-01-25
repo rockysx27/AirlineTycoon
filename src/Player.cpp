@@ -3145,6 +3145,8 @@ void PLAYER::RobotPump() {
             break;
         case ACTION_STARTDAY:
             [[fallthrough]];
+        case ACTION_BUERO:
+            [[fallthrough]];
         case ACTION_UPGRADE_PLANES:
             [[fallthrough]];
         case ACTION_CALL_INTERNATIONAL:
@@ -4079,6 +4081,8 @@ void PLAYER::RobotExecuteAction() {
         break;
 
     case ACTION_STARTDAY:
+        [[fallthrough]];
+    case ACTION_BUERO:
         // Logik für wechsel zu Routen und sparen für Rakete oder Flugzeug:
         // MP: Logik sieht kaputt aus. DoRoutes ist niemals > 20
         if (DoRoutes == 0) {

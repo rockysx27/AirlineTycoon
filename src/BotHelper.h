@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+class PlaneTime;
 
 namespace Helper {
 
