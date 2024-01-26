@@ -1009,6 +1009,7 @@ bool GameMechanic::buyAdvertisement(PLAYER &qPlayer, SLONG adCampaignType, SLONG
         return false;
     }
     if (adCampaignType == 1) {
+        routeA = Routen.find(routeA);
         if (routeA < 0 || routeA >= qPlayer.RentRouten.RentRouten.AnzEntries()) {
             redprintf("GameMechanic::buyAdvertisement: Invalid routeA (%ld).", routeA);
             return false;
@@ -1663,6 +1664,7 @@ BUFFER_V<BOOL> GameMechanic::getBuyableRoutes(PLAYER &qPlayer) {
 }
 
 bool GameMechanic::killRoute(PLAYER &qPlayer, SLONG routeA) {
+    routeA = Routen.find(routeA);
     if (routeA < 0 || routeA >= qPlayer.RentRouten.RentRouten.size()) {
         redprintf("GameMechanic::killRoute: Invalid routeA (%ld).", routeA);
         return false;
@@ -1719,6 +1721,7 @@ bool GameMechanic::killRoute(PLAYER &qPlayer, SLONG routeA) {
 }
 
 bool GameMechanic::rentRoute(PLAYER &qPlayer, SLONG routeA) {
+    routeA = Routen.find(routeA);
     if (routeA < 0 || routeA >= qPlayer.RentRouten.RentRouten.size()) {
         redprintf("GameMechanic::rentRoute: Invalid routeA (%ld).", routeA);
         return false;
@@ -1757,7 +1760,7 @@ bool GameMechanic::rentRoute(PLAYER &qPlayer, SLONG routeA) {
 }
 
 SLONG GameMechanic::findRouteInReverse(PLAYER &qPlayer, SLONG routeA) {
-    /* find route in reverse direction */
+    routeA = Routen.find(routeA);
     auto &qRentRouten = qPlayer.RentRouten.RentRouten;
     SLONG routeB = -1;
     for (SLONG c = 0; c < qRentRouten.AnzEntries(); c++) {
@@ -1767,6 +1770,56 @@ SLONG GameMechanic::findRouteInReverse(PLAYER &qPlayer, SLONG routeA) {
         }
     }
     return routeB;
+}
+
+bool GameMechanic::setRouteTicketPrice(PLAYER &qPlayer, SLONG routeA, SLONG ticketpreis, SLONG ticketpreisFC) {
+    routeA = Routen.find(routeA);
+
+    CRentRoute &qRouteA = qPlayer.RentRouten.RentRouten[routeA];
+    qRouteA.Ticketpreis = ticketpreis;
+    qRouteA.TicketpreisFC = ticketpreisFC;
+
+    SLONG cost = CalculateFlightCostRechnerisch(Routen[routeA].VonCity, Routen[routeA].NachCity, 800, 800, -1) * 3 / 180 * 2;
+    Limit(SLONG(0), qRouteA.Ticketpreis, SLONG(cost * 16 / 10 * 10));
+    Limit(SLONG(0), qRouteA.TicketpreisFC, SLONG(cost * 16 / 10 * 10 * 3));
+
+    qPlayer.UpdateTicketpreise(routeA, qRouteA.Ticketpreis, qRouteA.TicketpreisFC);
+    PLAYER::NetSynchronizeRoutes();
+    qPlayer.NetRouteUpdateTicketpreise(routeA, qRouteA.Ticketpreis, qRouteA.TicketpreisFC);
+
+    return true;
+}
+
+bool GameMechanic::setRouteTicketPriceBoth(PLAYER &qPlayer, SLONG routeA, SLONG ticketpreis, SLONG ticketpreisFC) {
+    routeA = Routen.find(routeA);
+
+    auto &qRentRouten = qPlayer.RentRouten.RentRouten;
+
+    /* find route in reverse direction */
+    SLONG routeB = findRouteInReverse(qPlayer, routeA);
+    if (-1 == routeB) {
+        redprintf("GameMechanic::setRouteTicketPrice: Unable to find route in reverse direction.");
+        return false;
+    }
+
+    CRentRoute &qRouteA = qRentRouten[routeA];
+    CRentRoute &qRouteB = qRentRouten[routeB];
+    qRouteA.Ticketpreis = ticketpreis;
+    qRouteA.TicketpreisFC = ticketpreisFC;
+
+    SLONG cost = CalculateFlightCostRechnerisch(Routen[routeA].VonCity, Routen[routeA].NachCity, 800, 800, -1) * 3 / 180 * 2;
+    Limit(SLONG(0), qRouteA.Ticketpreis, SLONG(cost * 16 / 10 * 10));
+    Limit(SLONG(0), qRouteA.TicketpreisFC, SLONG(cost * 16 / 10 * 10 * 3));
+    qRouteB.Ticketpreis = qRouteA.Ticketpreis;
+    qRouteB.TicketpreisFC = qRouteA.TicketpreisFC;
+
+    qPlayer.UpdateTicketpreise(routeA, qRouteA.Ticketpreis, qRouteA.TicketpreisFC);
+    qPlayer.UpdateTicketpreise(routeB, qRouteB.Ticketpreis, qRouteB.TicketpreisFC);
+    PLAYER::NetSynchronizeRoutes();
+    qPlayer.NetRouteUpdateTicketpreise(routeA, qRouteA.Ticketpreis, qRouteA.TicketpreisFC);
+    qPlayer.NetRouteUpdateTicketpreise(routeB, qRouteB.Ticketpreis, qRouteB.TicketpreisFC);
+
+    return true;
 }
 
 void GameMechanic::executeAirlineOvertake() {

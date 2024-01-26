@@ -2275,57 +2275,51 @@ void CPlaner::HandleLButtonDown() {
                     }
                 }
 
+                SLONG ticketPreis = qRRoute.Ticketpreis;
+                SLONG ticketPreisFC = qRRoute.TicketpreisFC;
                 switch ((ClientPosB.y - 40) / 13) {
                 case 2:
-                    qRRoute.Ticketpreis = Cost / 2 / 10 * 10;
-                    qRRoute.TicketpreisFC = qRRoute.Ticketpreis * 2;
+                    ticketPreis = Cost / 2 / 10 * 10;
+                    ticketPreisFC = ticketPreis * 2;
                     break;
                 case 3:
-                    qRRoute.Ticketpreis = Cost / 10 * 10;
-                    qRRoute.TicketpreisFC = qRRoute.Ticketpreis * 2;
+                    ticketPreis = Cost / 10 * 10;
+                    ticketPreisFC = ticketPreis * 2;
                     break;
                 case 4:
-                    qRRoute.Ticketpreis = Cost * 2 / 10 * 10;
-                    qRRoute.TicketpreisFC = qRRoute.Ticketpreis * 2;
+                    ticketPreis = Cost * 2 / 10 * 10;
+                    ticketPreisFC = ticketPreis * 2;
                     break;
                 case 5:
-                    qRRoute.Ticketpreis = Cost * 4 / 10 * 10;
-                    qRRoute.TicketpreisFC = qRRoute.Ticketpreis * 2;
+                    ticketPreis = Cost * 4 / 10 * 10;
+                    ticketPreisFC = ticketPreis * 2;
                     break;
                 default:
                     break;
                 }
 
                 if (ClientPosB.IfIsWithin(148, 40 - 2, 160, 40 - 2 + 14)) {
-                    qRRoute.TicketpreisFC += 10;
+                    ticketPreisFC += 10;
                 }
                 if (ClientPosB.IfIsWithin(160, 40 - 2, 172, 40 - 2 + 14)) {
-                    qRRoute.TicketpreisFC -= 10;
+                    ticketPreisFC -= 10;
                 }
                 if (ClientPosB.IfIsWithin(148, 40 - 2 - 13, 160, 40 - 2 - 13 + 14)) {
-                    qRRoute.Ticketpreis += 10;
+                    ticketPreis += 10;
                 }
                 if (ClientPosB.IfIsWithin(160, 40 - 2 - 13, 172, 40 - 2 - 13 + 14)) {
-                    qRRoute.Ticketpreis -= 10;
+                    ticketPreis -= 10;
                 }
                 /*if ((ClientPosB.y-27)/13==0)
                   {
-                  case  0: qRRoute.Ticketpreis+=10; break;
-                  case  1: qRRoute.Ticketpreis-=10; break;
+                  case  0: ticketPreis+=10; break;
+                  case  1: ticketPreis-=10; break;
                   }
 
-                  case 10: qRRoute.TicketpreisFC+=10; break;
-                  case 11: qRRoute.TicketpreisFC-=10; break;*/
+                  case 10: ticketPreisFC+=10; break;
+                  case 11: ticketPreisFC-=10; break;*/
 
-                Limit(SLONG(0), qRRoute.Ticketpreis, SLONG(Cost * 16 / 10 * 10));
-                Limit(SLONG(0), qRRoute.TicketpreisFC, SLONG(Cost * 16 / 10 * 10 * 3));
-                pRRoute->Ticketpreis = qRRoute.Ticketpreis;
-
-                qPlayer.UpdateTicketpreise(pBlock->SelectedIdB, qRRoute.Ticketpreis, qRRoute.TicketpreisFC);
-                qPlayer.UpdateTicketpreise(SelectedIdB2, pRRoute->Ticketpreis, pRRoute->TicketpreisFC);
-                PLAYER::NetSynchronizeRoutes();
-                qPlayer.NetRouteUpdateTicketpreise(pBlock->SelectedIdB, qRRoute.Ticketpreis, qRRoute.TicketpreisFC);
-                qPlayer.NetRouteUpdateTicketpreise(SelectedIdB2, pRRoute->Ticketpreis, pRRoute->TicketpreisFC);
+                GameMechanic::setRouteTicketPriceBoth(qPlayer, pBlock->SelectedIdB, ticketPreis, ticketPreisFC);
 
                 pBlock->RefreshData(PlayerNum);
                 pBlock->Refresh(PlayerNum, IsLaptop);
@@ -2338,14 +2332,12 @@ void CPlaner::HandleLButtonDown() {
 
                 if (Sim.Players.Players[Index + static_cast<SLONG>(PlayerNum <= Index)].IsOut == 0 &&
                     (Sim.Players.Players[Index + static_cast<SLONG>(PlayerNum <= Index)].RentRouten.RentRouten[Routen(pBlock->SelectedIdB)].Rang != 0U)) {
-                    qRRoute.Ticketpreis =
+                    SLONG ticketPreis =
                         Sim.Players.Players[Index + static_cast<SLONG>(PlayerNum <= Index)].RentRouten.RentRouten[Routen(pBlock->SelectedIdB)].Ticketpreis;
-                    qRRoute.TicketpreisFC =
+                    SLONG ticketPreisFC =
                         Sim.Players.Players[Index + static_cast<SLONG>(PlayerNum <= Index)].RentRouten.RentRouten[Routen(pBlock->SelectedIdB)].TicketpreisFC;
 
-                    qPlayer.UpdateTicketpreise(pBlock->SelectedIdB, qRRoute.Ticketpreis, qRRoute.TicketpreisFC);
-                    PLAYER::NetSynchronizeRoutes();
-                    qPlayer.NetRouteUpdateTicketpreise(pBlock->SelectedIdB, qRRoute.Ticketpreis, qRRoute.TicketpreisFC);
+                    GameMechanic::setRouteTicketPrice(qPlayer, pBlock->SelectedIdB, ticketPreis, ticketPreisFC);
 
                     pBlock->RefreshData(PlayerNum);
                     pBlock->Refresh(PlayerNum, IsLaptop);
