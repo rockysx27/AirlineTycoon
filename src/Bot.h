@@ -1,3 +1,5 @@
+
+
 #ifndef BOT_H_
 #define BOT_H_
 
@@ -37,11 +39,12 @@ class Bot {
         SLONG image{};
         SLONG planeUtilization{};
         SLONG planeUtilizationFC{};
+        DOUBLE ticketCostFactor{2}; /* 0.5: discount / 1: flight cost / 2: normal price / 4: deluxe price */
         std::vector<SLONG> planeIds;
     };
 
     /* in BotConditions.cpp */
-    SLONG getMoneyAvailable() const;
+    __int64 getMoneyAvailable() const;
     bool haveDiscount() const;
     bool hoursPassed(SLONG room, SLONG hours);
     Prio condAll(SLONG actionId);
@@ -136,9 +139,9 @@ class Bot {
     bool mBossGateAvailable{false};
 
     /* detect tanks being too small */
-    DOUBLE mTanksFilledYesterday{0.0};
-    DOUBLE mTanksFilledToday{0.0};
-    bool mTankWasEmpty{false};
+    DOUBLE mTankRatioEmptiedYesterday{0};
+    SLONG mKerosineUsedTodaySoFar{0};
+    SLONG mKerosineLevelLastChecked{0};
 
     /* routes */
     std::vector<RouteInfo> mRoutes;

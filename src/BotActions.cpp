@@ -57,13 +57,17 @@ void Bot::actionStartDay(__int64 moneyAvailable) {
         }
     }
 
-    mTanksFilledYesterday = mTanksFilledToday;
-    mTanksFilledToday = 1.0 * qPlayer.TankInhalt / qPlayer.Tank;
-    mTankWasEmpty = (qPlayer.TankInhalt < 10);
+    /* update how much kerosine was used */
+    assert(mKerosineLevelLastChecked >= qPlayer.TankInhalt);
+    mKerosineUsedTodaySoFar += (mKerosineLevelLastChecked - qPlayer.TankInhalt);
+    mKerosineLevelLastChecked = qPlayer.TankInhalt;
 
-    // open tanks?
-    auto Preis = Sim.HoleKerosinPreis(1); /* range: 300 - 700 */
-    GameMechanic::setKerosinTankOpen(qPlayer, (Preis > 350));
+    /* rotate for new day */
+    mTankRatioEmptiedYesterday = 1.0 * mKerosineUsedTodaySoFar / qPlayer.Tank;
+    mKerosineUsedTodaySoFar = 0;
+
+    /* always use tanks: We get discount from advisor and by using cheap kerosine */
+    GameMechanic::setKerosinTankOpen(qPlayer, true);
 }
 
 void Bot::actionBuero() { actionPlanRoutes(); }
@@ -338,18 +342,22 @@ void Bot::actionBuyKerosine(__int64 moneyAvailable) {
         targetFillRatio = 1.0;
     }
 
-    if (qPlayer.TankInhalt < 10) {
-        mTankWasEmpty = true;
-    }
+    /* update how much kerosine was used */
+    assert(mKerosineLevelLastChecked >= qPlayer.TankInhalt);
+    mKerosineUsedTodaySoFar += (mKerosineLevelLastChecked - qPlayer.TankInhalt);
+    mKerosineLevelLastChecked = qPlayer.TankInhalt;
 
     if (moneyToSpend > 0) {
         auto res = kerosineQualiOptimization(moneyToSpend, targetFillRatio);
         hprintf("Bot::actionBuyKerosine(): Buying %lld good and %lld bad kerosine", res.first, res.second);
+
         auto qualiOld = qPlayer.KerosinQuali;
         GameMechanic::buyKerosin(qPlayer, 1, res.first);
         GameMechanic::buyKerosin(qPlayer, 2, res.second);
-        hprintf("Bot::actionBuyKerosine(): Kerosine quality: %.2f => %.2f", qualiOld, qPlayer.KerosinQuali);
         moneyAvailable = getMoneyAvailable();
+        mKerosineLevelLastChecked = qPlayer.TankInhalt;
+
+        hprintf("Bot::actionBuyKerosine(): Kerosine quality: %.2f => %.2f", qualiOld, qPlayer.KerosinQuali);
     }
 }
 
@@ -382,7 +390,7 @@ void Bot::actionEmitShares() {
     SLONG neueAktien = (qPlayer.MaxAktien - qPlayer.AnzAktien) / 100 * 100;
     hprintf("Bot::actionEmitShares(): Emitting stock: %ld", neueAktien);
     GameMechanic::emitStock(qPlayer, neueAktien, 2);
-    SLONG moneyAvailable = getMoneyAvailable();
+    auto moneyAvailable = getMoneyAvailable();
 
     // Direkt wieder auf ein Viertel aufkaufen
     SLONG amountToBuy = qPlayer.AnzAktien / 4 - qPlayer.OwnsAktien[qPlayer.PlayerNum];
@@ -573,6 +581,11 @@ void Bot::updateRouteInfo() {
         hprintf("Bot::updateRouteInfo(): Need to buy another %s for route %s: ", (LPCTSTR)PlaneTypes[mBuyPlaneForRouteId].Name,
                 Helper::getRouteName(getRoute(mRoutes[lowUtil])).c_str());
     }
+
+    /* idle planes? */
+    if (!mPlanesForRoutesUnassigned.empty()) {
+        hprintf("Bot::updateRouteInfo(): There are %lu unassigned planes with no route ", mPlanesForRoutesUnassigned.size());
+    }
 }
 
 std::pair<SLONG, SLONG> Bot::actionFindBestRoute(TEAKRAND &rnd) const {
@@ -696,7 +709,7 @@ void Bot::actionPlanRoutes() {
     /* assign planes to routes */
     SLONG numUnassigned = mPlanesForRoutesUnassigned.size();
     for (int i = 0; i < numUnassigned; i++) {
-        if (mRoutes[mRoutesSortedByImage[0]].routeUtilization >= kMaximumRouteUtilization) {
+        if (mRoutes[mRoutesSortedByUtilization[0]].routeUtilization >= kMaximumRouteUtilization) {
             break; /* No more underutilized routes */
         }
 
@@ -741,8 +754,13 @@ void Bot::actionPlanRoutes() {
             PlaneTime availTime;
             SLONG availCity{};
             std::tie(availTime, availCity) = Helper::getPlaneAvailableTimeLoc(qPlane);
+            hprintf("BotPlaner::actionPlanRoutes(): Plane %s is in %s @ %s %ld", (LPCTSTR)qPlane.Name, (LPCTSTR)Cities[availCity].Kuerzel,
+                    (LPCTSTR)Helper::getWeekday(availTime.getDate()), availTime.getHour());
             if (Cities.find(availCity) != Cities.find(getRoute(qRoute).VonCity)) {
-                availTime += kDurationExtra + Cities.CalcFlugdauer(availCity, getRoute(qRoute).VonCity, qPlane.ptGeschwindigkeit);
+                SLONG autoFlightDuration = kDurationExtra + Cities.CalcFlugdauer(availCity, getRoute(qRoute).VonCity, qPlane.ptGeschwindigkeit);
+                availTime += autoFlightDuration;
+                hprintf("BotPlaner::actionPlanRoutes(): Plane %s: Adding buffer of %ld hours for auto flight from %s to %s", (LPCTSTR)qPlane.Name,
+                        autoFlightDuration, (LPCTSTR)Cities[availCity].Kuerzel, (LPCTSTR)Cities[getRoute(qRoute).VonCity].Kuerzel);
             }
 
             /* planes on same route fly with 3 hours inbetween */
@@ -750,11 +768,15 @@ void Bot::actionPlanRoutes() {
             h = ceil_div(h, roundTripDuration) * roundTripDuration;
             h += 3 * (timeSlot++);
             availTime = {h / 24, h % 24};
+            hprintf("BotPlaner::actionPlanRoutes(): Plane %s: Setting availTime to %s %ld to meet timeSlot=%ld", (LPCTSTR)qPlane.Name,
+                    (LPCTSTR)Helper::getWeekday(availTime.getDate()), availTime.getHour(), timeSlot - 1);
+
+            Helper::printFlightJobs(qPlayer, planeId);
 
             /* always schedule A=>B and B=>A, for the next 5 days */
             SLONG numScheduled = 0;
             PlaneTime curTime = availTime;
-            while (curTime.getDate() <= Sim.Date + 5) {
+            while (curTime.getDate() < Sim.Date + 5) {
                 if (!GameMechanic::planRouteJob(qPlayer, planeId, qRoute.routeId, curTime.getDate(), curTime.getHour())) {
                     redprintf("Bot::actionPlanRoutes(): GameMechanic::planRouteJob returned error!");
                     return;
@@ -773,30 +795,28 @@ void Bot::actionPlanRoutes() {
         }
     }
 
-    /* adjust ticket prices*/
+    Helper::checkFlightJobs(qPlayer);
+
+    /* adjust ticket prices */
     for (auto &qRoute : mRoutes) {
+        SLONG priceOld = getRentRoute(qRoute).Ticketpreis;
+        DOUBLE factorOld = qRoute.ticketCostFactor;
         SLONG costs = CalculateFlightCost(getRoute(qRoute).VonCity, getRoute(qRoute).NachCity, 800, 800, -1) * 3 / 180 * 2;
-        SLONG costInc = ceil_div(costs, 10);
-        costInc = ceil_div(costInc, 10) * 10;
-
-        SLONG price = getRentRoute(qRoute).Ticketpreis;
-        SLONG priceOld = price;
         if (qRoute.planeUtilization > kMaximumPlaneUtilization) {
-            price += costInc;
+            qRoute.ticketCostFactor += 0.1;
         } else {
-            /* decrease one time per each 10% missing */
+            /* decrease one time per each 25% missing */
             SLONG numDecreases = ceil_div(kMaximumPlaneUtilization - qRoute.planeUtilization, 25);
-            price -= numDecreases * costInc;
+            qRoute.ticketCostFactor -= (0.1 * numDecreases);
         }
+        Limit(0.5, qRoute.ticketCostFactor, 4.0);
 
-        price = price / 10 * 10;
-        SLONG minPrice = costs / 2 / 10 * 10;
-        SLONG maxPrice = costs * 4 / 10 * 10;
-        Limit(minPrice, price, maxPrice);
-        if (price != priceOld) {
-            GameMechanic::setRouteTicketPriceBoth(qPlayer, qRoute.routeId, price, price * 2);
-            hprintf("Bot::actionPlanRoutes(): Changing ticket prices for route %s: %ld => %ld", Helper::getRouteName(getRoute(qRoute)).c_str(), priceOld,
-                    price);
+        SLONG priceNew = costs * qRoute.ticketCostFactor;
+        priceNew = priceNew / 10 * 10;
+        if (priceNew != priceOld) {
+            GameMechanic::setRouteTicketPriceBoth(qPlayer, qRoute.routeId, priceNew, priceNew * 2);
+            hprintf("Bot::actionPlanRoutes(): Changing ticket prices for route %s: %ld => %ld (%.2f => %.2f)", Helper::getRouteName(getRoute(qRoute)).c_str(),
+                    priceOld, priceNew, factorOld, qRoute.ticketCostFactor);
         }
     }
 }

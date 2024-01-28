@@ -60,7 +60,8 @@ void HDU::HercPrintfRed(const char *format, ...) {
     if (Log == nullptr) {
         return;
     }
-    fprintf(Log, "\e[1;31m");
+    static SLONG numErrors = 0;
+    fprintf(Log, "\e[1;31mERR %d: ", numErrors++);
     va_list args;
     va_start(args, format);
     vfprintf(Log, format, args);

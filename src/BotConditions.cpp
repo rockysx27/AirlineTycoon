@@ -9,7 +9,7 @@
 // Preise verstehen sich pro Sitzplatz:
 extern SLONG SeatCosts[];
 
-SLONG Bot::getMoneyAvailable() const { return qPlayer.Money - kMoneyEmergencyFund; }
+__int64 Bot::getMoneyAvailable() const { return qPlayer.Money - kMoneyEmergencyFund; }
 
 bool Bot::hoursPassed(SLONG room, SLONG hours) {
     const auto it = mLastTimeInRoom.find(room);
@@ -277,7 +277,7 @@ Bot::Prio Bot::condBuyKerosineTank(__int64 &moneyAvailable) {
     if (!haveDiscount()) {
         return Prio::None; /* wait until we have some discount */
     }
-    if (mTanksFilledYesterday - mTanksFilledToday < 0.5 && !mTankWasEmpty) {
+    if (mTankRatioEmptiedYesterday < 0.5) {
         return Prio::None;
     }
     auto nTankTypes = sizeof(TankSize) / sizeof(TankSize[0]);

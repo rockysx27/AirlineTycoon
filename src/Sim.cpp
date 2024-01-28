@@ -2258,6 +2258,7 @@ void SIM::NewDay() {
     Date++;
     Time = 0;
     UpdateSeason();
+    hprintf("Sim.cpp: Start of new day: %ld", Date);
 
     // In den Reisebüros die Zettel nachfüllen:
     gFrachten.Random.SRand(Date);

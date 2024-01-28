@@ -387,10 +387,11 @@ void Bot::RobotExecuteAction() {
         if (condBuyNewPlane(moneyAvailable) != Prio::None) {
             SLONG bestPlaneTypeId = mDoRoutes ? mBuyPlaneForRouteId : mBestPlaneTypeId;
             assert(bestPlaneTypeId >= 0);
-            hprintf("Bot::RobotExecuteAction(): Buying plane %s", (LPCTSTR)PlaneTypes[bestPlaneTypeId].Name);
             assert(qPlayer.xPiloten >= PlaneTypes[bestPlaneTypeId].AnzPiloten);
             assert(qPlayer.xBegleiter >= PlaneTypes[bestPlaneTypeId].AnzBegleiter);
             for (auto i : GameMechanic::buyPlane(qPlayer, bestPlaneTypeId, 1)) {
+
+                hprintf("Bot::RobotExecuteAction(): Bought plane (%s) %s", (LPCTSTR)qPlanes[i].Name, (LPCTSTR)PlaneTypes[bestPlaneTypeId].Name);
                 if (mDoRoutes) {
                     mPlanesForRoutesUnassigned.push_back(i);
                     mNeedToDoPlanning = true;
@@ -731,15 +732,16 @@ TEAKFILE &operator<<(TEAKFILE &File, const Bot &bot) {
     File << bot.mBossNumCitiesAvailable;
     File << bot.mBossGateAvailable;
 
-    File << bot.mTanksFilledYesterday;
-    File << bot.mTanksFilledToday;
-    File << bot.mTankWasEmpty;
+    File << bot.mTankRatioEmptiedYesterday;
+    File << bot.mKerosineUsedTodaySoFar;
+    File << bot.mKerosineLevelLastChecked;
 
     File << static_cast<SLONG>(bot.mRoutes.size());
     for (const auto &i : bot.mRoutes) {
         File << i.routeId << i.routeReverseId << i.planeTypeId;
         File << i.routeUtilization << i.image;
         File << i.planeUtilization << i.planeUtilizationFC;
+        File << i.ticketCostFactor;
 
         File << static_cast<SLONG>(i.planeIds.size());
         for (const auto &j : i.planeIds) {
@@ -805,9 +807,9 @@ TEAKFILE &operator>>(TEAKFILE &File, Bot &bot) {
     File >> bot.mBossNumCitiesAvailable;
     File >> bot.mBossGateAvailable;
 
-    File >> bot.mTanksFilledYesterday;
-    File >> bot.mTanksFilledToday;
-    File >> bot.mTankWasEmpty;
+    File >> bot.mTankRatioEmptiedYesterday;
+    File >> bot.mKerosineUsedTodaySoFar;
+    File >> bot.mKerosineLevelLastChecked;
 
     File >> size;
     bot.mRoutes.resize(size);
@@ -816,6 +818,7 @@ TEAKFILE &operator>>(TEAKFILE &File, Bot &bot) {
         File >> info.routeId >> info.routeReverseId >> info.planeTypeId;
         File >> info.routeUtilization >> info.image;
         File >> info.planeUtilization >> info.planeUtilizationFC;
+        File >> info.ticketCostFactor;
 
         File >> size;
         info.planeIds.resize(size);
