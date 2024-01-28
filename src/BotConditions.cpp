@@ -484,7 +484,7 @@ Bot::Prio Bot::condVisitRouteBoxPlanning() {
     if (!Helper::checkRoomOpen(ACTION_WERBUNG_ROUTES)) {
         return Prio::None; /* let's wait until we are able to buy ads for the route */
     }
-    if (mRoutes.empty() || mRoutes[mRoutesSortedByUtilization[0]].utilization >= kMaximumRouteUtilization) {
+    if (mRoutes.empty() || mRoutes[mRoutesSortedByUtilization[0]].routeUtilization >= kMaximumRouteUtilization) {
         return Prio::Medium;
     }
     return Prio::None;

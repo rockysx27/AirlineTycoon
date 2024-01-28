@@ -74,9 +74,9 @@ void printFPE(const CFlugplanEintrag &qFPE) {
 }
 
 std::pair<PlaneTime, int> getPlaneAvailableTimeLoc(const CPlane &qPlane) {
-    std::pair<PlaneTime, int> res{};
-    res.second = -1;
     const auto &qFlightPlan = qPlane.Flugplan.Flug;
+    std::pair<PlaneTime, int> res{};
+    res.second = qPlane.Flugplan.StartCity;
     for (int c = qFlightPlan.AnzEntries() - 1; c >= 0; c--) {
         if (qFlightPlan[c].ObjectType <= 0) {
             continue;
@@ -88,13 +88,6 @@ std::pair<PlaneTime, int> getPlaneAvailableTimeLoc(const CPlane &qPlane) {
     PlaneTime currentTime{Sim.Date, Sim.GetHour() + kAvailTimeExtra};
     if (currentTime > res.first) {
         res.first = currentTime;
-    }
-    if (res.second < 0) {
-        if (qPlane.Ort < 0) {
-            res.second = Sim.HomeAirportId;
-        } else {
-            res.second = qPlane.Ort;
-        }
     }
     return res;
 }

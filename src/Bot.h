@@ -15,6 +15,7 @@ typedef long long __int64;
 extern const SLONG kMoneyEmergencyFund;
 extern const SLONG kSmallestAdCampaign;
 extern const SLONG kMaximumRouteUtilization;
+extern const SLONG kMaximumPlaneUtilization;
 
 class Bot {
   public:
@@ -32,8 +33,10 @@ class Bot {
         SLONG routeId{-1};
         SLONG routeReverseId{-1};
         SLONG planeTypeId{-1};
-        SLONG utilization{};
+        SLONG routeUtilization{};
         SLONG image{};
+        SLONG planeUtilization{};
+        SLONG planeUtilizationFC{};
         std::vector<SLONG> planeIds;
     };
 
@@ -89,6 +92,7 @@ class Bot {
     void actionEmitShares();
     void actionBuyShares(__int64 moneyAvailable);
     void actionVisitBoss(__int64 moneyAvailable);
+    SLONG getRouteTurnAroundDuration(const CRoute &qRoute, SLONG planeTypeId) const;
     void checkLostRoutes();
     void updateRouteInfo();
     std::pair<SLONG, SLONG> actionFindBestRoute(TEAKRAND &rnd) const;
@@ -103,6 +107,8 @@ class Bot {
     void printGainFromJobs(SLONG oldGain) const;
     const CRentRoute &getRentRoute(const RouteInfo &routeInfo) const;
     const CRoute &getRoute(const RouteInfo &routeInfo) const;
+    SLONG getDailyOpSaldo() const;
+    SLONG getWeeklyOpSaldo() const;
 
     TEAKRAND LocalRandom;
     PLAYER &qPlayer;

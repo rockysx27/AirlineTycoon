@@ -7,6 +7,7 @@
 const SLONG kMoneyEmergencyFund = 100000;
 const SLONG kSmallestAdCampaign = 3;
 const SLONG kMaximumRouteUtilization = 95;
+const SLONG kMaximumPlaneUtilization = 90;
 
 static const char *getPrioName(Bot::Prio prio) {
     switch (prio) {
@@ -78,6 +79,10 @@ void Bot::printGainFromJobs(SLONG oldGain) const {
 const CRentRoute &Bot::getRentRoute(const Bot::RouteInfo &routeInfo) const { return qPlayer.RentRouten.RentRouten[routeInfo.routeId]; }
 
 const CRoute &Bot::getRoute(const Bot::RouteInfo &routeInfo) const { return Routen[routeInfo.routeId]; }
+
+SLONG Bot::getDailyOpSaldo() const { return qPlayer.BilanzGestern.GetOpSaldo(); }
+
+SLONG Bot::getWeeklyOpSaldo() const { return qPlayer.BilanzWoche.Hole().GetOpSaldo(); }
 
 Bot::Bot(PLAYER &player) : qPlayer(player) {}
 
@@ -624,8 +629,6 @@ void Bot::RobotExecuteAction() {
         if (condVisitRouteBoxRenting(moneyAvailable) != Prio::None) {
             actionRentRoute(mWantToRentRouteId, mBuyPlaneForRouteId);
             mWantToRentRouteId = -1;
-
-            actionPlanRoutes();
         } else {
             redprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
@@ -735,7 +738,8 @@ TEAKFILE &operator<<(TEAKFILE &File, const Bot &bot) {
     File << static_cast<SLONG>(bot.mRoutes.size());
     for (const auto &i : bot.mRoutes) {
         File << i.routeId << i.routeReverseId << i.planeTypeId;
-        File << i.utilization << i.image;
+        File << i.routeUtilization << i.image;
+        File << i.planeUtilization << i.planeUtilizationFC;
 
         File << static_cast<SLONG>(i.planeIds.size());
         for (const auto &j : i.planeIds) {
@@ -810,7 +814,8 @@ TEAKFILE &operator>>(TEAKFILE &File, Bot &bot) {
     for (SLONG i = 0; i < bot.mRoutes.size(); i++) {
         Bot::RouteInfo info;
         File >> info.routeId >> info.routeReverseId >> info.planeTypeId;
-        File >> info.utilization >> info.image;
+        File >> info.routeUtilization >> info.image;
+        File >> info.planeUtilization >> info.planeUtilizationFC;
 
         File >> size;
         info.planeIds.resize(size);
