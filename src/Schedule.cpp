@@ -218,7 +218,8 @@ void CFlugplanEintrag::CalcPassengers(SLONG PlayerNum, CPlane &qPlane) {
     if (ObjectType == 1) // Route
     {
         CRoute &qRoute = Routen[ObjectId];
-        // if (PlayerNum == 0) hprintf ("CalcPassengers for player %li for %s-%s", PlayerNum, (LPCTSTR)Cities[qRoute.VonCity].Name, (LPCTSTR)Cities[qRoute.NachCity].Name);
+        // if (PlayerNum == 0) hprintf ("CalcPassengers for player %li for %s-%s", PlayerNum, (LPCTSTR)Cities[qRoute.VonCity].Name,
+        // (LPCTSTR)Cities[qRoute.NachCity].Name);
 
         // Normale Passagiere: Aber nicht mehr kurz vor dem Start ändern:
         if (Startdate > Sim.Date || (Startdate == Sim.Date && Sim.GetHour() + 1 < Startzeit)) {
@@ -942,12 +943,13 @@ void CFlugplanEintrag::BookFlight(CPlane *Plane, SLONG PlayerNum) {
     double faktorKerosin = 1.0;
     auto ZustandAlt = Plane->Zustand;
     if (KerosinGesamtQuali > 1.0) {
-        faktorKerosin = 10 * (KerosinGesamtQuali - 1.0) * (KerosinGesamtQuali - 1.0);
-        hprintf ("Player %li: Schlechtes Kerosin (%.2f) reduziert Flugzeugzustand um %d statt um %d",
-                PlayerNum, KerosinGesamtQuali, (int)(faktorDistanz * faktorBaujahr * faktorKerosin / 15), (int)(faktorDistanz * faktorBaujahr / 15));
+        faktorKerosin += 10 * (KerosinGesamtQuali - 1.0) * (KerosinGesamtQuali - 1.0);
+        hprintf("Player %li: Schlechtes Kerosin (%.2f) reduziert Flugzeugzustand um %d statt um %d", PlayerNum, KerosinGesamtQuali,
+                (int)(faktorDistanz * faktorBaujahr * faktorKerosin / 15), (int)(faktorDistanz * faktorBaujahr / 15));
     }
     Plane->Zustand = UBYTE(Plane->Zustand - faktorDistanz * faktorBaujahr * faktorKerosin / 15);
-    hprintf("Player %li: Zustand: %i -> %i. Faktoren: faktorDistanz = %f, faktorBaujahr = %f, faktorKerosin = %f", PlayerNum, ZustandAlt, Plane->Zustand, faktorDistanz, faktorBaujahr, faktorKerosin);
+    hprintf("Player %li: Zustand: %i -> %i. Faktoren: faktorDistanz = %f, faktorBaujahr = %f, faktorKerosin = %f", PlayerNum, ZustandAlt, Plane->Zustand,
+            faktorDistanz, faktorBaujahr, faktorKerosin);
     if (Plane->Zustand > 200) {
         Plane->Zustand = 0;
     }
