@@ -217,18 +217,21 @@ Bot::Prio Bot::condBuyNewPlane(__int64 &moneyAvailable) {
     if (!haveDiscount()) {
         return Prio::None; /* wait until we have some discount */
     }
-    if (mDoRoutes && !mPlanesForRoutesUnassigned.empty()) {
-        return Prio::None;
-    }
     SLONG bestPlaneTypeId = mDoRoutes ? mBuyPlaneForRouteId : mBestPlaneTypeId;
     if (bestPlaneTypeId < 0) {
         return Prio::None; /* no plane purchase planned */
+    }
+    for (auto planeId : mPlanesForRoutesUnassigned) {
+        const auto &qPlane = qPlayer.Planes[planeId];
+        if (qPlane.TypeId == bestPlaneTypeId) {
+            return Prio::None; /* we already have an unused plane of desired type */
+        }
     }
     if ((qPlayer.xPiloten < PlaneTypes[bestPlaneTypeId].AnzPiloten) || (qPlayer.xBegleiter < PlaneTypes[bestPlaneTypeId].AnzBegleiter)) {
         return Prio::None; /* not enough crew */
     }
     if (moneyAvailable >= PlaneTypes[bestPlaneTypeId].Preis) {
-        return Prio::Medium;
+        return Prio::High; /* buy the plane (e.g. for a new route) before spending it on something else */
     }
     return Prio::None;
 }

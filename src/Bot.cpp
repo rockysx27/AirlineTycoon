@@ -4,6 +4,8 @@
 #include "BotHelper.h"
 #include "BotPlaner.h"
 
+#include <algorithm>
+
 const SLONG kMoneyEmergencyFund = 100000;
 const SLONG kSmallestAdCampaign = 3;
 const SLONG kMaximumRouteUtilization = 95;
@@ -76,6 +78,61 @@ void Bot::printGainFromJobs(SLONG oldGain) const {
     hprintf("Bot::printGainFromJobs(): Improved gain from jobs from %ld to %ld.", oldGain, gain);
 }
 
+bool Bot::checkPlaneAvailable(SLONG planeId, bool printIfAvailable) const {
+    const auto &qPlane = qPlayer.Planes[planeId];
+    if (qPlane.AnzBegleiter < qPlane.ptAnzBegleiter) {
+        redprintf("Bot::checkPlaneAvailable: Plane %s does not have enough crew members (%ld, need %ld).", (LPCTSTR)qPlane.Name, qPlane.AnzBegleiter,
+                  qPlane.ptAnzBegleiter);
+        return false;
+    }
+    if (qPlane.AnzPiloten < qPlane.ptAnzPiloten) {
+        redprintf("Bot::checkPlaneAvailable: Plane %s does not have enough pilots (%ld, need %ld).", (LPCTSTR)qPlane.Name, qPlane.AnzPiloten,
+                  qPlane.ptAnzPiloten);
+        return false;
+    }
+    if (qPlane.Problem != 0) {
+        redprintf("Bot::checkPlaneAvailable: Plane %s has a problem for the next %ld hours", (LPCTSTR)qPlane.Name, qPlane.Problem);
+        return false;
+    }
+    if (printIfAvailable) {
+        hprintf("Bot::checkPlaneAvailable: Plane %s is available for service.", (LPCTSTR)qPlane.Name);
+    }
+    return true;
+}
+
+bool Bot::findPlanesWithoutCrew(std::vector<SLONG> &listAvailable, std::deque<SLONG> &listUnassigned) {
+    hprintf("Bot::findPlanesWithoutCrew: Checking for planes with not enough crew members");
+    bool found = false;
+    std::vector<SLONG> newAvailable;
+    for (const auto id : listAvailable) {
+        if (checkPlaneAvailable(id, false)) {
+            newAvailable.push_back(id);
+        } else {
+            listUnassigned.push_back(id);
+            found = true;
+            GameMechanic::killFlightPlan(qPlayer, id);
+        }
+    }
+    std::swap(listAvailable, newAvailable);
+    return found;
+}
+
+bool Bot::findPlanesWithCrew(std::deque<SLONG> &listUnassigned, std::vector<SLONG> &listAvailable) {
+    hprintf("Bot::findPlanesWithCrew: Checking for planes that now have enough crew members");
+    bool found = false;
+    std::deque<SLONG> newUnassigned;
+    for (const auto id : listUnassigned) {
+        if (checkPlaneAvailable(id, false)) {
+            listAvailable.push_back(id);
+        } else {
+            newUnassigned.push_back(id);
+            found = true;
+        }
+    }
+    std::swap(listUnassigned, newUnassigned);
+    return found;
+}
+
 const CRentRoute &Bot::getRentRoute(const Bot::RouteInfo &routeInfo) const { return qPlayer.RentRouten.RentRouten[routeInfo.routeId]; }
 
 const CRoute &Bot::getRoute(const Bot::RouteInfo &routeInfo) const { return Routen[routeInfo.routeId]; }
@@ -97,7 +154,7 @@ void Bot::RobotInit() {
 
         for (SLONG i = 0; i < qPlayer.Planes.AnzEntries(); i++) {
             if (qPlayer.Planes.IsInAlbum(i)) {
-                mPlanesForJobs.push_back(qPlayer.Planes.GetIdFromIndex(i));
+                mPlanesForJobsUnassigned.push_back(qPlayer.Planes.GetIdFromIndex(i));
             }
         }
         mFirstRun = false;
@@ -390,13 +447,16 @@ void Bot::RobotExecuteAction() {
             assert(qPlayer.xPiloten >= PlaneTypes[bestPlaneTypeId].AnzPiloten);
             assert(qPlayer.xBegleiter >= PlaneTypes[bestPlaneTypeId].AnzBegleiter);
             for (auto i : GameMechanic::buyPlane(qPlayer, bestPlaneTypeId, 1)) {
-
                 hprintf("Bot::RobotExecuteAction(): Bought plane (%s) %s", (LPCTSTR)qPlanes[i].Name, (LPCTSTR)PlaneTypes[bestPlaneTypeId].Name);
                 if (mDoRoutes) {
                     mPlanesForRoutesUnassigned.push_back(i);
                     mNeedToDoPlanning = true;
                 } else {
-                    mPlanesForJobs.push_back(i);
+                    if (checkPlaneAvailable(i, true)) {
+                        mPlanesForJobs.push_back(i);
+                    } else {
+                        mPlanesForJobsUnassigned.push_back(i);
+                    }
                 }
             }
             moneyAvailable = getMoneyAvailable();
@@ -710,6 +770,11 @@ TEAKFILE &operator<<(TEAKFILE &File, const Bot &bot) {
         File << i;
     }
 
+    File << static_cast<SLONG>(bot.mPlanesForJobsUnassigned.size());
+    for (const auto &i : bot.mPlanesForJobsUnassigned) {
+        File << i;
+    }
+
     File << static_cast<SLONG>(bot.mPlanesForRoutes.size());
     for (const auto &i : bot.mPlanesForRoutes) {
         File << i;
@@ -781,6 +846,12 @@ TEAKFILE &operator>>(TEAKFILE &File, Bot &bot) {
     bot.mPlanesForJobs.resize(size);
     for (SLONG i = 0; i < size; i++) {
         File >> bot.mPlanesForJobs[i];
+    }
+
+    File >> size;
+    bot.mPlanesForJobsUnassigned.resize(size);
+    for (SLONG i = 0; i < size; i++) {
+        File >> bot.mPlanesForJobsUnassigned[i];
     }
 
     File >> size;

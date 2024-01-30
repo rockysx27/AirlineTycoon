@@ -13,26 +13,20 @@ extern const int kDurationExtra;
 class PlaneTime {
   public:
     PlaneTime() = default;
-    PlaneTime(int date, int time) : mDate(date), mTime(time) {}
+    PlaneTime(int date, int time) : mDate(date), mTime(time) { normalize(); }
 
     int getDate() const { return mDate; }
     int getHour() const { return mTime; }
 
     PlaneTime &operator+=(int delta) {
         mTime += delta;
-        while (mTime >= 24) {
-            mTime -= 24;
-            mDate++;
-        }
+        normalize();
         return *this;
     }
 
     PlaneTime &operator-=(int delta) {
         mTime -= delta;
-        while (mTime < 0) {
-            mTime += 24;
-            mDate--;
-        }
+        normalize();
         return *this;
     }
     PlaneTime operator+(int delta) {
@@ -59,6 +53,16 @@ class PlaneTime {
     }
 
   private:
+    void normalize() {
+        while (mTime >= 24) {
+            mTime -= 24;
+            mDate++;
+        }
+        while (mTime < 0) {
+            mTime += 24;
+            mDate--;
+        }
+    }
     int mDate{0};
     int mTime{0};
 };

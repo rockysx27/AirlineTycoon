@@ -108,6 +108,9 @@ class Bot {
     std::vector<SLONG> findBestAvailablePlaneType() const;
     SLONG calcCurrentGainFromJobs() const;
     void printGainFromJobs(SLONG oldGain) const;
+    bool findPlanesWithoutCrew(std::vector<SLONG> &listAvailable, std::deque<SLONG> &listUnassigned);
+    bool findPlanesWithCrew(std::deque<SLONG> &listUnassigned, std::vector<SLONG> &listAvailable);
+    bool checkPlaneAvailable(SLONG planeId, bool printIfAvailable) const;
     const CRentRoute &getRentRoute(const RouteInfo &routeInfo) const;
     const CRoute &getRoute(const RouteInfo &routeInfo) const;
     SLONG getDailyOpSaldo() const;
@@ -121,6 +124,7 @@ class Bot {
 
     /* planes used for what? */
     std::vector<SLONG> mPlanesForJobs;
+    std::deque<SLONG> mPlanesForJobsUnassigned;
     std::vector<SLONG> mPlanesForRoutes;
     std::deque<SLONG> mPlanesForRoutesUnassigned;
 

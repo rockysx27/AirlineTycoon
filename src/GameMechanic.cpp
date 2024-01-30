@@ -1539,6 +1539,22 @@ bool GameMechanic::_planFlightJob(PLAYER &qPlayer, SLONG planeID, SLONG objectID
     }
 
     auto &qPlane = qPlayer.Planes[planeID];
+    if (qPlayer.Owner == 0 || (qPlayer.Owner == 1 && !qPlayer.RobotUse(ROBOT_USE_FAKE_PERSONAL))) {
+        if (qPlane.AnzBegleiter < qPlane.ptAnzBegleiter) {
+            redprintf("GameMechanic::_planFlightJob: Plane %s does not have enough crew members (%ld, need %ld).", (LPCTSTR)qPlane.Name, qPlane.AnzBegleiter,
+                      qPlane.ptAnzBegleiter);
+            return false;
+        }
+        if (qPlane.AnzPiloten < qPlane.ptAnzPiloten) {
+            redprintf("GameMechanic::_planFlightJob: Plane %s does not have enough pilots (%ld, need %ld).", (LPCTSTR)qPlane.Name, qPlane.AnzPiloten,
+                      qPlane.ptAnzPiloten);
+            return false;
+        }
+    }
+    if (qPlane.Problem != 0) {
+        redprintf("GameMechanic::_planFlightJob: Plane %s has a problem for the next %ld hours", (LPCTSTR)qPlane.Name, qPlane.Problem);
+        return false;
+    }
 
     auto lastIdx = qPlane.Flugplan.Flug.AnzEntries() - 1;
     CFlugplanEintrag &fpe = qPlane.Flugplan.Flug[lastIdx];
