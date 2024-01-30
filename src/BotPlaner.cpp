@@ -551,7 +551,7 @@ int BotPlaner::planFlights(const std::vector<int> &planeIdsInput) {
     std::vector<int> planeIds;
     for (auto i : planeIdsInput) {
         if (qPlanes.IsInAlbum(i) != 0) {
-            GameMechanic::killFlightPlanFrom(qPlayer, i, kAvailTimeExtra);
+            GameMechanic::killFlightPlanFrom(qPlayer, i, Sim.Date, Sim.GetHour() + kAvailTimeExtra);
             planeIds.push_back(i);
         }
     }

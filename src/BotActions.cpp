@@ -37,11 +37,11 @@ static constexpr int ceil_div(int a, int b) {
 }
 
 void Bot::actionStartDay(__int64 moneyAvailable) {
-    checkLostRoutes();
     updateRouteInfo();
-    actionPlanRoutes();
 
-    // Logik für wechsel zu Routen und sparen für Rakete oder Flugzeug:
+    mNeedToDoPlanning = true;
+
+    /* logic for switching to routes */
     if (!mDoRoutes && mBestPlaneTypeId != -1) {
         const auto &bestPlaneType = PlaneTypes[mBestPlaneTypeId];
         SLONG costRouteAd = gWerbePrice[1 * 6 + 5];
@@ -61,8 +61,6 @@ void Bot::actionStartDay(__int64 moneyAvailable) {
     assert(mKerosineLevelLastChecked >= qPlayer.TankInhalt);
     mKerosineUsedTodaySoFar += (mKerosineLevelLastChecked - qPlayer.TankInhalt);
     mKerosineLevelLastChecked = qPlayer.TankInhalt;
-
-    /* rotate for new day */
     mTankRatioEmptiedYesterday = 1.0 * mKerosineUsedTodaySoFar / qPlayer.Tank;
     mKerosineUsedTodaySoFar = 0;
 
@@ -70,7 +68,10 @@ void Bot::actionStartDay(__int64 moneyAvailable) {
     GameMechanic::setKerosinTankOpen(qPlayer, true);
 }
 
-void Bot::actionBuero() { actionPlanRoutes(); }
+void Bot::actionBuero() {
+    checkLostRoutes();
+    actionPlanRoutes();
+}
 
 void Bot::actionUpgradePlanes(__int64 moneyAvailable) {
     SLONG anzahl = 4;
@@ -501,6 +502,10 @@ SLONG Bot::getRouteTurnAroundDuration(const CRoute &qRoute, SLONG planeTypeId) c
 }
 
 void Bot::checkLostRoutes() {
+    if (mRoutes.empty()) {
+        return;
+    }
+
     SLONG numRented = 0;
     const auto &qRRouten = qPlayer.RentRouten.RentRouten;
     for (const auto &rentRoute : qRRouten) {
@@ -750,6 +755,11 @@ void Bot::actionPlanRoutes() {
         for (auto planeId : qRoute.planeIds) {
             const auto &qPlane = qPlayer.Planes[planeId];
 
+            /* re-plan anything after 2 days because of spurious route flights appearing */
+            hprintf("BotPlaner::actionPlanRoutes(): =================== Plane %s ===================", (LPCTSTR)qPlane.Name);
+            Helper::printFlightJobs(qPlayer, planeId);
+            GameMechanic::killFlightPlanFrom(qPlayer, planeId, Sim.Date + 3, 0);
+
             /* where is the plane right now and when can it be in the origin city? */
             PlaneTime availTime;
             SLONG availCity{};
@@ -765,8 +775,9 @@ void Bot::actionPlanRoutes() {
 
             /* planes on same route fly with 3 hours inbetween */
             SLONG h = availTime.getDate() * 24 + availTime.getHour();
-            h = ceil_div(h, roundTripDuration) * roundTripDuration;
-            h += 3 * (timeSlot++);
+            // TODO:
+            // h = ceil_div(h, roundTripDuration) * roundTripDuration;
+            // h += (3 * (timeSlot++)) % 24;
             availTime = {h / 24, h % 24};
             hprintf("BotPlaner::actionPlanRoutes(): Plane %s: Setting availTime to %s %ld to meet timeSlot=%ld", (LPCTSTR)qPlane.Name,
                     (LPCTSTR)Helper::getWeekday(availTime.getDate()), availTime.getHour(), timeSlot - 1);
@@ -805,9 +816,12 @@ void Bot::actionPlanRoutes() {
         if (qRoute.planeUtilization > kMaximumPlaneUtilization) {
             qRoute.ticketCostFactor += 0.1;
         } else {
-            /* decrease one time per each 25% missing */
-            SLONG numDecreases = ceil_div(kMaximumPlaneUtilization - qRoute.planeUtilization, 25);
-            qRoute.ticketCostFactor -= (0.1 * numDecreases);
+            /* planes are not fully utilized */
+            if (qRoute.routeUtilization < kMaximumRouteUtilization) {
+                /* decrease one time per each 25% missing */
+                SLONG numDecreases = ceil_div(kMaximumPlaneUtilization - qRoute.planeUtilization, 25);
+                qRoute.ticketCostFactor -= (0.1 * numDecreases);
+            }
         }
         Limit(0.5, qRoute.ticketCostFactor, 4.0);
 

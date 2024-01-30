@@ -1423,23 +1423,31 @@ bool GameMechanic::killFreightJob(PLAYER &qPlayer, SLONG par1, bool payFine) {
     return true;
 }
 
-bool GameMechanic::killFlightPlan(PLAYER &qPlayer, SLONG planeId) { return killFlightPlanFrom(qPlayer, planeId, 0); }
+bool GameMechanic::killFlightPlan(PLAYER &qPlayer, SLONG planeId) { return killFlightPlanFrom(qPlayer, planeId, Sim.Date, Sim.GetHour() + 2); }
 
-bool GameMechanic::killFlightPlanFrom(PLAYER &qPlayer, SLONG planeId, SLONG hours) {
+bool GameMechanic::killFlightPlanFrom(PLAYER &qPlayer, SLONG planeId, SLONG date, SLONG hours) {
     if (!qPlayer.Planes.IsInAlbum(planeId)) {
         redprintf("GameMechanic::killFlightPlanFrom: Invalid planeId (%ld).", planeId);
+        return false;
+    }
+    if (date < Sim.Date) {
+        redprintf("GameMechanic::killFlightPlanFrom: Date must not be in the past (%ld).", date);
         return false;
     }
     if (hours < 0) {
         redprintf("GameMechanic::killFlightPlanFrom: Offset must not be negative (%ld).", hours);
         return false;
     }
+    if (date == Sim.Date && hours <= Sim.GetHour() + 1) {
+        hprintf("GameMechanic::killFlightPlanFrom: Increasing hours to current time + 2 (was %ld).", hours);
+        hours = Sim.GetHour() + 2;
+    }
 
     CFlugplan &qPlan = qPlayer.Planes[planeId].Flugplan;
 
     for (SLONG c = qPlan.Flug.AnzEntries() - 1; c >= 0; c--) {
         if (qPlan.Flug[c].ObjectType != 0) {
-            if (qPlan.Flug[c].Startdate > Sim.Date || (qPlan.Flug[c].Startdate == Sim.Date && qPlan.Flug[c].Startzeit > Sim.GetHour() + 1 + hours)) {
+            if (qPlan.Flug[c].Startdate > date || (qPlan.Flug[c].Startdate == date && qPlan.Flug[c].Startzeit >= hours)) {
                 qPlan.Flug[c].ObjectType = 0;
             }
         }
