@@ -506,8 +506,8 @@ void Bot::actionVisitBoss(__int64 moneyAvailable) {
 }
 
 SLONG Bot::getRouteTurnAroundDuration(const CRoute &qRoute, SLONG planeTypeId) const {
-    SLONG durationA = Cities.CalcFlugdauer(qRoute.VonCity, qRoute.NachCity, PlaneTypes[planeTypeId].Geschwindigkeit);
-    SLONG durationB = Cities.CalcFlugdauer(qRoute.NachCity, qRoute.VonCity, PlaneTypes[planeTypeId].Geschwindigkeit);
+    SLONG durationA = kDurationExtra + Cities.CalcFlugdauer(qRoute.VonCity, qRoute.NachCity, PlaneTypes[planeTypeId].Geschwindigkeit);
+    SLONG durationB = kDurationExtra + Cities.CalcFlugdauer(qRoute.NachCity, qRoute.VonCity, PlaneTypes[planeTypeId].Geschwindigkeit);
     return (durationA + durationB);
 }
 
@@ -764,8 +764,8 @@ void Bot::actionPlanRoutes() {
     for (auto &qRoute : mRoutes) {
         SLONG fromCity = Cities.find(getRoute(qRoute).VonCity);
         SLONG toCity = Cities.find(getRoute(qRoute).NachCity);
-        SLONG durationA = Cities.CalcFlugdauer(fromCity, toCity, PlaneTypes[qRoute.planeTypeId].Geschwindigkeit);
-        SLONG durationB = Cities.CalcFlugdauer(toCity, fromCity, PlaneTypes[qRoute.planeTypeId].Geschwindigkeit);
+        SLONG durationA = kDurationExtra + Cities.CalcFlugdauer(fromCity, toCity, PlaneTypes[qRoute.planeTypeId].Geschwindigkeit);
+        SLONG durationB = kDurationExtra + Cities.CalcFlugdauer(toCity, fromCity, PlaneTypes[qRoute.planeTypeId].Geschwindigkeit);
         SLONG roundTripDuration = durationA + durationB;
 
         int timeSlot = 0;
@@ -784,6 +784,8 @@ void Bot::actionPlanRoutes() {
             availCity = Cities.find(availCity);
             hprintf("BotPlaner::actionPlanRoutes(): Plane %s is in %s @ %s %ld", (LPCTSTR)qPlane.Name, (LPCTSTR)Cities[availCity].Kuerzel,
                     (LPCTSTR)Helper::getWeekday(availTime.getDate()), availTime.getHour());
+
+            /* leave room for auto flight, if necessary */
             if (availCity != fromCity && availCity != toCity) {
                 SLONG autoFlightDuration = kDurationExtra + Cities.CalcFlugdauer(availCity, fromCity, qPlane.ptGeschwindigkeit);
                 availTime += autoFlightDuration;
@@ -809,7 +811,7 @@ void Bot::actionPlanRoutes() {
             /* if in B, schedule one instance of B=>A */
             SLONG numScheduled = 0;
             PlaneTime curTime = availTime;
-            if (availCity == getRoute(qRoute).NachCity) {
+            if (availCity == toCity) {
                 if (!GameMechanic::planRouteJob(qPlayer, planeId, qRoute.routeReverseId, curTime.getDate(), curTime.getHour())) {
                     redprintf("Bot::actionPlanRoutes(): GameMechanic::planRouteJob returned error!");
                     return;

@@ -171,8 +171,14 @@ SLONG checkFlightJobs(const PLAYER &qPlayer) {
             if (qFluege[d].ObjectType == 2) {
                 auto &qAuftrag = qPlayer.Auftraege[qFluege[d].ObjectId];
 
-                if (qFluege[d].VonCity != qAuftrag.VonCity || qFluege[d].NachCity != qAuftrag.NachCity || qFluege[d].Passagiere != qAuftrag.Personen) {
-                    redprintf("Bot::checkFlightJobs(): CFlugplanEintrag does not match CAuftrag for job (%s)", getJobName(qAuftrag).c_str());
+                if (qFluege[d].VonCity != qAuftrag.VonCity || qFluege[d].NachCity != qAuftrag.NachCity) {
+                    redprintf("Bot::checkFlightJobs(): CFlugplanEintrag start/destination does not match CAuftrag for job (%s)", getJobName(qAuftrag).c_str());
+                    printJob(qAuftrag);
+                    printFPE(qFluege[d]);
+                }
+
+                if ((qFluege[d].Passagiere + qFluege[d].PassagiereFC) != qAuftrag.Personen) {
+                    redprintf("Bot::checkFlightJobs(): CFlugplanEintrag passenger count does not match CAuftrag for job (%s)", getJobName(qAuftrag).c_str());
                     printJob(qAuftrag);
                     printFPE(qFluege[d]);
                 }
