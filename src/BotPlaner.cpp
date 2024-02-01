@@ -13,6 +13,7 @@
 const int kAvailTimeExtra = 2;
 const int kDurationExtra = 1;
 static const int kMinPremium = 1000;
+static const int kScheduleForNextDays = 4;
 static const int kMaxTimesVisited = 4;
 static const bool kCanDropJobs = false;
 
@@ -179,7 +180,7 @@ BotPlaner::Solution BotPlaner::findFlightPlan(Graph &g, int planeIdx, PlaneTime 
 
         /* advance or backtrack? */
         bool advance = true;
-        if (currentTime.getDate() >= Sim.Date + 6) {
+        if (currentTime.getDate() >= Sim.Date + kScheduleForNextDays) {
             advance = false;
         }
         if (curState.numVisited > kMaxTimesVisited) {
@@ -190,16 +191,15 @@ BotPlaner::Solution BotPlaner::findFlightPlan(Graph &g, int planeIdx, PlaneTime 
         if (nVisited == numJobs || !advance) {
             advance = false;
 
-            Solution solution;
-            solution.totalPremium = currentPremium - currentCost;
+            solutions.emplace_back(currentPremium - currentCost);
+
             int n = currentNode;
             while (g.nodeState[n].cameFrom != -1) {
                 int jobIdx = g.nodeInfo[n].jobIdx;
                 assert(jobIdx >= 0);
-                solution.jobs.emplace_front(jobIdx, g.nodeState[n].startTime, g.nodeState[n].startTime + g.nodeInfo[n].duration);
+                solutions.back().jobs.emplace_front(jobIdx, g.nodeState[n].startTime, g.nodeState[n].startTime + g.nodeInfo[n].duration);
                 n = g.nodeState[n].cameFrom;
             }
-            solutions.emplace_back(std::move(solution));
 
             if (solutions.back().totalPremium > bestPremium) {
                 bestPremium = solutions.back().totalPremium;
@@ -213,8 +213,9 @@ BotPlaner::Solution BotPlaner::findFlightPlan(Graph &g, int planeIdx, PlaneTime 
         }
         while (curState.outIdx < curInfo.bestNeighbors.size()) {
             int n = curInfo.bestNeighbors[curState.outIdx];
-            int jobIdx = g.nodeInfo[n].jobIdx;
             assert(n >= g.nPlanes && n < g.nNodes);
+
+            int jobIdx = g.nodeInfo[n].jobIdx;
             if (eligibleJobIds[jobIdx] == 0) {
                 curState.outIdx++;
                 continue;
@@ -223,6 +224,7 @@ BotPlaner::Solution BotPlaner::findFlightPlan(Graph &g, int planeIdx, PlaneTime 
                 curState.outIdx++;
                 continue;
             }
+
             auto arrivalTime = currentTime + g.adjMatrix[currentNode][n].duration;
             if (arrivalTime.getDate() > g.nodeInfo[n].latest) {
                 curState.outIdx++;
@@ -253,15 +255,15 @@ BotPlaner::Solution BotPlaner::findFlightPlan(Graph &g, int planeIdx, PlaneTime 
 
             assert(curState.visitedThisTour == true);
             curState.visitedThisTour = false;
+            curState.outIdx = 0;
             nVisited--;
+
             currentPremium -= curInfo.premium;
             currentTime = curState.availTime;
 
             currentCost -= g.adjMatrix[prevNode][currentNode].cost;
             currentTime -= g.adjMatrix[prevNode][currentNode].duration;
             assert(g.adjMatrix[prevNode][currentNode].duration >= 0);
-
-            curState.outIdx = 0;
 
             currentNode = prevNode;
         }
@@ -282,7 +284,7 @@ BotPlaner::Solution BotPlaner::findFlightPlan(Graph &g, int planeIdx, PlaneTime 
 #endif
 
     if (bestPremiumIdx == -1) {
-        return {};
+        return {0};
     }
 
     return solutions[bestPremiumIdx];
@@ -334,6 +336,10 @@ std::pair<int, int> BotPlaner::gatherAndPlanJobs(std::vector<FlightJob> &jobList
 
                 int startCity = (i >= nPlanes) ? jobList[i - nPlanes].auftrag.NachCity : planeStates[i].availCity;
                 int destCity = jobList[j - nPlanes].auftrag.VonCity;
+                startCity = Cities.find(startCity);
+                destCity = Cities.find(destCity);
+                assert(startCity >= 0 && startCity < Cities.AnzEntries());
+                assert(destCity >= 0 && destCity < Cities.AnzEntries());
                 if (startCity != destCity) {
                     const auto *plane = mPlaneTypeToPlane[pt];
                     g.adjMatrix[i][j].cost = CalculateFlightCostNoTank(startCity, destCity, plane->ptVerbrauch, plane->ptGeschwindigkeit);
@@ -376,7 +382,7 @@ std::pair<int, int> BotPlaner::gatherAndPlanJobs(std::vector<FlightJob> &jobList
 
         int bestDelta = INT_MIN;
         int bestPlane = -1;
-        Solution bestSolution;
+        Solution bestSolution{0};
         for (int p = 0; p < nPlanes; p++) {
             auto &qPlaneState = planeStates[p];
             auto pt = qPlaneState.planeTypeId;
@@ -592,6 +598,9 @@ int BotPlaner::planFlights(const std::vector<int> &planeIdsInput) {
             if (source.jobs->at(i).InPlan != 0) {
                 continue;
             }
+            if (source.jobs->at(i).Date >= Sim.Date + kScheduleForNextDays) {
+                continue;
+            }
             jobList.emplace_back(source.jobs->GetIdFromIndex(i), source.sourceId, source.jobs->at(i), source.owner);
         }
         /* job source B: Freight */
@@ -600,6 +609,9 @@ int BotPlaner::planFlights(const std::vector<int> &planeIdsInput) {
                 continue;
             }
             if (source.freight->at(i).InPlan != 0) {
+                continue;
+            }
+            if (source.freight->at(i).Date >= Sim.Date + kScheduleForNextDays) {
                 continue;
             }
             // jobList.emplace_back(source.jobs->GetIdFromIndex(i), source.sourceId, source.freight->at(i), source.owner);
@@ -639,7 +651,8 @@ int BotPlaner::planFlights(const std::vector<int> &planeIdsInput) {
 
         /* determine when and where the plane will be available */
         std::tie(planeState.availTime, planeState.availCity) = Helper::getPlaneAvailableTimeLoc(qPlanes[i]);
-        assert(planeState.availCity >= 0);
+        planeState.availCity = Cities.find(planeState.availCity);
+        assert(planeState.availCity >= 0 && planeState.availCity < Cities.AnzEntries());
         // #ifdef PRINT_OVERALL
         hprintf("BotPlaner::planFlights(): Plane %s is in %s @ %s %d", (LPCTSTR)qPlanes[i].Name, (LPCTSTR)Cities[planeState.availCity].Kuerzel,
                 (LPCTSTR)Helper::getWeekday(planeState.availTime.getDate()), planeState.availTime.getHour());

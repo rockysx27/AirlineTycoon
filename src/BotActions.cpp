@@ -631,7 +631,7 @@ std::pair<SLONG, SLONG> Bot::actionFindBestRoute(TEAKRAND &rnd) const {
 
         /* calc score for route (more passengers always good, longer routes tend to be also more worth it) */
         DOUBLE score = Routen[c].AnzPassagiere();
-        score *= Cities.CalcDistance(Routen[c].VonCity, Routen[c].NachCity);
+        score *= (Cities.CalcDistance(Routen[c].VonCity, Routen[c].NachCity) / 1000);
         score /= Routen[c].Miete;
 
         /* calculate how many planes would be need to get 10% route utilization */

@@ -121,6 +121,7 @@ class BotPlaner {
         PlaneTime end;
     };
     struct Solution {
+        Solution(int p) : totalPremium(p) {}
         std::deque<JobScheduled> jobs;
         int totalPremium{0};
     };
@@ -136,7 +137,7 @@ class BotPlaner {
         PlaneTime availTime{};
         int availCity{-1};
         std::vector<int> bJobIdAssigned;
-        Solution currentSolution{};
+        Solution currentSolution{0};
     };
 
     struct FlightJob {

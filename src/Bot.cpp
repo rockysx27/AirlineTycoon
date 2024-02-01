@@ -34,7 +34,7 @@ static const char *getPrioName(Bot::Prio prio) {
 std::vector<SLONG> Bot::findBestAvailablePlaneType() const {
     CDataTable planeTable;
     planeTable.FillWithPlaneTypes();
-    std::vector<std::pair<SLONG, SLONG>> scores;
+    std::vector<std::pair<SLONG, __int64>> scores;
     for (const auto &i : planeTable.LineIndex) {
         if (!PlaneTypes.IsInAlbum(i)) {
             continue;
@@ -45,16 +45,17 @@ std::vector<SLONG> Bot::findBestAvailablePlaneType() const {
             continue;
         }
 
-        SLONG score = planeType.Passagiere * planeType.Passagiere;
-        score += planeType.Reichweite;
+        __int64 score = planeType.Passagiere * planeType.Passagiere;
+        score *= planeType.Reichweite;
         score /= planeType.Verbrauch;
         scores.emplace_back(i, score);
     }
-    std::sort(scores.begin(), scores.end(), [](const std::pair<SLONG, SLONG> &a, const std::pair<SLONG, SLONG> &b) { return a.second > b.second; });
+    std::sort(scores.begin(), scores.end(), [](const std::pair<SLONG, __int64> &a, const std::pair<SLONG, __int64> &b) { return a.second > b.second; });
 
     std::vector<SLONG> bestList;
     bestList.reserve(scores.size());
     for (const auto &i : scores) {
+        hprintf("Bot::findBestAvailablePlaneType(): Plane type %s has score %lld", (LPCTSTR)PlaneTypes[i.first].Name, i.second);
         bestList.push_back(i.first);
     }
 
@@ -111,6 +112,15 @@ bool Bot::findPlanesWithoutCrew(std::vector<SLONG> &listAvailable, std::deque<SL
             listUnassigned.push_back(id);
             found = true;
             GameMechanic::killFlightPlan(qPlayer, id);
+            for (auto &route : mRoutes) {
+                auto it = route.planeIds.begin();
+                while (it != route.planeIds.end() && *it != id) {
+                    it++;
+                }
+                if (it != route.planeIds.end()) {
+                    route.planeIds.erase(it);
+                }
+            }
         }
     }
     std::swap(listAvailable, newAvailable);
@@ -165,6 +175,8 @@ void Bot::RobotInit() {
     }
 
     mLastTimeInRoom.clear();
+    mDislike = -1;
+    mBestPlaneTypeId = -1;
     mBossNumCitiesAvailable = -1;
     mBossGateAvailable = false;
 
@@ -447,6 +459,7 @@ void Bot::RobotExecuteAction() {
             assert(qPlayer.xPiloten >= PlaneTypes[bestPlaneTypeId].AnzPiloten);
             assert(qPlayer.xBegleiter >= PlaneTypes[bestPlaneTypeId].AnzBegleiter);
             for (auto i : GameMechanic::buyPlane(qPlayer, bestPlaneTypeId, 1)) {
+                assert(i >= 0x1000000);
                 hprintf("Bot::RobotExecuteAction(): Bought plane (%s) %s", (LPCTSTR)qPlanes[i].Name, (LPCTSTR)PlaneTypes[bestPlaneTypeId].Name);
                 if (mDoRoutes) {
                     mPlanesForRoutesUnassigned.push_back(i);
