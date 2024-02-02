@@ -836,11 +836,9 @@ void Bot::actionPlanRoutes() {
             }
             hprintf("Bot::actionPlanRoutes(): Scheduled route %s %ld times for plane %s, starting at %s %ld", Helper::getRouteName(getRoute(qRoute)).c_str(),
                     numScheduled, (LPCTSTR)qPlane.Name, (LPCTSTR)Helper::getWeekday(availTime.getDate()), availTime.getHour());
-            Helper::printFlightJobs(qPlayer, planeId);
+            Helper::checkPlaneSchedule(qPlayer, planeId, false);
         }
     }
-
-    Helper::checkFlightJobs(qPlayer);
 
     /* adjust ticket prices */
     for (auto &qRoute : mRoutes) {

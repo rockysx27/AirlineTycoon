@@ -55,7 +55,7 @@ std::vector<SLONG> Bot::findBestAvailablePlaneType() const {
     std::vector<SLONG> bestList;
     bestList.reserve(scores.size());
     for (const auto &i : scores) {
-        hprintf("Bot::findBestAvailablePlaneType(): Plane type %s has score %lld", (LPCTSTR)PlaneTypes[i.first].Name, i.second);
+        // hprintf("Bot::findBestAvailablePlaneType(): Plane type %s has score %lld", (LPCTSTR)PlaneTypes[i.first].Name, i.second);
         bestList.push_back(i.first);
     }
 

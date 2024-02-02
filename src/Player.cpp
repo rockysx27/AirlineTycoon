@@ -5657,7 +5657,7 @@ void PLAYER::DelayFlightsIfNecessary() {
     SLONG c = 0;
     SLONG d = 0;
 
-    if (Owner != 1 || (IsOut != 0)) {
+    if (Owner != 1 || (IsOut != 0) || IsSuperBot()) {
         return; // War Irtum, kein Computerspieler
     }
 
