@@ -8,8 +8,9 @@
 
 const SLONG kMoneyEmergencyFund = 100000;
 const SLONG kSmallestAdCampaign = 3;
-const SLONG kMaximumRouteUtilization = 95;
+const SLONG kMaximumRouteUtilization = 90;
 const SLONG kMaximumPlaneUtilization = 90;
+const SLONG kTargetEmployeeHappiness = 90;
 
 static const char *getPrioName(Bot::Prio prio) {
     switch (prio) {
@@ -837,6 +838,8 @@ TEAKFILE &operator<<(TEAKFILE &File, const Bot &bot) {
         File << i;
     }
 
+    File << bot.mNumEmployees;
+
     SLONG magicnumber = 0x42;
     File << magicnumber;
 
@@ -924,6 +927,8 @@ TEAKFILE &operator>>(TEAKFILE &File, Bot &bot) {
     for (SLONG i = 0; i < size; i++) {
         File >> bot.mRoutesSortedByImage[i];
     }
+
+    File >> bot.mNumEmployees;
 
     SLONG magicnumber = 0;
     File >> magicnumber;

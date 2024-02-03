@@ -48,6 +48,31 @@ void Bot::actionStartDay(__int64 moneyAvailable) {
     /* maybe some planes now have crew? planes for routes will be checked in actionPlanRoutes() */
     findPlanesWithCrew(mPlanesForJobsUnassigned, mPlanesForJobs);
 
+    /* check whether we lost employees / increase salary for unhappy employees once */
+    SLONG nWorkers = 0;
+    SLONG salaryIncreases = 0;
+    for (SLONG c = 0; c < Workers.Workers.AnzEntries(); c++) {
+        auto &qWorker = Workers.Workers[c];
+        if (qWorker.Employer != qPlayer.PlayerNum) {
+            continue;
+        }
+
+        nWorkers++;
+
+        /* unhappy? */
+        if (qWorker.Happyness < kTargetEmployeeHappiness && qWorker.Gehalt <= qWorker.OriginalGehalt) {
+            qWorker.Gehaltsaenderung(true);
+            salaryIncreases++;
+        }
+    }
+    if (mNumEmployees > nWorkers) {
+        hprintf("Bot::actionStartDay(): We lost %ld employees", mNumEmployees - nWorkers);
+    }
+    mNumEmployees = nWorkers;
+    if (salaryIncreases > 0) {
+        hprintf("Bot::actionStartDay(): Increases salaray of %ld employees", salaryIncreases);
+    }
+
     /* logic for switching to routes */
     if (!mDoRoutes && mBestPlaneTypeId != -1) {
         const auto &bestPlaneType = PlaneTypes[mBestPlaneTypeId];
@@ -55,12 +80,12 @@ void Bot::actionStartDay(__int64 moneyAvailable) {
         __int64 moneyNeeded = 2 * costRouteAd + bestPlaneType.Preis + kMoneyEmergencyFund;
         SLONG numPlanes = mPlanesForJobs.size() + mPlanesForJobsUnassigned.size();
         if (numPlanes >= 4 && moneyAvailable >= moneyNeeded) {
-            mDoRoutes = TRUE;
+            mDoRoutes = true;
             hprintf("Bot::actionStartDay(): Switching to routes.");
         }
 
         if (qPlayer.RobotUse(ROBOT_USE_FORCEROUTES)) {
-            mDoRoutes = TRUE;
+            mDoRoutes = true;
             hprintf("Bot::actionStartDay(): Switching to routes (forced).");
         }
     }
@@ -179,19 +204,23 @@ void Bot::actionVisitHR() {
             for (SLONG c = 0; c < Workers.Workers.AnzEntries(); c++) {
                 const auto &qWorker = Workers.Workers[c];
                 if (qWorker.Employer == qPlayer.PlayerNum && qWorker.Typ == advisorType) {
-                    GameMechanic::fireWorker(qPlayer, c);
+                    if (GameMechanic::fireWorker(qPlayer, c)) {
+                        mNumEmployees--;
+                    }
                 }
             }
             /* hire new advisor */
-            GameMechanic::hireWorker(qPlayer, bestCandidateId);
+            if (GameMechanic::hireWorker(qPlayer, bestCandidateId)) {
+                mNumEmployees++;
+            }
         }
     }
 
     /* crew */
     SLONG pilotsTarget = 0;
     SLONG stewardessTarget = 0;
-    SLONG numPilotsHires = 0;
-    SLONG numStewardessHires = 0;
+    SLONG numPilotsHired = 0;
+    SLONG numStewardessHired = 0;
     SLONG bestPlaneTypeId = mDoRoutes ? mBuyPlaneForRouteId : mBestPlaneTypeId;
     if (bestPlaneTypeId >= 0) {
         const auto &bestPlaneType = PlaneTypes[bestPlaneTypeId];
@@ -207,15 +236,19 @@ void Bot::actionVisitHR() {
             continue;
         }
         if (qWorker.Typ == WORKER_PILOT && qPlayer.xPiloten < pilotsTarget) {
-            GameMechanic::hireWorker(qPlayer, c);
-            numPilotsHires++;
+            if (GameMechanic::hireWorker(qPlayer, c)) {
+                mNumEmployees++;
+                numPilotsHired++;
+            }
         } else if (qWorker.Typ == WORKER_STEWARDESS && qPlayer.xBegleiter < stewardessTarget) {
-            GameMechanic::hireWorker(qPlayer, c);
-            numStewardessHires++;
+            if (GameMechanic::hireWorker(qPlayer, c)) {
+                mNumEmployees++;
+                numStewardessHired++;
+            }
         }
     }
-    if (numPilotsHires > 0 || numStewardessHires > 0) {
-        hprintf("Bot::actionVisitHR(): Hiring %ld pilots and %ld attendants", numPilotsHires, numStewardessHires);
+    if (numPilotsHired > 0 || numStewardessHired > 0) {
+        hprintf("Bot::actionVisitHR(): Hiring %ld pilots and %ld attendants", numPilotsHired, numStewardessHired);
     }
 
     hprintf("Bot::actionVisitHR(): We have %ld extra pilots and %ld extra attendants", qPlayer.xPiloten, qPlayer.xBegleiter);

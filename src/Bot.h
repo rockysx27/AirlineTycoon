@@ -18,6 +18,7 @@ extern const SLONG kMoneyEmergencyFund;
 extern const SLONG kSmallestAdCampaign;
 extern const SLONG kMaximumRouteUtilization;
 extern const SLONG kMaximumPlaneUtilization;
+extern const SLONG kTargetEmployeeHappiness;
 
 class Bot {
   public:
@@ -151,6 +152,9 @@ class Bot {
     std::vector<RouteInfo> mRoutes;
     std::vector<SLONG> mRoutesSortedByUtilization;
     std::vector<SLONG> mRoutesSortedByImage;
+
+    /* crew */
+    SLONG mNumEmployees{0};
 };
 
 TEAKFILE &operator<<(TEAKFILE &File, const Bot &bot);
