@@ -18,6 +18,7 @@ extern const SLONG kMoneyEmergencyFund;
 extern const SLONG kSmallestAdCampaign;
 extern const SLONG kMaximumRouteUtilization;
 extern const SLONG kMaximumPlaneUtilization;
+extern const DOUBLE kMaxTicketPriceFactor;
 extern const SLONG kTargetEmployeeHappiness;
 
 class Bot {

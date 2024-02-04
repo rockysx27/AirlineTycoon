@@ -7,9 +7,10 @@
 #include <algorithm>
 
 const SLONG kMoneyEmergencyFund = 100000;
-const SLONG kSmallestAdCampaign = 3;
+const SLONG kSmallestAdCampaign = 4;
 const SLONG kMaximumRouteUtilization = 90;
 const SLONG kMaximumPlaneUtilization = 90;
+const DOUBLE kMaxTicketPriceFactor = 3.0;
 const SLONG kTargetEmployeeHappiness = 90;
 
 static const char *getPrioName(Bot::Prio prio) {

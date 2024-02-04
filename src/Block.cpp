@@ -983,7 +983,8 @@ void BLOCK::LinkeSeiteInhalt(XY TitleArea, XY ClientArea) {
             SLONG i = SelectedId - 8;
             i += static_cast<SLONG>(PlayerNum <= i);
             auto &qPlayer = Sim.Players.Players[i];
-            Bitmap.PrintAt(bprintf(StandardTexte.GetS(TOKEN_EXPERT, 2000 + SelectedId), (LPCTSTR)qPlayer.Abk), TitleFont, TEC_FONT_LEFT, TitleArea, Bitmap.Size);
+            Bitmap.PrintAt(bprintf(StandardTexte.GetS(TOKEN_EXPERT, 2000 + SelectedId), (LPCTSTR)qPlayer.Abk), TitleFont, TEC_FONT_LEFT, TitleArea,
+                           Bitmap.Size);
         } else {
             Bitmap.PrintAt(StandardTexte.GetS(TOKEN_EXPERT, 2000 + SelectedId), TitleFont, TEC_FONT_LEFT, TitleArea, Bitmap.Size);
         }
@@ -1855,7 +1856,7 @@ void BLOCK::ZeigeTagesBilanz(XY ClientArea, const PLAYER & /*player*/, const CBi
             PrintLine(ClientArea, 2, textBeraterZuSchlecht);
             return;
         }
-        std::vector<std::pair<SLONG, __int64>> tmp = {{10036, ref.HabenZinsen}, {10038, ref.HabenRendite},   {10004, ref.KreditNeu}, {10037, ref.SollZinsen},
+        std::vector<std::pair<SLONG, __int64>> tmp = {{10036, ref.HabenZinsen}, {10038, ref.HabenRendite},  {10004, ref.KreditNeu}, {10037, ref.SollZinsen},
                                                       {10039, ref.SollRendite}, {10005, ref.KreditTilgung}, {10006, ref.Steuer}};
         PrintList(ClientArea, tmp, 1);
     } else if (page == 4) {
@@ -2005,7 +2006,7 @@ void BLOCK::ZeigeKerosinberater(XY ClientArea, SLONG page) {
             PrintLineAlignRight(ClientArea, idx++, "---");
         } else {
             // Qualität im Tank
-            PrintLineWithPercentage(ClientArea, idx++, 10304, std::floor((2 - ref.KerosinQuali)*1000), 1000);
+            PrintLineWithPercentage(ClientArea, idx++, 10304, std::floor((2 - ref.KerosinQuali) * 1000), 1000);
             PrintLineAlignRight(ClientArea, idx++, 10305 + quali);
         }
     } else if (page == 1) {

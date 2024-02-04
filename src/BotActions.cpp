@@ -888,7 +888,7 @@ void Bot::actionPlanRoutes() {
                 qRoute.ticketCostFactor -= (0.1 * numDecreases);
             }
         }
-        Limit(0.5, qRoute.ticketCostFactor, 4.0);
+        Limit(0.5, qRoute.ticketCostFactor, kMaxTicketPriceFactor);
 
         SLONG priceNew = costs * qRoute.ticketCostFactor;
         priceNew = priceNew / 10 * 10;
@@ -910,7 +910,7 @@ void Bot::actionWerbungRoutes(__int64 moneyAvailable) {
         for (; adCampaignSize >= kSmallestAdCampaign; adCampaignSize--) {
             cost = gWerbePrice[1 * 6 + adCampaignSize];
             SLONG imageDelta = UBYTE(cost / 30000);
-            if (qRoute.image + imageDelta > 100) {
+            if (getRentRoute(qRoute).Image + imageDelta > 100) {
                 continue;
             }
             if (cost <= moneyAvailable) {
@@ -920,7 +920,7 @@ void Bot::actionWerbungRoutes(__int64 moneyAvailable) {
         if (adCampaignSize < kSmallestAdCampaign) {
             return;
         }
-        SLONG oldImage = qRoute.image;
+        SLONG oldImage = getRentRoute(qRoute).Image;
         hprintf("Bot::actionWerbungRoutes(): Buying advertisement for route %s - %s for %ld $", (LPCTSTR)Cities[getRoute(qRoute).VonCity].Kuerzel,
                 (LPCTSTR)Cities[getRoute(qRoute).NachCity].Kuerzel, cost);
         GameMechanic::buyAdvertisement(qPlayer, 1, adCampaignSize, qRoute.routeId);
@@ -941,9 +941,12 @@ void Bot::actionWerbung(__int64 moneyAvailable) {
         if (qPlayer.Image + imageDelta > 1000) {
             continue;
         }
+        SLONG oldImage = qPlayer.Image;
         hprintf("Bot::actionWerbung(): Buying advertisement for airline for %ld $", cost);
         GameMechanic::buyAdvertisement(qPlayer, 0, adCampaignSize);
         moneyAvailable = getMoneyAvailable();
+
+        hprintf("Bot::actionWerbung(): Airline image improved (%ld => %ld)", oldImage, qPlayer.Image);
         break;
     }
 }
