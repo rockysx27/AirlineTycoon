@@ -167,7 +167,8 @@ class BotPlaner {
 
     void findPlaneTypes(std::vector<PlaneState> &planeStates);
     Solution findFlightPlan(Graph &g, int planeIdx, PlaneTime availTime, const std::vector<int> &eligibleJobIds);
-    std::pair<int, int> gatherAndPlanJobs(std::vector<FlightJob> &jobList, std::vector<PlaneState> &planeStates);
+    std::vector<Graph> prepareGraph(std::vector<FlightJob> &jobList, std::vector<PlaneState> &planeStates);
+    std::pair<int, int> gatherAndPlanJobs(std::vector<Graph> &graphs, std::vector<FlightJob> &jobList, std::vector<PlaneState> &planeStates);
     bool applySolution(int planeId, const BotPlaner::Solution &solution, std::vector<FlightJob> &jobList);
 
     PLAYER &qPlayer;
