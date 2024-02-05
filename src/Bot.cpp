@@ -73,14 +73,6 @@ SLONG Bot::calcCurrentGainFromJobs() const {
     return gain;
 }
 
-void Bot::printGainFromJobs(SLONG oldGain) const {
-    SLONG gain = 0;
-    for (auto planeId : mPlanesForJobs) {
-        gain += Helper::calculateScheduleGain(qPlayer, planeId);
-    }
-    hprintf("Bot::printGainFromJobs(): Improved gain from jobs from %ld to %ld.", oldGain, gain);
-}
-
 bool Bot::checkPlaneAvailable(SLONG planeId, bool printIfAvailable) const {
     const auto &qPlane = qPlayer.Planes[planeId];
     if (qPlane.AnzBegleiter < qPlane.ptAnzBegleiter) {
@@ -359,29 +351,7 @@ void Bot::RobotExecuteAction() {
     case ACTION_CALL_INTERNATIONAL:
         // Im Ausland anrufen:
         if (condCallInternational() != Prio::None) {
-            std::vector<int> cities;
-            for (SLONG n = 0; n < Cities.AnzEntries(); n++) {
-                if (!GameMechanic::canCallInternational(qPlayer, n)) {
-                    continue;
-                }
-
-                GameMechanic::refillFlightJobs(n);
-                cities.push_back(n);
-            }
-
-            if (!cities.empty()) {
-                // Normale Aufträge:
-                SLONG oldGain = calcCurrentGainFromJobs();
-                BotPlaner planer(qPlayer, qPlanes, BotPlaner::JobOwner::International, cities);
-                planer.planFlights(mPlanesForJobs);
-                printGainFromJobs(oldGain);
-                Helper::checkFlightJobs(qPlayer);
-
-                // Frachtaufträge:
-                // RobotUse(ROBOT_USE_MUCH_FRACHT)
-                // RobotUse(ROBOT_USE_MUCH_FRACHT_BONUS)
-                // TODO
-            }
+            actionCallInternational();
         } else {
             redprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
@@ -391,15 +361,7 @@ void Bot::RobotExecuteAction() {
         // Last-Minute
     case ACTION_CHECKAGENT1:
         if (condCheckLastMinute() != Prio::None) {
-            LastMinuteAuftraege.RefillForLastMinute();
-
-            SLONG oldGain = calcCurrentGainFromJobs();
-            BotPlaner planer(qPlayer, qPlanes, BotPlaner::JobOwner::LastMinute, {});
-            planer.planFlights(mPlanesForJobs);
-            printGainFromJobs(oldGain);
-            Helper::checkFlightJobs(qPlayer);
-
-            LastMinuteAuftraege.RefillForLastMinute();
+            actionCheckLastMinute();
         } else {
             redprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
@@ -409,15 +371,7 @@ void Bot::RobotExecuteAction() {
         // Reisebüro:
     case ACTION_CHECKAGENT2:
         if (condCheckTravelAgency() != Prio::None) {
-            ReisebueroAuftraege.RefillForReisebuero();
-
-            SLONG oldGain = calcCurrentGainFromJobs();
-            BotPlaner planer(qPlayer, qPlanes, BotPlaner::JobOwner::TravelAgency, {});
-            planer.planFlights(mPlanesForJobs);
-            printGainFromJobs(oldGain);
-            Helper::checkFlightJobs(qPlayer);
-
-            ReisebueroAuftraege.RefillForReisebuero();
+            actionCheckTravelAgency();
         } else {
             redprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
@@ -429,11 +383,7 @@ void Bot::RobotExecuteAction() {
         if (condCheckFreight() != Prio::None) {
             gFrachten.Refill();
 
-            SLONG oldGain = calcCurrentGainFromJobs();
-            BotPlaner planer(qPlayer, qPlanes, BotPlaner::JobOwner::Freight, {});
-            planer.planFlights(mPlanesForJobs);
-            printGainFromJobs(oldGain);
-            Helper::checkFlightJobs(qPlayer);
+            // TODO
 
             gFrachten.Refill();
         } else {

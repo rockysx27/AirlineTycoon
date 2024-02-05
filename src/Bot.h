@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <vector>
 
+class BotPlaner;
 class CPlaneType;
 class CRoute;
 class CRentRoute;
@@ -88,6 +89,10 @@ class Bot {
     /* in BotActions.cpp */
     void actionStartDay(__int64 moneyAvailable);
     void actionBuero();
+    void actionCallInternational();
+    void actionCheckLastMinute();
+    void actionCheckTravelAgency();
+    void _actionPlanFlights(BotPlaner &planer);
     void actionUpgradePlanes(__int64 moneyAvailable);
     void actionVisitHR();
     std::pair<SLONG, SLONG> kerosineQualiOptimization(__int64 moneyAvailable, DOUBLE targetFillRatio) const;
@@ -110,7 +115,6 @@ class Bot {
     SLONG numPlanes() const { return mPlanesForJobs.size() + mPlanesForRoutes.size() + mPlanesForRoutesUnassigned.size(); }
     std::vector<SLONG> findBestAvailablePlaneType() const;
     SLONG calcCurrentGainFromJobs() const;
-    void printGainFromJobs(SLONG oldGain) const;
     bool findPlanesWithoutCrew(std::vector<SLONG> &listAvailable, std::deque<SLONG> &listUnassigned);
     bool findPlanesWithCrew(std::deque<SLONG> &listUnassigned, std::vector<SLONG> &listAvailable);
     bool checkPlaneAvailable(SLONG planeId, bool printIfAvailable) const;

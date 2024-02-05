@@ -48,31 +48,6 @@ void Bot::actionStartDay(__int64 moneyAvailable) {
     /* maybe some planes now have crew? planes for routes will be checked in actionPlanRoutes() */
     findPlanesWithCrew(mPlanesForJobsUnassigned, mPlanesForJobs);
 
-    /* check whether we lost employees / increase salary for unhappy employees once */
-    SLONG nWorkers = 0;
-    SLONG salaryIncreases = 0;
-    for (SLONG c = 0; c < Workers.Workers.AnzEntries(); c++) {
-        auto &qWorker = Workers.Workers[c];
-        if (qWorker.Employer != qPlayer.PlayerNum) {
-            continue;
-        }
-
-        nWorkers++;
-
-        /* unhappy? */
-        if (qWorker.Happyness < kTargetEmployeeHappiness && qWorker.Gehalt <= qWorker.OriginalGehalt) {
-            qWorker.Gehaltsaenderung(true);
-            salaryIncreases++;
-        }
-    }
-    if (mNumEmployees > nWorkers) {
-        hprintf("Bot::actionStartDay(): We lost %ld employees", mNumEmployees - nWorkers);
-    }
-    mNumEmployees = nWorkers;
-    if (salaryIncreases > 0) {
-        hprintf("Bot::actionStartDay(): Increases salaray of %ld employees", salaryIncreases);
-    }
-
     /* logic for switching to routes */
     if (!mDoRoutes && mBestPlaneTypeId != -1) {
         const auto &bestPlaneType = PlaneTypes[mBestPlaneTypeId];
@@ -104,6 +79,53 @@ void Bot::actionStartDay(__int64 moneyAvailable) {
 void Bot::actionBuero() {
     checkLostRoutes();
     actionPlanRoutes();
+}
+
+void Bot::actionCallInternational() {
+    std::vector<int> cities;
+    for (SLONG n = 0; n < Cities.AnzEntries(); n++) {
+        if (!GameMechanic::canCallInternational(qPlayer, n)) {
+            continue;
+        }
+
+        GameMechanic::refillFlightJobs(n);
+        cities.push_back(n);
+    }
+
+    if (!cities.empty()) {
+        BotPlaner planer(qPlayer, qPlayer.Planes, BotPlaner::JobOwner::International, cities);
+        _actionPlanFlights(planer);
+
+        // Frachtaufträge:
+        // RobotUse(ROBOT_USE_MUCH_FRACHT)
+        // RobotUse(ROBOT_USE_MUCH_FRACHT_BONUS)
+        // TODO
+    }
+}
+
+void Bot::actionCheckLastMinute() {
+    LastMinuteAuftraege.RefillForLastMinute();
+
+    BotPlaner planer(qPlayer, qPlayer.Planes, BotPlaner::JobOwner::LastMinute, {});
+    _actionPlanFlights(planer);
+
+    LastMinuteAuftraege.RefillForLastMinute();
+}
+
+void Bot::actionCheckTravelAgency() {
+    ReisebueroAuftraege.RefillForReisebuero();
+
+    BotPlaner planer(qPlayer, qPlayer.Planes, BotPlaner::JobOwner::TravelAgency, {});
+    _actionPlanFlights(planer);
+
+    ReisebueroAuftraege.RefillForReisebuero();
+}
+
+void Bot::_actionPlanFlights(BotPlaner &planer) {
+    SLONG oldGain = calcCurrentGainFromJobs();
+    planer.planFlights(mPlanesForJobs);
+    hprintf("Bot::printGainFromJobs(): Improved gain from jobs from %ld to %ld.", oldGain, calcCurrentGainFromJobs());
+    Helper::checkFlightJobs(qPlayer);
 }
 
 void Bot::actionUpgradePlanes(__int64 moneyAvailable) {
@@ -252,6 +274,31 @@ void Bot::actionVisitHR() {
     }
 
     hprintf("Bot::actionVisitHR(): We have %ld extra pilots and %ld extra attendants", qPlayer.xPiloten, qPlayer.xBegleiter);
+
+    /* check whether we lost employees / increase salary for unhappy employees once */
+    SLONG nWorkers = 0;
+    SLONG salaryIncreases = 0;
+    for (SLONG c = 0; c < Workers.Workers.AnzEntries(); c++) {
+        auto &qWorker = Workers.Workers[c];
+        if (qWorker.Employer != qPlayer.PlayerNum) {
+            continue;
+        }
+
+        nWorkers++;
+
+        /* unhappy? */
+        if (qWorker.Happyness < kTargetEmployeeHappiness && qWorker.Gehalt <= qWorker.OriginalGehalt) {
+            qWorker.Gehaltsaenderung(true);
+            salaryIncreases++;
+        }
+    }
+    if (mNumEmployees > nWorkers) {
+        hprintf("Bot::actionStartDay(): We lost %ld employees", mNumEmployees - nWorkers);
+    }
+    mNumEmployees = nWorkers;
+    if (salaryIncreases > 0) {
+        hprintf("Bot::actionStartDay(): Increases salaray of %ld employees", salaryIncreases);
+    }
 }
 
 std::pair<SLONG, SLONG> Bot::kerosineQualiOptimization(__int64 moneyAvailable, DOUBLE targetFillRatio) const {
