@@ -55,6 +55,8 @@ Bot::Prio Bot::condAll(SLONG actionId) {
         return condVisitDutyFree(moneyAvailable);
     case ACTION_VISITAUFSICHT:
         return condVisitBoss(moneyAvailable);
+    case ACTION_EXPANDAIRPORT:
+        return condExpandAirport(moneyAvailable);
     case ACTION_VISITNASA:
         return condVisitNasa(moneyAvailable);
     case ACTION_VISITTELESCOPE:
@@ -307,6 +309,11 @@ Bot::Prio Bot::condIncreaseDividend(__int64 &moneyAvailable) {
     if (!hoursPassed(ACTION_SET_DIVIDEND, 24)) {
         return Prio::None;
     }
+    SLONG maxToEmit = (250000000 - qPlayer.MaxAktien) / 100 * 100;
+    if (maxToEmit < 10000) {
+        /* we cannot emit any shares anymore. We do not care about stock prices now. */
+        return (qPlayer.Dividende > 0) ? Prio::Medium : Prio::None;
+    }
     if (qPlayer.Dividende >= 25) {
         return Prio::None;
     }
@@ -472,6 +479,28 @@ Bot::Prio Bot::condVisitBoss(__int64 &moneyAvailable) {
         return Prio::Low;
     }
     return Prio::None;
+}
+
+Bot::Prio Bot::condExpandAirport(__int64 &moneyAvailable) {
+    moneyAvailable = getMoneyAvailable();
+    if (!hoursPassed(ACTION_EXPANDAIRPORT, 24)) {
+        return Prio::None;
+    }
+    if (GameMechanic::ExpandAirportResult::Ok != GameMechanic::canExpandAirport(qPlayer)) {
+        return Prio::None;
+    }
+    DOUBLE gateUtilization = 0;
+    for (auto util : qPlayer.Gates.Auslastung) {
+        gateUtilization += util;
+    }
+    if (gateUtilization / (24 * 7) < (qPlayer.Gates.NumRented - 1)) {
+        return Prio::None;
+    }
+    moneyAvailable -= 1000 * 1000;
+    if (moneyAvailable < 0) {
+        return Prio::None;
+    }
+    return Prio::Medium;
 }
 
 Bot::Prio Bot::condVisitRouteBoxPlanning() {

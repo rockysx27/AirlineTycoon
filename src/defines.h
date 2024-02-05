@@ -557,6 +557,7 @@ inline bool operator!=(const CPoint &lhs, const CPoint &rhs) { return !(lhs == r
 #define ACTION_WERBUNG_ROUTES 606
 #define ACTION_CALL_INTERNATIONAL 607
 #define ACTION_VISITROUTEBOX2 608
+#define ACTION_EXPANDAIRPORT 609
 
 // Die Arten von Beratern:
 #define BERATERTYP_GIRL 0 // Die Sekretärin

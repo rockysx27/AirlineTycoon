@@ -76,6 +76,7 @@ class Bot {
     Prio condBuyUsedPlane(__int64 &moneyAvailable);
     Prio condVisitDutyFree(__int64 &moneyAvailable);
     Prio condVisitBoss(__int64 &moneyAvailable);
+    Prio condExpandAirport(__int64 &moneyAvailable);
     Prio condVisitRouteBoxPlanning();
     Prio condVisitRouteBoxRenting(__int64 &moneyAvailable);
     Prio condVisitSecurity(__int64 &moneyAvailable);

@@ -198,15 +198,13 @@ void Bot::RobotPlan() {
 
     auto &qRobotActions = qPlayer.RobotActions;
 
-    SLONG actions[] = {ACTION_STARTDAY,       ACTION_BUERO,          ACTION_CALL_INTERNATIONAL, ACTION_CHECKAGENT1,
-                       ACTION_CHECKAGENT2,    ACTION_CHECKAGENT3,    ACTION_UPGRADE_PLANES,     ACTION_BUYNEWPLANE,
-                       ACTION_PERSONAL,       ACTION_BUY_KEROSIN,    ACTION_BUY_KEROSIN_TANKS,  ACTION_SABOTAGE,
-                       ACTION_SET_DIVIDEND,   ACTION_RAISEMONEY,     ACTION_DROPMONEY,          ACTION_EMITSHARES,
-                       ACTION_SELLSHARES,     ACTION_BUYSHARES,      ACTION_VISITMECH,          ACTION_VISITNASA,
-                       ACTION_VISITTELESCOPE, ACTION_VISITRICK,      ACTION_VISITKIOSK,         ACTION_BUYUSEDPLANE,
-                       ACTION_VISITDUTYFREE,  ACTION_VISITAUFSICHT,  ACTION_VISITROUTEBOX,      ACTION_VISITROUTEBOX2,
-                       ACTION_VISITSECURITY,  ACTION_VISITSECURITY2, ACTION_VISITDESIGNER,      ACTION_WERBUNG_ROUTES,
-                       ACTION_WERBUNG};
+    SLONG actions[] = {ACTION_STARTDAY,          ACTION_BUERO,          ACTION_CALL_INTERNATIONAL, ACTION_CHECKAGENT1,    ACTION_CHECKAGENT2,
+                       ACTION_CHECKAGENT3,       ACTION_UPGRADE_PLANES, ACTION_BUYNEWPLANE,        ACTION_PERSONAL,       ACTION_BUY_KEROSIN,
+                       ACTION_BUY_KEROSIN_TANKS, ACTION_SABOTAGE,       ACTION_SET_DIVIDEND,       ACTION_RAISEMONEY,     ACTION_DROPMONEY,
+                       ACTION_EMITSHARES,        ACTION_SELLSHARES,     ACTION_BUYSHARES,          ACTION_VISITMECH,      ACTION_VISITNASA,
+                       ACTION_VISITTELESCOPE,    ACTION_VISITRICK,      ACTION_VISITKIOSK,         ACTION_BUYUSEDPLANE,   ACTION_VISITDUTYFREE,
+                       ACTION_VISITAUFSICHT,     ACTION_EXPANDAIRPORT,  ACTION_VISITROUTEBOX,      ACTION_VISITROUTEBOX2, ACTION_VISITSECURITY,
+                       ACTION_VISITSECURITY2,    ACTION_VISITDESIGNER,  ACTION_WERBUNG_ROUTES,     ACTION_WERBUNG};
 
     if (qRobotActions[0].ActionId != ACTION_NONE || qRobotActions[1].ActionId != ACTION_NONE) {
         hprintf("Bot.cpp: Leaving RobotPlan() (actions already planned)\n");
@@ -522,7 +520,11 @@ void Bot::RobotExecuteAction() {
     case ACTION_SET_DIVIDEND:
         if (condIncreaseDividend(moneyAvailable) != Prio::None) {
             SLONG _dividende = qPlayer.Dividende;
-            if (qPlayer.RobotUse(ROBOT_USE_HIGHSHAREPRICE)) {
+            SLONG maxToEmit = (250000000 - qPlayer.MaxAktien) / 100 * 100;
+            if (maxToEmit < 10000) {
+                /* we cannot emit any shares anymore. We do not care about stock prices now. */
+                _dividende = 0;
+            } else if (qPlayer.RobotUse(ROBOT_USE_HIGHSHAREPRICE)) {
                 _dividende = 25;
             } else if (LocalRandom.Rand(10) == 0) {
                 if (LocalRandom.Rand(5) == 0) {
@@ -686,6 +688,16 @@ void Bot::RobotExecuteAction() {
     case ACTION_VISITAUFSICHT:
         if (condVisitBoss(moneyAvailable) != Prio::None) {
             actionVisitBoss(moneyAvailable);
+        } else {
+            redprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+        }
+        qWorkCountdown = 20 * 7;
+        break;
+
+    case ACTION_EXPANDAIRPORT:
+        if (condExpandAirport(moneyAvailable) != Prio::None) {
+            hprintf("Bot::RobotExecuteAction(): Expanding Airport");
+            GameMechanic::expandAirport(qPlayer);
         } else {
             redprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }

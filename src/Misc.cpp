@@ -2118,8 +2118,6 @@ const char *getRobotActionName(SLONG a) {
         return "ACTION_VISITRICK";
     case ACTION_VISITROUTEBOX:
         return "ACTION_VISITROUTEBOX";
-    case ACTION_VISITROUTEBOX2:
-        return "ACTION_VISITROUTEBOX2";
     case ACTION_VISITSECURITY:
         return "ACTION_VISITSECURITY";
     case ACTION_VISITDESIGNER:
@@ -2150,6 +2148,10 @@ const char *getRobotActionName(SLONG a) {
         return "ACTION_WERBUNG_ROUTES";
     case ACTION_CALL_INTERNATIONAL:
         return "ACTION_CALL_INTERNATIONAL";
+    case ACTION_VISITROUTEBOX2:
+        return "ACTION_VISITROUTEBOX2";
+    case ACTION_EXPANDAIRPORT:
+        return "ACTION_EXPANDAIRPORT";
     default:
         hprintf("Misc.cpp: Default case should not be reached.");
         DebugBreak();

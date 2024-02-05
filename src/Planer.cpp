@@ -3000,12 +3000,14 @@ void CPlaner::AutoPlan(SLONG mode) {
         /* schedule current plane */
         std::vector<int> planeIds;
         for (SLONG c = qPlayer.Blocks.AnzEntries() - 1; c >= 0; c--) {
-            if (qPlayer.Blocks.IsInAlbum(ULONG(c)) != 0) {
-                auto &qBlock = qPlayer.Blocks[c];
-                if (qPlayer.Planes.IsInAlbum(qBlock.SelectedId) != 0) {
-                    planeIds.push_back(qBlock.SelectedId);
-                    break;
-                }
+            if (qPlayer.Blocks.IsInAlbum(ULONG(c)) == 0) {
+                continue;
+            }
+            auto &qBlock = qPlayer.Blocks[c];
+            if (qPlayer.Planes.IsInAlbum(qBlock.SelectedId) != 0) {
+                SLONG idx = qPlayer.Planes.find(qBlock.SelectedId);
+                planeIds.push_back(qPlayer.Planes.GetIdFromIndex(idx));
+                break;
             }
         }
 
@@ -3020,7 +3022,7 @@ void CPlaner::AutoPlan(SLONG mode) {
         std::vector<int> planeIds;
         for (SLONG i = 0; i < qPlayer.Planes.AnzEntries(); i++) {
             if (qPlayer.Planes.IsInAlbum(i)) {
-                planeIds.push_back(i);
+                planeIds.push_back(qPlayer.Planes.GetIdFromIndex(i));
             }
         }
 

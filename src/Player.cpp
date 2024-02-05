@@ -3175,6 +3175,8 @@ void PLAYER::RobotPump() {
             rc = WalkToRoom(ROOM_SHOP1);
             break;
         case ACTION_VISITAUFSICHT:
+            [[fallthrough]];
+        case ACTION_EXPANDAIRPORT:
             rc = WalkToRoom(ROOM_AUFSICHT);
             break;
         case ACTION_VISITNASA:
