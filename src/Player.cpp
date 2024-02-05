@@ -1524,7 +1524,8 @@ void PLAYER::NewDay() {
     }
 
     // Mit der Zeit kann man mehr Aktien emittieren
-    MaxAktien = min((MaxAktien * 105 / 100), 250000000);
+    __int64 maxAktien = MaxAktien;
+    MaxAktien = min((maxAktien * 105 / 100), 2500000);
 
     for (c = 0; c < 10; c++) {
         Locations[c] = 0;

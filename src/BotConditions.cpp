@@ -309,7 +309,7 @@ Bot::Prio Bot::condIncreaseDividend(__int64 &moneyAvailable) {
     if (!hoursPassed(ACTION_SET_DIVIDEND, 24)) {
         return Prio::None;
     }
-    SLONG maxToEmit = (250000000 - qPlayer.MaxAktien) / 100 * 100;
+    SLONG maxToEmit = (2500000 - qPlayer.MaxAktien) / 100 * 100;
     if (maxToEmit < 10000) {
         /* we cannot emit any shares anymore. We do not care about stock prices now. */
         return (qPlayer.Dividende > 0) ? Prio::Medium : Prio::None;

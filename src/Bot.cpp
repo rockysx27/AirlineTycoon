@@ -520,7 +520,7 @@ void Bot::RobotExecuteAction() {
     case ACTION_SET_DIVIDEND:
         if (condIncreaseDividend(moneyAvailable) != Prio::None) {
             SLONG _dividende = qPlayer.Dividende;
-            SLONG maxToEmit = (250000000 - qPlayer.MaxAktien) / 100 * 100;
+            SLONG maxToEmit = (2500000 - qPlayer.MaxAktien) / 100 * 100;
             if (maxToEmit < 10000) {
                 /* we cannot emit any shares anymore. We do not care about stock prices now. */
                 _dividende = 0;
