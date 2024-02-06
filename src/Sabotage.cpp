@@ -249,13 +249,7 @@ void CSabotage::OnLButtonDown(UINT nFlags, CPoint point) {
         } else if (gMousePosition.IfIsWithin(298, 395, 337, 423)) {
             DynamitAnim.Remove();
         } else if (gMousePosition.IfIsWithin(384, 204, 426, 263)) {
-            if (Sim.ItemZange != 0) {
-                Sim.Players.Players[PlayerNum].BuyItem(ITEM_ZANGE);
-                if (Sim.Players.Players[PlayerNum].HasItem(ITEM_ZANGE) != 0) {
-                    Sim.ItemZange = 0;
-                    SIM::SendSimpleMessage(ATNET_TAKETHING, 0, ITEM_ZANGE);
-                }
-            }
+            GameMechanic::pickUpItem(Sim.Players.Players[PlayerNum], ITEM_ZANGE);
         } else {
             CStdRaum::OnLButtonDown(nFlags, point);
         }

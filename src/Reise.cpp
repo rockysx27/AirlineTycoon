@@ -360,8 +360,7 @@ void CReisebuero::OnLButtonDown(UINT nFlags, CPoint point) {
         if (MouseClickArea == ROOM_REISEBUERO && MouseClickId == 999) {
             qPlayer.LeaveRoom();
         } else if (MouseClickArea == ROOM_REISEBUERO && MouseClickId == 20) {
-            if ((qPlayer.HasItem(ITEM_SPINNE) == 0) && (qPlayer.HasSpaceForItem() != 0)) {
-                qPlayer.BuyItem(ITEM_SPINNE);
+            if (GameMechanic::PickUpItemResult::PickedUp == GameMechanic::pickUpItem(qPlayer, ITEM_SPINNE)) {
                 KommVar2 = 2;
                 KommVar = 0;
             }

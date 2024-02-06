@@ -1102,7 +1102,8 @@ bool GameMechanic::buyAdvertisement(PLAYER &qPlayer, SLONG adCampaignType, SLONG
 }
 
 GameMechanic::BuyItemResult GameMechanic::buyDutyFreeItem(PLAYER &qPlayer, UBYTE item) {
-    if (item != ITEM_LAPTOP && item != ITEM_MG && item != ITEM_FILOFAX && item != ITEM_HANDY && item != ITEM_BIER) {
+    if (item != ITEM_LAPTOP && item != ITEM_MG && item != ITEM_FILOFAX && item != ITEM_HANDY && item != ITEM_BIER && item != ITEM_PRALINEN &&
+        item != ITEM_PRALINEN_A) {
         redprintf("GameMechanic::buyDutyFreeItem: Invalid item (%ld).", item);
         return BuyItemResult::DeniedInvalidParam;
     }
@@ -1145,6 +1146,9 @@ GameMechanic::BuyItemResult GameMechanic::buyDutyFreeItem(PLAYER &qPlayer, UBYTE
     } else if (item == ITEM_BIER) {
         delta = atoi(StandardTexte.GetS(TOKEN_ITEM, 2000 + 700));
         buf = StandardTexte.GetS(TOKEN_ITEM, 1000 + 700);
+    } else if (item == ITEM_PRALINEN || item == ITEM_PRALINEN_A) {
+        delta = atoi(StandardTexte.GetS(TOKEN_ITEM, 2801));
+        buf = StandardTexte.GetS(TOKEN_ITEM, 1801);
     }
 
     if (qPlayer.HasItem(item) || qPlayer.HasSpaceForItem() == 0) {
@@ -1184,6 +1188,541 @@ GameMechanic::BuyItemResult GameMechanic::buyDutyFreeItem(PLAYER &qPlayer, UBYTE
     }
 
     return BuyItemResult::Ok;
+}
+
+GameMechanic::PickUpItemResult GameMechanic::pickUpItem(PLAYER &qPlayer, SLONG item) {
+    if ((qPlayer.HasItem(item) != 0) || (qPlayer.HasSpaceForItem() == 0)) {
+        redprintf("GameMechanic::pickUpItem: No space for item (%ld).", item);
+        return PickUpItemResult::NoSpace;
+    }
+
+    auto room = qPlayer.GetRoom();
+
+    switch (item) {
+    case ITEM_OEL:
+        if (room != ROOM_WERKSTATT) {
+            redprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
+            return PickUpItemResult::NotAllowed;
+        }
+        if (qPlayer.MechTrust == 0) {
+            return PickUpItemResult::NotAllowed;
+        }
+        qPlayer.BuyItem(ITEM_OEL);
+        return PickUpItemResult::PickedUp;
+    case ITEM_POSTKARTE:
+        if (room != ROOM_TAFEL) {
+            redprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
+            return PickUpItemResult::NotAllowed;
+        }
+        qPlayer.BuyItem(ITEM_POSTKARTE);
+        Sim.ItemPostcard = 0;
+        SIM::SendSimpleMessage(ATNET_TAKETHING, 0, ITEM_POSTKARTE);
+        return PickUpItemResult::PickedUp;
+    case ITEM_TABLETTEN:
+        if (room != ROOM_PERSONAL_A && room != ROOM_PERSONAL_B && room != ROOM_PERSONAL_C && room != ROOM_PERSONAL_D) {
+            redprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
+            return PickUpItemResult::NotAllowed;
+        }
+        if (qPlayer.SeligTrust == 1) {
+            qPlayer.BuyItem(ITEM_TABLETTEN);
+            return PickUpItemResult::PickedUp;
+        }
+        return PickUpItemResult::NotAllowed;
+    case ITEM_SPINNE:
+        if (room != ROOM_REISEBUERO) {
+            redprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
+            return PickUpItemResult::NotAllowed;
+        }
+        qPlayer.BuyItem(ITEM_SPINNE);
+        Sim.ItemPostcard = 0;
+        SIM::SendSimpleMessage(ATNET_TAKETHING, 0, ITEM_POSTKARTE);
+        return PickUpItemResult::PickedUp;
+    case ITEM_DART:
+        if (room != ROOM_SABOTAGE) {
+            redprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
+            return PickUpItemResult::NotAllowed;
+        }
+        if (qPlayer.SpiderTrust == 1) {
+            qPlayer.BuyItem(ITEM_DART);
+            return PickUpItemResult::PickedUp;
+        }
+        return PickUpItemResult::NotAllowed;
+    case ITEM_DISKETTE:
+        if (room != ROOM_WERBUNG) {
+            redprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
+            return PickUpItemResult::NotAllowed;
+        }
+        if (qPlayer.WerbungTrust == 1) {
+            qPlayer.BuyItem(ITEM_DISKETTE);
+            return PickUpItemResult::PickedUp;
+        }
+        return PickUpItemResult::NotAllowed;
+    case ITEM_BH:
+        if (room != ROOM_MAKLER) {
+            redprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
+            return PickUpItemResult::NotAllowed;
+        }
+        qPlayer.BuyItem(ITEM_BH);
+        return PickUpItemResult::PickedUp;
+    case ITEM_HUFEISEN:
+        if (room != ROOM_SHOP1) {
+            redprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
+            return PickUpItemResult::NotAllowed;
+        }
+        if (qPlayer.DutyTrust == 1) {
+            qPlayer.BuyItem(ITEM_HUFEISEN);
+            return PickUpItemResult::PickedUp;
+        }
+        return PickUpItemResult::NotAllowed;
+    case ITEM_PAPERCLIP:
+        if (room != ROOM_ROUTEBOX) {
+            redprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
+            return PickUpItemResult::NotAllowed;
+        }
+        qPlayer.BuyItem(ITEM_PAPERCLIP);
+        Sim.ItemClips = 0;
+        SIM::SendSimpleMessage(ATNET_TAKETHING, 0, ITEM_PAPERCLIP);
+        return PickUpItemResult::PickedUp;
+    case ITEM_GLUE:
+        if (room != ROOM_FRACHT) {
+            redprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
+            return PickUpItemResult::NotAllowed;
+        }
+        if (Sim.ItemGlue == 0) {
+            return PickUpItemResult::NotAllowed;
+        }
+        if (Sim.ItemGlue == 1) {
+            qPlayer.BuyItem(ITEM_GLUE);
+
+            Sim.ItemGlue = 2;
+            SIM::SendSimpleMessage(ATNET_TAKETHING, 0, ITEM_GLUE);
+            return PickUpItemResult::PickedUp;
+        }
+        break;
+    case ITEM_GLOVE:
+        if (room != ROOM_ARAB_AIR) {
+            redprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
+            return PickUpItemResult::NotAllowed;
+        }
+        qPlayer.BuyItem(ITEM_GLOVE);
+        Sim.ItemGlove = 0;
+        SIM::SendSimpleMessage(ATNET_TAKETHING, 0, ITEM_GLOVE);
+        return PickUpItemResult::PickedUp;
+    case ITEM_REDBULL:
+        if (room != ROOM_AIRPORT) {
+            redprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
+            return PickUpItemResult::NotAllowed;
+        }
+        for (SLONG c = 0; c < 6; c++) {
+            if (qPlayer.Items[c] == ITEM_GLOVE) {
+                qPlayer.Items[c] = ITEM_REDBULL;
+                return PickUpItemResult::PickedUp;
+            }
+        }
+        break;
+    case ITEM_STINKBOMBE:
+        if (room != ROOM_KIOSK) {
+            redprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
+            return PickUpItemResult::NotAllowed;
+        }
+        if (qPlayer.KioskTrust == 1) {
+            qPlayer.BuyItem(ITEM_STINKBOMBE);
+            qPlayer.KioskTrust = 0;
+            return PickUpItemResult::PickedUp;
+        }
+        return PickUpItemResult::NotAllowed;
+    case ITEM_GLKOHLE:
+        if (room != ROOM_BURO_A && room != ROOM_BURO_B && room != ROOM_BURO_C && room != ROOM_BURO_D) {
+            return PickUpItemResult::NotAllowed;
+        }
+        if (Sim.Players.Players[(room - ROOM_BURO_A) / 10].OfficeState != 2) {
+            return PickUpItemResult::NotAllowed;
+        }
+        if (Sim.ItemKohle != 0) {
+            qPlayer.BuyItem(ITEM_GLKOHLE);
+            Sim.ItemKohle = 0;
+            SIM::SendSimpleMessage(ATNET_TAKETHING, 0, ITEM_KOHLE);
+            return PickUpItemResult::PickedUp;
+        }
+        break;
+    case ITEM_ZANGE:
+        if (room != ROOM_SABOTAGE) {
+            redprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
+            return PickUpItemResult::NotAllowed;
+        }
+        if (Sim.ItemZange != 0) {
+            qPlayer.BuyItem(ITEM_ZANGE);
+            Sim.ItemZange = 0;
+            SIM::SendSimpleMessage(ATNET_TAKETHING, 0, ITEM_ZANGE);
+            return PickUpItemResult::PickedUp;
+        }
+        break;
+    case ITEM_PARFUEM:
+        if (room != ROOM_AIRPORT) {
+            redprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
+            return PickUpItemResult::NotAllowed;
+        }
+        if (Sim.ItemParfuem != 0) {
+            qPlayer.BuyItem(ITEM_PARFUEM);
+            Sim.ItemParfuem = 0;
+            SIM::SendSimpleMessage(ATNET_TAKETHING, 0, ITEM_PARFUEM);
+            return PickUpItemResult::PickedUp;
+        }
+        break;
+    default:
+        redprintf("GameMechanic::pickUpItem: Invalid item (%ld).", item);
+        DebugBreak();
+    }
+    return PickUpItemResult::None;
+}
+
+bool GameMechanic::useItem(PLAYER &qPlayer, SLONG item) {
+    SLONG itemIndex = -1;
+    for (SLONG d = 0; d < 6; d++) {
+        if (qPlayer.Items[d] == item) {
+            itemIndex = d;
+        }
+    }
+    if (itemIndex == -1) {
+        redprintf("GameMechanic::useItem: Player does not have item (%ld).", item);
+        return false;
+    }
+
+    if ((item != ITEM_REDBULL) && (Sim.Headlines.IsInteresting == 0) && qPlayer.GetRoom() == ROOM_KIOSK) {
+        /* Kiosk guy is currently sleeping */
+        return false;
+    }
+
+    bool bNoMenuOpen{true};
+    SLONG dialogPartner{TALKER_NONE};
+    CStdRaum *pRoom = nullptr;
+    if (qPlayer.Owner == 0) {
+        pRoom = qPlayer.LocationWin;
+        if (pRoom == nullptr) {
+            return false;
+        }
+        bNoMenuOpen = (pRoom->IsDialogOpen() == 0) && (pRoom->MenuIsOpen() == 0);
+        dialogPartner = pRoom->DefaultDialogPartner;
+    }
+
+    switch (item) {
+        // Leer:
+    case 0xff:
+        break;
+        // Kalaschnikow:
+    case ITEM_MG:
+        if (bNoMenuOpen && qPlayer.GetRoom() == ROOM_ARAB_AIR) {
+            qPlayer.ArabTrust = max(1, qPlayer.ArabTrust);
+            qPlayer.Items[itemIndex] = 0xff;
+            qPlayer.ReformIcons();
+            if (pRoom) {
+                pRoom->StartDialog(TALKER_ARAB, MEDIUM_AIR, 1);
+            }
+        } else if (pRoom && dialogPartner != TALKER_NONE) {
+            pRoom->StartDialog(dialogPartner, MEDIUM_AIR, 10000 + ITEM_MG);
+        }
+        break;
+
+        // Bier:
+    case ITEM_BIER:
+        if (bNoMenuOpen && qPlayer.GetRoom() == ROOM_WERKSTATT) {
+            qPlayer.MechTrust = max(1, qPlayer.MechTrust);
+            qPlayer.Items[itemIndex] = 0xff;
+            qPlayer.MechAngry = 0;
+            qPlayer.ReformIcons();
+            if (pRoom) {
+                pRoom->StartDialog(TALKER_MECHANIKER, MEDIUM_AIR, 2);
+            }
+        } else if (pRoom && dialogPartner != TALKER_NONE) {
+            pRoom->StartDialog(dialogPartner, MEDIUM_AIR, 10000 + ITEM_BIER);
+        } else {
+            PlayUniversalFx("gulps.raw", Sim.Options.OptionEffekte);
+            qPlayer.IsDrunk += 400;
+            qPlayer.Items[itemIndex] = 0xff;
+        }
+        break;
+
+    case ITEM_OEL:
+        if (bNoMenuOpen && qPlayer.GetRoom() == ROOM_GLOBE) {
+            qPlayer.GlobeOiled = TRUE;
+            qPlayer.Items[itemIndex] = 0xff;
+            qPlayer.ReformIcons();
+        } else if (pRoom && dialogPartner != TALKER_NONE) {
+            pRoom->StartDialog(dialogPartner, MEDIUM_AIR, 10000 + ITEM_OEL);
+        }
+        break;
+
+    case ITEM_TABLETTEN:
+        if (qPlayer.SickTokay != 0) {
+            qPlayer.SickTokay = 0;
+            qPlayer.Items[itemIndex] = 0xff;
+            qPlayer.ReformIcons();
+        } else if (pRoom && dialogPartner != TALKER_NONE) {
+            pRoom->StartDialog(dialogPartner, MEDIUM_AIR, 10000 + ITEM_TABLETTEN);
+        }
+        break;
+
+    case ITEM_POSTKARTE:
+        if (bNoMenuOpen && qPlayer.GetRoom() == ROOM_PERSONAL_A + qPlayer.PlayerNum * 10) {
+            qPlayer.SeligTrust = TRUE;
+            qPlayer.Items[itemIndex] = 0xff;
+            qPlayer.ReformIcons();
+            if (pRoom) {
+                pRoom->StartDialog(TALKER_PERSONAL1a + qPlayer.PlayerNum * 2, MEDIUM_AIR, 300);
+            }
+        } else if (pRoom && dialogPartner != TALKER_NONE) {
+            pRoom->StartDialog(dialogPartner, MEDIUM_AIR, 10000 + ITEM_POSTKARTE);
+        }
+        break;
+
+    case ITEM_SPINNE:
+        if (bNoMenuOpen && qPlayer.GetRoom() == ROOM_SABOTAGE) {
+            if (qPlayer.ArabTrust != 0) {
+                qPlayer.SpiderTrust = TRUE;
+                qPlayer.Items[itemIndex] = 0xff;
+                qPlayer.ReformIcons();
+            }
+            if (pRoom) {
+                pRoom->StartDialog(TALKER_SABOTAGE, MEDIUM_AIR, 3000);
+            }
+        } else if (pRoom && dialogPartner != TALKER_NONE) {
+            pRoom->StartDialog(dialogPartner, MEDIUM_AIR, 10000 + ITEM_SPINNE);
+        }
+        break;
+
+    case ITEM_DART:
+        if (bNoMenuOpen && qPlayer.GetRoom() == ROOM_WERBUNG && (Sim.Difficulty >= DIFF_NORMAL || Sim.Difficulty == DIFF_FREEGAME)) {
+            qPlayer.WerbungTrust = TRUE;
+            qPlayer.Items[itemIndex] = 0xff;
+            qPlayer.ReformIcons();
+            if (pRoom) {
+                pRoom->StartDialog(TALKER_WERBUNG, MEDIUM_AIR, 8001);
+            }
+        } else if (pRoom && dialogPartner != TALKER_NONE) {
+            pRoom->StartDialog(dialogPartner, MEDIUM_AIR, 10000 + ITEM_DART);
+        }
+        break;
+
+    case ITEM_DISKETTE:
+        if ((qPlayer.LaptopVirus != 0) && (qPlayer.HasItem(ITEM_LAPTOP) != 0)) {
+            if (qPlayer.GetRoom() == ROOM_LAPTOP) {
+                qPlayer.LeaveRoom();
+            }
+
+            qPlayer.LaptopVirus = 0;
+            qPlayer.Items[itemIndex] = 0xff;
+            qPlayer.ReformIcons();
+        } else if (pRoom && dialogPartner != TALKER_NONE) {
+            pRoom->StartDialog(dialogPartner, MEDIUM_AIR, 10000 + ITEM_DISKETTE);
+        }
+        break;
+
+    case ITEM_BH:
+        if (bNoMenuOpen && qPlayer.GetRoom() == ROOM_SHOP1) {
+            qPlayer.DutyTrust = TRUE;
+            qPlayer.Items[itemIndex] = 0xff;
+            if (pRoom) {
+                pRoom->StartDialog(TALKER_DUTYFREE, MEDIUM_AIR, 801);
+            }
+            qPlayer.ReformIcons();
+        } else if (pRoom && dialogPartner != TALKER_NONE) {
+            pRoom->StartDialog(dialogPartner, MEDIUM_AIR, 10000 + ITEM_BH);
+        }
+        break;
+
+    case ITEM_HUFEISEN:
+        if (bNoMenuOpen && qPlayer.GetRoom() == ROOM_RICKS) {
+            qPlayer.TrinkerTrust = TRUE;
+            qPlayer.Items[itemIndex] = 0xff;
+            if (pRoom) {
+                pRoom->StartDialog(TALKER_TRINKER, MEDIUM_AIR, 800);
+            }
+            qPlayer.ReformIcons();
+        } else if (pRoom && dialogPartner != TALKER_NONE) {
+            pRoom->StartDialog(dialogPartner, MEDIUM_AIR, 10000 + ITEM_HUFEISEN);
+        }
+        break;
+
+    case ITEM_PRALINEN:
+        if (pRoom && dialogPartner != TALKER_NONE) {
+            pRoom->StartDialog(dialogPartner, MEDIUM_AIR, 10000 + ITEM_PRALINEN);
+        } else {
+            qPlayer.Items[itemIndex] = 0xff;
+            qPlayer.ReformIcons();
+            PlayUniversalFx("eating.raw", Sim.Options.OptionEffekte);
+        }
+        break;
+
+    case ITEM_PRALINEN_A:
+        if (pRoom && dialogPartner != TALKER_NONE) {
+            pRoom->StartDialog(dialogPartner, MEDIUM_AIR, 10000 + ITEM_PRALINEN_A);
+        } else {
+            PlayUniversalFx("eating.raw", Sim.Options.OptionEffekte);
+            qPlayer.IsDrunk += 400;
+            qPlayer.Items[itemIndex] = 0xff;
+            qPlayer.ReformIcons();
+        }
+        break;
+
+    case ITEM_PAPERCLIP:
+        if (bNoMenuOpen && qPlayer.GetRoom() == ROOM_FRACHT && Sim.ItemGlue == 0 && (qPlayer.HasItem(ITEM_GLUE) == 0)) {
+            if (pRoom) {
+                pRoom->StartDialog(TALKER_FRACHT, MEDIUM_AIR, 1020);
+            }
+            qPlayer.DropItem(ITEM_PAPERCLIP);
+            Sim.ItemGlue = 1;
+        } else if (pRoom && dialogPartner != TALKER_NONE) {
+            pRoom->StartDialog(dialogPartner, MEDIUM_AIR, 10000 + ITEM_PAPERCLIP);
+        }
+        break;
+
+    case ITEM_GLUE:
+        if (qPlayer.GetRoom() == ROOM_AIRPORT) {
+            PERSON &qPerson = Sim.Persons[Sim.Persons.GetPlayerIndex(qPlayer.PlayerNum)];
+
+            // Obere oder untere Ebene?
+            if (qPerson.Position.y >= 4000) {
+                // oben!
+                if (Sim.AddGlueSabotage(qPerson.Position, qPerson.Dir, qPlayer.NewDir, qPerson.Phase)) {
+                    TEAKFILE Message;
+
+                    Message.Announce(30);
+                    Message << ATNET_SABOTAGE_DIRECT << SLONG(ITEM_GLUE) << qPerson.Position << qPerson.Dir << qPlayer.NewDir << qPerson.Phase;
+                    SIM::SendMemFile(Message, 0);
+
+                    qPlayer.DropItem(ITEM_GLUE);
+                }
+            } else if (pRoom) {
+                pRoom->MenuStart(MENU_REQUEST, MENU_REQUEST_NOGLUE);
+                pRoom->MenuSetZoomStuff(XY(320, 220), 0.17, FALSE);
+            }
+        } else if (pRoom && dialogPartner != TALKER_NONE) {
+            pRoom->StartDialog(dialogPartner, MEDIUM_AIR, 10000 + ITEM_GLUE);
+        }
+        break;
+
+    case ITEM_GLOVE:
+        if (pRoom && dialogPartner != TALKER_NONE) {
+            pRoom->StartDialog(dialogPartner, MEDIUM_AIR, 10000 + ITEM_GLOVE);
+        }
+        break;
+
+    case ITEM_REDBULL:
+        if (qPlayer.GetRoom() == ROOM_KIOSK) {
+            qPlayer.KioskTrust = 1;
+            qPlayer.Items[itemIndex] = 0xff;
+            qPlayer.ReformIcons();
+            if (pRoom) {
+                pRoom->StartDialog(TALKER_KIOSK, MEDIUM_AIR, 1010);
+            }
+        } else if (pRoom && dialogPartner != TALKER_NONE) {
+            pRoom->StartDialog(dialogPartner, MEDIUM_AIR, 10000 + ITEM_REDBULL);
+        } else {
+            PlayUniversalFx("gulps.raw", Sim.Options.OptionEffekte);
+            qPlayer.Koffein += 20 * 120;
+            qPlayer.Items[itemIndex] = 0xff;
+            qPlayer.ReformIcons();
+            PLAYER::NetSynchronizeFlags();
+            SIM::SendSimpleMessage(ATNET_CAFFEINE, 0, qPlayer.PlayerNum, qPlayer.Koffein);
+        }
+        break;
+
+    case ITEM_STINKBOMBE:
+        if (qPlayer.GetRoom() == ROOM_AIRPORT) {
+            PERSON &qPerson = Sim.Persons[Sim.Persons.GetPlayerIndex(qPlayer.PlayerNum)];
+
+            // Untere Ebene?
+            if (qPerson.Position.y < 4000) {
+                SIM::SendSimpleMessage(ATNET_SABOTAGE_DIRECT, 0, ITEM_STINKBOMBE, qPerson.Position.x, qPerson.Position.y);
+                Sim.AddStenchSabotage(qPerson.Position);
+
+                qPlayer.DropItem(ITEM_STINKBOMBE);
+            } else if (pRoom) {
+                pRoom->MenuStart(MENU_REQUEST, MENU_REQUEST_NOSTENCH);
+                pRoom->MenuSetZoomStuff(XY(320, 220), 0.17, FALSE);
+            }
+        } else if (pRoom && dialogPartner != TALKER_NONE) {
+            pRoom->StartDialog(dialogPartner, MEDIUM_AIR, 10000 + ITEM_STINKBOMBE);
+        }
+        break;
+
+    case ITEM_GLKOHLE:
+        if (qPlayer.GetRoom() == ROOM_LAST_MINUTE) {
+            SLONG cnt = 0;
+            for (SLONG c = LastMinuteAuftraege.AnzEntries() - 1; c >= 0; c--) {
+                if (LastMinuteAuftraege[c].Praemie > 0) {
+                    LastMinuteAuftraege[c].Praemie = 0;
+                    qPlayer.NetUpdateTook(2, c);
+                    cnt++;
+                }
+            }
+
+            if (cnt > 0 && qPlayer.Owner == 0) {
+                gUniversalFx.Stop();
+                gUniversalFx.ReInit("fireauft.raw");
+                gUniversalFx.Play(DSBPLAY_NOSTOP, Sim.Options.OptionEffekte * 100 / 7);
+            }
+        } else if (qPlayer.GetRoom() == ROOM_REISEBUERO) {
+            SLONG cnt = 0;
+            for (SLONG c = ReisebueroAuftraege.AnzEntries() - 1; c >= 0; c--) {
+                if (ReisebueroAuftraege[c].Praemie > 0) {
+                    ReisebueroAuftraege[c].Praemie = 0;
+                    qPlayer.NetUpdateTook(1, c);
+                    cnt++;
+                }
+            }
+
+            if (cnt > 0 && qPlayer.Owner == 0) {
+                gUniversalFx.Stop();
+                gUniversalFx.ReInit("fireauft.raw");
+                gUniversalFx.Play(DSBPLAY_NOSTOP, Sim.Options.OptionEffekte * 100 / 7);
+            }
+        } else if (pRoom && dialogPartner != TALKER_NONE) {
+            pRoom->StartDialog(dialogPartner, MEDIUM_AIR, 10000 + ITEM_GLKOHLE);
+        }
+        break;
+
+    case ITEM_KOHLE:
+        if (pRoom && dialogPartner != TALKER_NONE) {
+            pRoom->StartDialog(dialogPartner, MEDIUM_AIR, 10000 + ITEM_KOHLE);
+        }
+        break;
+
+    case ITEM_ZANGE:
+        if (pRoom && dialogPartner != TALKER_NONE) {
+            pRoom->StartDialog(dialogPartner, MEDIUM_AIR, 10000 + ITEM_ZANGE);
+        } else if (qPlayer.GetRoom() == ROOM_AIRPORT) {
+            XY Position = Sim.Persons[Sim.Persons.GetPlayerIndex(qPlayer.PlayerNum)].Position;
+
+            if (ROOM_SECURITY == Airport.GetRuneParNear(XY(Position.x, Position.y), XY(22, 22), RUNE_2SHOP)) {
+                GameMechanic::sabotageSecurityOffice(qPlayer);
+                PLAYER::NetSynchronizeItems();
+                qPlayer.WalkStopEx();
+            }
+        }
+        break;
+
+    case ITEM_PARFUEM:
+        if (qPlayer.GetRoom() == ROOM_WERKSTATT && Sim.Slimed != -1) {
+            qPlayer.Items[itemIndex] = ITEM_XPARFUEM;
+        } else if (pRoom && dialogPartner != TALKER_NONE) {
+            pRoom->StartDialog(dialogPartner, MEDIUM_AIR, 10000 + ITEM_PARFUEM);
+        }
+        break;
+
+    case ITEM_XPARFUEM:
+        if (qPlayer.GetRoom() == ROOM_AIRPORT) {
+            qPlayer.PlayerStinking = 2000;
+            qPlayer.DropItem(ITEM_XPARFUEM);
+            PLAYER::NetSynchronizeFlags();
+        }
+        break;
+
+    default:
+        redprintf("GameMechanic.cpp: Default case should not be reached.");
+        DebugBreak();
+    }
+    return true;
 }
 
 bool GameMechanic::takeFlightJob(PLAYER &qPlayer, SLONG jobId, SLONG &outObjectId) {

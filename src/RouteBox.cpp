@@ -680,11 +680,7 @@ void CRouteBox::OnLButtonDown(UINT nFlags, CPoint point) {
             if (MouseClickId == 999) {
                 qPlayer.LeaveRoom();
             } else if (MouseClickId == 200) {
-                qPlayer.BuyItem(ITEM_PAPERCLIP);
-                if (qPlayer.HasItem(ITEM_PAPERCLIP) != 0) {
-                    Sim.ItemClips = 0;
-                    SIM::SendSimpleMessage(ATNET_TAKETHING, 0, ITEM_PAPERCLIP);
-                }
+                GameMechanic::pickUpItem(qPlayer, ITEM_PAPERCLIP);
             } else if (MouseClickId == 10) {
                 RoutePage--;
                 RepaintList();

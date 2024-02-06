@@ -167,12 +167,7 @@ void CArabAir::OnLButtonDown(UINT nFlags, CPoint point) {
         } else if (MouseClickArea == ROOM_ARAB_AIR && MouseClickId == 10) {
             StartDialog(TALKER_ARAB, MEDIUM_AIR, 0);
         } else if (MouseClickArea == ROOM_ARAB_AIR && MouseClickId == 12) {
-            Sim.Players.Players[PlayerNum].BuyItem(ITEM_GLOVE);
-
-            if (Sim.Players.Players[PlayerNum].HasItem(ITEM_GLOVE) != 0) {
-                Sim.ItemGlove = 0;
-                SIM::SendSimpleMessage(ATNET_TAKETHING, 0, ITEM_GLOVE);
-            }
+            GameMechanic::pickUpItem(Sim.Players.Players[PlayerNum], ITEM_GLOVE);
         } else if (MouseClickArea == ROOM_ARAB_AIR && MouseClickId == 11) {
             StartDialog(TALKER_ARAB, MEDIUM_AIR, 100);
         } else {

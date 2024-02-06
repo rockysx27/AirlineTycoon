@@ -101,6 +101,11 @@ class GameMechanic {
     enum class BuyItemResult { Ok, DeniedInvalidParam, DeniedVirus1, DeniedVirus2, DeniedVirus3, DeniedLaptopNotYetAvailable, DeniedLaptopAlreadySold };
     static BuyItemResult buyDutyFreeItem(PLAYER &qPlayer, UBYTE item);
 
+    /* Items */
+    enum PickUpItemResult { PickedUp, NotAllowed, NoSpace, None };
+    static PickUpItemResult pickUpItem(PLAYER &qPlayer, SLONG item);
+    static bool useItem(PLAYER &qPlayer, SLONG item);
+
     /* Flights */
     static bool takeFlightJob(PLAYER &qPlayer, SLONG jobId, SLONG &outObjectId);
     static bool takeLastMinuteJob(PLAYER &qPlayer, SLONG jobId, SLONG &outObjectId);

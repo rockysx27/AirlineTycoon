@@ -298,9 +298,7 @@ void CMakler::OnLButtonDown(UINT nFlags, CPoint point) {
         } else if (MouseClickArea == ROOM_MAKLER && MouseClickId == 10) {
             StartDialog(TALKER_MAKLER, MEDIUM_AIR);
         } else if (MouseClickArea == ROOM_MAKLER && MouseClickId == 20) {
-            if ((qPlayer.HasSpaceForItem() != 0) && (Sim.Players.Players[PlayerNum].HasItem(ITEM_BH) == 0)) {
-                Sim.Players.Players[PlayerNum].BuyItem(ITEM_BH);
-
+            if (GameMechanic::PickUpItemResult::PickedUp == GameMechanic::pickUpItem(qPlayer, ITEM_BH)) {
                 SLONG cs = KlappenAnim.CounterStart;
                 KlappenAnim.ReSize(pRoomLib, "KLAPOH00", 4, &KlappeFx, FALSE, ANIMATION_MODE_ONCE, 500, 5);
                 KlappenAnim.CounterStart = cs;

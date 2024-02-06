@@ -287,9 +287,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                 StopDialog();
                 break;
             case 3002:
-                if (qPlayer.HasSpaceForItem() != 0) {
-                    qPlayer.BuyItem(ITEM_DART);
-                }
+                GameMechanic::pickUpItem(qPlayer, ITEM_DART);
                 StopDialog();
                 break;
 
@@ -4303,9 +4301,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                 StopDialog();
                 break;
             case 301:
-                if (qPlayer.HasSpaceForItem() != 0) {
-                    qPlayer.BuyItem(ITEM_TABLETTEN);
-                }
+                GameMechanic::pickUpItem(qPlayer, ITEM_TABLETTEN);
                 StopDialog();
                 break;
 
@@ -4426,9 +4422,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                 StopDialog();
                 break;
             case 8002:
-                if (qPlayer.HasSpaceForItem() != 0) {
-                    qPlayer.BuyItem(ITEM_DISKETTE);
-                }
+                GameMechanic::pickUpItem(qPlayer, ITEM_DISKETTE);
                 StopDialog();
                 break;
 
@@ -4540,9 +4534,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                 break;
 
             case 802:
-                if (qPlayer.HasSpaceForItem() != 0) {
-                    qPlayer.BuyItem(ITEM_HUFEISEN);
-                }
+                GameMechanic::pickUpItem(qPlayer, ITEM_HUFEISEN);
                 StopDialog();
                 break;
 
@@ -4568,39 +4560,12 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
 
             case 3001:
                 StopDialog();
-                if (qPlayer.HasSpaceForItem() != 0) {
-                    SLONG preis = -atoi(StandardTexte.GetS(TOKEN_ITEM, 2801));
-
-                    qPlayer.BuyItem(ITEM_PRALINEN_A);
-
-                    qPlayer.ChangeMoney(preis,
-                                        9999, // Leerstring
-                                        StandardTexte.GetS(TOKEN_ITEM, 1801));
-
-                    if (PlayerNum == Sim.localPlayer) {
-                        SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, preis, STAT_A_SONSTIGES);
-                    }
-
-                    qPlayer.DoBodyguardRabatt(-preis);
-                }
+                GameMechanic::buyDutyFreeItem(qPlayer, ITEM_PRALINEN_A);
                 break;
 
             case 3002:
                 StopDialog();
-                if (qPlayer.HasSpaceForItem() != 0) {
-                    SLONG preis = -atoi(StandardTexte.GetS(TOKEN_ITEM, 2801));
-
-                    qPlayer.BuyItem(ITEM_PRALINEN);
-
-                    qPlayer.ChangeMoney(preis,
-                                        9999, // Leerstring
-                                        StandardTexte.GetS(TOKEN_ITEM, 1801));
-                    if (PlayerNum == Sim.localPlayer) {
-                        SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, preis, STAT_A_SONSTIGES);
-                    }
-
-                    qPlayer.DoBodyguardRabatt(-preis);
-                }
+                GameMechanic::buyDutyFreeItem(qPlayer, ITEM_PRALINEN);
                 break;
 
             case 2001: {
@@ -5503,10 +5468,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
         case TALKER_KIOSK:
             switch (id) {
             case 1021:
-                if (qPlayer.HasSpaceForItem() != 0) {
-                    qPlayer.BuyItem(ITEM_STINKBOMBE);
-                }
-                qPlayer.KioskTrust = 0;
+                GameMechanic::pickUpItem(qPlayer, ITEM_STINKBOMBE);
                 StopDialog();
                 break;
 

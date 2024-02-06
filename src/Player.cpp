@@ -2531,13 +2531,7 @@ BOOL PLAYER::WalkToRoom(UBYTE RoomId) {
     if (RoomId == ROOM_BURO_A || RoomId == ROOM_BURO_B || RoomId == ROOM_BURO_C || RoomId == ROOM_BURO_D) {
         if (Sim.Players.Players[(RoomId - ROOM_BURO_A) / 10].OfficeState == 2) {
             if (Owner == 0 && (LocationWin != nullptr) && ((*LocationWin).MenuIsOpen() == 0) && ((*LocationWin).IsDialogOpen() == 0)) {
-                if (Sim.ItemKohle != 0) {
-                    BuyItem(ITEM_GLKOHLE);
-                    if (HasItem(ITEM_GLKOHLE) != 0) {
-                        Sim.ItemKohle = 0;
-                        SIM::SendSimpleMessage(ATNET_TAKETHING, 0, ITEM_KOHLE);
-                    }
-                }
+                GameMechanic::pickUpItem(*this, ITEM_GLKOHLE);
 
                 (LocationWin)->MenuStart(MENU_REQUEST, MENU_REQUEST_DESTROYED);
                 (LocationWin)->MenuSetZoomStuff(XY(320, 220), 0, FALSE);

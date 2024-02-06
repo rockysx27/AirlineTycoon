@@ -342,15 +342,8 @@ void CFrachtRaum::OnLButtonDown(UINT nFlags, CPoint point) {
             StartDialog(TALKER_FRACHT, MEDIUM_AIR, 1000);
         }
         if (MouseClickArea == ROOM_FRACHT && MouseClickId == 12) {
-            if (Sim.ItemGlue == 0) {
+            if (GameMechanic::PickUpItemResult::NotAllowed == GameMechanic::pickUpItem(qPlayer, ITEM_GLUE)) {
                 StartDialog(TALKER_FRACHT, MEDIUM_AIR, 1010);
-            } else if (Sim.ItemGlue == 1 && (qPlayer.HasSpaceForItem() != 0)) {
-                qPlayer.BuyItem(ITEM_GLUE);
-
-                if (qPlayer.HasItem(ITEM_GLUE) != 0) {
-                    Sim.ItemGlue = 2;
-                    SIM::SendSimpleMessage(ATNET_TAKETHING, 0, ITEM_GLUE);
-                }
             }
         }
 

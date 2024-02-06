@@ -265,14 +265,7 @@ void CTafel::OnLButtonDown(UINT nFlags, CPoint point) {
         if (MouseClickArea == ROOM_TAFEL && MouseClickId == 999) {
             qPlayer.LeaveRoom();
         } else if (MouseClickArea == ROOM_TAFEL && MouseClickId == 800 && (Sim.ItemPostcard != 0)) {
-            if (qPlayer.HasSpaceForItem() != 0) {
-                qPlayer.BuyItem(ITEM_POSTKARTE);
-
-                if (qPlayer.HasItem(ITEM_POSTKARTE) != 0) {
-                    Sim.ItemPostcard = 0;
-                    SIM::SendSimpleMessage(ATNET_TAKETHING, 0, ITEM_POSTKARTE);
-                }
-            }
+            GameMechanic::pickUpItem(qPlayer, ITEM_POSTKARTE);
         } else {
             // Auf einen der Zettel geklickt?
             for (c = 0; c < 21; c++) {

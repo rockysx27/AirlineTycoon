@@ -2229,12 +2229,7 @@ void PERSON::DoOnePlayerStep() {
                             }
 
                             if (State == Sim.localPlayer) {
-                                for (SLONG c = 0; c < 6; c++) {
-                                    if (qPlayer.Items[c] == ITEM_GLOVE) {
-                                        qPlayer.Items[c] = ITEM_REDBULL;
-                                        break;
-                                    }
-                                }
+                                GameMechanic::pickUpItem(qPlayer, ITEM_REDBULL);
                             }
                         } else {
                             BUILD *pBuild = Airport.GetBuildNear(ScreenPos, XY(180, 160), Bricks(static_cast<SLONG>(0x10000000) + BRICK_ELECTRO));
