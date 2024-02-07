@@ -173,6 +173,7 @@ void Bot::RobotInit() {
     mBestPlaneTypeId = -1;
     mBossNumCitiesAvailable = -1;
     mBossGateAvailable = false;
+    mIsSickToday = false;
 
     RobotPlan();
     hprintf("Bot.cpp: Leaving RobotInit()");
@@ -186,6 +187,12 @@ void Bot::RobotPlan() {
         RobotInit();
         hprintf("Bot.cpp: Leaving RobotPlan() (not initialized)\n");
         return;
+    }
+
+    if (mIsSickToday && qPlayer.HasItem(ITEM_TABLETTEN)) {
+        GameMechanic::useItem(qPlayer, ITEM_TABLETTEN);
+        hprintf("Bot::RobotPlan(): Cured sickness using item pills");
+        mIsSickToday = false;
     }
 
     auto &qRobotActions = qPlayer.RobotActions;
@@ -404,25 +411,7 @@ void Bot::RobotExecuteAction() {
 
     case ACTION_BUYNEWPLANE:
         if (condBuyNewPlane(moneyAvailable) != Prio::None) {
-            SLONG bestPlaneTypeId = mDoRoutes ? mBuyPlaneForRouteId : mBestPlaneTypeId;
-            assert(bestPlaneTypeId >= 0);
-            assert(qPlayer.xPiloten >= PlaneTypes[bestPlaneTypeId].AnzPiloten);
-            assert(qPlayer.xBegleiter >= PlaneTypes[bestPlaneTypeId].AnzBegleiter);
-            for (auto i : GameMechanic::buyPlane(qPlayer, bestPlaneTypeId, 1)) {
-                assert(i >= 0x1000000);
-                hprintf("Bot::RobotExecuteAction(): Bought plane (%s) %s", (LPCTSTR)qPlanes[i].Name, (LPCTSTR)PlaneTypes[bestPlaneTypeId].Name);
-                if (mDoRoutes) {
-                    mPlanesForRoutesUnassigned.push_back(i);
-                    mNeedToDoPlanning = true;
-                } else {
-                    if (checkPlaneAvailable(i, true)) {
-                        mPlanesForJobs.push_back(i);
-                    } else {
-                        mPlanesForJobsUnassigned.push_back(i);
-                    }
-                }
-            }
-            moneyAvailable = getMoneyAvailable();
+            actionBuyNewPlane(moneyAvailable);
         } else {
             redprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
@@ -458,8 +447,20 @@ void Bot::RobotExecuteAction() {
         break;
 
     case ACTION_SABOTAGE:
-        qPlayer.ArabTrust = max(1, qPlayer.ArabTrust); // Computerspieler müssen Araber nicht bestechen
         if (condSabotage(moneyAvailable) != Prio::None) {
+            if (mItemAntiVirus == 1) {
+                if (GameMechanic::useItem(qPlayer, ITEM_SPINNE)) {
+                    hprintf("Bot::RobotExecuteAction(): Used item tarantula");
+                    mItemAntiVirus = 2;
+                }
+            }
+            if (mItemAntiVirus == 2) {
+                if (GameMechanic::PickUpItemResult::PickedUp == GameMechanic::pickUpItem(qPlayer, ITEM_DART)) {
+                    hprintf("Bot::RobotExecuteAction(): Picked up item dart");
+                    mItemAntiVirus = 3;
+                }
+            }
+
             moneyAvailable = getMoneyAvailable();
         } else {
             redprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
@@ -598,8 +599,25 @@ void Bot::RobotExecuteAction() {
         qWorkCountdown = 20 * 5;
         break;
 
-    case ACTION_VISITTELESCOPE:
     case ACTION_VISITRICK:
+        if (condVisitMisc() != Prio::None) {
+            if (mItemAntiStrike == 3) {
+                if (GameMechanic::useItem(qPlayer, ITEM_HUFEISEN)) {
+                    hprintf("Bot::RobotExecuteAction(): Used item horse shoe");
+                    mItemAntiStrike = 4;
+                }
+            }
+            if (qPlayer.StrikeHours > 0 && qPlayer.StrikeEndType != 0 && mItemAntiStrike == 4) {
+                hprintf("Bot::RobotExecuteAction(): Ended strike using drunk guy");
+                GameMechanic::endStrike(qPlayer, GameMechanic::EndStrikeMode::Drunk);
+            }
+        } else {
+            redprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+        }
+        qWorkCountdown = 20 * 5;
+        break;
+
+    case ACTION_VISITTELESCOPE:
     case ACTION_VISITKIOSK:
         if (condVisitMisc() != Prio::None) {
         } else {
@@ -619,16 +637,7 @@ void Bot::RobotExecuteAction() {
 
     case ACTION_VISITDUTYFREE:
         if (condVisitDutyFree(moneyAvailable) != Prio::None) {
-            if (qPlayer.LaptopQuality < 4) {
-                auto quali = qPlayer.LaptopQuality;
-                GameMechanic::buyDutyFreeItem(qPlayer, ITEM_LAPTOP);
-                moneyAvailable = getMoneyAvailable();
-                hprintf("Bot::RobotExecuteAction(): Buying laptop (%ld => %ld)", quali, qPlayer.LaptopQuality);
-            } else if (!qPlayer.HasItem(ITEM_HANDY)) {
-                hprintf("Bot::RobotExecuteAction(): Buying cell phone");
-                GameMechanic::buyDutyFreeItem(qPlayer, ITEM_HANDY);
-                moneyAvailable = getMoneyAvailable();
-            }
+            actionVisitDutyFree(moneyAvailable);
         } else {
             redprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
@@ -700,7 +709,7 @@ void Bot::RobotExecuteAction() {
 
     case ACTION_WERBUNG_ROUTES:
         if (condBuyAdsForRoutes(moneyAvailable) != Prio::None) {
-            actionWerbungRoutes(moneyAvailable);
+            actionBuyAdsForRoutes(moneyAvailable);
         } else {
             redprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
@@ -709,7 +718,7 @@ void Bot::RobotExecuteAction() {
 
     case ACTION_WERBUNG:
         if (condBuyAds(moneyAvailable) != Prio::None) {
-            actionWerbung(moneyAvailable);
+            actionBuyAds(moneyAvailable);
         } else {
             redprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
@@ -803,6 +812,8 @@ TEAKFILE &operator<<(TEAKFILE &File, const Bot &bot) {
 
     File << bot.mNumEmployees;
 
+    File << bot.mItemPills << bot.mItemAntiVirus << bot.mItemAntiStrike << bot.mItemArabTrust << bot.mIsSickToday;
+
     SLONG magicnumber = 0x42;
     File << magicnumber;
 
@@ -892,6 +903,8 @@ TEAKFILE &operator>>(TEAKFILE &File, Bot &bot) {
     }
 
     File >> bot.mNumEmployees;
+
+    File >> bot.mItemPills >> bot.mItemAntiVirus >> bot.mItemAntiStrike >> bot.mItemArabTrust >> bot.mIsSickToday;
 
     SLONG magicnumber = 0;
     File >> magicnumber;

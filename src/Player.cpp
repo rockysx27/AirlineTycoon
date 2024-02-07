@@ -3030,6 +3030,10 @@ void PLAYER::RobotPump() {
 
                         pPerson->Mood = static_cast<UBYTE>(MoodPersonToilet);
                         pPerson->MoodCountdown = max(MOODCOUNT_START - 16, pPerson->MoodCountdown);
+
+                        if (IsSuperBot()) {
+                            mBot.setNoticedSickness();
+                        }
                     }
                 }
             }
@@ -6645,7 +6649,7 @@ void PLAYER::BroadcastPosition(bool bForce) {
     }
 }
 
-bool PLAYER::IsSuperBot() const { return (3 == PlayerNum); }
+bool PLAYER::IsSuperBot() const { return (Owner == 1) && (3 == PlayerNum); }
 
 //============================================================================================
 // PLAYERS::
@@ -7772,6 +7776,9 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
                        "XXXXXXXXXX";
         break;
     case ROBOT_USE_END_STRIKE_RAND:
+        if (IsSuperBot()) {
+            return false;
+        }
         pFeatureDesc = "XXXXXX"
                        "X"
                        "XXXXXXXXXX"

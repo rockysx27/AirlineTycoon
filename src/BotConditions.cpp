@@ -62,7 +62,7 @@ Bot::Prio Bot::condAll(SLONG actionId) {
     case ACTION_VISITTELESCOPE:
         return condVisitMisc();
     case ACTION_VISITRICK:
-        return condVisitMisc();
+        return condVisitRick();
     case ACTION_VISITROUTEBOX:
         return condVisitRouteBoxPlanning();
     case ACTION_VISITROUTEBOX2:
@@ -431,6 +431,13 @@ Bot::Prio Bot::condVisitNasa(__int64 &moneyAvailable) {
         return Prio::None;
     }
     return Prio::None;
+}
+
+Bot::Prio Bot::condVisitRick() {
+    if (qPlayer.StrikeHours > 0 && qPlayer.StrikeEndType != 0 && mItemAntiStrike == 4) {
+        return Prio::Top;
+    }
+    return condVisitMisc();
 }
 
 Bot::Prio Bot::condVisitMisc() {

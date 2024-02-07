@@ -30,6 +30,8 @@ class Bot {
     void RobotPlan();
     void RobotExecuteAction();
 
+    void setNoticedSickness() { mIsSickToday = true; }
+
     // private:
     enum class Prio { None, Low, Medium, High, Top };
     struct RouteInfo {
@@ -73,6 +75,7 @@ class Bot {
     Prio condBuyNemesisShares(__int64 &moneyAvailable, SLONG dislike);
     Prio condVisitMech(__int64 &moneyAvailable);
     Prio condVisitNasa(__int64 &moneyAvailable);
+    Prio condVisitRick();
     Prio condVisitMisc();
     Prio condBuyUsedPlane(__int64 &moneyAvailable);
     Prio condVisitDutyFree(__int64 &moneyAvailable);
@@ -92,8 +95,9 @@ class Bot {
     void actionCallInternational();
     void actionCheckLastMinute();
     void actionCheckTravelAgency();
-    void _actionPlanFlights(BotPlaner &planer);
+    void planFlights(BotPlaner &planer);
     void actionUpgradePlanes(__int64 moneyAvailable);
+    void actionBuyNewPlane(__int64 moneyAvailable);
     void actionVisitHR();
     std::pair<SLONG, SLONG> kerosineQualiOptimization(__int64 moneyAvailable, DOUBLE targetFillRatio) const;
     void actionBuyKerosine(__int64 moneyAvailable);
@@ -102,16 +106,20 @@ class Bot {
     SLONG calcNumOfFreeShares(SLONG playerId) const;
     void actionEmitShares();
     void actionBuyShares(__int64 moneyAvailable);
+    void actionVisitDutyFree(__int64 moneyAvailable);
     void actionVisitBoss(__int64 moneyAvailable);
+    std::pair<SLONG, SLONG> actionFindBestRoute(TEAKRAND &rnd) const;
+    void actionRentRoute(SLONG routeA, SLONG planeTypeId);
+    void actionBuyAdsForRoutes(__int64 moneyAvailable);
+    void actionBuyAds(__int64 moneyAvailable);
+
+    /* routes */
     SLONG getRouteTurnAroundDuration(const CRoute &qRoute, SLONG planeTypeId) const;
     void checkLostRoutes();
     void updateRouteInfo();
-    std::pair<SLONG, SLONG> actionFindBestRoute(TEAKRAND &rnd) const;
-    void actionRentRoute(SLONG routeA, SLONG planeTypeId);
-    void actionPlanRoutes();
-    void actionWerbungRoutes(__int64 moneyAvailable);
-    void actionWerbung(__int64 moneyAvailable);
+    void planRoutes();
 
+    /* misc */
     SLONG numPlanes() const { return mPlanesForJobs.size() + mPlanesForRoutes.size() + mPlanesForRoutesUnassigned.size(); }
     std::vector<SLONG> findBestAvailablePlaneType() const;
     SLONG calcCurrentGainFromJobs() const;
@@ -161,6 +169,13 @@ class Bot {
 
     /* crew */
     SLONG mNumEmployees{0};
+
+    /* items */
+    SLONG mItemPills{0};      /* 1: card taken, 2: card given */
+    SLONG mItemAntiVirus{0};  /* 1: spider taken, 2: spider given, 3: darts taken, 4: darts given */
+    SLONG mItemAntiStrike{0}; /* 1: BH taken, 2: BH given, 3: horseshoe taken, 4: horseshoe given */
+    SLONG mItemArabTrust{0};  /* 1: MG bought, 2: MG given */
+    bool mIsSickToday{false};
 };
 
 TEAKFILE &operator<<(TEAKFILE &File, const Bot &bot);
