@@ -102,7 +102,7 @@ class GameMechanic {
     static BuyItemResult buyDutyFreeItem(PLAYER &qPlayer, UBYTE item);
 
     /* Items */
-    enum PickUpItemResult { PickedUp, NotAllowed, NoSpace, None };
+    enum PickUpItemResult { PickedUp, NotAllowed, NoSpace, ConditionsNotMet, None };
     static PickUpItemResult pickUpItem(PLAYER &qPlayer, SLONG item);
     static bool useItem(PLAYER &qPlayer, SLONG item);
 

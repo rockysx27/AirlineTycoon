@@ -2260,20 +2260,8 @@ void CPlaner::HandleLButtonDown() {
             if (ClientPosB.IfIsWithin(2, 40 - 13 - 2, 169, 118)) {
                 PLAYER &qPlayer = Sim.Players.Players[PlayerNum];
                 CRentRoute &qRRoute = qPlayer.RentRouten.RentRouten[Routen(pBlock->SelectedIdB)];
-                CRentRoute *pRRoute = nullptr;
-                SLONG SelectedIdB2 = 0;
                 SLONG Cost =
                     CalculateFlightCostRechnerisch(Routen[pBlock->SelectedIdB].VonCity, Routen[pBlock->SelectedIdB].NachCity, 800, 800, -1) * 3 / 180 * 2;
-
-                for (SLONG c = qPlayer.RentRouten.RentRouten.AnzEntries() - 1;; c--) {
-                    if (Routen.IsInAlbum(c) != 0) {
-                        if (Routen[c].VonCity == Routen[pBlock->SelectedIdB].NachCity && Routen[c].NachCity == Routen[pBlock->SelectedIdB].VonCity) {
-                            pRRoute = &qPlayer.RentRouten.RentRouten[c];
-                            SelectedIdB2 = c;
-                            break;
-                        }
-                    }
-                }
 
                 SLONG ticketPreis = qRRoute.Ticketpreis;
                 SLONG ticketPreisFC = qRRoute.TicketpreisFC;

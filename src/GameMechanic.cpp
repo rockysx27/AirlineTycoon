@@ -982,6 +982,11 @@ void GameMechanic::increaseAllSalaries(PLAYER &qPlayer) {
 void GameMechanic::decreaseAllSalaries(PLAYER &qPlayer) { Workers.Gehaltsaenderung(0, qPlayer.PlayerNum); }
 
 void GameMechanic::endStrike(PLAYER &qPlayer, EndStrikeMode mode) {
+    if (qPlayer.StrikeEndType != 0) {
+        redprintf("GameMechanic::endStrike: Strike already ended.");
+        return;
+    }
+
     if (mode == EndStrikeMode::Salary) {
         qPlayer.StrikeEndType = 2; // Streik beendet durch Gehaltserhöhung
         qPlayer.StrikeEndCountdown = 2;
@@ -991,8 +996,12 @@ void GameMechanic::endStrike(PLAYER &qPlayer, EndStrikeMode mode) {
         qPlayer.StrikeEndCountdown = 4;
         Workers.AddHappiness(qPlayer.PlayerNum, -20);
     } else if (mode == EndStrikeMode::Drunk) {
-        qPlayer.StrikeEndType = 3; // Streik beendet durch Trinker
-        qPlayer.StrikeEndCountdown = 4;
+        if (qPlayer.TrinkerTrust == TRUE) {
+            qPlayer.StrikeEndType = 3; // Streik beendet durch Trinker
+            qPlayer.StrikeEndCountdown = 4;
+        } else {
+            redprintf("GameMechanic::endStrike: Drunk does not trust player.");
+        }
     } else {
         redprintf("GameMechanic::endStrike: Invalid EndStrikeMode (%ld).", mode);
     }
@@ -1123,6 +1132,13 @@ GameMechanic::BuyItemResult GameMechanic::buyDutyFreeItem(PLAYER &qPlayer, UBYTE
         }
     }
 
+    if (item == ITEM_MG) {
+        if (Sim.Date <= 0 || qPlayer.ArabTrust != 0) {
+            redprintf("GameMechanic::buyDutyFreeItem: Cannot buy item (%ld).", item);
+            return BuyItemResult::DeniedInvalidParam;
+        }
+    }
+
     SLONG delta = 0;
     char *buf;
     if (item == ITEM_LAPTOP) {
@@ -1202,7 +1218,7 @@ GameMechanic::PickUpItemResult GameMechanic::pickUpItem(PLAYER &qPlayer, SLONG i
     case ITEM_OEL:
         if (room != ROOM_WERKSTATT) {
             redprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
-            return PickUpItemResult::NotAllowed;
+            return PickUpItemResult::ConditionsNotMet;
         }
         if (qPlayer.MechTrust == 0) {
             return PickUpItemResult::NotAllowed;
@@ -1210,9 +1226,13 @@ GameMechanic::PickUpItemResult GameMechanic::pickUpItem(PLAYER &qPlayer, SLONG i
         qPlayer.BuyItem(ITEM_OEL);
         return PickUpItemResult::PickedUp;
     case ITEM_POSTKARTE:
-        if (room != ROOM_TAFEL) {
+        if (room != ROOM_TAFEL && room != ROOM_AUFSICHT) {
             redprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
-            return PickUpItemResult::NotAllowed;
+            return PickUpItemResult::ConditionsNotMet;
+        }
+        if ((Sim.ItemPostcard == 0) || qPlayer.SeligTrust != 0 || Sim.Difficulty == DIFF_TUTORIAL) {
+            redprintf("GameMechanic::pickUpItem: Item already taken (%ld).", item);
+            return PickUpItemResult::ConditionsNotMet;
         }
         qPlayer.BuyItem(ITEM_POSTKARTE);
         Sim.ItemPostcard = 0;
@@ -1221,7 +1241,7 @@ GameMechanic::PickUpItemResult GameMechanic::pickUpItem(PLAYER &qPlayer, SLONG i
     case ITEM_TABLETTEN:
         if (room != ROOM_PERSONAL_A && room != ROOM_PERSONAL_B && room != ROOM_PERSONAL_C && room != ROOM_PERSONAL_D) {
             redprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
-            return PickUpItemResult::NotAllowed;
+            return PickUpItemResult::ConditionsNotMet;
         }
         if (qPlayer.SeligTrust == 1) {
             qPlayer.BuyItem(ITEM_TABLETTEN);
@@ -1231,16 +1251,23 @@ GameMechanic::PickUpItemResult GameMechanic::pickUpItem(PLAYER &qPlayer, SLONG i
     case ITEM_SPINNE:
         if (room != ROOM_REISEBUERO) {
             redprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
-            return PickUpItemResult::NotAllowed;
+            return PickUpItemResult::ConditionsNotMet;
+        }
+        if (Sim.Difficulty <= 0 && Sim.Difficulty != DIFF_FREEGAME) {
+            redprintf("GameMechanic::pickUpItem: Item not available (%ld).", item);
+            return PickUpItemResult::ConditionsNotMet;
         }
         qPlayer.BuyItem(ITEM_SPINNE);
-        Sim.ItemPostcard = 0;
-        SIM::SendSimpleMessage(ATNET_TAKETHING, 0, ITEM_POSTKARTE);
+        SIM::SendSimpleMessage(ATNET_TAKETHING, 0, ITEM_SPINNE);
         return PickUpItemResult::PickedUp;
     case ITEM_DART:
         if (room != ROOM_SABOTAGE) {
             redprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
-            return PickUpItemResult::NotAllowed;
+            return PickUpItemResult::ConditionsNotMet;
+        }
+        if ((qPlayer.HasItem(ITEM_DISKETTE) != 0) || (qPlayer.WerbungTrust == TRUE)) {
+            redprintf("GameMechanic::pickUpItem: Item not available (%ld).", item);
+            return PickUpItemResult::ConditionsNotMet;
         }
         if (qPlayer.SpiderTrust == 1) {
             qPlayer.BuyItem(ITEM_DART);
@@ -1250,7 +1277,11 @@ GameMechanic::PickUpItemResult GameMechanic::pickUpItem(PLAYER &qPlayer, SLONG i
     case ITEM_DISKETTE:
         if (room != ROOM_WERBUNG) {
             redprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
-            return PickUpItemResult::NotAllowed;
+            return PickUpItemResult::ConditionsNotMet;
+        }
+        if (Sim.Difficulty < DIFF_NORMAL && Sim.Difficulty != DIFF_FREEGAME) {
+            redprintf("GameMechanic::pickUpItem: Item not available (%ld).", item);
+            return PickUpItemResult::ConditionsNotMet;
         }
         if (qPlayer.WerbungTrust == 1) {
             qPlayer.BuyItem(ITEM_DISKETTE);
@@ -1260,14 +1291,22 @@ GameMechanic::PickUpItemResult GameMechanic::pickUpItem(PLAYER &qPlayer, SLONG i
     case ITEM_BH:
         if (room != ROOM_MAKLER) {
             redprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
-            return PickUpItemResult::NotAllowed;
+            return PickUpItemResult::ConditionsNotMet;
+        }
+        if ((qPlayer.HasItem(ITEM_HUFEISEN) != 0) || qPlayer.TrinkerTrust == TRUE || Sim.Difficulty == DIFF_TUTORIAL) {
+            redprintf("GameMechanic::pickUpItem: Item not available (%ld).", item);
+            return PickUpItemResult::ConditionsNotMet;
         }
         qPlayer.BuyItem(ITEM_BH);
         return PickUpItemResult::PickedUp;
     case ITEM_HUFEISEN:
         if (room != ROOM_SHOP1) {
             redprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
-            return PickUpItemResult::NotAllowed;
+            return PickUpItemResult::ConditionsNotMet;
+        }
+        if (qPlayer.TrinkerTrust == TRUE) {
+            redprintf("GameMechanic::pickUpItem: Item not available (%ld).", item);
+            return PickUpItemResult::ConditionsNotMet;
         }
         if (qPlayer.DutyTrust == 1) {
             qPlayer.BuyItem(ITEM_HUFEISEN);
@@ -1277,7 +1316,11 @@ GameMechanic::PickUpItemResult GameMechanic::pickUpItem(PLAYER &qPlayer, SLONG i
     case ITEM_PAPERCLIP:
         if (room != ROOM_ROUTEBOX) {
             redprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
-            return PickUpItemResult::NotAllowed;
+            return PickUpItemResult::ConditionsNotMet;
+        }
+        if (Sim.ItemClips == 0) {
+            redprintf("GameMechanic::pickUpItem: Item already taken (%ld).", item);
+            return PickUpItemResult::ConditionsNotMet;
         }
         qPlayer.BuyItem(ITEM_PAPERCLIP);
         Sim.ItemClips = 0;
@@ -1286,23 +1329,27 @@ GameMechanic::PickUpItemResult GameMechanic::pickUpItem(PLAYER &qPlayer, SLONG i
     case ITEM_GLUE:
         if (room != ROOM_FRACHT) {
             redprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
-            return PickUpItemResult::NotAllowed;
-        }
-        if (Sim.ItemGlue == 0) {
-            return PickUpItemResult::NotAllowed;
+            return PickUpItemResult::ConditionsNotMet;
         }
         if (Sim.ItemGlue == 1) {
             qPlayer.BuyItem(ITEM_GLUE);
-
             Sim.ItemGlue = 2;
             SIM::SendSimpleMessage(ATNET_TAKETHING, 0, ITEM_GLUE);
             return PickUpItemResult::PickedUp;
         }
-        break;
+        if (Sim.ItemGlue == 2) {
+            redprintf("GameMechanic::pickUpItem: Item already taken (%ld).", item);
+            return PickUpItemResult::ConditionsNotMet;
+        }
+        return PickUpItemResult::NotAllowed;
     case ITEM_GLOVE:
         if (room != ROOM_ARAB_AIR) {
             redprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
-            return PickUpItemResult::NotAllowed;
+            return PickUpItemResult::ConditionsNotMet;
+        }
+        if (Sim.ItemGlove != 0) {
+            redprintf("GameMechanic::pickUpItem: Item already taken (%ld).", item);
+            return PickUpItemResult::ConditionsNotMet;
         }
         qPlayer.BuyItem(ITEM_GLOVE);
         Sim.ItemGlove = 0;
@@ -1311,7 +1358,7 @@ GameMechanic::PickUpItemResult GameMechanic::pickUpItem(PLAYER &qPlayer, SLONG i
     case ITEM_REDBULL:
         if (room != ROOM_AIRPORT) {
             redprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
-            return PickUpItemResult::NotAllowed;
+            return PickUpItemResult::ConditionsNotMet;
         }
         for (SLONG c = 0; c < 6; c++) {
             if (qPlayer.Items[c] == ITEM_GLOVE) {
@@ -1323,7 +1370,7 @@ GameMechanic::PickUpItemResult GameMechanic::pickUpItem(PLAYER &qPlayer, SLONG i
     case ITEM_STINKBOMBE:
         if (room != ROOM_KIOSK) {
             redprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
-            return PickUpItemResult::NotAllowed;
+            return PickUpItemResult::ConditionsNotMet;
         }
         if (qPlayer.KioskTrust == 1) {
             qPlayer.BuyItem(ITEM_STINKBOMBE);
@@ -1333,10 +1380,10 @@ GameMechanic::PickUpItemResult GameMechanic::pickUpItem(PLAYER &qPlayer, SLONG i
         return PickUpItemResult::NotAllowed;
     case ITEM_GLKOHLE:
         if (room != ROOM_BURO_A && room != ROOM_BURO_B && room != ROOM_BURO_C && room != ROOM_BURO_D) {
-            return PickUpItemResult::NotAllowed;
+            return PickUpItemResult::ConditionsNotMet;
         }
         if (Sim.Players.Players[(room - ROOM_BURO_A) / 10].OfficeState != 2) {
-            return PickUpItemResult::NotAllowed;
+            return PickUpItemResult::ConditionsNotMet;
         }
         if (Sim.ItemKohle != 0) {
             qPlayer.BuyItem(ITEM_GLKOHLE);
@@ -1348,19 +1395,20 @@ GameMechanic::PickUpItemResult GameMechanic::pickUpItem(PLAYER &qPlayer, SLONG i
     case ITEM_ZANGE:
         if (room != ROOM_SABOTAGE) {
             redprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
-            return PickUpItemResult::NotAllowed;
+            return PickUpItemResult::ConditionsNotMet;
         }
-        if (Sim.ItemZange != 0) {
-            qPlayer.BuyItem(ITEM_ZANGE);
-            Sim.ItemZange = 0;
-            SIM::SendSimpleMessage(ATNET_TAKETHING, 0, ITEM_ZANGE);
-            return PickUpItemResult::PickedUp;
+        if (Sim.ItemZange == 0) {
+            redprintf("GameMechanic::pickUpItem: Item already taken (%ld).", item);
+            return PickUpItemResult::ConditionsNotMet;
         }
-        break;
+        qPlayer.BuyItem(ITEM_ZANGE);
+        Sim.ItemZange = 0;
+        SIM::SendSimpleMessage(ATNET_TAKETHING, 0, ITEM_ZANGE);
+        return PickUpItemResult::PickedUp;
     case ITEM_PARFUEM:
         if (room != ROOM_AIRPORT) {
             redprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
-            return PickUpItemResult::NotAllowed;
+            return PickUpItemResult::ConditionsNotMet;
         }
         if (Sim.ItemParfuem != 0) {
             qPlayer.BuyItem(ITEM_PARFUEM);
@@ -1985,9 +2033,10 @@ bool GameMechanic::killFlightPlanFrom(PLAYER &qPlayer, SLONG planeId, SLONG date
     CFlugplan &qPlan = qPlayer.Planes[planeId].Flugplan;
 
     for (SLONG c = qPlan.Flug.AnzEntries() - 1; c >= 0; c--) {
-        if (qPlan.Flug[c].ObjectType != 0) {
-            if (qPlan.Flug[c].Startdate > date || (qPlan.Flug[c].Startdate == date && qPlan.Flug[c].Startzeit >= hours)) {
-                qPlan.Flug[c].ObjectType = 0;
+        auto &qFPE = qPlan.Flug[c];
+        if (qFPE.ObjectType != 0) {
+            if (qFPE.Startdate > date || (qFPE.Startdate == date && qFPE.Startzeit >= hours)) {
+                qFPE.ObjectType = 0;
             }
         }
     }
