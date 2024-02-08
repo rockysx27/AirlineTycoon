@@ -50,8 +50,10 @@ class Bot {
 
     /* in BotConditions.cpp */
     __int64 getMoneyAvailable() const;
-    bool haveDiscount() const;
     bool hoursPassed(SLONG room, SLONG hours);
+    bool haveDiscount() const;
+    enum class HowToPlan { None, Laptop, Office };
+    HowToPlan canWePlanFlights();
     Prio condAll(SLONG actionId);
     Prio condStartDay();
     Prio condBuero();
@@ -95,7 +97,9 @@ class Bot {
     void actionCallInternational();
     void actionCheckLastMinute();
     void actionCheckTravelAgency();
-    void planFlights(BotPlaner &planer);
+    void grabFlights(BotPlaner &planer);
+    void requestPlanFlights();
+    void planFlights();
     void actionUpgradePlanes(__int64 moneyAvailable);
     void actionBuyNewPlane(__int64 moneyAvailable);
     void actionVisitHR();
@@ -117,6 +121,7 @@ class Bot {
     SLONG getRouteTurnAroundDuration(const CRoute &qRoute, SLONG planeTypeId) const;
     void checkLostRoutes();
     void updateRouteInfo();
+    void requestPlanRoutes();
     void planRoutes();
 
     /* misc */
@@ -151,7 +156,8 @@ class Bot {
     bool mFirstRun{true};
     bool mDoRoutes{false};
     bool mOutOfGates{false};
-    bool mNeedToDoPlanning{false};
+    bool mNeedToPlanJobs{false};
+    bool mNeedToPlanRoutes{false};
 
     /* visit boss office */
     SLONG mBossNumCitiesAvailable{-1};

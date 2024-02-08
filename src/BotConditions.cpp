@@ -26,6 +26,21 @@ bool Bot::haveDiscount() const {
     return false;
 }
 
+Bot::HowToPlan Bot::canWePlanFlights() {
+    if (qPlayer.HasItem(ITEM_LAPTOP)) {
+        if ((qPlayer.LaptopVirus == 1) && (qPlayer.HasItem(ITEM_DISKETTE) == 1)) {
+            GameMechanic::useItem(qPlayer, ITEM_DISKETTE);
+        }
+        if (qPlayer.LaptopVirus == 0) {
+            return HowToPlan::Laptop;
+        }
+    }
+    if (qPlayer.OfficeState != 2) {
+        return HowToPlan::Office;
+    }
+    return HowToPlan::None;
+}
+
 Bot::Prio Bot::condAll(SLONG actionId) {
     __int64 moneyAvailable = 0;
     switch (actionId) {
@@ -123,7 +138,13 @@ Bot::Prio Bot::condStartDay() {
 
 Bot::Prio Bot::condBuero() {
     // not necesary to check hoursPassed()
-    if (mNeedToDoPlanning) {
+    if (qPlayer.OfficeState == 2) {
+        return Prio::None;
+    }
+    if (mNeedToPlanJobs) {
+        return Prio::Top;
+    }
+    if (mNeedToPlanRoutes) {
         return Prio::Top;
     }
     return Prio::None;
@@ -162,10 +183,16 @@ Bot::Prio Bot::condCheckLastMinute() {
     if (!hoursPassed(ACTION_CHECKAGENT1, 2)) {
         return Prio::None;
     }
+    if (HowToPlan::None == canWePlanFlights()) {
+        return Prio::None;
+    }
     return Prio::High;
 }
 Bot::Prio Bot::condCheckTravelAgency() {
     if (!hoursPassed(ACTION_CHECKAGENT2, 2)) {
+        return Prio::None;
+    }
+    if (HowToPlan::None == canWePlanFlights()) {
         return Prio::None;
     }
     return Prio::High;
@@ -175,6 +202,9 @@ Bot::Prio Bot::condCheckFreight() {
         return Prio::None;
     }
     if (!qPlayer.RobotUse(ROBOT_USE_FRACHT) || true) { // TODO
+        return Prio::None;
+    }
+    if (HowToPlan::None == canWePlanFlights()) {
         return Prio::None;
     }
     return Prio::Medium;
@@ -214,6 +244,9 @@ Bot::Prio Bot::condBuyNewPlane(__int64 &moneyAvailable) {
         return Prio::None;
     }
     if (qPlayer.RobotUse(ROBOT_USE_MAX10PLANES) && numPlanes() >= 10) {
+        return Prio::None;
+    }
+    if (HowToPlan::None == canWePlanFlights()) {
         return Prio::None;
     }
     if (!haveDiscount()) {
@@ -300,6 +333,9 @@ Bot::Prio Bot::condSabotage(__int64 &moneyAvailable) {
     moneyAvailable = getMoneyAvailable();
     if (!hoursPassed(ACTION_SABOTAGE, 24)) {
         return Prio::None;
+    }
+    if ((mItemAntiVirus == 1) || (mItemAntiVirus == 2)) {
+        return Prio::Low;
     }
     return Prio::None;
 }
@@ -517,6 +553,9 @@ Bot::Prio Bot::condVisitRouteBoxPlanning() {
     if (!qPlayer.RobotUse(ROBOT_USE_ROUTEBOX) || !mDoRoutes) {
         return Prio::None;
     }
+    if (HowToPlan::None == canWePlanFlights()) {
+        return Prio::None;
+    }
     if (mWantToRentRouteId != -1) {
         return Prio::None; /* we already want to rent a route */
     }
@@ -535,6 +574,9 @@ Bot::Prio Bot::condVisitRouteBoxRenting(__int64 &moneyAvailable) {
         return Prio::None;
     }
     if (!qPlayer.RobotUse(ROBOT_USE_ROUTEBOX) || !mDoRoutes) {
+        return Prio::None;
+    }
+    if (HowToPlan::None == canWePlanFlights()) {
         return Prio::None;
     }
     if (mWantToRentRouteId != -1) {

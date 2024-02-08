@@ -89,16 +89,23 @@ void printFPE(const CFlugplanEintrag &qFPE) {
     hprintf("%s: %s (%u, %s)", (LPCTSTR)strType, (LPCTSTR)strInfo, qFPE.Passagiere, (LPCTSTR)strDist);
 }
 
-std::pair<PlaneTime, int> getPlaneAvailableTimeLoc(const CPlane &qPlane) {
+std::pair<PlaneTime, int> getPlaneAvailableTimeLoc(const CPlane &qPlane, std::optional<PlaneTime> ignoreFrom) {
     const auto &qFlightPlan = qPlane.Flugplan.Flug;
     std::pair<PlaneTime, int> res{};
     res.second = qPlane.Flugplan.StartCity;
     for (int c = qFlightPlan.AnzEntries() - 1; c >= 0; c--) {
-        if (qFlightPlan[c].ObjectType <= 0) {
+        const auto &qFPE = qFlightPlan[c];
+        if (qFPE.ObjectType <= 0) {
             continue;
         }
-        res.first = {qFlightPlan[c].Landedate, qFlightPlan[c].Landezeit + kDurationExtra};
-        res.second = qFlightPlan[c].NachCity;
+        if (ignoreFrom.has_value()) {
+            auto &t = ignoreFrom.value();
+            if (PlaneTime{qFPE.Startdate, qFPE.Startzeit} >= t) {
+                continue;
+            }
+        }
+        res.first = {qFPE.Landedate, qFPE.Landezeit + kDurationExtra};
+        res.second = qFPE.NachCity;
         break;
     }
     PlaneTime currentTime{Sim.Date, Sim.GetHour() + kAvailTimeExtra};
@@ -270,7 +277,7 @@ SLONG checkFlightJobs(const PLAYER &qPlayer) {
         if (qPlayer.Planes.IsInAlbum(c) == 0) {
             continue;
         }
-        nIncorrect += Helper::checkPlaneSchedule(qPlayer, c, true);
+        nIncorrect += checkPlaneSchedule(qPlayer, c, false);
         nPlanes++;
     }
     hprintf("Bot::checkFlightJobs(): Found %ld problems for %ld planes.", nIncorrect, nPlanes);

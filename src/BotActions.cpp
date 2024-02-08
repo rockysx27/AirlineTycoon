@@ -39,7 +39,7 @@ static constexpr int ceil_div(int a, int b) {
 void Bot::actionStartDay(__int64 moneyAvailable) {
     updateRouteInfo();
 
-    mNeedToDoPlanning = true;
+    requestPlanRoutes();
 
     /* check if we still have enough personal */
     findPlanesWithoutCrew(mPlanesForJobs, mPlanesForJobsUnassigned);
@@ -94,7 +94,7 @@ void Bot::actionCallInternational() {
 
     if (!cities.empty()) {
         BotPlaner planer(qPlayer, qPlayer.Planes, BotPlaner::JobOwner::International, cities);
-        planFlights(planer);
+        grabFlights(planer);
 
         // Frachtaufträge:
         // RobotUse(ROBOT_USE_MUCH_FRACHT)
@@ -107,7 +107,7 @@ void Bot::actionCheckLastMinute() {
     LastMinuteAuftraege.RefillForLastMinute();
 
     BotPlaner planer(qPlayer, qPlayer.Planes, BotPlaner::JobOwner::LastMinute, {});
-    planFlights(planer);
+    grabFlights(planer);
 
     LastMinuteAuftraege.RefillForLastMinute();
 }
@@ -123,17 +123,33 @@ void Bot::actionCheckTravelAgency() {
     ReisebueroAuftraege.RefillForReisebuero();
 
     BotPlaner planer(qPlayer, qPlayer.Planes, BotPlaner::JobOwner::TravelAgency, {});
-    planFlights(planer);
+    grabFlights(planer);
 
     ReisebueroAuftraege.RefillForReisebuero();
 }
 
-void Bot::planFlights(BotPlaner &planer) {
+void Bot::grabFlights(BotPlaner &planer) {
     SLONG oldGain = calcCurrentGainFromJobs();
     planer.planFlights(mPlanesForJobs);
+    // TODO
+    // requestPlanFlights()();
+    planer.applySolution();
     hprintf("Bot::printGainFromJobs(): Improved gain from jobs from %ld to %ld.", oldGain, calcCurrentGainFromJobs());
     Helper::checkFlightJobs(qPlayer);
 }
+
+void Bot::requestPlanFlights() {
+    auto res = canWePlanFlights();
+    if (res == HowToPlan::Laptop) {
+        planFlights();
+        hprintf("Bot::requestPlanFlights(): Planning using laptop");
+    } else {
+        mNeedToPlanJobs = true;
+        hprintf("Bot::requestPlanFlights(): No laptop, need to go to office");
+    }
+}
+
+void Bot::planFlights() { mNeedToPlanJobs = false; }
 
 void Bot::actionUpgradePlanes(__int64 moneyAvailable) {
     SLONG anzahl = 4;
@@ -220,7 +236,7 @@ void Bot::actionBuyNewPlane(__int64 moneyAvailable) {
         hprintf("Bot::actionBuyNewPlane(): Bought plane (%s) %s", (LPCTSTR)qPlayer.Planes[i].Name, (LPCTSTR)PlaneTypes[bestPlaneTypeId].Name);
         if (mDoRoutes) {
             mPlanesForRoutesUnassigned.push_back(i);
-            mNeedToDoPlanning = true;
+            requestPlanRoutes();
         } else {
             if (checkPlaneAvailable(i, true)) {
                 mPlanesForJobs.push_back(i);
@@ -786,8 +802,8 @@ void Bot::actionRentRoute(SLONG routeA, SLONG planeTypeId) {
         hprintf("Bot::actionRentRoute(): Renting route %s (using plane type %s): ", Helper::getRouteName(getRoute(mRoutes.back())).c_str(),
                 (LPCTSTR)PlaneTypes[planeTypeId].Name);
 
-        mNeedToDoPlanning = true;
         updateRouteInfo();
+        requestPlanRoutes();
     }
 }
 
@@ -902,7 +918,6 @@ void Bot::checkLostRoutes() {
                     mPlanesForRoutesUnassigned.push_back(planeId);
                     GameMechanic::killFlightPlan(qPlayer, planeId);
                     hprintf("Bot::checkLostRoutes(): Plane %s does not have a route anymore.", (LPCTSTR)qPlayer.Planes[planeId].Name);
-                    mNeedToDoPlanning = true;
                 }
             }
         }
@@ -966,8 +981,19 @@ void Bot::updateRouteInfo() {
     }
 }
 
+void Bot::requestPlanRoutes() {
+    auto res = canWePlanFlights();
+    if (res == HowToPlan::Laptop) {
+        planRoutes();
+        hprintf("Bot::requestPlanRoutes(): Planning using laptop");
+    } else {
+        mNeedToPlanRoutes = true;
+        hprintf("Bot::requestPlanRoutes(): No laptop, need to go to office");
+    }
+}
+
 void Bot::planRoutes() {
-    mNeedToDoPlanning = false;
+    mNeedToPlanRoutes = false;
     if (mRoutes.empty()) {
         return;
     }
@@ -1031,7 +1057,7 @@ void Bot::planRoutes() {
             /* where is the plane right now and when can it be in the origin city? */
             PlaneTime availTime;
             SLONG availCity{};
-            std::tie(availTime, availCity) = Helper::getPlaneAvailableTimeLoc(qPlane);
+            std::tie(availTime, availCity) = Helper::getPlaneAvailableTimeLoc(qPlane, {});
             availCity = Cities.find(availCity);
             hprintf("BotPlaner::planRoutes(): Plane %s is in %s @ %s %ld", (LPCTSTR)qPlane.Name, (LPCTSTR)Cities[availCity].Kuerzel,
                     (LPCTSTR)Helper::getWeekday(availTime.getDate()), availTime.getHour());

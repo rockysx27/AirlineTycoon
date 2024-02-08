@@ -778,7 +778,7 @@ TEAKFILE &operator<<(TEAKFILE &File, const Bot &bot) {
     File << bot.mFirstRun;
     File << bot.mDoRoutes;
     File << bot.mOutOfGates;
-    File << bot.mNeedToDoPlanning;
+    File << bot.mNeedToPlanJobs << bot.mNeedToPlanRoutes;
 
     File << bot.mBossNumCitiesAvailable;
     File << bot.mBossGateAvailable;
@@ -863,7 +863,7 @@ TEAKFILE &operator>>(TEAKFILE &File, Bot &bot) {
     File >> bot.mFirstRun;
     File >> bot.mDoRoutes;
     File >> bot.mOutOfGates;
-    File >> bot.mNeedToDoPlanning;
+    File >> bot.mNeedToPlanJobs >> bot.mNeedToPlanRoutes;
 
     File >> bot.mBossNumCitiesAvailable;
     File >> bot.mBossGateAvailable;

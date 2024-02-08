@@ -39,14 +39,22 @@ class PlaneTime {
         t -= delta;
         return t;
     }
-    bool operator==(const PlaneTime &other) { return (mDate == other.mDate && mTime == other.mTime); }
-    bool operator!=(const PlaneTime &other) { return (mDate != other.mDate || mTime != other.mTime); }
-    bool operator>(const PlaneTime &other) {
+    bool operator==(const PlaneTime &other) const { return (mDate == other.mDate && mTime == other.mTime); }
+    bool operator!=(const PlaneTime &other) const { return (mDate != other.mDate || mTime != other.mTime); }
+    bool operator>(const PlaneTime &other) const {
         if (mDate == other.mDate) {
             return (mTime > other.mTime);
         }
         return (mDate > other.mDate);
     }
+    bool operator>=(const PlaneTime &other) const {
+        if (mDate == other.mDate) {
+            return (mTime >= other.mTime);
+        }
+        return (mDate > other.mDate);
+    }
+    bool operator<(const PlaneTime &other) const { return other > *this; }
+    bool operator<=(const PlaneTime &other) const { return other >= *this; }
     void setDate(int date) {
         mDate = date;
         mTime = 0;
@@ -126,9 +134,11 @@ class BotPlaner {
         int totalPremium{0};
     };
 
+    BotPlaner() = default;
     BotPlaner(PLAYER &player, const CPlanes &planes, JobOwner jobOwner, std::vector<int> intJobSource);
 
     int planFlights(const std::vector<int> &planeIdsInput);
+    bool applySolution();
 
   private:
     struct PlaneState {
@@ -165,17 +175,28 @@ class BotPlaner {
     void printSolution(const Solution &solution, const std::vector<FlightJob> &list);
     void printGraph(const std::vector<PlaneState> &planeStates, const std::vector<FlightJob> &list, const Graph &g);
 
-    void findPlaneTypes(std::vector<PlaneState> &planeStates);
+    /* preparation */
+    void findPlaneTypes();
+    void collectAllFlightJobs(const std::vector<int> &planeIds);
+    std::vector<Graph> prepareGraph();
+
+    /* algo 1 */
     Solution findFlightPlan(Graph &g, int planeIdx, PlaneTime availTime, const std::vector<int> &eligibleJobIds);
-    std::vector<Graph> prepareGraph(std::vector<FlightJob> &jobList, std::vector<PlaneState> &planeStates);
-    std::pair<int, int> gatherAndPlanJobs(std::vector<Graph> &graphs, std::vector<FlightJob> &jobList, std::vector<PlaneState> &planeStates);
-    bool applySolution(int planeId, const BotPlaner::Solution &solution, std::vector<FlightJob> &jobList);
+    std::pair<int, int> gatherAndPlanJobs(std::vector<Graph> &graphs);
+
+    /* apply solution */
+    bool applySolutionForPlane(int planeId, const BotPlaner::Solution &solution);
 
     PLAYER &qPlayer;
     JobOwner mJobOwner;
     std::vector<int> mIntJobSource;
     const CPlanes &qPlanes;
+    PlaneTime mScheduleFromTime;
+
+    /* state */
     std::vector<const CPlane *> mPlaneTypeToPlane;
+    std::vector<FlightJob> mJobList;
+    std::vector<PlaneState> mPlaneStates;
 };
 
 #endif // BOT_PLANER_H_
