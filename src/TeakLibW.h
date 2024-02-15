@@ -476,9 +476,9 @@ class CRLEReader {
 class TEAKRAND {
   public:
     TEAKRAND(void);
-    TEAKRAND(ULONG _Seed);
+    TEAKRAND(ULONG seedInput);
 
-    void SRand(ULONG _Seed);
+    void SRand(ULONG seedInput);
     void SRandTime(void);
     void Reset(void);
 
