@@ -1217,8 +1217,7 @@ GameMechanic::PickUpItemResult GameMechanic::pickUpItem(PLAYER &qPlayer, SLONG i
     switch (item) {
     case ITEM_OEL:
         if (room != ROOM_WERKSTATT) {
-            redprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
-            return PickUpItemResult::ConditionsNotMet;
+            hprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
         }
         if (qPlayer.MechTrust == 0) {
             return PickUpItemResult::NotAllowed;
@@ -1227,8 +1226,7 @@ GameMechanic::PickUpItemResult GameMechanic::pickUpItem(PLAYER &qPlayer, SLONG i
         return PickUpItemResult::PickedUp;
     case ITEM_POSTKARTE:
         if (room != ROOM_TAFEL && room != ROOM_AUFSICHT) {
-            redprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
-            return PickUpItemResult::ConditionsNotMet;
+            hprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
         }
         if ((Sim.ItemPostcard == 0) || qPlayer.SeligTrust != 0 || Sim.Difficulty == DIFF_TUTORIAL) {
             redprintf("GameMechanic::pickUpItem: Item already taken (%ld).", item);
@@ -1240,8 +1238,7 @@ GameMechanic::PickUpItemResult GameMechanic::pickUpItem(PLAYER &qPlayer, SLONG i
         return PickUpItemResult::PickedUp;
     case ITEM_TABLETTEN:
         if (room != ROOM_PERSONAL_A && room != ROOM_PERSONAL_B && room != ROOM_PERSONAL_C && room != ROOM_PERSONAL_D) {
-            redprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
-            return PickUpItemResult::ConditionsNotMet;
+            hprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
         }
         if (qPlayer.SeligTrust == 1) {
             qPlayer.BuyItem(ITEM_TABLETTEN);
@@ -1250,8 +1247,7 @@ GameMechanic::PickUpItemResult GameMechanic::pickUpItem(PLAYER &qPlayer, SLONG i
         return PickUpItemResult::NotAllowed;
     case ITEM_SPINNE:
         if (room != ROOM_REISEBUERO) {
-            redprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
-            return PickUpItemResult::ConditionsNotMet;
+            hprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
         }
         if (Sim.Difficulty <= 0 && Sim.Difficulty != DIFF_FREEGAME) {
             redprintf("GameMechanic::pickUpItem: Item not available (%ld).", item);
@@ -1262,8 +1258,7 @@ GameMechanic::PickUpItemResult GameMechanic::pickUpItem(PLAYER &qPlayer, SLONG i
         return PickUpItemResult::PickedUp;
     case ITEM_DART:
         if (room != ROOM_SABOTAGE) {
-            redprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
-            return PickUpItemResult::ConditionsNotMet;
+            hprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
         }
         if ((qPlayer.HasItem(ITEM_DISKETTE) != 0) || (qPlayer.WerbungTrust == TRUE)) {
             redprintf("GameMechanic::pickUpItem: Item not available (%ld).", item);
@@ -1276,8 +1271,7 @@ GameMechanic::PickUpItemResult GameMechanic::pickUpItem(PLAYER &qPlayer, SLONG i
         return PickUpItemResult::NotAllowed;
     case ITEM_DISKETTE:
         if (room != ROOM_WERBUNG) {
-            redprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
-            return PickUpItemResult::ConditionsNotMet;
+            hprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
         }
         if (Sim.Difficulty < DIFF_NORMAL && Sim.Difficulty != DIFF_FREEGAME) {
             redprintf("GameMechanic::pickUpItem: Item not available (%ld).", item);
@@ -1290,8 +1284,7 @@ GameMechanic::PickUpItemResult GameMechanic::pickUpItem(PLAYER &qPlayer, SLONG i
         return PickUpItemResult::NotAllowed;
     case ITEM_BH:
         if (room != ROOM_MAKLER) {
-            redprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
-            return PickUpItemResult::ConditionsNotMet;
+            hprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
         }
         if ((qPlayer.HasItem(ITEM_HUFEISEN) != 0) || qPlayer.TrinkerTrust == TRUE || Sim.Difficulty == DIFF_TUTORIAL) {
             redprintf("GameMechanic::pickUpItem: Item not available (%ld).", item);
@@ -1301,8 +1294,7 @@ GameMechanic::PickUpItemResult GameMechanic::pickUpItem(PLAYER &qPlayer, SLONG i
         return PickUpItemResult::PickedUp;
     case ITEM_HUFEISEN:
         if (room != ROOM_SHOP1) {
-            redprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
-            return PickUpItemResult::ConditionsNotMet;
+            hprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
         }
         if (qPlayer.TrinkerTrust == TRUE) {
             redprintf("GameMechanic::pickUpItem: Item not available (%ld).", item);
@@ -1315,8 +1307,7 @@ GameMechanic::PickUpItemResult GameMechanic::pickUpItem(PLAYER &qPlayer, SLONG i
         return PickUpItemResult::NotAllowed;
     case ITEM_PAPERCLIP:
         if (room != ROOM_ROUTEBOX) {
-            redprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
-            return PickUpItemResult::ConditionsNotMet;
+            hprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
         }
         if (Sim.ItemClips == 0) {
             redprintf("GameMechanic::pickUpItem: Item already taken (%ld).", item);
@@ -1328,8 +1319,7 @@ GameMechanic::PickUpItemResult GameMechanic::pickUpItem(PLAYER &qPlayer, SLONG i
         return PickUpItemResult::PickedUp;
     case ITEM_GLUE:
         if (room != ROOM_FRACHT) {
-            redprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
-            return PickUpItemResult::ConditionsNotMet;
+            hprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
         }
         if (Sim.ItemGlue == 1) {
             qPlayer.BuyItem(ITEM_GLUE);
@@ -1344,8 +1334,7 @@ GameMechanic::PickUpItemResult GameMechanic::pickUpItem(PLAYER &qPlayer, SLONG i
         return PickUpItemResult::NotAllowed;
     case ITEM_GLOVE:
         if (room != ROOM_ARAB_AIR) {
-            redprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
-            return PickUpItemResult::ConditionsNotMet;
+            hprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
         }
         if (Sim.ItemGlove != 0) {
             redprintf("GameMechanic::pickUpItem: Item already taken (%ld).", item);
@@ -1357,8 +1346,7 @@ GameMechanic::PickUpItemResult GameMechanic::pickUpItem(PLAYER &qPlayer, SLONG i
         return PickUpItemResult::PickedUp;
     case ITEM_REDBULL:
         if (room != ROOM_AIRPORT) {
-            redprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
-            return PickUpItemResult::ConditionsNotMet;
+            hprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
         }
         for (SLONG c = 0; c < 6; c++) {
             if (qPlayer.Items[c] == ITEM_GLOVE) {
@@ -1369,8 +1357,7 @@ GameMechanic::PickUpItemResult GameMechanic::pickUpItem(PLAYER &qPlayer, SLONG i
         break;
     case ITEM_STINKBOMBE:
         if (room != ROOM_KIOSK) {
-            redprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
-            return PickUpItemResult::ConditionsNotMet;
+            hprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
         }
         if (qPlayer.KioskTrust == 1) {
             qPlayer.BuyItem(ITEM_STINKBOMBE);
@@ -1394,8 +1381,7 @@ GameMechanic::PickUpItemResult GameMechanic::pickUpItem(PLAYER &qPlayer, SLONG i
         break;
     case ITEM_ZANGE:
         if (room != ROOM_SABOTAGE) {
-            redprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
-            return PickUpItemResult::ConditionsNotMet;
+            hprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
         }
         if (Sim.ItemZange == 0) {
             redprintf("GameMechanic::pickUpItem: Item already taken (%ld).", item);
@@ -1407,8 +1393,7 @@ GameMechanic::PickUpItemResult GameMechanic::pickUpItem(PLAYER &qPlayer, SLONG i
         return PickUpItemResult::PickedUp;
     case ITEM_PARFUEM:
         if (room != ROOM_AIRPORT) {
-            redprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
-            return PickUpItemResult::ConditionsNotMet;
+            hprintf("GameMechanic::pickUpItem: Player is in wrong room (%u).", room);
         }
         if (Sim.ItemParfuem != 0) {
             qPlayer.BuyItem(ITEM_PARFUEM);
