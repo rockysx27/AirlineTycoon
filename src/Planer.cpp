@@ -2315,7 +2315,6 @@ void CPlaner::HandleLButtonDown() {
 
             // Konkurrenzpreise:
             if ((qPlayer.HasBerater(BERATERTYP_INFO) != 0) && ClientPosB.IfIsWithin(2, 128, 166, 167)) {
-                CRentRoute &qRRoute = qPlayer.RentRouten.RentRouten[Routen(pBlock->SelectedIdB)];
                 SLONG Index = (ClientPosB.y - 128) / 13;
 
                 if (Sim.Players.Players[Index + static_cast<SLONG>(PlayerNum <= Index)].IsOut == 0 &&
@@ -2999,8 +2998,8 @@ void CPlaner::AutoPlan(SLONG mode) {
             }
         }
 
-        BotPlaner bot(qPlayer, qPlayer.Planes, BotPlaner::JobOwner::Player, {});
-        bot.planFlights(planeIds);
+        BotPlaner bot(qPlayer, qPlayer.Planes, BotPlaner::JobOwner::Backlog, {});
+        bot.planFlights(planeIds, true);
         bot.applySolution();
         Helper::checkFlightJobs(qPlayer);
         return;
@@ -3016,7 +3015,7 @@ void CPlaner::AutoPlan(SLONG mode) {
         }
 
         BotPlaner bot(qPlayer, qPlayer.Planes, BotPlaner::JobOwner::TravelAgency, {});
-        bot.planFlights(planeIds);
+        bot.planFlights(planeIds, true);
         bot.applySolution();
         Helper::checkFlightJobs(qPlayer);
         return;

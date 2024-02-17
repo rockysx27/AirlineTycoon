@@ -64,6 +64,8 @@ add_executable (AT
     BotActions.cpp
     BotHelper.cpp
     BotPlaner.cpp
+    BotPlanerAlgo1.cpp
+    BotPlanerAlgo2.cpp
     Brick.cpp
     Checkup.cpp
     ColorFx.cpp

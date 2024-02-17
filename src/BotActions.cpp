@@ -130,7 +130,7 @@ void Bot::actionCheckTravelAgency() {
 
 void Bot::grabFlights(BotPlaner &planer) {
     SLONG oldGain = calcCurrentGainFromJobs();
-    planer.planFlights(mPlanesForJobs);
+    planer.planFlights(mPlanesForJobs, qPlayer.PlayerNum == 2); // TODO
     // TODO
     // requestPlanFlights()();
     planer.applySolution();
@@ -219,7 +219,7 @@ void Bot::actionUpgradePlanes(__int64 moneyAvailable) {
     }
 }
 
-void Bot::actionBuyNewPlane(__int64 moneyAvailable) {
+void Bot::actionBuyNewPlane(__int64 /*moneyAvailable*/) {
     if (mItemAntiStrike == 0 && (rand() % 2 == 0)) { /* rand() because human player has same chance of item appearing */
         if (GameMechanic::PickUpItemResult::PickedUp == GameMechanic::pickUpItem(qPlayer, ITEM_BH)) {
             hprintf("Bot::actionBuyNewPlane(): Picked up item BH");
@@ -245,7 +245,6 @@ void Bot::actionBuyNewPlane(__int64 moneyAvailable) {
             }
         }
     }
-    moneyAvailable = getMoneyAvailable();
 }
 
 void Bot::actionVisitHR() {
@@ -601,7 +600,7 @@ void Bot::actionBuyShares(__int64 moneyAvailable) {
     }
 }
 
-void Bot::actionVisitDutyFree(__int64 moneyAvailable) {
+void Bot::actionVisitDutyFree(__int64 /*moneyAvailable*/) {
     if (mItemAntiStrike == 1) {
         if (GameMechanic::useItem(qPlayer, ITEM_BH)) {
             hprintf("Bot::actionVisitDutyFree(): Used item BH");
@@ -624,12 +623,10 @@ void Bot::actionVisitDutyFree(__int64 moneyAvailable) {
     if (qPlayer.LaptopQuality < 4) {
         auto quali = qPlayer.LaptopQuality;
         GameMechanic::buyDutyFreeItem(qPlayer, ITEM_LAPTOP);
-        moneyAvailable = getMoneyAvailable();
         hprintf("Bot::RobotExecuteAction(): Buying laptop (%ld => %ld)", quali, qPlayer.LaptopQuality);
     } else if (!qPlayer.HasItem(ITEM_HANDY)) {
         hprintf("Bot::RobotExecuteAction(): Buying cell phone");
         GameMechanic::buyDutyFreeItem(qPlayer, ITEM_HANDY);
-        moneyAvailable = getMoneyAvailable();
     }
 }
 
@@ -1043,9 +1040,8 @@ void Bot::planRoutes() {
         SLONG toCity = Cities.find(getRoute(qRoute).NachCity);
         SLONG durationA = kDurationExtra + Cities.CalcFlugdauer(fromCity, toCity, PlaneTypes[qRoute.planeTypeId].Geschwindigkeit);
         SLONG durationB = kDurationExtra + Cities.CalcFlugdauer(toCity, fromCity, PlaneTypes[qRoute.planeTypeId].Geschwindigkeit);
-        SLONG roundTripDuration = durationA + durationB;
-
-        int timeSlot = 0;
+        // TODO: SLONG roundTripDuration = durationA + durationB;
+        // TODO: int timeSlot = 0;
         for (auto planeId : qRoute.planeIds) {
             const auto &qPlane = qPlayer.Planes[planeId];
 

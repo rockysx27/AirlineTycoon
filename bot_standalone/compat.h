@@ -2,163 +2,73 @@
 #define COMPAT_H_
 
 #include "compat_album.h"
-#include "compat_types.h"
+#include "defines.h"
 
-#include <vector>
+class CPlane;
 
-// Die Schwierigkeitsgrade fürs Spiel:
-#define DIFF_TUTORIAL 0 // Tutorium: 3 Aufträge
-#define DIFF_FIRST 1    // 5000 Passagiere befördern; keine
-#define DIFF_EASY 2
-#define DIFF_NORMAL 3
-#define DIFF_HARD 4
-#define DIFF_FINAL 5 // Rakete zusammenbauen
-
-#define DIFF_FREEGAME -1
-#define DIFF_FREEGAMEMAP 7
-
-#define DIFF_ADDON 10   // Keine Mission, sondern nur ein Vergleichsmarker
-#define DIFF_ADDON01 11 // Fracht: x Tonnen
-#define DIFF_ADDON02 12 // Sanierung einer bankrotten Fluglinie
-#define DIFF_ADDON03 13 // Fracht: Hilfsflüge x Tonnen
-#define DIFF_ADDON04 14 // Flugkilometer
-#define DIFF_ADDON05 15 // Kein Reisebüro
-#define DIFF_ADDON06 16 // Alles modernisieren
-#define DIFF_ADDON07 17 // Aktienkurs
-#define DIFF_ADDON08 18 // Viele Aufträge
-#define DIFF_ADDON09 19 // Service & Luxus
-#define DIFF_ADDON10 20 // Weltraumstation
-
-#define DIFF_ATFS 40   // Keine Mission, sondern nur ein Vergleichsmarker
-#define DIFF_ATFS01 41 // Back again
-#define DIFF_ATFS02 42 // Sicher ist sicher
-#define DIFF_ATFS03 43 // Schnell und viel
-#define DIFF_ATFS04 44 // Safety first
-#define DIFF_ATFS05 45 // Schnell und viel mehr
-#define DIFF_ATFS06 46 // Krisenmanagement
-#define DIFF_ATFS07 47 // Schwarzer Freitag
-#define DIFF_ATFS08 48 // Das 3 Liter Flugzeug
-#define DIFF_ATFS09 49 // Die Kerosin Krise
-#define DIFF_ATFS10 50 // Der Tycoon
-
-// Dinge für den Roboter (Computerspieler):
-#define ACTION_NONE 0   // Leereintrag
-#define ACTION_WAIT 100 // Warten - kein Leereintrag!
-#define ACTION_RAISEMONEY 200
-#define ACTION_DROPMONEY 201
-#define ACTION_VISITBANK 202
-#define ACTION_EMITSHARES 203
-#define ACTION_CHECKAGENT1 210 // Last-Minute
-#define ACTION_CHECKAGENT2 211 // Reisebüro
-#define ACTION_CHECKAGENT3 212 // Frachtraum
-#define ACTION_STARTDAY 221    // Geht ins Büro
-#define ACTION_BUERO 244       // Geht ins Büro (MP: Changed to unique number, was same as ACTION_STARTDAY)
-#define ACTION_PERSONAL 222    // Geht ins Personalbüro
-#define ACTION_VISITARAB 230
-#define ACTION_VISITKIOSK 231
-#define ACTION_VISITMECH 232
-#define ACTION_VISITMUSEUM 233
-#define ACTION_VISITDUTYFREE 234
-#define ACTION_VISITAUFSICHT 235
-#define ACTION_VISITNASA 236
-#define ACTION_VISITTELESCOPE 237
-#define ACTION_VISITMAKLER 238
-#define ACTION_VISITRICK 239
-#define ACTION_VISITROUTEBOX 240
-#define ACTION_VISITSECURITY 241
-#define ACTION_VISITDESIGNER 242
-#define ACTION_VISITSECURITY2 243
-
-#define ACTION_BUYUSEDPLANE 300
-#define ACTION_BUYNEWPLANE 301
-#define ACTION_WERBUNG 400
-#define ACTION_SABOTAGE 500
-
-#define ACTION_UPGRADE_PLANES 600
-#define ACTION_BUY_KEROSIN 601
-#define ACTION_BUY_KEROSIN_TANKS 602
-#define ACTION_SET_DIVIDEND 603
-#define ACTION_BUYSHARES 604
-#define ACTION_SELLSHARES 605
-#define ACTION_WERBUNG_ROUTES 606
-#define ACTION_CALL_INTERNATIONAL 607
-
-// Öfnungszeiten:
-SLONG timeDutyOpen = 10 * 60000;
-SLONG timeDutyClose = 16 * 60000; // Nur Sa, So
-SLONG timeArabOpen = 10 * 60000;
-SLONG timeLastClose = 16 * 60000;
-SLONG timeMuseOpen = 11 * 60000;
-SLONG timeReisClose = 17 * 60000;
-SLONG timeMaklClose = 16 * 60000;
-SLONG timeWerbOpen = 12 * 60000;
-
-void HercPrintf(const char *format, ...) {
-    va_list args;
-    va_start(args, format);
-    printf(format, args);
-    va_end(args);
-    printf("\n");
-    fflush(stdout);
-}
-#define hprintf HercPrintf
-
-void HercPrintfRed(const char *format, ...) {
-    printf("\e[1;31m");
-    va_list args;
-    va_start(args, format);
-    printf(format, args);
-    va_end(args);
-    printf("\e[m\n");
-    fflush(stdout);
-}
-#define redprintf HercPrintfRed
-
-void HercPrintfGreen(const char *format, ...) {
-    printf("\e[1;32m");
-    va_list args;
-    va_start(args, format);
-    printf(format, args);
-    va_end(args);
-    printf("\e[m\n");
-    fflush(stdout);
-}
-#define greenprintf HercPrintfGreen
-
-#define EINH_KM 0
-static std::array<CEinheit, 1> Einheiten;
-
-#define TOKEN_SCHED 0
-static const RES StandardTexte{};
-
-struct SIM {
-    SLONG Date{};                    // Tage seit Spielbeginn
-    ULONG Time{};                    // Die Simulationszeit
-    SLONG StartWeekday{};            // An diesem Wochentag haben wir das Spiel begonnen
-    SLONG Weekday{};                 // 0-6 für Mo-So
-    SLONG Kerosin{500};              // Preis pro Liter
-    SLONG nSecOutDays{};             // 0 oder n=So viele Tage fällt das Security Office noch aus
-    SBYTE Difficulty{DIFF_FREEGAME}; // Schwierigkeitsgrad
+class CEinheit             // 0 = km
+{                          // 1 = km/h
+  public:                  // 2 = m
+    CString Name{"%s km"}; // 3 = kN
+    DOUBLE Faktor{};       // 4 = l
+                           // 5 = l/h
+  public:                  // 6 = DM
+    char *bString(SLONG Value) const;
 };
-static const SIM Sim{};
 
-class CITY {
+//--------------------------------------------------------------------------------------------
+// Die gemieteten Gates: (in Schedule.cpp)
+//--------------------------------------------------------------------------------------------
+class /**/ CGate {
   public:
-    CITY(CString n, CString k) : Name(n), Kuerzel(k) {}
-    CString Name;    // z.B. "Rio de Janeiro"
-    CString Kuerzel; // aktuelles kuerzel
+    SLONG Nummer{}; // Nummer auf Flughafen (0 bis n)
+    SLONG Miete{};  // Monatsmiete in DM
 };
-class CITIES : public std::vector<CITY> {
-  public:
-    CITIES() {
-        for (SLONG i = 0; i < 100; i++) {
-            emplace_back(CString(bprintf("City_%ld", i)), CString(bprintf("C%ld", i)));
-        }
-    }
 
-    SLONG CalcDistance(SLONG CityId1, SLONG CityId2) { return 200 * std::abs(CityId1 - CityId2); }
+class /**/ CGates {
+  public:
+    BUFFER_V<CGate> Gates;
+    BUFFER_V<UBYTE> Auslastung{24 * 7}; // Für 2x alle 24 Stunden der Uhr: Wie viele sind belegt?
+    SLONG NumRented{};
 };
-static CITIES Cities{};
+
+class CPlaneType {
+  public:
+    CString Name;              // Der Name des Flugzeuges
+    __int64 NotizblockPhoto{}; // Photos für den Notizblock
+    SLONG AnzPhotos{};         // Zahl der Photos
+    SLONG FirstMissions{};     // Ist erst verfügbar ab Mission x
+    SLONG FirstDay{};          //...und auch dort erst ab Tag y
+
+    // Technische Beschreibung
+  public:
+    CString Hersteller;      // Textstring, z.B. "Boing"
+    SLONG Erstbaujahr{};     // Zahl, z.B. 1980
+    SLONG Passagiere{};      // Maximale Zahl der Passagiere (ein erste Klasse Passagier verbraucht 2 Plätze)
+    SLONG Reichweite{};      // Reichweite in km
+    SLONG Geschwindigkeit{}; // in km/h
+    SLONG Spannweite{};      // in m
+    SLONG Laenge{};          // in m
+    SLONG Hoehe{};           // in m
+    SLONG Startgewicht{};    // maximales Startgewicht
+    CString Triebwerke;      // Als Textstring
+    SLONG Schub{};           // in lb
+    SLONG AnzPiloten{};      // Piloten und Co-Piloten
+    SLONG AnzBegleiter{};    // Zahl der Stewardessen
+    SLONG Tankgroesse{};     // Kerosin in l
+    SLONG Verbrauch{};       // Kerosin in l/h
+    SLONG Preis{};           // Der Neupreis in DM
+    FLOAT Wartungsfaktor{};  // Faktor für die Wartungskosten
+    CString Kommentar;       // Ggf. allgemeines über diese Maschine
+};
+
+class CPlaneTypes : public ALBUM_V<CPlaneType> {
+  public:
+    CPlaneTypes() : ALBUM_V<CPlaneType>("PlaneTypes") {}
+    CPlaneTypes(const CString &TabFilename);
+    void ReInit(const CString &TabFilename);
+    ULONG GetRandomExistingType(TEAKRAND *pRand);
+};
 
 class CAuftrag {
   public:
@@ -172,10 +82,36 @@ class CAuftrag {
     SLONG Praemie{};     // Prämie bei Erfüllung
     SLONG Strafe{};      // Strafe bei Versagen
     BOOL bUhrigFlight{}; // Von Uhrig in Auftrag gegeben?
+
+    CAuftrag() = default;
+    CAuftrag(ULONG VonCity, ULONG NachCity, ULONG Personen, UWORD Date, SLONG Praemie, SLONG Strafe);
+    CAuftrag(ULONG VonCity, ULONG NachCity, ULONG Personen, UWORD Date);
+    CAuftrag(char *VonCity, char *NachCity, ULONG Personen, UWORD Date, SLONG Praemie, SLONG Strafe);
+    CAuftrag(char *VonCity, char *NachCity, ULONG Personen, UWORD Date);
+
+    void RandomCities(SLONG AreaType, SLONG HomeCity, TEAKRAND *pRandom);
+    void RefillForLastMinute(SLONG AreaType, TEAKRAND *pRandom);
+    void RefillForReisebuero(SLONG AreaType, TEAKRAND *pRandom);
+    void RefillForBegin(SLONG AreaType, TEAKRAND *pRandom);
+    void RefillForAusland(SLONG AreaType, SLONG CityNum, TEAKRAND *pRandom);
+    void RefillForUhrig(SLONG AreaType, TEAKRAND *pRandom);
+    BOOL FitsInPlane(const CPlane &Plane) const;
 };
+
 class CAuftraege : public ALBUM_V<CAuftrag> {
   public:
+    TEAKRAND Random;
+
+  public:
     CAuftraege() : ALBUM_V<CAuftrag>("Auftraege") {}
+    void FillForLastMinute(void);
+    void RefillForLastMinute(SLONG Minimum = 0);
+    void FillForReisebuero(void);
+    void RefillForReisebuero(SLONG Minimum = 0);
+    void FillForAusland(SLONG CityNum);
+    void RefillForAusland(SLONG CityNum, SLONG Minimum = 0);
+    SLONG GetNumOpen(void);
+    SLONG GetNumDueToday(void);
 };
 
 class CFracht {
@@ -191,43 +127,54 @@ class CFracht {
     SBYTE Okay{};     // 0=Nix, -1=Durchgeführt, 1=1x im Plan
     SLONG Praemie{};  // Prämie bei Erfüllung
     SLONG Strafe{};   // Strafe bei Versagen
+
+    CFracht() = default;
+    CFracht(ULONG VonCity, ULONG NachCity, SLONG Tons, ULONG Personen, UWORD Date, SLONG Praemie, SLONG Strafe);
+    CFracht(ULONG VonCity, ULONG NachCity, SLONG Tons, ULONG Personen, UWORD Date);
+    CFracht(char *VonCity, char *NachCity, SLONG Tons, ULONG Personen, UWORD Date, SLONG Praemie, SLONG Strafe);
+    CFracht(char *VonCity, char *NachCity, SLONG Tons, ULONG Personen, UWORD Date);
+
+    void RandomCities(SLONG AreaType, SLONG HomeCity, TEAKRAND *pRand);
+    void RefillForBegin(SLONG AreaType, TEAKRAND *pRand);
+    void Refill(SLONG AreaType, TEAKRAND *pRnd);
+    void RefillForAusland(SLONG AreaType, SLONG CityNum, TEAKRAND *pRandom);
+    BOOL FitsInPlane(const CPlane &Plane) const;
+    BOOL IsValid() const { return Praemie > 0; };
 };
+
 class CFrachten : public ALBUM_V<CFracht> {
   public:
+    TEAKRAND Random;
+
+  public:
     CFrachten() : ALBUM_V<CFracht>("Fracht") {}
+
+    void Fill(void);
+    void Refill(SLONG Minimum = 0);
+    SLONG GetNumOpen(void);
+    void RefillForAusland(SLONG CityNum, SLONG Minimum = 0);
+    void FillForAusland(SLONG CityNum);
+    SLONG GetNumDueToday(void);
+};
+
+class CRoute {
+  public:
+    BOOL bNewInDeluxe{}; // wird nicht serialisiert
+    SLONG Ebene{};       // 1=fein; 2=grob
+    ULONG VonCity{};     // bezeichnet eine Stadt
+    ULONG NachCity{};    // bezeichnet eine Stadt
+    SLONG Miete{};
+    DOUBLE Faktor{}; // Attraktivität der Route
+    SLONG Bedarf{};  // Soviele Leute wollen heute fliegen
+};
+
+class CRouten : public ALBUM_V<CRoute> {
+  public:
+    CRouten() : ALBUM_V<CRoute>("Routen") {}
 };
 
 class CFlugplanEintrag {
   public:
-    SLONG GetEinnahmen(SLONG PlayerNum, const CPlane &qPlane) const {
-        switch (ObjectType) {
-        // Route:
-        case 1:
-            return (Ticketpreis * Passagiere + TicketpreisFC * PassagiereFC);
-            break;
-
-            // Auftrag:
-        case 2:
-            return (Sim.Players.Players[PlayerNum].Auftraege[ObjectId].Praemie);
-            break;
-
-            // Leerflug:
-        case 3:
-            return (qPlane.ptPassagiere * Cities.CalcDistance(VonCity, NachCity) / 1000 / 40);
-            break;
-
-            // Frachtauftrag:
-        case 4:
-            return (Sim.Players.Players[PlayerNum].Frachten[ObjectId].Praemie);
-            break;
-
-        default: // Eigentlich unmöglich:
-            return (0);
-        }
-
-        return (0);
-    }
-
     UBYTE Okay{};             // 0=Auftrag Okay 1=falscher Tag, 2=schon durchgeführt, 3=Passagiere passen nicht
     UBYTE HoursBefore{};      // So viele Stunden vor dem Start wurde der Flug festgelegt
     UWORD Passagiere{};       // Zahl der belegten Sitzplätze (Normal)
@@ -245,6 +192,11 @@ class CFlugplanEintrag {
     SLONG ObjectId{-1};       // Bezeichnet Auftrag oder -1
     SLONG Ticketpreis{};      // Ticketpreis für Routen
     SLONG TicketpreisFC{};    // Ticketpreis für Routen (Erste Klasse)
+
+    CFlugplanEintrag() = default;
+    void CalcPassengers(SLONG PlayerNum, CPlane &qPlane);
+    void FlightChanged(void);
+    SLONG GetEinnahmen(SLONG PlayerNum, const CPlane &qPlane) const;
 };
 
 class CFlugplan {
@@ -261,21 +213,85 @@ class CFlugplan {
             Flug[c].ObjectType = 0;
         }
     }
+    void UpdateNextFlight(void);
+    void UpdateNextStart(void);
 };
 
 class CPlane {
   public:
-    CString Name{"noname"};    // Der Name des Flugzeuges
-    ULONG TypeId{};            // referenziert CPlaneType oder ist -1
-    CFlugplan Flugplan;        // Der Flugplan
-    SLONG ptPassagiere{};      // Maximale Zahl der Passagiere (ein erste Klasse Passagier verbraucht 2 Plätze)
-    SLONG ptReichweite{};      // Reichweite in km
-    SLONG ptGeschwindigkeit{}; // in km/h
-    SLONG ptVerbrauch{};       // Kerosin in l/h
+    CString Name{"noname"};                   // Der Name des Flugzeuges
+    SLONG Ort{};                              //-1=Landend; -2=Startend; -5 in der Luft; sonst Stadt
+    ULONG TypeId{};                           // referenziert CPlaneType oder ist -1
+    CFlugplan Flugplan;                       // Der Flugplan
+    SLONG MaxPassagiere{}, MaxPassagiereFC{}; // Soviele Leute passen bei der derzeiten Konfiguration rein
+    SLONG Problem{};                          // 0 oder Anzahl der Stunden bis das Flugzeug kein Problem mehr hat
+    SLONG ptPassagiere{};                     // Maximale Zahl der Passagiere (ein erste Klasse Passagier verbraucht 2 Plätze)
+    SLONG ptReichweite{};                     // Reichweite in km
+    SLONG ptGeschwindigkeit{};                // in km/h
+    SLONG ptVerbrauch{};                      // Kerosin in l/h
+
+    CPlane() = default;
+    CPlane(const CString &Name, ULONG TypeId, UBYTE Zustand, SLONG Baujahr);
+    void CheckFlugplaene(SLONG PlayerNum, BOOL Sort = TRUE, BOOL PlanGates = TRUE);
+
+    BOOL operator>(const CPlane &p) const { return (Name > p.Name); }
+    BOOL operator<(const CPlane &p) const { return (Name < p.Name); }
 };
+
 class CPlanes : public ALBUM_V<CPlane> {
   public:
     CPlanes() : ALBUM_V<CPlane>("Planes") {}
+    BOOL IsPlaneNameInUse(const CString &PlaneName);
+};
+
+class CPlaneNames {
+  private:
+    BUFFER_V<CString> NameBuffer1;
+    BUFFER_V<CString> NameBuffer2;
+
+  public:
+    CPlaneNames() = default;
+    CPlaneNames(const CString &TabFilename);
+    void ReInit(const CString &TabFilename);
+    CString GetRandom(TEAKRAND *pRnd);
+    CString GetUnused(TEAKRAND *pRnd);
+};
+
+class CITY {
+  public:
+    CString Name;          // z.B. "Rio de Janeiro"
+    CString Lage;          // z.B. "Südamerika"
+    SLONG Areacode{};      // 1=Europa, 2=Amerika, 3=Afrika-Indien, 4=Asien&Ozeanien
+    CString Kuerzel;       // aktuelles kuerzel
+    CString KuerzelGood;   // z.B. "MOS" f. Moskau
+    CString KuerzelReal;   // z.B. "SVO" f. Moskau
+    CString Wave;          // Die Wave-Datei
+    SLONG TextRes{};       // Base-Ressource Id für Texte
+    SLONG AnzTexts{};      // Anzahl der Seiten mit Text
+    CString PhotoName;     // Name des Photos auf die Stadt
+    SLONG AnzPhotos{};     // Anzahl der Photos (%li muß dann im Namen vorkommen)
+    SLONG Einwohner{};     // Die Zahl der Einwohner
+    CPoint GlobusPosition; // Die Position auf dem Globus
+    CPoint MapPosition;    // Die Position auf der flachen Karte
+    SLONG BuroRent{};      // Die Monatsmiete für eine Niederlassung
+    SLONG bNewInAddOn{};   // Ist im Add-On neu hinzugekommen?
+                           // Vorraussetzung für Anflug
+};
+
+class CITIES : public ALBUM_V<CITY> {
+  public:
+    BUFFER_V<SLONG> HashTable;
+
+  public:
+    CITIES() : ALBUM_V<CITY>("Cities") {}
+    void ReInit(const CString &TabFilename);
+    SLONG CalcDistance(SLONG CityId1, SLONG CityId2);
+    SLONG CalcFlugdauer(SLONG CityId1, SLONG CityId2, SLONG Speed);
+    SLONG GetRandomUsedIndex(TEAKRAND *pRand = NULL);
+    SLONG GetRandomUsedIndex(SLONG AreaCode, TEAKRAND *pRand = NULL);
+    ULONG GetIdFromName(const char *Name);
+    ULONG GetIdFromNames(const char *Name, ...);
+    void UseRealKuerzel(BOOL Real);
 };
 
 class PLAYER {
@@ -286,31 +302,44 @@ class PLAYER {
 
     CPlanes Planes;       // Flugzeuge, die der Spieler besitzt
     CAuftraege Auftraege; // Verträge die er für Flüge abgeschlossen hat
+    CFrachten Frachten;   // Verträge die er für Flüge abgeschlossen hat
+    CGates Gates;         // Die Gates (immer CheckIn + Abflug) die gemietet wurden
+
+    ULONG BuyPlane(ULONG PlaneTypeId, TEAKRAND *pRnd);
+    void UpdateAuftragsUsage(void);
+    void UpdateFrachtauftragsUsage(void);
+    void PlanGates(void);
 };
 
-//--------------------------------------------------------------------------------------------
-// Berechnet, wieviel ein Flug kostet:
-//--------------------------------------------------------------------------------------------
-SLONG CalculateFlightKerosin(SLONG VonCity, SLONG NachCity, SLONG Verbrauch, SLONG Geschwindigkeit) {
-    SLONG Kerosin = Cities.CalcDistance(VonCity, NachCity) / 1000 // weil Distanz in m übergeben wird
-                    * Verbrauch / 160                             // Liter pro Barrel
-                    / Geschwindigkeit;
+class PLAYERS {
+  public:
+    SLONG AnzPlayers;
+    BUFFER_V<PLAYER> Players;
 
-    return (Kerosin);
-}
+    PLAYERS() {
+        AnzPlayers = 4;
+        Players.ReSize(AnzPlayers);
 
-//--------------------------------------------------------------------------------------------
-// Berechnet, wieviel ein Flug kostet (ignoriere Kerosin-Tanks)
-//--------------------------------------------------------------------------------------------
-SLONG CalculateFlightCostNoTank(SLONG VonCity, SLONG NachCity, SLONG Verbrauch, SLONG Geschwindigkeit) {
-    SLONG Kerosin = CalculateFlightKerosin(VonCity, NachCity, Verbrauch, Geschwindigkeit);
-    SLONG Kosten = Kerosin * Sim.Kerosin;
-
-    if (Kosten < 1000) {
-        Kosten = 1000;
+        for (SLONG c = 0; c < AnzPlayers; c++) {
+            Players[c].PlayerNum = c;
+        }
     }
+    BOOL IsPlaneNameInUse(const CString &PlaneName);
+};
 
-    return (Kosten);
-}
+struct SIM {
+    PLAYERS Players;                 // Die agierenden Personen
+    SLONG Date{0};                   // Tage seit Spielbeginn
+    ULONG Time{9 * 60000};           // Die Simulationszeit
+    SLONG StartWeekday{};            // An diesem Wochentag haben wir das Spiel begonnen
+    SLONG Weekday{};                 // 0-6 für Mo-So
+    SLONG Kerosin{500};              // Preis pro Liter
+    SLONG nSecOutDays{};             // 0 oder n=So viele Tage fällt das Security Office noch aus
+    SBYTE Difficulty{DIFF_FREEGAME}; // Schwierigkeitsgrad
+    SLONG HomeAirportId{0x1000072};  // Id der Heimatstadt
+    SLONG KrisenCity{-1};            // Id der Stadt, wo das Erdbeben ist
+
+    SLONG GetHour() const { return (Time / 60000); }
+};
 
 #endif // COMPAT_H_

@@ -1,13 +1,125 @@
 #ifndef COMPAT_ALBUM_H_
 #define COMPAT_ALBUM_H_
 
-#include "compat_types.h"
+#include "defines.h"
 
 #include <algorithm>
+#include <cassert>
+#include <chrono>
+#include <cmath>
+#include <cstdarg>
+#include <cstdio>
+#include <cstring>
+#include <random>
+#include <string>
 #include <unordered_map>
 #include <vector>
 
-#define TeakLibW_Exception(a, b, c, d)
+//--------------------------------------------------------------------------------------------
+// Some other basic functions
+//--------------------------------------------------------------------------------------------
+
+using std::strlen;
+class CString : public std::string {
+  public:
+    CString() = default;
+    CString(const char *str) : std::string(str) {}
+    operator const char *() const { return c_str(); }
+    SLONG GetLength() const { return length(); }
+};
+
+inline char *bprintf(char const *format, ...) {
+    static char buffer[8192];
+    va_list args;
+    va_start(args, format);
+    vsnprintf(buffer, sizeof(buffer), format, args);
+    va_end(args);
+    return buffer;
+}
+
+inline DWORD AtGetTime() {
+    std::chrono::nanoseconds now = std::chrono::steady_clock::now().time_since_epoch();
+    return std::chrono::duration_cast<std::chrono::milliseconds>(now).count();
+}
+
+/* TEXTRES for weekdays only */
+#define TOKEN_SCHED 0
+class RES {
+  public:
+    CString GetS(SLONG /*token*/, SLONG idx) const {
+        switch (idx) {
+        case 3010:
+            return "Montag";
+        case 3011:
+            return "Dienstag";
+        case 3012:
+            return "Mittwoch";
+        case 3013:
+            return "Donnerstag";
+        case 3014:
+            return "Freitag";
+        case 3015:
+            return "Samstag";
+        case 3016:
+            return "Sonntag";
+        default:
+            return "Fehler";
+        }
+    }
+};
+
+inline char *TeakStrRemoveEndingCodes(char *str, char const *codes) {
+    SLONG i = 0;
+    for (i = strlen(str) - 1; i >= 0 && (strchr(codes, str[i]) != nullptr); --i) {
+        ;
+    }
+    str[i + 1] = 0;
+    return str;
+}
+
+//--------------------------------------------------------------------------------------------
+// TeakLibW.h
+//--------------------------------------------------------------------------------------------
+
+extern const char *ExcAssert;
+extern const char *ExcGuardian;
+extern const char *ExcImpossible;
+extern const char *ExcNotImplemented;
+extern const char *ExcOutOfMem;
+extern const char *ExcStrangeMem;
+
+#define FNL 0, 0
+
+extern const char *ExcAlbumInsert;
+extern const char *ExcAlbumFind;
+extern const char *ExcAlbumDelete;
+extern const char *ExcXIDUnrecoverable;
+extern const char *ExcAlbumNotConsistent;
+extern const char *ExcAlbumInvalidArg;
+
+extern SLONG TeakLibW_Exception(char *, SLONG, const char *, ...);
+
+template <typename T> inline void Limit(T min, T &value, T max) {
+    if (value < min)
+        value = min;
+    if (value > max)
+        value = max;
+}
+
+template <typename T> inline void Swap(T &a, T &b) {
+    T c;
+    c = a;
+    a = b;
+    b = c;
+}
+
+template <typename T> inline const T &Min(const T &a, const T &b) { return (b < a) ? b : a; }
+
+template <typename T> inline const T &Max(const T &a, const T &b) { return (a < b) ? b : a; }
+
+template <typename A, typename B> inline A min(const A &a, const B &b) { return (b < a) ? b : a; }
+
+template <typename A, typename B> inline A max(const A &a, const B &b) { return (a < b) ? b : a; }
 
 template <typename T> class BUFFER_V : public std::vector<T> {
   public:
@@ -52,6 +164,101 @@ template <typename T> class BUFFER_V : public std::vector<T> {
   private:
     SLONG Offset{0};
 };
+
+class TEAKRAND {
+  public:
+    TEAKRAND(void) { Seed = Value = 0; }
+    TEAKRAND(ULONG _Seed) { Seed = Value = _Seed; }
+
+    void SRand(ULONG _Seed) { Seed = Value = _Seed; }
+    void SRandTime(void) { Seed = Value = AtGetTime(); }
+    void Reset(void) { Value = Seed; }
+
+    UWORD Rand(void) {
+        Value = Value * 7381 + 0x269EC3;
+        return (UWORD(Value >> 16));
+    }
+    UWORD Rand(SLONG Max) { return (UWORD(getRandInt(0, Max - 1))); }
+    UWORD Rand(SLONG Min, SLONG Max) { return (UWORD(getRandInt(Min, Max))); }
+    ULONG GetSeed(void) { return (Value); }
+
+    inline int getRandInt(int min, int max) {
+        std::uniform_int_distribution<int> dist(min, max);
+        return dist(mMT);
+    }
+
+  private:
+    ULONG Seed{};
+    ULONG Value;
+
+    std::mt19937 mMT{std::random_device{}()};
+};
+
+template <typename T> class TXYZ {
+  public:
+    T x, y, z;
+
+    TXYZ() : x(), y(), z() {}
+    TXYZ(T s) : x(s), y(s), z(s) {}
+    TXYZ(T x, T y, T z) : x(x), y(y), z(z) {}
+
+    TXYZ operator+(const TXYZ &b) const { return TXYZ<T>(x + b.x, y + b.y, z + b.z); }
+
+    TXYZ operator-(const TXYZ &b) const { return TXYZ<T>(x - b.x, y - b.y, z - b.z); }
+
+    TXYZ operator*(const TXYZ &b) const { return TXYZ<T>(x * b.x, y * b.y, z * b.z); }
+
+    TXYZ operator/(const TXYZ &b) const { return TXYZ<T>(x / b.x, y / b.y, z / b.z); }
+
+    TXYZ operator*(const T &b) const { return TXYZ<T>(x * b, y * b, z * b); }
+
+    TXYZ operator/(const T &b) const { return TXYZ<T>(x / b, y / b, z / b); }
+
+    TXYZ operator-() const { return TXYZ<T>(-x, -y, -z); }
+
+    bool operator==(const TXYZ &b) const { return x == b.x && y == b.y && z == b.z; }
+
+    bool operator!=(const TXYZ &b) const { return x != b.x || y != b.y || z != b.z; }
+
+    bool operator<(const TXYZ &b) const { return x < b.x && y < b.y && z < b.z; }
+
+    bool operator>(const TXYZ &b) const { return x > b.x && y > b.y && z > b.z; }
+
+    TXYZ &operator-=(const TXYZ &b) {
+        x -= b.x;
+        y -= b.y;
+        z -= b.z;
+        return *this;
+    }
+
+    TXYZ &operator+=(const TXYZ &b) {
+        x += b.x;
+        y += b.y;
+        z += b.z;
+        return *this;
+    }
+
+    TXYZ &operator/=(const TXYZ &b) {
+        x /= b.x;
+        y /= b.y;
+        z /= b.z;
+        return *this;
+    }
+
+    TXYZ &operator*=(const TXYZ &b) {
+        x *= b.x;
+        y *= b.y;
+        z *= b.z;
+        return *this;
+    }
+
+    DOUBLE abs() const { return sqrt(x * x + y * y + z * z); }
+
+    DOUBLE operator*(const DOUBLE &b) const { return (x + y + z) * b; }
+
+    DOUBLE operator/(const DOUBLE &b) const { return (x + y + z) / b; }
+};
+typedef TXYZ<FLOAT> FXYZ;
 
 template <typename T> class ALBUM_V {
   public:
@@ -286,6 +493,26 @@ template <typename T> class ALBUM_V {
         TeakLibW_Exception(nullptr, 0, ExcAlbumDelete, Name.c_str());
     }
 
+    SLONG GetRandomUsedIndex(TEAKRAND *random = NULL) const {
+        SLONG used = GetNumUsed();
+        if (used == 0) {
+            TeakLibW_Exception(nullptr, 0, ExcAlbumFind, Name.c_str());
+        }
+
+        SLONG target = (random != nullptr) ? random->Rand(used) : rand() % 5;
+        SLONG index = 0;
+        for (SLONG i = AnzEntries() - 1; i >= 0; --i) {
+            if (List[i].second == 0) {
+                continue;
+            }
+            if (++index > target) {
+                return List[i].second;
+            }
+        }
+        TeakLibW_Exception(nullptr, 0, ExcAlbumFind, Name.c_str());
+        return 0;
+    }
+
     void Sort() {
         IdxFront = 0;
         IdxBack = AnzEntries() - 1;
@@ -373,5 +600,130 @@ template <typename T> class ALBUM_V {
     std::unordered_map<ULONG, SLONG> Hash;
     CString Name;
 };
+
+class CRLEReader {
+  public:
+    CRLEReader(const char *path) : Ctx(nullptr), SeqLength(0), SeqUsed(0), IsSeq(false), Sequence(), IsRLE(false), Size(0), Key(0), Path(path) {
+        Ctx = fopen(path, "rb");
+        if (Ctx != nullptr) {
+            char str[6];
+            fread(str, sizeof(str), 1, Ctx);
+            if (strcmp(str, "xtRLE") == 0) {
+                IsRLE = true;
+                SLONG version = -1;
+                fread(&version, sizeof(version), 1, Ctx);
+                if (version >= 0x102) {
+                    Key = 0xA5;
+                }
+                if (version >= 0x101) {
+                    Size = -1;
+                    fread(&Size, sizeof(Size), 1, Ctx);
+                }
+            } else {
+                fseek(Ctx, 0, SEEK_END);
+                Size = static_cast<SLONG>(ftell(Ctx));
+                fseek(Ctx, 0, SEEK_SET);
+            }
+        }
+    }
+    ~CRLEReader(void) { Close(); }
+
+    bool Close(void) {
+        if (Ctx == nullptr) {
+            return false;
+        }
+        return fclose(Ctx) == 0;
+    }
+    bool Buffer(void *buffer, SLONG size) { return fread(buffer, size, 1, Ctx) > 0; }
+    bool NextSeq(void) {
+        char buf = 0;
+        if (!Buffer(&buf, 1)) {
+            return false;
+        }
+        SeqLength = buf;
+
+        if ((SeqLength & 0x80) != 0) {
+            SeqLength &= 0x7FU;
+            SeqUsed = 0;
+            IsSeq = true;
+            if (!Buffer(Sequence, SeqLength)) {
+                return false;
+            }
+            for (SLONG i = 0; i < SeqLength; i++) {
+                Sequence[i] ^= Key;
+            }
+        } else {
+            IsSeq = false;
+            if (!Buffer(Sequence, 1)) {
+                return false;
+            }
+        }
+        return true;
+    }
+    bool Read(BYTE *buffer, SLONG size, bool decode) {
+        if (!decode || !IsRLE) {
+            return Buffer(buffer, size);
+        }
+
+        for (SLONG i = 0; i < size; i++) {
+            if ((SeqLength == 0) && !NextSeq()) {
+                return false;
+            }
+
+            if (IsSeq) {
+                buffer[i] = Sequence[SeqUsed++];
+                if (SeqUsed == SeqLength) {
+                    SeqLength = 0;
+                }
+            } else {
+                buffer[i] = Sequence[0];
+                SeqLength--;
+            }
+        }
+        return true;
+    }
+
+    SLONG GetSize() { return Size; }
+
+    bool getIsRLE() { return IsRLE; }
+    void SaveAsPlainText() {}
+
+  private:
+    FILE *Ctx;
+    int8_t SeqLength;
+    int8_t SeqUsed;
+    bool IsSeq;
+    BYTE Sequence[132];
+
+    bool IsRLE;
+    SLONG Size;
+    SLONG Key;
+
+    const char *Path;
+};
+
+inline BOOL DoesFileExist(char const *path) {
+    FILE *ctx = fopen(path, "rb");
+    if (ctx != nullptr) {
+        fclose(ctx);
+        return 1;
+    }
+    return 0;
+}
+
+inline BUFFER_V<BYTE> LoadCompleteFile(char const *path) {
+    CRLEReader reader(path);
+    BUFFER_V<BYTE> buffer(reader.GetSize());
+    if (!reader.Read(buffer.getData(), buffer.AnzEntries(), true)) {
+        return buffer;
+    }
+
+    if (reader.getIsRLE()) {
+        CRLEReader konverter(path);
+        konverter.SaveAsPlainText();
+    }
+
+    return buffer;
+}
 
 #endif // COMPAT_ALBUM_H_

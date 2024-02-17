@@ -6649,7 +6649,7 @@ void PLAYER::BroadcastPosition(bool bForce) {
     }
 }
 
-bool PLAYER::IsSuperBot() const { return (Owner == 1) && (3 == PlayerNum); }
+bool PLAYER::IsSuperBot() const { return (Owner == 1) && (3 == PlayerNum || 2 == PlayerNum); }
 
 //============================================================================================
 // PLAYERS::

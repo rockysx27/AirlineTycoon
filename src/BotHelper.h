@@ -16,7 +16,10 @@ std::string getFreightName(const CFracht &qAuftrag);
 
 void printFPE(const CFlugplanEintrag &qFPE);
 
+const CFlugplanEintrag *getLastFlight(const CPlane &qPlane);
+const CFlugplanEintrag *getLastFlightNotAfter(const CPlane &qPlane, PlaneTime ignoreFrom);
 std::pair<PlaneTime, int> getPlaneAvailableTimeLoc(const CPlane &qPlane, std::optional<PlaneTime> ignoreFrom);
+
 SLONG checkPlaneSchedule(const PLAYER &qPlayer, SLONG planeId, bool printOnErrorOnly);
 SLONG checkPlaneSchedule(const PLAYER &qPlayer, const CPlane &qPlane, bool printOnErrorOnly);
 SLONG checkFlightJobs(const PLAYER &qPlayer);

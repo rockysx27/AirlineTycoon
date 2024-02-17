@@ -1,6 +1,8 @@
 #include "BotHelper.h"
 
 #include "BotPlaner.h"
+#include "compat_global.h"
+#include "compat_misc.h"
 
 #include <iostream>
 
