@@ -2979,7 +2979,7 @@ void CPlaner::AutoPlan(SLONG mode) {
 
     if (mode == 0) {
         /* only check current plane */
-        Helper::checkFlightJobs(qPlayer);
+        Helper::checkFlightJobs(qPlayer, false);
         return;
     }
 
@@ -3001,7 +3001,7 @@ void CPlaner::AutoPlan(SLONG mode) {
         BotPlaner bot(qPlayer, qPlayer.Planes, BotPlaner::JobOwner::Backlog, {});
         bot.planFlights(planeIds, true);
         bot.applySolution();
-        Helper::checkFlightJobs(qPlayer);
+        Helper::checkFlightJobs(qPlayer, false);
         return;
     }
 
@@ -3017,7 +3017,7 @@ void CPlaner::AutoPlan(SLONG mode) {
         BotPlaner bot(qPlayer, qPlayer.Planes, BotPlaner::JobOwner::TravelAgency, {});
         bot.planFlights(planeIds, true);
         bot.applySolution();
-        Helper::checkFlightJobs(qPlayer);
+        Helper::checkFlightJobs(qPlayer, false);
         return;
     }
 }

@@ -491,6 +491,8 @@ int BotPlaner::planFlights(const std::vector<int> &planeIdsInput, bool bUseImpro
 
 bool BotPlaner::applySolution() {
     /* apply solution */
+    int totalGain = 0;
+    int totalDiff = 0;
     for (int p = 0; p < mPlaneStates.size(); p++) {
         int planeId = mPlaneStates[p].planeId;
 
@@ -503,6 +505,8 @@ bool BotPlaner::applySolution() {
 
         SLONG newGain = Helper::calculateScheduleGain(qPlayer, planeId);
         SLONG diff = newGain - oldGain;
+        totalGain += newGain;
+        totalDiff += diff;
         if (diff > 0) {
             hprintf("%s: Improved gain: %d => %d (+%d)", (LPCTSTR)qPlanes[planeId].Name, oldGain, newGain, diff);
         } else {
@@ -513,6 +517,11 @@ bool BotPlaner::applySolution() {
         const auto &qPlane = qPlanes[planeId];
         std::cout << "Schedule of plane " << qPlane.Name << std::endl;
 #endif
+    }
+    if (totalDiff > 0) {
+        hprintf("Total gain improved: %d (+%d)", totalGain, totalDiff);
+    } else {
+        hprintf("Total gain did not improve: %d (%d)", totalGain, totalDiff);
     }
     return true;
 }

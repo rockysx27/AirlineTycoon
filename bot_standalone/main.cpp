@@ -35,12 +35,10 @@ int main(int argc, char *argv[]) {
         BotPlaner planer(qPlayer, qPlayer.Planes, BotPlaner::JobOwner::TravelAgency, {});
         planer.planFlights(planeIds, true);
         planer.applySolution();
-        int nIncorrect = Helper::checkFlightJobs(qPlayer);
+        int nIncorrect = Helper::checkFlightJobs(qPlayer, true);
         if (nIncorrect > 0) {
             break;
         }
-
-        Sim.Date++;
     }
 
     redprintf("END");

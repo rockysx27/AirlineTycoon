@@ -287,14 +287,14 @@ SLONG checkPlaneSchedule(const PLAYER &qPlayer, const CPlane &qPlane, bool print
     return nIncorrect;
 }
 
-SLONG checkFlightJobs(const PLAYER &qPlayer) {
+SLONG checkFlightJobs(const PLAYER &qPlayer, bool printOnErrorOnly) {
     SLONG nIncorrect = 0;
     SLONG nPlanes = 0;
     for (SLONG c = 0; c < qPlayer.Planes.AnzEntries(); c++) {
         if (qPlayer.Planes.IsInAlbum(c) == 0) {
             continue;
         }
-        nIncorrect += checkPlaneSchedule(qPlayer, c, false);
+        nIncorrect += checkPlaneSchedule(qPlayer, c, printOnErrorOnly);
         nPlanes++;
     }
     hprintf("Bot::checkFlightJobs(): Found %ld problems for %ld planes.", nIncorrect, nPlanes);

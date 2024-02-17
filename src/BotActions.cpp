@@ -135,7 +135,7 @@ void Bot::grabFlights(BotPlaner &planer) {
     // requestPlanFlights()();
     planer.applySolution();
     hprintf("Bot::printGainFromJobs(): Improved gain from jobs from %ld to %ld.", oldGain, calcCurrentGainFromJobs());
-    Helper::checkFlightJobs(qPlayer);
+    Helper::checkFlightJobs(qPlayer, true);
 }
 
 void Bot::requestPlanFlights() {
