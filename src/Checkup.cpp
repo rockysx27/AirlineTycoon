@@ -25,9 +25,7 @@
 
 CString settingsPath;
 
-void PrepareSettingsPath() {
-    settingsPath = AppPath + CString("AT.json");
-}
+void PrepareSettingsPath() { settingsPath = AppPath + CString("AT.json"); }
 
 //--------------------------------------------------------------------------------------------
 // CRegistryAccess::
@@ -163,8 +161,8 @@ bool CRegistryAccess::ReadRegistryKeyEx(char *Text, const CString &EntryName) {
         return false;
     }
     return (snprintf(Text, json_string_length(Entry) + 1, "%s", json_string_value(Entry)) >= 0);
-    //unsigned long TempSize = 500;
-    //return (ERROR_SUCCESS == RegQueryValueEx(settingsJSON, EntryName, NULL, NULL, (UBYTE *)Text, &TempSize));
+    // unsigned long TempSize = 500;
+    // return (ERROR_SUCCESS == RegQueryValueEx(settingsJSON, EntryName, NULL, NULL, (UBYTE *)Text, &TempSize));
 }
 
 bool CRegistryAccess::ReadRegistryKeyEx_b(BOOL &Bool, const CString &EntryName) {
@@ -239,5 +237,4 @@ bool CRegistryAccess::ReadRegistryKeyEx_u(ULONG &Long, const CString &EntryName)
 
     Long = json_integer_value(Entry);
     return true;
-
 }

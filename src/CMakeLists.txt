@@ -4,36 +4,38 @@ add_library(common INTERFACE)
 
 if(MSVC)
     add_compile_options("/MP")
-else()
+elseif(APPLE AND UNIX)
     target_compile_options(common INTERFACE "-Wall")
     target_compile_options(common INTERFACE "-Wextra")
     target_compile_options(common INTERFACE "-Wno-format-nonliteral")
     target_compile_options(common INTERFACE "-Wno-sign-compare")
     target_compile_options(common INTERFACE "-Wno-type-limits")
-
     target_compile_options(common INTERFACE "-Wcast-align")
     target_compile_options(common INTERFACE "-Wcast-qual")
     target_compile_options(common INTERFACE "-Wctor-dtor-privacy")
-    target_compile_options(common INTERFACE "-Wdisabled-optimization")
     target_compile_options(common INTERFACE "-Wfloat-equal")
     target_compile_options(common INTERFACE "-Wformat=2")
     target_compile_options(common INTERFACE "-Winit-self")
     target_compile_options(common INTERFACE "-Winline")
-    target_compile_options(common INTERFACE "-Wlogical-op")
     target_compile_options(common INTERFACE "-Wmissing-declarations")
     target_compile_options(common INTERFACE "-Wmissing-include-dirs")
-    target_compile_options(common INTERFACE "-Wnoexcept")
     #target_compile_options(common INTERFACE "-Wold-style-cast")
     target_compile_options(common INTERFACE "-Woverloaded-virtual")
     target_compile_options(common INTERFACE "-Wredundant-decls")
     #target_compile_options(common INTERFACE "-Wshadow")
     #target_compile_options(common INTERFACE "-Wsign-conversion")
     target_compile_options(common INTERFACE "-Wsign-promo")
-    target_compile_options(common INTERFACE "-Wstrict-null-sentinel")
     target_compile_options(common INTERFACE "-Wstrict-overflow=2")
     target_compile_options(common INTERFACE "-Wswitch-default")
     target_compile_options(common INTERFACE "-Wundef")
+elseif(UNIX AND NOT APPLE)
+    target_compile_options(common INTERFACE "-Wdisabled-optimization")
+    target_compile_options(common INTERFACE "-Wlogical-op")
+    target_compile_options(common INTERFACE "-Wnoexcept")
+    target_compile_options(common INTERFACE "-Wstrict-null-sentinel")
     target_compile_options(common INTERFACE "-Wunsafe-loop-optimizations")
+elseif(APPLE AND NOT UNIX)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
 endif()
 
 add_subdirectory (TeakLibW)
@@ -133,12 +135,12 @@ add_executable (AT
 )
 
 set_target_properties(AT PROPERTIES
-                      RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/../BUILD/"
+                      RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}"
 )
 
 set_target_properties(
     AT PROPERTIES
-    VS_DEBUGGER_WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/../BUILD/")
+    VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -147,7 +149,7 @@ if(MSVC)
     target_compile_features(AT PUBLIC cxx_std_17)
     target_compile_options(AT PUBLIC "/Zc:__cplusplus")
     target_compile_options(AT PUBLIC "/std:c++17")
-    
+
     # Release configurations
     target_compile_definitions(AT PRIVATE "$<$<CONFIG:Release>:SENTRY;WIN32;_WINDOWS>")
     target_include_directories(AT PRIVATE "$<$<CONFIG:Release>:${PROJECT_SOURCE_DIR}/../libs/CrashRpt/install/include/>")
@@ -218,12 +220,12 @@ add_custom_command(
 )
 
 # Compile patched assets with the freshly build executable
-add_custom_command(
-    TARGET AT POST_BUILD
-    COMMAND $<TARGET_FILE:AT> /update-patched-files-only
-    COMMENT "Compiling patched assets"
-    WORKING_DIRECTORY "$<TARGET_FILE_DIR:AT>"
-)
+# add_custom_command(
+#     TARGET AT POST_BUILD
+#     COMMAND $<TARGET_FILE:AT> /update-patched-files-only
+#     COMMENT "Compiling patched assets"
+#     WORKING_DIRECTORY "$<TARGET_FILE_DIR:AT>"
+# )
 
 # Clean up patched assets from folder
 add_custom_command(

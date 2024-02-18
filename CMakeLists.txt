@@ -36,7 +36,9 @@ if (WIN32)
     foreach(file ${dll_files})
         file(COPY ${file} DESTINATION ${DEPENDENCIES_PATH})
     endforeach()
+endif()
 
+if (WIN32 OR APPLE)
     # Needed on windows as include is not under repo / project
     include_directories(libs/jansson/include)
 endif()

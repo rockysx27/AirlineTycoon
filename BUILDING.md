@@ -12,6 +12,7 @@ Pick your environment:
 - Windows on Visual Studio 2022
 - Windows on Visual Studio Code
 - Linux
+- MacOS on Visual Studio Code
 
 ## Windows with Visual Studio 2022
 
@@ -22,7 +23,7 @@ The `dl-sdl2.ps1` powershell script will automatically download and install SDL2
 
 You can run it with this command: `powershell -ExecutionPolicy Bypass -File ./dl-sdl2.ps1 `
 
---- 
+---
 
 If you want to download it yourself, you can use these commands:
 ```ps
@@ -65,7 +66,7 @@ To build the application, open the project solution with Visual Studio, select y
 - Once Configuration is done, you can run and debug the project with `CTRL + F5`
     - Game will build but won't start unless you added your assets into the `gamefiles` folder
 
-## Linux x86 
+## Linux x86
 (AMD64 only with MultiArch for i686)
 
 SDL2 should be included in most packaging tools (apt, etc.) under the name `libsdl2*-dev` or `SDL2*-devel`.
@@ -86,3 +87,18 @@ sudo apt-get install libjansson-dev:i386 libsdl2*-dev:i386
 mkdir build
 cd build
 cmake -DCMAKE_TOOLCHAIN_FILE=./Toolchain-i686.cmake ..
+
+## MacOS on Visual Studio Code
+
+> Make sure you cloned **git submodules**
+
+- Install [Homebrew](https://brew.sh) if you don't have it already
+- Install `cmake` and `SDL2` with Homebrew using `brew install cmake sdl2 sdl2_mixer sdl2_image sdl2_ttf janson`
+- Open or install [Visual Studio Code](https://code.visualstudio.com/) and open the source code
+- Install the 'C/C++ Extension Pack'. This should be proposed by a popup at startup.
+    - You can always do install it later by opening the extension panel (`CTRL + SHIFT + X`) and install it from there
+- Once installed, you should be asked to configure the project, click `Yes`
+    - You can always do this later by opening the command panel (`CTRL + P`) then type and select `CMake: Select a kit`
+- Select `arm64` if you have an ARM Apple Chip; or 'amd64' for any other processor, from the `Visual Studio Build Tools`. Configuration should begin in the `Output` window. Wait until it's done.
+- Once Configuration is done, you can run and debug the project with `CTRL + F5`
+    - Game will build but won't start unless you added your assets into the `gamefiles` folder
