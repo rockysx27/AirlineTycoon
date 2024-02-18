@@ -91,7 +91,7 @@ void CRegistryAccess::Close() {
 //--------------------------------------------------------------------------------------------
 bool CRegistryAccess::IsOpen() { return (settingsJSON != nullptr); }
 
-void CRegistryAccess::WriteFile() { 
+void CRegistryAccess::WriteFile() {
     if (!IsOpen()) {
         return;
     }
@@ -121,7 +121,6 @@ bool CRegistryAccess::WriteRegistryKeyEx_l(const SLONG &Long, const CString &Ent
     if (settingsJSON == nullptr) {
         return false;
     }
-
     return (json_object_set_new(settingsJSON, EntryName, json_integer(Long)) > 0);
 }
 

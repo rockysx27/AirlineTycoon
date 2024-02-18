@@ -20,3 +20,4 @@ gamefiles/*
 !gamefiles/*.md
 .vscode
 !.vscode/extensions.json
+.DS_Store
