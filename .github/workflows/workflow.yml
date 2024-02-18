@@ -2,7 +2,8 @@
 name: build and package
 
 on:
-  push
+  push:
+    branches: [ '*' ]
   pull_request:
     branches: [ "main", "develop" ]
 
