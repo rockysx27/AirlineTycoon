@@ -19,7 +19,7 @@ jobs:
         release-tag: ${{ steps.compute-env.outputs.release-tag }}
     steps:
     # Get the code
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     # Extract VERSION from resource.h and format it
     # Set global variables and variables based on the branch name
@@ -64,14 +64,15 @@ jobs:
       # 1. <Windows, Release or Debug, latest MSVC compiler toolchain on the default runner image, default generator>
       # 2. <Linux, Release or Debug, latest GCC compiler toolchain on the default runner image, default generator>
       matrix:
-        os: [ubuntu-latest, windows-latest]
-        name: ['linux', 'windows']
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        name: ['linux', 'windows', 'macos']
         build_type:
           - ${{ needs.env.outputs.build-type }}
         c_compiler: [gcc, cl]
         exclude: # exclude all by default
           - os: windows-latest
           - os: ubuntu-latest
+          - os: macos-latest
         include: # only include the configurations we want
           - os: windows-latest
             c_compiler: cl
@@ -83,12 +84,17 @@ jobs:
             cpp_compiler: g++
             name: 'linux'
             build_type: ${{ needs.env.outputs.build-type }}
+          - os: macos-latest
+            c_compiler: gcc
+            cpp_compiler: g++
+            name: 'macos'
+            build_type: ${{ needs.env.outputs.build-type }}
 
     # Execute this for each matrix
     # Warning: Don't get ${{ github.workspace }} from elsewhere! (like precomputed from env job)
     # as GitHub actually set a different path for Windows that make the build fail
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         submodules: true
 
@@ -97,6 +103,16 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install libjansson-dev libsdl2*-dev
+
+    - name: Setup homebrew (macOS)
+      if: ${{ matrix.os == 'macos-latest' }}
+      id: set-up-homebrew
+      uses: Homebrew/actions/setup-homebrew@master
+
+    - name: Install macOS dependencies
+      if: ${{ matrix.os == 'macos-latest' }}
+      run: |
+        brew install cmake sdl2 sdl2_mixer sdl2_image sdl2_ttf janson
 
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.

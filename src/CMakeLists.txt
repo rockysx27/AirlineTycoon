@@ -220,12 +220,12 @@ add_custom_command(
 )
 
 # Compile patched assets with the freshly build executable
-# add_custom_command(
-#     TARGET AT POST_BUILD
-#     COMMAND $<TARGET_FILE:AT> /update-patched-files-only
-#     COMMENT "Compiling patched assets"
-#     WORKING_DIRECTORY "$<TARGET_FILE_DIR:AT>"
-# )
+add_custom_command(
+    TARGET AT POST_BUILD
+    COMMAND $<TARGET_FILE:AT> /update-patched-files-only
+    COMMENT "Compiling patched assets"
+    WORKING_DIRECTORY "$<TARGET_FILE_DIR:AT>"
+)
 
 # Clean up patched assets from folder
 add_custom_command(
