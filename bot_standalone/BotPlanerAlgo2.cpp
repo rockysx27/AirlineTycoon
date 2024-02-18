@@ -210,10 +210,15 @@ void BotPlaner::algo2ApplySolutionToGraph(std::vector<Graph> &graphs) {
                 continue;
             }
 
+            if (qFPE.Okay != 0) {
+                redprintf("BotPlaner::algo2ApplySolutionToGraph(): Not scheduled correctly, skipping: %ld", qFPE.ObjectId);
+                continue;
+            }
+
             if (qFPE.ObjectType == 2) {
                 auto it = mExistingJobsById.find(qFPE.ObjectId);
                 if (it == mExistingJobsById.end()) {
-                    redprintf("BotPlaner::planFlights(): Unknown job in flight plan: %ld", qFPE.ObjectId);
+                    redprintf("BotPlaner::algo2ApplySolutionToGraph(): Unknown job in flight plan: %ld", qFPE.ObjectId);
                     continue;
                 }
                 int currentNode = qPlaneState.currentNode;
@@ -221,7 +226,7 @@ void BotPlaner::algo2ApplySolutionToGraph(std::vector<Graph> &graphs) {
 
                 /* check duration of any previous automatic flight */
                 if (autoFlightDuration != -1 && autoFlightDuration != g.adjMatrix[currentNode][nextNode].duration) {
-                    redprintf("BotPlaner::planFlights(): Duration of automatic flight does not match before FPE: %ld", qFPE.ObjectId);
+                    redprintf("BotPlaner::algo2ApplySolutionToGraph(): Duration of automatic flight does not match before FPE: %ld", qFPE.ObjectId);
                 }
 
                 qPlaneState.currentTime = planeTime;

@@ -235,12 +235,6 @@ std::vector<Graph> BotPlaner::prepareGraph() {
                 if (i == j) {
                     continue; /* self edge not allowed */
                 }
-                if (g.nodeInfo[j].premium <= 0) {
-                    continue; /* job has no premium (after deducting flight cost) */
-                }
-                if (g.nodeInfo[i].earliest > g.nodeInfo[j].latest) {
-                    continue; /* not possible because date constraints */
-                }
 
                 int startCity = (i >= nPlanes) ? mJobList[i - nPlanes].auftrag.NachCity : mPlaneStates[i].currentCity;
                 int destCity = mJobList[j - nPlanes].auftrag.VonCity;
@@ -256,6 +250,14 @@ std::vector<Graph> BotPlaner::prepareGraph() {
                 } else {
                     g.adjMatrix[i][j].cost = 0;
                     g.adjMatrix[i][j].duration = 0;
+                }
+
+                /* we skip some edges for the 'best' edges */
+                if (g.nodeInfo[j].premium <= 0) {
+                    continue; /* job has no premium (after deducting flight cost) */
+                }
+                if (g.nodeInfo[i].earliest > g.nodeInfo[j].latest) {
+                    continue; /* not possible because date constraints */
                 }
                 neighborList.emplace_back(j, g.nodeInfo[j].premium - g.adjMatrix[i][j].cost);
             }

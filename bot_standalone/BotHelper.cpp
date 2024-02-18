@@ -445,4 +445,66 @@ bool checkRoomOpen(SLONG roomId) {
     }
     return true;
 }
+
+const char *getItemName(SLONG item) {
+    switch (item) {
+    case ITEM_LAPTOP:
+        return "Laptop";
+    case ITEM_HANDY:
+        return "Handy";
+    case ITEM_NOTEBOOK:
+        return "Filofax";
+    case ITEM_MG:
+        return "MG";
+    case ITEM_BIER:
+        return "Beer";
+    case ITEM_ZIGARRE:
+        return "Cigarette";
+    case ITEM_OEL:
+        return "Oilcan";
+    case ITEM_POSTKARTE:
+        return "Postcard";
+    case ITEM_TABLETTEN:
+        return "Pills";
+    case ITEM_SPINNE:
+        return "Tarantula";
+    case ITEM_DART:
+        return "Dart";
+    case ITEM_DISKETTE:
+        return "Floppy disk";
+    case ITEM_BH:
+        return "BH";
+    case ITEM_HUFEISEN:
+        return "Horseshoe";
+    case ITEM_PRALINEN:
+        return "Pralines";
+    case ITEM_PRALINEN_A:
+        return "Pralines (spiked)";
+    case ITEM_PAPERCLIP:
+        return "Paperclip";
+    case ITEM_GLUE:
+        return "Glue";
+    case ITEM_GLOVE:
+        return "Gloves";
+    case ITEM_REDBULL:
+        return "Redbull";
+    case ITEM_STINKBOMBE:
+        return "Stinkbomb";
+    case ITEM_GLKOHLE:
+        return "Ember";
+    case ITEM_KOHLE:
+        return "Ember (cold)";
+    case ITEM_ZANGE:
+        return "Pliers";
+    case ITEM_PARFUEM:
+        return "Perfume";
+    case ITEM_XPARFUEM:
+        return "Stinking perfume";
+    default:
+        redprintf("BotHelper.cpp: Default case should not be reached.");
+        return "INVALID";
+    }
+    return "INVALID";
+}
+
 } // namespace Helper
