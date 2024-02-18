@@ -2,8 +2,7 @@
 name: build and package
 
 on:
-  push:
-    branches: [ "main", "develop" ]
+  push
   pull_request:
     branches: [ "main", "develop" ]
 
@@ -20,14 +19,14 @@ jobs:
     steps:
     # Get the code
     - uses: actions/checkout@v3
-    
+
     # Extract VERSION from resource.h and format it
     # Set global variables and variables based on the branch name
     - name: Compute env
       id: compute-env
       run: |
         VERSION=$(grep -oP 'FILE_VERSION\s+\K\d+(,\s+\d+){2}' src/Res/resource.h | sed -E 's/[, ]+/./g')
-        
+
         echo "cmake-build-dir=cmake-build" >> "$GITHUB_OUTPUT"
         echo "artifact-dir=artifacts" >> "$GITHUB_OUTPUT"
 
@@ -51,7 +50,7 @@ jobs:
             echo "release-tag=$VERSION-${{ github.sha }}" >> "$GITHUB_OUTPUT"
         fi
         cat $GITHUB_OUTPUT
-    
+
   build:
     needs: env
     runs-on: ${{ matrix.os }}
@@ -112,7 +111,7 @@ jobs:
     - name: Build
       # Build the program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
       run: cmake --build ${{ needs.env.outputs.cmake-build-dir }} --config ${{ matrix.build_type }}
-    
+
     # Package the build results (windows)
     - name: Package artifact
       id: artifact-win
@@ -121,15 +120,15 @@ jobs:
         # Set variables
         $artifactName = "${{ needs.env.outputs.artifact-name }}-${{ matrix.name }}.zip"
         $artifactPath = "${{ needs.env.outputs.artifact-dir }}/$artifactName"
-        
+
         # Create the artifact directory if it doesn't exist
         if (!(Test-Path -Path ${{ needs.env.outputs.artifact-dir }} -PathType Container)) {
             New-Item -Path ${{ needs.env.outputs.artifact-dir }} -ItemType Directory -Force
         }
-        
+
         # Compress the files into the artifact
         Compress-Archive -Path "BUILD/${{ matrix.build_type }}/*" -DestinationPath $artifactPath -Update
-    
+
         # Output artifact information
         Write-Host "Building windows $artifactName"
         Write-Host "artifact-name=$artifactName"
@@ -142,17 +141,17 @@ jobs:
       id: artifact-linux
       if: matrix.name == 'linux'
       run: |
-        echo "Building linux ${{ needs.env.outputs.artifact-name }}-${{ matrix.name }}.tar" 
+        echo "Building linux ${{ needs.env.outputs.artifact-name }}-${{ matrix.name }}.tar"
         ARTIFACT_NAME=${{ needs.env.outputs.artifact-name }}-${{ matrix.name }}.tar
         ARTIFACT_PATH=${{ needs.env.outputs.artifact-dir }}/$ARTIFACT_NAME
 
         mkdir -p ${{ needs.env.outputs.artifact-dir }}
         tar -cvf $ARTIFACT_PATH -C ${{ github.workspace }}/BUILD .
-        
+
         echo "artifact-name=$ARTIFACT_NAME" >> "$GITHUB_OUTPUT"
         echo "artifact-path=$ARTIFACT_PATH" >> "$GITHUB_OUTPUT"
         cat $GITHUB_OUTPUT
-    
+
     - name: Upload sentry debug files
       shell: bash
       # Only publish on main build & windows
@@ -167,8 +166,8 @@ jobs:
         sentry-cli login
         sentry-cli debug-files upload ./BUILD/${{ matrix.build_type }}/AT.pdb
         sentry-cli debug-files upload ./BUILD/${{ matrix.build_type }}/AT.exe
-        
-    
+
+
     - name: Publish artifact
       uses: actions/upload-artifact@v4
       with:
