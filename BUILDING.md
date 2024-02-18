@@ -93,7 +93,7 @@ cmake -DCMAKE_TOOLCHAIN_FILE=./Toolchain-i686.cmake ..
 > Make sure you cloned **git submodules**
 
 - Install [Homebrew](https://brew.sh) if you don't have it already
-- Install `cmake` and `SDL2` with Homebrew using `brew install cmake sdl2 sdl2_mixer sdl2_image sdl2_ttf janson`
+- Install `cmake` and `SDL2` with Homebrew using `brew install cmake sdl2 sdl2_mixer sdl2_image sdl2_ttf jansson`
 - Open or install [Visual Studio Code](https://code.visualstudio.com/) and open the source code
 - Install the 'C/C++ Extension Pack'. This should be proposed by a popup at startup.
     - You can always do install it later by opening the extension panel (`CTRL + SHIFT + X`) and install it from there
