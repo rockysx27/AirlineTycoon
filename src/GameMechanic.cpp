@@ -1438,13 +1438,14 @@ bool GameMechanic::useItem(PLAYER &qPlayer, SLONG item) {
         dialogPartner = pRoom->DefaultDialogPartner;
     }
 
+    bool isRobot = (qPlayer.Owner == 1);
     switch (item) {
         // Leer:
     case 0xff:
         break;
         // Kalaschnikow:
     case ITEM_MG:
-        if (bNoMenuOpen && qPlayer.GetRoom() == ROOM_ARAB_AIR) {
+        if ((bNoMenuOpen && qPlayer.GetRoom() == ROOM_ARAB_AIR) || isRobot) {
             qPlayer.ArabTrust = max(1, qPlayer.ArabTrust);
             qPlayer.Items[itemIndex] = 0xff;
             qPlayer.ReformIcons();
@@ -1458,7 +1459,7 @@ bool GameMechanic::useItem(PLAYER &qPlayer, SLONG item) {
 
         // Bier:
     case ITEM_BIER:
-        if (bNoMenuOpen && qPlayer.GetRoom() == ROOM_WERKSTATT) {
+        if ((bNoMenuOpen && qPlayer.GetRoom() == ROOM_WERKSTATT) || isRobot) {
             qPlayer.MechTrust = max(1, qPlayer.MechTrust);
             qPlayer.Items[itemIndex] = 0xff;
             qPlayer.MechAngry = 0;
@@ -1476,7 +1477,7 @@ bool GameMechanic::useItem(PLAYER &qPlayer, SLONG item) {
         break;
 
     case ITEM_OEL:
-        if (bNoMenuOpen && qPlayer.GetRoom() == ROOM_GLOBE) {
+        if ((bNoMenuOpen && qPlayer.GetRoom() == ROOM_GLOBE) || isRobot) {
             qPlayer.GlobeOiled = TRUE;
             qPlayer.Items[itemIndex] = 0xff;
             qPlayer.ReformIcons();
@@ -1496,7 +1497,7 @@ bool GameMechanic::useItem(PLAYER &qPlayer, SLONG item) {
         break;
 
     case ITEM_POSTKARTE:
-        if (bNoMenuOpen && qPlayer.GetRoom() == ROOM_PERSONAL_A + qPlayer.PlayerNum * 10) {
+        if ((bNoMenuOpen && qPlayer.GetRoom() == ROOM_PERSONAL_A + qPlayer.PlayerNum * 10) || isRobot) {
             qPlayer.SeligTrust = TRUE;
             qPlayer.Items[itemIndex] = 0xff;
             qPlayer.ReformIcons();
@@ -1509,7 +1510,7 @@ bool GameMechanic::useItem(PLAYER &qPlayer, SLONG item) {
         break;
 
     case ITEM_SPINNE:
-        if (bNoMenuOpen && qPlayer.GetRoom() == ROOM_SABOTAGE) {
+        if ((bNoMenuOpen && qPlayer.GetRoom() == ROOM_SABOTAGE) || isRobot) {
             if (qPlayer.ArabTrust != 0) {
                 qPlayer.SpiderTrust = TRUE;
                 qPlayer.Items[itemIndex] = 0xff;
@@ -1524,7 +1525,7 @@ bool GameMechanic::useItem(PLAYER &qPlayer, SLONG item) {
         break;
 
     case ITEM_DART:
-        if (bNoMenuOpen && qPlayer.GetRoom() == ROOM_WERBUNG && (Sim.Difficulty >= DIFF_NORMAL || Sim.Difficulty == DIFF_FREEGAME)) {
+        if (((bNoMenuOpen && qPlayer.GetRoom() == ROOM_WERBUNG) || isRobot) && (Sim.Difficulty >= DIFF_NORMAL || Sim.Difficulty == DIFF_FREEGAME)) {
             qPlayer.WerbungTrust = TRUE;
             qPlayer.Items[itemIndex] = 0xff;
             qPlayer.ReformIcons();
@@ -1551,7 +1552,7 @@ bool GameMechanic::useItem(PLAYER &qPlayer, SLONG item) {
         break;
 
     case ITEM_BH:
-        if (bNoMenuOpen && qPlayer.GetRoom() == ROOM_SHOP1) {
+        if ((bNoMenuOpen && qPlayer.GetRoom() == ROOM_SHOP1) || isRobot) {
             qPlayer.DutyTrust = TRUE;
             qPlayer.Items[itemIndex] = 0xff;
             if (pRoom) {
@@ -1564,7 +1565,7 @@ bool GameMechanic::useItem(PLAYER &qPlayer, SLONG item) {
         break;
 
     case ITEM_HUFEISEN:
-        if (bNoMenuOpen && qPlayer.GetRoom() == ROOM_RICKS) {
+        if ((bNoMenuOpen && qPlayer.GetRoom() == ROOM_RICKS) || isRobot) {
             qPlayer.TrinkerTrust = TRUE;
             qPlayer.Items[itemIndex] = 0xff;
             if (pRoom) {
@@ -1598,7 +1599,7 @@ bool GameMechanic::useItem(PLAYER &qPlayer, SLONG item) {
         break;
 
     case ITEM_PAPERCLIP:
-        if (bNoMenuOpen && qPlayer.GetRoom() == ROOM_FRACHT && Sim.ItemGlue == 0 && (qPlayer.HasItem(ITEM_GLUE) == 0)) {
+        if (((bNoMenuOpen && qPlayer.GetRoom() == ROOM_FRACHT) || isRobot) && Sim.ItemGlue == 0 && (qPlayer.HasItem(ITEM_GLUE) == 0)) {
             if (pRoom) {
                 pRoom->StartDialog(TALKER_FRACHT, MEDIUM_AIR, 1020);
             }
@@ -1641,7 +1642,7 @@ bool GameMechanic::useItem(PLAYER &qPlayer, SLONG item) {
         break;
 
     case ITEM_REDBULL:
-        if (qPlayer.GetRoom() == ROOM_KIOSK) {
+        if (qPlayer.GetRoom() == ROOM_KIOSK || isRobot) {
             qPlayer.KioskTrust = 1;
             qPlayer.Items[itemIndex] = 0xff;
             qPlayer.ReformIcons();
@@ -1736,7 +1737,7 @@ bool GameMechanic::useItem(PLAYER &qPlayer, SLONG item) {
         break;
 
     case ITEM_PARFUEM:
-        if (qPlayer.GetRoom() == ROOM_WERKSTATT && Sim.Slimed != -1) {
+        if ((qPlayer.GetRoom() == ROOM_WERKSTATT || isRobot) && Sim.Slimed != -1) {
             qPlayer.Items[itemIndex] = ITEM_XPARFUEM;
         } else if (pRoom && dialogPartner != TALKER_NONE) {
             pRoom->StartDialog(dialogPartner, MEDIUM_AIR, 10000 + ITEM_PARFUEM);

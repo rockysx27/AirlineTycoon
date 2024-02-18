@@ -30,4 +30,6 @@ SLONG calculateScheduleGain(const PLAYER &qPlayer, SLONG planeId);
 
 bool checkRoomOpen(SLONG roomId);
 
+const char *getItemName(SLONG item);
+
 } // namespace Helper

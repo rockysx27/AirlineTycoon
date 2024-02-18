@@ -37,6 +37,14 @@ static constexpr int ceil_div(int a, int b) {
 }
 
 void Bot::actionStartDay(__int64 moneyAvailable) {
+    printf("Inventory: ");
+    for (SLONG d = 0; d < 6; d++) {
+        if (qPlayer.Items[d] != 0xff) {
+            printf("%s, ", Helper::getItemName(qPlayer.Items[d]));
+        }
+    }
+    printf("\n");
+
     updateRouteInfo();
 
     requestPlanRoutes();

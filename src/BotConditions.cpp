@@ -334,7 +334,7 @@ Bot::Prio Bot::condSabotage(__int64 &moneyAvailable) {
     if (!hoursPassed(ACTION_SABOTAGE, 24)) {
         return Prio::None;
     }
-    if ((mItemAntiVirus == 1) || (mItemAntiVirus == 2)) {
+    if (qPlayer.ArabTrust > 0 && (mItemAntiVirus == 1 || mItemAntiVirus == 2)) {
         return Prio::Low;
     }
     return Prio::None;
