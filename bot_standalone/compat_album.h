@@ -167,20 +167,26 @@ template <typename T> class BUFFER_V : public std::vector<T> {
 
 class TEAKRAND {
   public:
-    TEAKRAND(void) { Seed = Value = 0; }
-    TEAKRAND(ULONG _Seed) { Seed = Value = _Seed; }
-
-    void SRand(ULONG _Seed) { Seed = Value = _Seed; }
-    void SRandTime(void) { Seed = Value = AtGetTime(); }
-    void Reset(void) { Value = Seed; }
-
-    UWORD Rand(void) {
-        Value = Value * 7381 + 0x269EC3;
-        return (UWORD(Value >> 16));
+    TEAKRAND(void) { Seed = 0; }
+    TEAKRAND(ULONG _Seed) {
+        Seed = _Seed;
+        mMT.seed(Seed);
     }
+
+    void SRand(ULONG _Seed) {
+        Seed = _Seed;
+        mMT.seed(Seed);
+    }
+    void SRandTime(void) {
+        Seed = AtGetTime();
+        mMT.seed(Seed);
+    }
+    void Reset(void) { mMT.seed(Seed); }
+
+    UWORD Rand(void) { return getRandInt(0, UINT16_MAX); }
     UWORD Rand(SLONG Max) { return (UWORD(getRandInt(0, Max - 1))); }
     UWORD Rand(SLONG Min, SLONG Max) { return (UWORD(getRandInt(Min, Max))); }
-    ULONG GetSeed(void) { return (Value); }
+    ULONG GetSeed(void) { return (Seed); }
 
     inline int getRandInt(int min, int max) {
         std::uniform_int_distribution<int> dist(min, max);
@@ -189,9 +195,9 @@ class TEAKRAND {
 
   private:
     ULONG Seed{};
-    ULONG Value;
 
-    std::mt19937 mMT{std::random_device{}()};
+    // std::mt19937 mMT{std::random_device{}()};
+    std::mt19937 mMT{};
 };
 
 template <typename T> class TXYZ {

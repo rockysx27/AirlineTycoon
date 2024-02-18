@@ -6649,7 +6649,7 @@ void PLAYER::BroadcastPosition(bool bForce) {
     }
 }
 
-bool PLAYER::IsSuperBot() const { return (Owner == 1) && (3 == PlayerNum || 2 == PlayerNum); }
+bool PLAYER::IsSuperBot() const { return (Owner == 1) && (3 == PlayerNum); }
 
 //============================================================================================
 // PLAYERS::
@@ -7749,7 +7749,7 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
                        "XXXXXXXXXX";
         break;
     case ROBOT_USE_NO_FINE:
-        if (IsSuperBot() && false) { // TODO
+        if (IsSuperBot()) {
             return false;
         }
         pFeatureDesc = "XXXXXX"

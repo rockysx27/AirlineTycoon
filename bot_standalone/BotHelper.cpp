@@ -312,6 +312,7 @@ SLONG _checkPlaneSchedule(const PLAYER &qPlayer, const CPlane &qPlane, std::unor
     if ((nIncorrect > nIncorredOld) || !printOnErrorOnly) {
         printFlightJobs(qPlayer, qPlane);
     }
+    assert(nIncorrect == 0);
     return nIncorrect;
 }
 

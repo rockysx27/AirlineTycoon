@@ -482,7 +482,6 @@ int BotPlaner::planFlights(const std::vector<int> &planeIdsInput, bool bUseImpro
             nNewJobsScheduled++;
         }
     }
-    // assert(nJobsScheduled == nPreviouslyOwnedScheduled + nNewJobsScheduled); TODO
     hprintf("Scheduled %d out of %d existing jobs.", nPreviouslyOwnedScheduled, nPreviouslyOwned);
     hprintf("Scheduled %d out of %d new jobs.", nNewJobsScheduled, nNewJobs);
     return totalGain;

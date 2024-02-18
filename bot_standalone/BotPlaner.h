@@ -219,6 +219,7 @@ class BotPlaner {
     int algo2FindNext(const Graph &g, PlaneState &planeState, int choice) const;
     void algo2InsertNode(Graph &g, int planeIdx, int nextNode);
     void algo2RemoveNode(Graph &g, int planeIdx, int currentNode);
+    void algo2KillPath(Graph &g, int planeIdx);
     std::pair<int, int> algo2RunForPlane(Graph &g, int planeIdx, int temperature);
     std::pair<int, int> algo2(std::vector<Graph> &graphs);
 

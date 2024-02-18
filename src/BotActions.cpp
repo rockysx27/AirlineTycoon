@@ -130,7 +130,7 @@ void Bot::actionCheckTravelAgency() {
 
 void Bot::grabFlights(BotPlaner &planer) {
     SLONG oldGain = calcCurrentGainFromJobs();
-    planer.planFlights(mPlanesForJobs, qPlayer.PlayerNum == 2); // TODO
+    planer.planFlights(mPlanesForJobs, true);
     // TODO
     // requestPlanFlights()();
     planer.applySolution();

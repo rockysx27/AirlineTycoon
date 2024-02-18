@@ -25,7 +25,15 @@ int main(int argc, char *argv[]) {
         plane.CheckFlugplaene(qPlayer.PlayerNum);
     }
 
-    for (int i = 0; i < 5; i++) {
+    bool useImproved = false;
+    if (argc > 1) {
+        useImproved = atoi(argv[1]) > 0;
+    }
+    int runs = 1;
+    if (argc > 2) {
+        runs = atoi(argv[2]);
+    }
+    for (int i = 0; i < runs; i++) {
         hprintf("******************** planning pass %d ********************", i);
         ReisebueroAuftraege.FillForReisebuero();
         for (const auto &job : ReisebueroAuftraege) {
@@ -33,7 +41,7 @@ int main(int argc, char *argv[]) {
         }
 
         BotPlaner planer(qPlayer, qPlayer.Planes, BotPlaner::JobOwner::TravelAgency, {});
-        planer.planFlights(planeIds, true);
+        planer.planFlights(planeIds, useImproved);
         planer.applySolution();
         int nIncorrect = Helper::checkFlightJobs(qPlayer, true);
         if (nIncorrect > 0) {
