@@ -218,7 +218,7 @@ std::pair<int, int> BotPlaner::algo1(std::vector<Graph> &graphs) {
             if (bestDelta >= kMinPremium) {
                 planeState.bJobIdAssigned[i] = 1;
                 planeState.currentSolution = std::move(bestSolution);
-                jobState.assignedtoPlaneId = bestPlane;
+                jobState.assignedtoPlaneIdx = bestPlane;
                 totalDelta += bestDelta;
                 nJobsScheduled++;
 

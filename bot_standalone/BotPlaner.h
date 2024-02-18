@@ -184,7 +184,7 @@ class BotPlaner {
         CAuftrag auftrag;
         JobOwner owner;
         /* both algos: */
-        int assignedtoPlaneId{-1};
+        int assignedtoPlaneIdx{-1};
         /* algo 1 only: */
         std::vector<int> bPlaneTypeEligible;
     };
@@ -214,11 +214,12 @@ class BotPlaner {
     bool algo2ShiftLeft(Graph &g, int nodeToShift, int shiftT, bool commit);
     bool algo2ShiftRight(Graph &g, int nodeToShift, int shiftT, bool commit);
     bool algo2MakeRoom(Graph &g, int nodeToMoveLeft, int nodeToMoveRight);
-    void algo2GenSolutionsFromGraph(std::vector<Graph> &graphs, int p);
+    void algo2GenSolutionsFromGraph(Graph &g, int p);
     void algo2ApplySolutionToGraph(std::vector<Graph> &graphs);
     int algo2FindNext(const Graph &g, PlaneState &planeState, int choice) const;
-    int algo2AdvanceToNode(Graph &g, int planeIdx, int nextNode);
-    bool algo2Backtrack(const Graph &g, PlaneState &planeState);
+    void algo2InsertNode(Graph &g, int planeIdx, int nextNode);
+    void algo2RemoveNode(Graph &g, int planeIdx, int currentNode);
+    std::pair<int, int> algo2RunForPlane(Graph &g, int planeIdx, int temperature);
     std::pair<int, int> algo2(std::vector<Graph> &graphs);
 
     /* apply solution */

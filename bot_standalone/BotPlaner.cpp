@@ -9,7 +9,6 @@
 #include <iostream>
 #include <unordered_map>
 
-// #define PRINT_DETAIL 1
 // #define PRINT_OVERALL 1
 
 const int kAvailTimeExtra = 2;
@@ -474,7 +473,7 @@ int BotPlaner::planFlights(const std::vector<int> &planeIdsInput, bool bUseImpro
     int nPreviouslyOwnedScheduled = 0;
     int nNewJobsScheduled = 0;
     for (const auto &job : mJobList) {
-        if (job.assignedtoPlaneId < 0) {
+        if (job.assignedtoPlaneIdx < 0) {
             continue;
         }
         if (job.wasTaken()) {
@@ -512,11 +511,6 @@ bool BotPlaner::applySolution() {
         } else {
             hprintf("%s: Gain did not improve: %d => %d (%d)", (LPCTSTR)qPlanes[planeId].Name, oldGain, newGain, diff);
         }
-
-#ifdef PRINT_DETAIL
-        const auto &qPlane = qPlanes[planeId];
-        std::cout << "Schedule of plane " << qPlane.Name << std::endl;
-#endif
     }
     if (totalDiff > 0) {
         hprintf("Total gain improved: %d (+%d)", totalGain, totalDiff);
