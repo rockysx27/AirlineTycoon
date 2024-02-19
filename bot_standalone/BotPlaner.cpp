@@ -9,6 +9,7 @@
 #include <iostream>
 #include <unordered_map>
 
+// #define PRINT_DETAIL 1
 // #define PRINT_OVERALL 1
 
 const int kAvailTimeExtra = 2;
@@ -200,7 +201,7 @@ void BotPlaner::findPlaneTypes() {
     }
     assert(mPlaneTypeToPlane.size() == nPlaneTypes);
 
-#ifdef PRINT_OVERALL
+#ifdef PRINT_DETAIL
     std::cout << "There are " << mPlaneStates.size() << " planes of " << mPlaneTypeToPlane.size() << " types" << std::endl;
 #endif
 }
@@ -270,7 +271,7 @@ std::vector<Graph> BotPlaner::prepareGraph() {
                 qNodeInfo.bestNeighbors.push_back(n.first);
             }
         }
-#ifdef PRINT_OVERALL
+#ifdef PRINT_DETAIL
         printGraph(mPlaneStates, mJobList, graphs[pt]);
 #endif
     }
@@ -328,11 +329,6 @@ bool BotPlaner::applySolutionForPlane(int planeId, const BotPlaner::Solution &so
         }
 
         /* plan taken jobs */
-#ifdef PRINT_OVERALL
-        hprintf("BotPlaner::applySolutionForPlane(): Plane %s: Scheduling job (%s) at %s %d, landing %s %d", (LPCTSTR)qPlanes[planeId].Name,
-                Helper::getJobName(job.auftrag).c_str(), (LPCTSTR)Helper::getWeekday(startTime.getDate()), startTime.getHour(),
-                (LPCTSTR)Helper::getWeekday(endTime.getDate()), endTime.getHour());
-#endif
         if (job.isFreight()) {
             if (!GameMechanic::planFreightJob(qPlayer, planeId, job.id, startTime.getDate(), startTime.getHour())) {
                 redprintf("BotPlaner::applySolutionForPlane(): GameMechanic::planFreightJob returned error!");
@@ -386,7 +382,9 @@ bool BotPlaner::applySolutionForPlane(int planeId, const BotPlaner::Solution &so
 }
 
 int BotPlaner::planFlights(const std::vector<int> &planeIdsInput, bool bUseImprovedAlgo) {
+#ifdef PRINT_OVERALL
     hprintf("BotPlaner::planFlights(): Current time: %d", Sim.GetHour());
+#endif
 
     mScheduleFromTime = {Sim.Date, Sim.GetHour() + kAvailTimeExtra};
 
@@ -454,21 +452,21 @@ int BotPlaner::planFlights(const std::vector<int> &planeIdsInput, bool bUseImpro
                 eligibleJobs++;
             }
         }
-#ifdef PRINT_OVERALL
+#ifdef PRINT_DETAIL
         std::cout << "Plane " << qPlane.Name << " is able to fly " << eligibleJobs << " / " << mJobList.size() << " jobs" << std::endl;
 #endif
     }
 
     /* prepare graph */
-    std::vector<Graph> graphs = prepareGraph();
+    mGraphs = prepareGraph();
 
     /* start algo */
     int nJobsScheduled{0};
     int totalGain{0};
     if (bUseImprovedAlgo) {
-        std::tie(nJobsScheduled, totalGain) = algo2(graphs);
+        std::tie(nJobsScheduled, totalGain) = algo2();
     } else {
-        std::tie(nJobsScheduled, totalGain) = algo1(graphs);
+        std::tie(nJobsScheduled, totalGain) = algo1();
     }
 
     /* check statistics */
@@ -484,8 +482,12 @@ int BotPlaner::planFlights(const std::vector<int> &planeIdsInput, bool bUseImpro
             nNewJobsScheduled++;
         }
     }
+
+#ifdef PRINT_OVERALL
     hprintf("Scheduled %d out of %d existing jobs.", nPreviouslyOwnedScheduled, nPreviouslyOwned);
     hprintf("Scheduled %d out of %d new jobs.", nNewJobsScheduled, nNewJobs);
+#endif
+
     return totalGain;
 }
 
@@ -507,16 +509,24 @@ bool BotPlaner::applySolution() {
         SLONG diff = newGain - oldGain;
         totalGain += newGain;
         totalDiff += diff;
+
+#ifdef PRINT_OVERALL
+        Helper::checkPlaneSchedule(qPlayer, p, false);
         if (diff > 0) {
             hprintf("%s: Improved gain: %d => %d (+%d)", (LPCTSTR)qPlanes[planeId].Name, oldGain, newGain, diff);
         } else {
             hprintf("%s: Gain did not improve: %d => %d (%d)", (LPCTSTR)qPlanes[planeId].Name, oldGain, newGain, diff);
         }
+#endif
     }
+
+#ifdef PRINT_OVERALL
     if (totalDiff > 0) {
         hprintf("Total gain improved: %d (+%d)", totalGain, totalDiff);
     } else {
         hprintf("Total gain did not improve: %d (%d)", totalGain, totalDiff);
     }
+#endif
+
     return true;
 }

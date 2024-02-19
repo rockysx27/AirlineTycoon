@@ -325,7 +325,9 @@ SLONG checkFlightJobs(const PLAYER &qPlayer, bool printOnErrorOnly) {
         nIncorrect += _checkPlaneSchedule(qPlayer, qPlayer.Planes[c], assignedJobs, printOnErrorOnly);
         nPlanes++;
     }
-    hprintf("Helper::checkFlightJobs(): Found %ld problems for %ld planes.", nIncorrect, nPlanes);
+    if (nIncorrect > 0) {
+        hprintf("Helper::checkFlightJobs(): Found %ld problems for %ld planes.", nIncorrect, nPlanes);
+    }
     return nIncorrect;
 }
 

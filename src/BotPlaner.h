@@ -205,21 +205,23 @@ class BotPlaner {
 
     /* algo 1 */
     Solution algo1FindFlightPlan(Graph &g, int planeIdx, PlaneTime availTime, const std::vector<int> &eligibleJobIds);
-    std::pair<int, int> algo1(std::vector<Graph> &graphs);
+    std::pair<int, int> algo1();
 
     /* algo 2 */
+    void savePath(int planeIdx, std::vector<int> &path) const;
+    void restorePath(int planeIdx, const std::vector<int> &path);
+    void killPath(int planeIdx);
     void printNodeInfo(const Graph &g, int nodeIdx) const;
     bool algo2ShiftLeft(Graph &g, int nodeToShift, int shiftT, bool commit);
     bool algo2ShiftRight(Graph &g, int nodeToShift, int shiftT, bool commit);
     bool algo2MakeRoom(Graph &g, int nodeToMoveLeft, int nodeToMoveRight);
-    void algo2GenSolutionsFromGraph(Graph &g, int p);
-    void algo2ApplySolutionToGraph(std::vector<Graph> &graphs);
+    void algo2GenSolutionsFromGraph(int planeIdx);
+    void algo2ApplySolutionToGraph();
     int algo2FindNext(const Graph &g, PlaneState &planeState, int choice) const;
     void algo2InsertNode(Graph &g, int planeIdx, int nextNode);
     void algo2RemoveNode(Graph &g, int planeIdx, int currentNode);
-    void algo2KillPath(Graph &g, int planeIdx);
-    std::pair<int, int> algo2RunForPlane(Graph &g, int planeIdx, int temperature);
-    std::pair<int, int> algo2(std::vector<Graph> &graphs);
+    std::pair<int, int> algo2RunForPlane(int planeIdx, int temperature);
+    std::pair<int, int> algo2();
 
     /* apply solution */
     bool applySolutionForPlane(int planeId, const BotPlaner::Solution &solution);
@@ -241,6 +243,7 @@ class BotPlaner {
     std::vector<FlightJob> mJobList;
     std::unordered_map<int, int> mExistingJobsById;
     std::vector<PlaneState> mPlaneStates;
+    std::vector<Graph> mGraphs;
 
     /* randomness source */
     std::random_device mRD;

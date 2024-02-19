@@ -58,6 +58,21 @@ SLONG timeWerbOpen = 12 * 60000;
 const RES StandardTexte{};
 
 void Init() {
+    Sim = {};
+
+    PlaneTypes = {};
+    Cities = {};
+    PlaneNames = {};
+    Routen = {};
+
+    LastMinuteAuftraege = {};
+    ReisebueroAuftraege = {};
+    gFrachten = {};
+    AuslandsAuftraege = {};
+    AuslandsRefill = {};
+    AuslandsFrachten = {};
+    AuslandsFRefill = {};
+
     Cities.ReInit("city.csv");
     AuslandsAuftraege.resize(MAX_CITIES);
     AuslandsRefill.resize(MAX_CITIES);
