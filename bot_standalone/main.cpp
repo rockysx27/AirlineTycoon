@@ -54,7 +54,7 @@ int run(bool useImproved, int numPasses) {
     return totalGain;
 }
 
-static const int numAveraged = 10;
+static const int numAveraged = 5;
 
 int main(int argc, char *argv[]) {
 
@@ -80,21 +80,181 @@ int main(int argc, char *argv[]) {
     }
 
     std::vector<int> params;
-    std::vector<int64_t> results;
-    for (int param = 0; param < 50; param++) {
+    for (int param = 0; param < 100; param++) {
         params.push_back(param);
-        results.push_back(0);
-        for (int i = 0; i < numAveraged; i++) {
-            results.back() += run(useImproved, numPasses);
-        }
-        results.back() /= numAveraged;
     }
     for (auto i : params) {
         std::cout << i << ", ";
     }
     std::cout << std::endl;
-    for (auto i : results) {
-        std::cout << i << ", ";
+
+#ifdef FIRST
+    for (auto param : params) {
+        kNumToAdd = param;
+        kNumToRemove = 0;
+        kTempStart = 1000;
+        kTempStep = kTempStart / 10;
+        int64_t result = 0;
+        for (int i = 0; i < numAveraged; i++) {
+            result += run(useImproved, numPasses);
+        }
+        result /= numAveraged;
+        std::cout << result << ", ";
+    }
+    std::cout << std::endl;
+
+    for (auto param : params) {
+        kNumToAdd = param;
+        kNumToRemove = 1;
+        kTempStart = 1000;
+        kTempStep = kTempStart / 10;
+        int64_t result = 0;
+        for (int i = 0; i < numAveraged; i++) {
+            result += run(useImproved, numPasses);
+        }
+        result /= numAveraged;
+        std::cout << result << ", ";
+    }
+    std::cout << std::endl;
+
+    for (auto param : params) {
+        kNumToAdd = param;
+        kNumToRemove = 2;
+        kTempStart = 1000;
+        kTempStep = kTempStart / 10;
+        int64_t result = 0;
+        for (int i = 0; i < numAveraged; i++) {
+            result += run(useImproved, numPasses);
+        }
+        result /= numAveraged;
+        std::cout << result << ", ";
+    }
+    std::cout << std::endl;
+
+    for (auto param : params) {
+        kNumToAdd = param;
+        kNumToRemove = param / 10 + 1;
+        kTempStart = 1000;
+        kTempStep = kTempStart / 10;
+        int64_t result = 0;
+        for (int i = 0; i < numAveraged; i++) {
+            result += run(useImproved, numPasses);
+        }
+        result /= numAveraged;
+        std::cout << result << ", ";
+    }
+    std::cout << std::endl;
+
+    for (auto param : params) {
+        kNumToAdd = param;
+        kNumToRemove = param / 5 + 1;
+        kTempStart = 1000;
+        kTempStep = kTempStart / 10;
+        int64_t result = 0;
+        for (int i = 0; i < numAveraged; i++) {
+            result += run(useImproved, numPasses);
+        }
+        result /= numAveraged;
+        std::cout << result << ", ";
+    }
+    std::cout << std::endl;
+
+    for (auto param : params) {
+        kNumToAdd = param;
+        kNumToRemove = param / 2 + 1;
+        kTempStart = 1000;
+        kTempStep = kTempStart / 10;
+        int64_t result = 0;
+        for (int i = 0; i < numAveraged; i++) {
+            result += run(useImproved, numPasses);
+        }
+        result /= numAveraged;
+        std::cout << result << ", ";
+    }
+    std::cout << std::endl;
+
+    for (auto param : params) {
+        kNumToAdd = param;
+        kNumToRemove = param - 2;
+        kTempStart = 1000;
+        kTempStep = kTempStart / 10;
+        int64_t result = 0;
+        for (int i = 0; i < numAveraged; i++) {
+            result += run(useImproved, numPasses);
+        }
+        result /= numAveraged;
+        std::cout << result << ", ";
+    }
+    std::cout << std::endl;
+
+    for (auto param : params) {
+        kNumToAdd = param;
+        kNumToRemove = param;
+        kTempStart = 1000;
+        kTempStep = kTempStart / 10;
+        int64_t result = 0;
+        for (int i = 0; i < numAveraged; i++) {
+            result += run(useImproved, numPasses);
+        }
+        result /= numAveraged;
+        std::cout << result << ", ";
+    }
+    std::cout << std::endl;
+#endif
+
+    for (auto param : params) {
+        kNumToAdd = 4;
+        kNumToRemove = 1;
+        kTempStart = 50 * param;
+        kTempStep = kTempStart / 10;
+        int64_t result = 0;
+        for (int i = 0; i < numAveraged; i++) {
+            result += run(useImproved, numPasses);
+        }
+        result /= numAveraged;
+        std::cout << result << ", ";
+    }
+    std::cout << std::endl;
+
+    for (auto param : params) {
+        kNumToAdd = 4;
+        kNumToRemove = 2;
+        kTempStart = 50 * param;
+        kTempStep = kTempStart / 10;
+        int64_t result = 0;
+        for (int i = 0; i < numAveraged; i++) {
+            result += run(useImproved, numPasses);
+        }
+        result /= numAveraged;
+        std::cout << result << ", ";
+    }
+    std::cout << std::endl;
+
+    for (auto param : params) {
+        kNumToAdd = 4;
+        kNumToRemove = 3;
+        kTempStart = 50 * param;
+        kTempStep = kTempStart / 10;
+        int64_t result = 0;
+        for (int i = 0; i < numAveraged; i++) {
+            result += run(useImproved, numPasses);
+        }
+        result /= numAveraged;
+        std::cout << result << ", ";
+    }
+    std::cout << std::endl;
+
+    for (auto param : params) {
+        kNumToAdd = 4;
+        kNumToRemove = 4;
+        kTempStart = 50 * param;
+        kTempStep = kTempStart / 10;
+        int64_t result = 0;
+        for (int i = 0; i < numAveraged; i++) {
+            result += run(useImproved, numPasses);
+        }
+        result /= numAveraged;
+        std::cout << result << ", ";
     }
     std::cout << std::endl;
 

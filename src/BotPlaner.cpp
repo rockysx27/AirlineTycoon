@@ -7,7 +7,7 @@
 #include <unordered_map>
 
 // #define PRINT_DETAIL 1
-#define PRINT_OVERALL 1
+// #define PRINT_OVERALL 1
 
 const int kAvailTimeExtra = 2;
 const int kDurationExtra = 1;

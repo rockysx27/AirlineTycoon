@@ -10,8 +10,8 @@
 // #define PRINT_DETAIL 1
 // #define PRINT_OVERALL 1
 
-int kNumToAdd = 6;
-int kNumToRemove = 3;
+int kNumToAdd = 4;
+int kNumToRemove = 1;
 int kTempStart = 1000;
 int kTempStep = 100;
 extern const int kScheduleForNextDays;
@@ -632,6 +632,10 @@ std::pair<int, int> BotPlaner::algo2RunForPlane(int planeIdx, int temperature) {
         std::cout << "g.nodeInfo[currentNode].duration " << g.nodeInfo[currentNode].duration << std::endl;
         std::cout << "planeState.currentTime " << Helper::getWeekday(planeState.currentTime.getDate()) << planeState.currentTime.getHour() << std::endl;
 #endif
+
+        if (planeState.currentTime.getDate() > Sim.Date + kScheduleForNextDays) {
+            continue;
+        }
 
         int nextNode = algo2FindNext(g, planeState, 0); // TODO: Randomize choice
         if (nextNode != -1) {

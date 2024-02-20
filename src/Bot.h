@@ -77,8 +77,9 @@ class Bot {
     Prio condBuyNemesisShares(__int64 &moneyAvailable, SLONG dislike);
     Prio condVisitMech(__int64 &moneyAvailable);
     Prio condVisitNasa(__int64 &moneyAvailable);
-    Prio condVisitRick();
     Prio condVisitMisc();
+    Prio condVisitMakler();
+    Prio condVisitRick();
     Prio condBuyUsedPlane(__int64 &moneyAvailable);
     Prio condVisitDutyFree(__int64 &moneyAvailable);
     Prio condVisitBoss(__int64 &moneyAvailable);

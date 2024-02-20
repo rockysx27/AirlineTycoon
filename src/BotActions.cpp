@@ -12,6 +12,8 @@
 #include <climits>
 #include <cmath>
 
+// #define PRINT_ROUTE_DETAILS 1
+
 // Preise verstehen sich pro Sitzplatz:
 extern SLONG SeatCosts[];
 extern SLONG FoodCosts[];
@@ -55,6 +57,33 @@ void Bot::actionStartDay(__int64 moneyAvailable) {
 
     /* maybe some planes now have crew? planes for routes will be checked in planRoutes() */
     findPlanesWithCrew(mPlanesForJobsUnassigned, mPlanesForJobs);
+
+    /* double check lists of planes */
+    std::unordered_map<int, bool> uniquePlaneIds;
+    for (const auto &i : mPlanesForJobs) {
+        if (uniquePlaneIds.find(i) != uniquePlaneIds.end()) {
+            redprintf("Bot::actionStartDay(): Plane ID appears in multiple lists: %ld.", i);
+        }
+        uniquePlaneIds[i] = true;
+    }
+    for (const auto &i : mPlanesForRoutes) {
+        if (uniquePlaneIds.find(i) != uniquePlaneIds.end()) {
+            redprintf("Bot::actionStartDay(): Plane ID appears in multiple lists: %ld.", i);
+        }
+        uniquePlaneIds[i] = true;
+    }
+    for (const auto &i : mPlanesForJobsUnassigned) {
+        if (uniquePlaneIds.find(i) != uniquePlaneIds.end()) {
+            redprintf("Bot::actionStartDay(): Plane ID appears in multiple lists: %ld.", i);
+        }
+        uniquePlaneIds[i] = true;
+    }
+    for (const auto &i : mPlanesForRoutesUnassigned) {
+        if (uniquePlaneIds.find(i) != uniquePlaneIds.end()) {
+            redprintf("Bot::actionStartDay(): Plane ID appears in multiple lists: %ld.", i);
+        }
+        uniquePlaneIds[i] = true;
+    }
 
     /* logic for switching to routes */
     if (!mDoRoutes && mBestPlaneTypeId != -1) {
@@ -126,6 +155,9 @@ void Bot::actionCheckTravelAgency() {
             hprintf("Bot::actionCheckTravelAgency(): Picked up item tarantula");
             mItemAntiVirus = 1;
         }
+        if (HowToPlan::None == canWePlanFlights()) {
+            return;
+        }
     }
 
     ReisebueroAuftraege.RefillForReisebuero();
@@ -137,6 +169,11 @@ void Bot::actionCheckTravelAgency() {
 }
 
 void Bot::grabFlights(BotPlaner &planer) {
+    if (HowToPlan::None == canWePlanFlights()) {
+        hprintf("Bot::grabFlights(): Tried to grab plans without ability to plan them");
+        return;
+    }
+
     SLONG oldGain = calcCurrentGainFromJobs();
     planer.planFlights(mPlanesForJobs, true);
     // TODO
@@ -762,11 +799,13 @@ std::pair<SLONG, SLONG> Bot::actionFindBestRoute(TEAKRAND &rnd) const {
         }
     }
 
+#ifdef PRINT_ROUTE_DETAILS
     std::sort(bestRoutes.begin(), bestRoutes.end(), [](const RouteScore &a, const RouteScore &b) { return a.score > b.score; });
     for (const auto &i : bestRoutes) {
         hprintf("Bot::actionFindBestRoute(): Score of route %s (using plane type %s, need %ld) is: %.2f", Helper::getRouteName(Routen[i.routeId]).c_str(),
                 (LPCTSTR)PlaneTypes[i.planeTypeId].Name, i.numPlanes, i.score);
     }
+#endif
 
     /* pick best route we can afford */
     __int64 moneyAvailable = qPlayer.Money + getWeeklyOpSaldo();
@@ -1053,9 +1092,12 @@ void Bot::planRoutes() {
         for (auto planeId : qRoute.planeIds) {
             const auto &qPlane = qPlayer.Planes[planeId];
 
-            /* re-plan anything after 2 days because of spurious route flights appearing */
+#ifdef PRINT_ROUTE_DETAILS
             hprintf("BotPlaner::planRoutes(): =================== Plane %s ===================", (LPCTSTR)qPlane.Name);
             Helper::printFlightJobs(qPlayer, planeId);
+#endif
+
+            /* re-plan anything after 3 days because of spurious route flights appearing */
             GameMechanic::killFlightPlanFrom(qPlayer, planeId, Sim.Date + 3, 0);
 
             /* where is the plane right now and when can it be in the origin city? */
@@ -1063,8 +1105,10 @@ void Bot::planRoutes() {
             SLONG availCity{};
             std::tie(availTime, availCity) = Helper::getPlaneAvailableTimeLoc(qPlane, {});
             availCity = Cities.find(availCity);
+#ifdef PRINT_ROUTE_DETAILS
             hprintf("BotPlaner::planRoutes(): Plane %s is in %s @ %s %ld", (LPCTSTR)qPlane.Name, (LPCTSTR)Cities[availCity].Kuerzel,
                     (LPCTSTR)Helper::getWeekday(availTime.getDate()), availTime.getHour());
+#endif
 
             /* leave room for auto flight, if necessary */
             if (availCity != fromCity && availCity != toCity) {
@@ -1087,7 +1131,7 @@ void Bot::planRoutes() {
             // hprintf("BotPlaner::planRoutes(): Plane %s: Setting availTime to %s %ld to meet timeSlot=%ld", (LPCTSTR)qPlane.Name,
             //         (LPCTSTR)Helper::getWeekday(availTime.getDate()), availTime.getHour(), timeSlot - 1);
 
-            Helper::printFlightJobs(qPlayer, planeId);
+            // Helper::printFlightJobs(qPlayer, planeId);
 
             /* if in B, schedule one instance of B=>A */
             SLONG numScheduled = 0;
@@ -1117,7 +1161,7 @@ void Bot::planRoutes() {
             }
             hprintf("Bot::actionPlanRoutes(): Scheduled route %s %ld times for plane %s, starting at %s %ld", Helper::getRouteName(getRoute(qRoute)).c_str(),
                     numScheduled, (LPCTSTR)qPlane.Name, (LPCTSTR)Helper::getWeekday(availTime.getDate()), availTime.getHour());
-            Helper::checkPlaneSchedule(qPlayer, planeId, false);
+            Helper::checkPlaneSchedule(qPlayer, planeId, true);
         }
     }
 

@@ -201,9 +201,9 @@ void Bot::RobotPlan() {
                        ACTION_CHECKAGENT3,       ACTION_UPGRADE_PLANES, ACTION_BUYNEWPLANE,        ACTION_PERSONAL,       ACTION_BUY_KEROSIN,
                        ACTION_BUY_KEROSIN_TANKS, ACTION_SABOTAGE,       ACTION_SET_DIVIDEND,       ACTION_RAISEMONEY,     ACTION_DROPMONEY,
                        ACTION_EMITSHARES,        ACTION_SELLSHARES,     ACTION_BUYSHARES,          ACTION_VISITMECH,      ACTION_VISITNASA,
-                       ACTION_VISITTELESCOPE,    ACTION_VISITRICK,      ACTION_VISITKIOSK,         ACTION_BUYUSEDPLANE,   ACTION_VISITDUTYFREE,
-                       ACTION_VISITAUFSICHT,     ACTION_EXPANDAIRPORT,  ACTION_VISITROUTEBOX,      ACTION_VISITROUTEBOX2, ACTION_VISITSECURITY,
-                       ACTION_VISITSECURITY2,    ACTION_VISITDESIGNER,  ACTION_WERBUNG_ROUTES,     ACTION_WERBUNG};
+                       ACTION_VISITTELESCOPE,    ACTION_VISITMAKLER,    ACTION_VISITRICK,          ACTION_VISITKIOSK,     ACTION_BUYUSEDPLANE,
+                       ACTION_VISITDUTYFREE,     ACTION_VISITAUFSICHT,  ACTION_EXPANDAIRPORT,      ACTION_VISITROUTEBOX,  ACTION_VISITROUTEBOX2,
+                       ACTION_VISITSECURITY,     ACTION_VISITSECURITY2, ACTION_VISITDESIGNER,      ACTION_WERBUNG_ROUTES, ACTION_WERBUNG};
 
     if (qRobotActions[0].ActionId != ACTION_NONE || qRobotActions[1].ActionId != ACTION_NONE) {
         hprintf("Bot.cpp: Leaving RobotPlan() (actions already planned)\n");
@@ -599,8 +599,29 @@ void Bot::RobotExecuteAction() {
         qWorkCountdown = 20 * 5;
         break;
 
-    case ACTION_VISITRICK:
+    case ACTION_VISITTELESCOPE:
+    case ACTION_VISITKIOSK:
         if (condVisitMisc() != Prio::None) {
+        } else {
+            redprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+        }
+        qWorkCountdown = 20 * 5;
+        break;
+
+    case ACTION_VISITMAKLER:
+        if (condVisitMakler() != Prio::None) {
+            if (GameMechanic::PickUpItemResult::PickedUp == GameMechanic::pickUpItem(qPlayer, ITEM_BH)) {
+                hprintf("Bot::RobotExecuteAction(): Picked up item BH");
+                mItemAntiStrike = 1;
+            }
+        } else {
+            redprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+        }
+        qWorkCountdown = 20 * 5;
+        break;
+
+    case ACTION_VISITRICK:
+        if (condVisitRick() != Prio::None) {
             if (mItemAntiStrike == 3) {
                 if (GameMechanic::useItem(qPlayer, ITEM_HUFEISEN)) {
                     hprintf("Bot::RobotExecuteAction(): Used item horse shoe");
@@ -611,15 +632,6 @@ void Bot::RobotExecuteAction() {
                 hprintf("Bot::RobotExecuteAction(): Ended strike using drunk guy");
                 GameMechanic::endStrike(qPlayer, GameMechanic::EndStrikeMode::Drunk);
             }
-        } else {
-            redprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
-        }
-        qWorkCountdown = 20 * 5;
-        break;
-
-    case ACTION_VISITTELESCOPE:
-    case ACTION_VISITKIOSK:
-        if (condVisitMisc() != Prio::None) {
         } else {
             redprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
