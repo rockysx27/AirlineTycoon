@@ -47,9 +47,10 @@ void Bot::actionStartDay(__int64 moneyAvailable) {
     }
     printf("\n");
 
-    updateRouteInfo();
-
-    requestPlanRoutes();
+    if (mDoRoutes) {
+        updateRouteInfo();
+        requestPlanRoutes();
+    }
 
     /* check if we still have enough personal */
     findPlanesWithoutCrew(mPlanesForJobs, mPlanesForJobsUnassigned);
@@ -114,8 +115,14 @@ void Bot::actionStartDay(__int64 moneyAvailable) {
 }
 
 void Bot::actionBuero() {
-    checkLostRoutes();
-    planRoutes();
+    if (mNeedToPlanRoutes) {
+        checkLostRoutes();
+        planRoutes();
+    }
+
+    if (mNeedToPlanJobs) {
+        planFlights();
+    }
 }
 
 void Bot::actionCallInternational() {
@@ -170,17 +177,12 @@ void Bot::actionCheckTravelAgency() {
 
 void Bot::grabFlights(BotPlaner &planer) {
     if (HowToPlan::None == canWePlanFlights()) {
-        hprintf("Bot::grabFlights(): Tried to grab plans without ability to plan them");
+        redprintf("Bot::grabFlights(): Tried to grab plans without ability to plan them");
         return;
     }
 
-    SLONG oldGain = calcCurrentGainFromJobs();
-    planer.planFlights(mPlanesForJobs, true);
-    // TODO
-    // requestPlanFlights()();
-    planer.applySolution();
-    hprintf("Bot::printGainFromJobs(): Improved gain from jobs from %ld to %ld.", oldGain, calcCurrentGainFromJobs());
-    Helper::checkFlightJobs(qPlayer, true);
+    mPlanerSolution = planer.planFlights(mPlanesForJobs, true);
+    requestPlanFlights();
 }
 
 void Bot::requestPlanFlights() {
@@ -194,7 +196,16 @@ void Bot::requestPlanFlights() {
     }
 }
 
-void Bot::planFlights() { mNeedToPlanJobs = false; }
+void Bot::planFlights() {
+    mNeedToPlanJobs = false;
+
+    SLONG oldGain = calcCurrentGainFromJobs();
+    BotPlaner::applySolution(qPlayer, mPlanerSolution);
+    hprintf("Bot::printGainFromJobs(): Improved gain from jobs from %ld to %ld.", oldGain, calcCurrentGainFromJobs());
+    Helper::checkFlightJobs(qPlayer, true);
+
+    mPlanerSolution = {};
+}
 
 void Bot::actionUpgradePlanes(__int64 moneyAvailable) {
     SLONG anzahl = 4;

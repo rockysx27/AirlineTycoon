@@ -757,6 +757,12 @@ void Bot::RobotExecuteAction() {
     hprintf("Bot.cpp: Leaving RobotExecuteAction()\n");
 }
 
+TEAKFILE &operator<<(TEAKFILE &File, const PlaneTime &planeTime) {
+    File << static_cast<SLONG>(planeTime.getDate());
+    File << static_cast<SLONG>(planeTime.getHour());
+    return (File);
+}
+
 TEAKFILE &operator<<(TEAKFILE &File, const Bot &bot) {
     File << static_cast<SLONG>(bot.mLastTimeInRoom.size());
     for (const auto &i : bot.mLastTimeInRoom) {
@@ -826,8 +832,34 @@ TEAKFILE &operator<<(TEAKFILE &File, const Bot &bot) {
 
     File << bot.mItemPills << bot.mItemAntiVirus << bot.mItemAntiStrike << bot.mItemArabTrust << bot.mIsSickToday;
 
+    File << static_cast<SLONG>(bot.mPlanerSolution.size());
+    for (const auto &solution : bot.mPlanerSolution) {
+        File << static_cast<SLONG>(solution.jobs.size());
+        for (const auto &i : solution.jobs) {
+            File << i.jobIdx;
+            File << i.start;
+            File << i.end;
+            File << i.objectId;
+            File << i.bIsFreight;
+        }
+
+        File << solution.totalPremium;
+        File << solution.planeId;
+        File << solution.scheduleFromTime;
+    }
+
     SLONG magicnumber = 0x42;
     File << magicnumber;
+
+    return (File);
+}
+
+TEAKFILE &operator>>(TEAKFILE &File, PlaneTime &planeTime) {
+    SLONG date;
+    SLONG time;
+    File >> date;
+    File >> time;
+    planeTime = {date, time};
 
     return (File);
 }
@@ -917,6 +949,30 @@ TEAKFILE &operator>>(TEAKFILE &File, Bot &bot) {
     File >> bot.mNumEmployees;
 
     File >> bot.mItemPills >> bot.mItemAntiVirus >> bot.mItemAntiStrike >> bot.mItemArabTrust >> bot.mIsSickToday;
+
+    File >> size;
+    bot.mPlanerSolution.resize(size);
+    for (SLONG i = 0; i < bot.mPlanerSolution.size(); i++) {
+        auto &solution = bot.mPlanerSolution[i];
+
+        File >> size;
+        for (SLONG j = 0; j < size; j++) {
+            int jobId;
+            PlaneTime start;
+            PlaneTime end;
+            File >> jobId;
+            File >> start;
+            File >> end;
+
+            solution.jobs.emplace_back(jobId, start, end);
+            File >> solution.jobs.back().objectId;
+            File >> solution.jobs.back().bIsFreight;
+        }
+
+        File >> solution.totalPremium;
+        File >> solution.planeId;
+        File >> solution.scheduleFromTime;
+    }
 
     SLONG magicnumber = 0;
     File >> magicnumber;

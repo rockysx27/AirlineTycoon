@@ -749,11 +749,11 @@ void CAufsicht::OnPaint() {
     CStdRaum::PumpToolTips();
 
     /* uncomment to skip forward one entire week automatically (to test bots)
-     */
     OnRButtonDown(0, CPoint());
     if (Sim.Date < (100)) {
         qPlayer.CallItADay = TRUE;
     }
+     */
 }
 
 //--------------------------------------------------------------------------------------------

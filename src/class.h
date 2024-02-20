@@ -6,7 +6,6 @@
 //============================================================================================
 // CAuftrag CFlugplan CPlane PLAYER
 //============================================================================================
-#include "Bot.h"
 #include "defines.h"
 #include "HLine.h"
 
@@ -2255,7 +2254,7 @@ class PLAYER {
 
     /* methods and data for improved robot */
     bool IsSuperBot() const;
-    Bot mBot;
+    Bot *mBot{nullptr};
 
     friend TEAKFILE &operator<<(TEAKFILE &File, const PLAYER &Player);
     friend TEAKFILE &operator>>(TEAKFILE &File, PLAYER &Player);

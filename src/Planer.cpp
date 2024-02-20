@@ -2999,8 +2999,8 @@ void CPlaner::AutoPlan(SLONG mode) {
         }
 
         BotPlaner bot(qPlayer, qPlayer.Planes, BotPlaner::JobOwner::Backlog, {});
-        bot.planFlights(planeIds, true);
-        bot.applySolution();
+        auto solutions = bot.planFlights(planeIds, true);
+        bot.applySolution(qPlayer, solutions);
         Helper::checkFlightJobs(qPlayer, false);
         return;
     }
@@ -3015,8 +3015,8 @@ void CPlaner::AutoPlan(SLONG mode) {
         }
 
         BotPlaner bot(qPlayer, qPlayer.Planes, BotPlaner::JobOwner::TravelAgency, {});
-        bot.planFlights(planeIds, true);
-        bot.applySolution();
+        auto solutions = bot.planFlights(planeIds, true);
+        bot.applySolution(qPlayer, solutions);
         Helper::checkFlightJobs(qPlayer, false);
         return;
     }

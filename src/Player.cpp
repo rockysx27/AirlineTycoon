@@ -3,6 +3,7 @@
 //============================================================================================
 #include "StdAfx.h"
 #include "AtNet.h"
+#include "Bot.h"
 
 #define forall(c, object) for ((c) = 0; (c) < SLONG((object).AnzEntries()); (c)++)
 
@@ -59,7 +60,7 @@ __int64 abs64(__int64 v) {
 //============================================================================================
 // Konstruktor:
 //============================================================================================
-PLAYER::PLAYER() : mBot(*this) {
+PLAYER::PLAYER() : mBot(new Bot(*this)) {
     SLONG c = 0;
 
     NewDir = 8;
@@ -102,6 +103,9 @@ PLAYER::PLAYER() : mBot(*this) {
 PLAYER::~PLAYER() {
     delete pSmack;
     pSmack = nullptr;
+
+    delete mBot;
+    mBot = nullptr;
 }
 
 //--------------------------------------------------------------------------------------------
@@ -3032,7 +3036,7 @@ void PLAYER::RobotPump() {
                         pPerson->MoodCountdown = max(MOODCOUNT_START - 16, pPerson->MoodCountdown);
 
                         if (IsSuperBot()) {
-                            mBot.setNoticedSickness();
+                            mBot->setNoticedSickness();
                         }
                     }
                 }
@@ -3263,7 +3267,7 @@ void PLAYER::RobotInit() {
     }
 
     if (IsSuperBot()) {
-        mBot.RobotInit();
+        mBot->RobotInit();
     } else {
         RobotActions[1].ActionId = ACTION_STARTDAY;
         RobotActions[2].ActionId = ACTION_PERSONAL;
@@ -3313,7 +3317,7 @@ void PLAYER::RobotPlan() {
     }
 
     if (IsSuperBot()) {
-        mBot.RobotPlan();
+        mBot->RobotPlan();
         return;
     }
 
@@ -4035,7 +4039,7 @@ void PLAYER::RobotExecuteAction() {
     }
 
     if (IsSuperBot()) {
-        mBot.RobotExecuteAction();
+        mBot->RobotExecuteAction();
 
         Sim.Players.CheckFlighplans();
 
@@ -7143,7 +7147,7 @@ TEAKFILE &operator<<(TEAKFILE &File, const PLAYER &Player) {
     File << Player.IsTalking << Player.IsWalking2Player;
 
     // For improved bot
-    File << Player.mBot;
+    File << *Player.mBot;
 
     return (File);
 }
@@ -7330,7 +7334,7 @@ TEAKFILE &operator>>(TEAKFILE &File, PLAYER &Player) {
     File >> Player.IsTalking >> Player.IsWalking2Player;
 
     // For improved bot
-    File >> Player.mBot;
+    File >> *Player.mBot;
     // Player.Owner = (Player.PlayerNum == 3) ? 0 : 1;
 
     return (File);

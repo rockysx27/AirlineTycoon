@@ -213,7 +213,11 @@ std::pair<int, int> BotPlaner::algo1() {
             auto &planeState = mPlaneStates[bestPlane];
             if (bestDelta >= kMinPremium) {
                 planeState.bJobIdAssigned[i] = 1;
+
                 planeState.currentSolution = std::move(bestSolution);
+                planeState.currentSolution.planeId = planeState.planeId;
+                planeState.currentSolution.scheduleFromTime = mScheduleFromTime;
+
                 jobState.assignedtoPlaneIdx = bestPlane;
                 totalDelta += bestDelta;
                 nJobsScheduled++;

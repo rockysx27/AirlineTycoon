@@ -3,11 +3,12 @@
 #ifndef BOT_H_
 #define BOT_H_
 
+#include "BotPlaner.h"
+
 #include <deque>
 #include <unordered_map>
 #include <vector>
 
-class BotPlaner;
 class CPlaneType;
 class CRoute;
 class CRentRoute;
@@ -183,7 +184,13 @@ class Bot {
     SLONG mItemAntiStrike{0}; /* 1: BH taken, 2: BH given, 3: horseshoe taken, 4: horseshoe given */
     SLONG mItemArabTrust{0};  /* 1: MG bought, 2: MG given */
     bool mIsSickToday{false};
+
+    /* current solution (not planned yet) */
+    BotPlaner::SolutionList mPlanerSolution;
 };
+
+TEAKFILE &operator<<(TEAKFILE &File, const PlaneTime &planeTime);
+TEAKFILE &operator>>(TEAKFILE &File, PlaneTime &planeTime);
 
 TEAKFILE &operator<<(TEAKFILE &File, const Bot &bot);
 TEAKFILE &operator>>(TEAKFILE &File, Bot &bot);

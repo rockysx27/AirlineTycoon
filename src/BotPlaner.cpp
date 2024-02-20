@@ -10,7 +10,7 @@
 // #define PRINT_DETAIL 1
 #define PRINT_OVERALL 1
 
-const int kAvailTimeExtra = 2;
+const int kAvailTimeExtra = 3;
 const int kDurationExtra = 1;
 const int kScheduleForNextDays = 4;
 static const bool kCanDropJobs = false;
@@ -278,17 +278,13 @@ std::vector<Graph> BotPlaner::prepareGraph() {
     return graphs;
 }
 
-bool BotPlaner::applySolutionForPlane(int planeId, const BotPlaner::Solution &solution) {
-    assert(planeId >= 0x1000000 && qPlanes.IsInAlbum(planeId));
-
-    for (auto &iter : solution.jobs) {
-        if (iter.jobIdx < 0 || iter.jobIdx >= mJobList.size()) {
-            redprintf("BotPlaner::applySolutionForPlane(): Skipping invalid job!");
+bool BotPlaner::takeJobs(PlaneState &planeState) {
+    bool ok = true;
+    for (auto &jobScheduled : planeState.currentSolution.jobs) {
+        auto &job = mJobList[jobScheduled.jobIdx];
+        if (job.assignedtoPlaneIdx == -1) {
             continue;
         }
-        auto &job = mJobList[iter.jobIdx];
-        const auto &startTime = iter.start;
-        const auto &endTime = iter.end;
 
         /* take jobs that have not been taken yet */
         if (!job.wasTaken()) {
@@ -312,13 +308,14 @@ bool BotPlaner::applySolutionForPlane(int planeId, const BotPlaner::Solution &so
                 GameMechanic::takeInternationalFreightJob(qPlayer, job.sourceId, job.id, outAuftragsId);
                 break;
             default:
-                redprintf("BotPlaner::applySolutionForPlane(): Unknown job source: %ld", job.owner);
+                redprintf("BotPlaner::takeJobs(): Unknown job source: %ld", job.owner);
                 return false;
             }
 
             if (outAuftragsId < 0) {
-                redprintf("BotPlaner::applySolutionForPlane(): GameMechanic returned error when trying to take job!");
-                return false;
+                redprintf("BotPlaner::takeJobs(): GameMechanic returned error when trying to take job!");
+                ok = false;
+                continue;
             }
             job.id = outAuftragsId;
             if (job.isFreight()) {
@@ -327,22 +324,33 @@ bool BotPlaner::applySolutionForPlane(int planeId, const BotPlaner::Solution &so
                 job.owner = JobOwner::Backlog;
             }
         }
+        jobScheduled.objectId = job.id;
+    }
+    return ok;
+}
+
+bool BotPlaner::applySolutionForPlane(PLAYER &qPlayer, int planeId, const BotPlaner::Solution &solution) {
+    const auto &qPlanes = qPlayer.Planes;
+    assert(planeId >= 0x1000000 && qPlanes.IsInAlbum(planeId));
+
+    for (auto &iter : solution.jobs) {
+        if (!qPlayer.Auftraege.IsInAlbum(iter.objectId)) {
+            redprintf("BotPlaner::applySolutionForPlane(): Skipping invalid job!");
+            continue;
+        }
+        const auto &auftrag = qPlayer.Auftraege[iter.objectId];
+        const auto &startTime = iter.start;
+        const auto &endTime = iter.end;
 
         /* plan taken jobs */
-        if (job.isFreight()) {
-            if (!GameMechanic::planFreightJob(qPlayer, planeId, job.id, startTime.getDate(), startTime.getHour())) {
-                redprintf("BotPlaner::applySolutionForPlane(): GameMechanic::planFreightJob returned error!");
-                redprintf("Tried to schedule %s at %s %ld", Helper::getJobName(job.auftrag).c_str(), Helper::getWeekday(startTime.getDate()).c_str(),
+        if (!iter.bIsFreight) {
+            if (!GameMechanic::planFlightJob(qPlayer, planeId, iter.objectId, startTime.getDate(), startTime.getHour())) {
+                redprintf("BotPlaner::applySolutionForPlane(): GameMechanic::planFlightJob returned error!");
+                redprintf("Tried to schedule %s at %s %ld", Helper::getJobName(auftrag).c_str(), Helper::getWeekday(startTime.getDate()).c_str(),
                           startTime.getHour());
-                return false;
             }
         } else {
-            if (!GameMechanic::planFlightJob(qPlayer, planeId, job.id, startTime.getDate(), startTime.getHour())) {
-                redprintf("BotPlaner::applySolutionForPlane(): GameMechanic::planFlightJob returned error!");
-                redprintf("Tried to schedule %s at %s %ld", Helper::getJobName(job.auftrag).c_str(), Helper::getWeekday(startTime.getDate()).c_str(),
-                          startTime.getHour());
-                return false;
-            }
+            // TODO
         }
 
         /* check flight time */
@@ -353,7 +361,7 @@ bool BotPlaner::applySolutionForPlane(int planeId, const BotPlaner::Solution &so
             if (flug.ObjectType != 2) {
                 continue;
             }
-            if (flug.ObjectId != job.id) {
+            if (flug.ObjectId != iter.objectId) {
                 continue;
             }
 
@@ -363,25 +371,25 @@ bool BotPlaner::applySolutionForPlane(int planeId, const BotPlaner::Solution &so
                 redprintf("BotPlaner::applySolutionForPlane(): Plane %s, schedule entry %ld: GameMechanic scheduled job (%s) at different start time (%s %d "
                           "instead of "
                           "%s %d)!",
-                          (LPCTSTR)qPlanes[planeId].Name, d, Helper::getJobName(job.auftrag).c_str(), (LPCTSTR)Helper::getWeekday(flug.Startdate),
-                          flug.Startzeit, (LPCTSTR)Helper::getWeekday(startTime.getDate()), startTime.getHour());
+                          (LPCTSTR)qPlanes[planeId].Name, d, Helper::getJobName(auftrag).c_str(), (LPCTSTR)Helper::getWeekday(flug.Startdate), flug.Startzeit,
+                          (LPCTSTR)Helper::getWeekday(startTime.getDate()), startTime.getHour());
             }
             if ((PlaneTime(flug.Landedate, flug.Landezeit) + kDurationExtra) != endTime) {
                 redprintf(
                     "BotPlaner::applySolutionForPlane(): Plane %s, schedule entry %ld: GameMechanic scheduled job (%s) with different landing time (%s %d "
                     "instead of %s %d)!",
-                    (LPCTSTR)qPlanes[planeId].Name, d, Helper::getJobName(job.auftrag).c_str(), (LPCTSTR)Helper::getWeekday(flug.Landedate), flug.Landezeit,
+                    (LPCTSTR)qPlanes[planeId].Name, d, Helper::getJobName(auftrag).c_str(), (LPCTSTR)Helper::getWeekday(flug.Landedate), flug.Landezeit,
                     (LPCTSTR)Helper::getWeekday(endTime.getDate()), endTime.getHour());
             }
         }
         if (!found) {
-            redprintf("BotPlaner::applySolutionForPlane(): Did not find job %s in flight plan!", Helper::getJobName(job.auftrag).c_str());
+            redprintf("BotPlaner::applySolutionForPlane(): Did not find job %s in flight plan!", Helper::getJobName(auftrag).c_str());
         }
     }
     return true;
 }
 
-int BotPlaner::planFlights(const std::vector<int> &planeIdsInput, bool bUseImprovedAlgo) {
+BotPlaner::SolutionList BotPlaner::planFlights(const std::vector<int> &planeIdsInput, bool bUseImprovedAlgo) {
 #ifdef PRINT_OVERALL
     auto t_begin = std::chrono::steady_clock::now();
 #endif
@@ -480,22 +488,34 @@ int BotPlaner::planFlights(const std::vector<int> &planeIdsInput, bool bUseImpro
     }
 #endif
 
-    return totalGain;
+    /* now take all jobs */
+    for (auto &planeState : mPlaneStates) {
+        takeJobs(planeState);
+    }
+
+    SolutionList list;
+    for (const auto &plane : mPlaneStates) {
+        list.emplace_back(std::move(plane.currentSolution));
+    }
+    return list;
 }
 
-bool BotPlaner::applySolution() {
+bool BotPlaner::applySolution(PLAYER &qPlayer, const SolutionList &solutions) {
+    /* kill existing flight plans */
+    for (const auto &solution : solutions) {
+        int planeId = solution.planeId;
+        auto time = solution.scheduleFromTime;
+        GameMechanic::killFlightPlanFrom(qPlayer, planeId, time.getDate(), time.getHour());
+    }
+
     /* apply solution */
     int totalGain = 0;
     int totalDiff = 0;
-    for (int p = 0; p < mPlaneStates.size(); p++) {
-        int planeId = mPlaneStates[p].planeId;
+    for (const auto &solution : solutions) {
+        int planeId = solution.planeId;
 
-        /* kill existing flight plans */
         SLONG oldGain = Helper::calculateScheduleGain(qPlayer, planeId);
-        GameMechanic::killFlightPlanFrom(qPlayer, planeId, mScheduleFromTime.getDate(), mScheduleFromTime.getHour());
-
-        auto &bestSolution = mPlaneStates[p].currentSolution;
-        applySolutionForPlane(planeId, bestSolution);
+        applySolutionForPlane(qPlayer, planeId, solution);
 
         SLONG newGain = Helper::calculateScheduleGain(qPlayer, planeId);
         SLONG diff = newGain - oldGain;
@@ -503,11 +523,11 @@ bool BotPlaner::applySolution() {
         totalDiff += diff;
 
 #ifdef PRINT_DETAIL
-        Helper::checkPlaneSchedule(qPlayer, p, false);
+        Helper::checkPlaneSchedule(qPlayer, planeId, false);
         if (diff > 0) {
-            hprintf("%s: Improved gain: %d => %d (+%d)", (LPCTSTR)qPlanes[planeId].Name, oldGain, newGain, diff);
+            hprintf("%s: Improved gain: %d => %d (+%d)", (LPCTSTR)qPlayer.Planes[planeId].Name, oldGain, newGain, diff);
         } else {
-            hprintf("%s: Gain did not improve: %d => %d (%d)", (LPCTSTR)qPlanes[planeId].Name, oldGain, newGain, diff);
+            hprintf("%s: Gain did not improve: %d => %d (%d)", (LPCTSTR)qPlayer.Planes[planeId].Name, oldGain, newGain, diff);
         }
 #endif
     }

@@ -132,6 +132,8 @@ class BotPlaner {
     struct JobScheduled {
         JobScheduled(int idx, PlaneTime a, PlaneTime b) : jobIdx(idx), start(a), end(b) {}
         int jobIdx{};
+        int objectId{-1};
+        bool bIsFreight{false};
         PlaneTime start;
         PlaneTime end;
     };
@@ -140,13 +142,16 @@ class BotPlaner {
         Solution(int p) : totalPremium(p) {}
         std::deque<JobScheduled> jobs;
         int totalPremium{0};
+        int planeId{-1};
+        PlaneTime scheduleFromTime;
     };
+    using SolutionList = std::vector<BotPlaner::Solution>;
 
     BotPlaner() = default;
     BotPlaner(PLAYER &player, const CPlanes &planes, JobOwner jobOwner, std::vector<int> intJobSource);
 
-    int planFlights(const std::vector<int> &planeIdsInput, bool bUseImprovedAlgo);
-    bool applySolution();
+    SolutionList planFlights(const std::vector<int> &planeIdsInput, bool bUseImprovedAlgo);
+    static bool applySolution(PLAYER &qPlayer, const SolutionList &solutions);
 
   private:
     struct PlaneState {
@@ -156,7 +161,7 @@ class BotPlaner {
         int currentCity{-1};
         /* both algos: */
         PlaneTime availTime{};
-        Solution currentSolution{0};
+        Solution currentSolution{};
         /* algo 1 only: */
         std::vector<int> bJobIdAssigned;
         /* algo 2 only: */
@@ -222,7 +227,8 @@ class BotPlaner {
     std::pair<int, int> algo2();
 
     /* apply solution */
-    bool applySolutionForPlane(int planeId, const BotPlaner::Solution &solution);
+    bool takeJobs(PlaneState &planeState);
+    static bool applySolutionForPlane(PLAYER &qPlayer, int planeId, const BotPlaner::Solution &solution);
 
     /* randomness */
     inline int getRandInt(int min, int max) {
