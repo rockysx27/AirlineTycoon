@@ -4,7 +4,6 @@
 #include "TeakLibW.h"
 
 #include <array>
-#include <chrono>
 #include <iostream>
 
 // #define PRINT_DETAIL 1
@@ -678,15 +677,11 @@ std::pair<int, int> BotPlaner::algo2RunForPlane(int planeIdx, int temperature) {
 }
 
 std::pair<int, int> BotPlaner::algo2() {
-#ifdef PRINT_OVERALL
-    auto t_begin = std::chrono::steady_clock::now();
-#endif
-
     for (auto &g : mGraphs) {
-        g.resetNodes();
-
         for (int n = 0; n < g.nPlanes; n++) {
             g.nodeState[n].startTime = mPlaneStates[n].availTime;
+            g.nodeState[n].cameFrom = -1;
+            g.nodeState[n].nextNode = -1;
         }
     }
 
@@ -725,12 +720,6 @@ std::pair<int, int> BotPlaner::algo2() {
         hprintf("Scheduled %d jobs and improved gain in total by %d", nTotalScheduled, totalGain);
 #endif
     }
-
-#ifdef PRINT_OVERALL
-    auto t_end = std::chrono::steady_clock::now();
-    auto delta = std::chrono::duration_cast<std::chrono::milliseconds>(t_end - t_begin).count();
-    std::cout << "Elapsed time in total in algo2(): " << delta << " ms" << std::endl;
-#endif
 
     for (int planeIdx = 0; planeIdx < mPlaneStates.size(); planeIdx++) {
         killPath(planeIdx);

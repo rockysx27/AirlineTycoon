@@ -3,7 +3,6 @@
 #include "BotHelper.h"
 #include "TeakLibW.h"
 
-#include <chrono>
 #include <iostream>
 
 // #define PRINT_DETAIL 1
@@ -176,12 +175,8 @@ BotPlaner::Solution BotPlaner::algo1FindFlightPlan(Graph &g, int planeIdx, Plane
 }
 
 std::pair<int, int> BotPlaner::algo1() {
-#ifdef PRINT_OVERALL
-    auto t_begin = std::chrono::steady_clock::now();
-#endif
-
-    /* main algo */
     int nPlanes = mPlaneStates.size();
+    int nPlaneTypes = mPlaneTypeToPlane.size();
     int nJobsScheduled = 0;
     int totalDelta = 0;
     for (int i = 0; i < mJobList.size(); i++) {
@@ -197,13 +192,14 @@ std::pair<int, int> BotPlaner::algo1() {
         for (int p = 0; p < nPlanes; p++) {
             auto &qPlaneState = mPlaneStates[p];
             auto pt = qPlaneState.planeTypeId;
-            if (jobState.bPlaneTypeEligible[pt] == 0) {
+            auto &g = mGraphs[pt];
+            if (g.adjMatrix[p][nPlaneTypes + i].cost == -1) {
                 continue;
             }
 
             qPlaneState.bJobIdAssigned[i] = 1;
 
-            auto newSolution = algo1FindFlightPlan(mGraphs[pt], p, qPlaneState.availTime, qPlaneState.bJobIdAssigned);
+            auto newSolution = algo1FindFlightPlan(g, p, qPlaneState.availTime, qPlaneState.bJobIdAssigned);
             int delta = newSolution.totalPremium - qPlaneState.currentSolution.totalPremium;
             if (delta > bestDelta) {
                 bestDelta = delta;
@@ -237,9 +233,6 @@ std::pair<int, int> BotPlaner::algo1() {
     }
 
 #ifdef PRINT_OVERALL
-    auto t_end = std::chrono::steady_clock::now();
-    auto delta = std::chrono::duration_cast<std::chrono::milliseconds>(t_end - t_begin).count();
-    std::cout << "Elapsed time in total in algo1(): " << delta << " ms" << std::endl;
     hprintf("Improved gain in total by %d", totalDelta);
 #endif
 

@@ -14,9 +14,11 @@ int run(bool useImproved, int numPasses) {
     auto &qPlayer = Sim.Players.Players[0];
 
     std::vector<int> planeIds;
-    planeIds.push_back(qPlayer.BuyPlane(106, nullptr));
-    planeIds.push_back(qPlayer.BuyPlane(111, nullptr));
-    planeIds.push_back(qPlayer.BuyPlane(111, nullptr));
+    for (int i = 0; i < 10; i++) {
+        planeIds.push_back(qPlayer.BuyPlane(106, nullptr));
+        planeIds.push_back(qPlayer.BuyPlane(111, nullptr));
+        planeIds.push_back(qPlayer.BuyPlane(111, nullptr));
+    }
 
     for (auto &plane : qPlayer.Planes) {
         plane.Flugplan.StartCity = plane.Ort = Sim.HomeAirportId;
@@ -51,6 +53,7 @@ int run(bool useImproved, int numPasses) {
     for (auto planeId : planeIds) {
         totalGain += Helper::calculateScheduleGain(qPlayer, planeId);
     }
+    std::cout << "main.cpp:" << totalGain << std::endl;
     return totalGain;
 }
 
@@ -79,6 +82,7 @@ int main(int argc, char *argv[]) {
         kTempStep = atoi(argv[6]);
     }
 
+#ifdef FIRST
     std::vector<int> params;
     for (int param = 0; param < 100; param++) {
         params.push_back(param);
@@ -88,7 +92,6 @@ int main(int argc, char *argv[]) {
     }
     std::cout << std::endl;
 
-#ifdef FIRST
     for (auto param : params) {
         kNumToAdd = param;
         kNumToRemove = 0;
@@ -202,6 +205,7 @@ int main(int argc, char *argv[]) {
     std::cout << std::endl;
 #endif
 
+#if 0
     for (auto param : params) {
         kNumToAdd = 4;
         kNumToRemove = 1;
@@ -257,14 +261,13 @@ int main(int argc, char *argv[]) {
         std::cout << result << ", ";
     }
     std::cout << std::endl;
+#endif
 
-    /*
     std::cout << "kNumToAdd = " << kNumToAdd << std::endl;
     std::cout << "kNumToRemove = " << kNumToRemove << std::endl;
     std::cout << "kTempStart = " << kTempStart << std::endl;
     std::cout << "kTempStep = " << kTempStep << std::endl;
     run(useImproved, numPasses);
-    */
 
     redprintf("END");
 

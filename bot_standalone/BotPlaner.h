@@ -190,8 +190,6 @@ class BotPlaner {
         JobOwner owner;
         /* both algos: */
         int assignedtoPlaneIdx{-1};
-        /* algo 1 only: */
-        std::vector<int> bPlaneTypeEligible;
     };
 
     struct JobSource {

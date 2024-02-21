@@ -3,16 +3,19 @@
 #include "BotHelper.h"
 
 #include <algorithm>
+#include <chrono>
 #include <iostream>
 #include <unordered_map>
 
 // #define PRINT_DETAIL 1
-// #define PRINT_OVERALL 1
+#define PRINT_OVERALL 1
 
 const int kAvailTimeExtra = 2;
 const int kDurationExtra = 1;
 const int kScheduleForNextDays = 4;
 static const bool kCanDropJobs = false;
+
+static bool canFlyThisJob(const CAuftrag &job, const CPlane &plane) { return (job.Personen <= plane.ptPassagiere && job.FitsInPlane(plane)); }
 
 static SLONG getPremiumEmptyFlight(const CPlane *qPlane, SLONG VonCity, SLONG NachCity) {
     return (qPlane->ptPassagiere * Cities.CalcDistance(VonCity, NachCity) / 1000 / 40);
@@ -211,12 +214,13 @@ std::vector<Graph> BotPlaner::prepareGraph() {
     std::vector<Graph> graphs(nPlaneTypes, Graph(nPlanes, mJobList.size()));
     for (int pt = 0; pt < nPlaneTypes; pt++) {
         auto &g = graphs[pt];
+        const auto *plane = mPlaneTypeToPlane[pt];
 
         /* nodes */
         for (int i = 0; i < g.nNodes; i++) {
             auto &qNodeInfo = g.nodeInfo[i];
 
-            if (i >= nPlanes && (mJobList[i - nPlanes].bPlaneTypeEligible[pt] == 1)) {
+            if (i >= nPlanes && canFlyThisJob(mJobList[i - nPlanes].auftrag, *plane)) {
                 auto &job = mJobList[i - nPlanes].auftrag;
                 const auto *plane = mPlaneTypeToPlane[pt];
                 qNodeInfo.jobIdx = i - nPlanes;
@@ -244,7 +248,6 @@ std::vector<Graph> BotPlaner::prepareGraph() {
                 assert(startCity >= 0 && startCity < Cities.AnzEntries());
                 assert(destCity >= 0 && destCity < Cities.AnzEntries());
                 if (startCity != destCity) {
-                    const auto *plane = mPlaneTypeToPlane[pt];
                     g.adjMatrix[i][j].cost = CalculateFlightCostNoTank(startCity, destCity, plane->ptVerbrauch, plane->ptGeschwindigkeit);
                     g.adjMatrix[i][j].cost -= getPremiumEmptyFlight(plane, startCity, destCity);
                     g.adjMatrix[i][j].duration = kDurationExtra + Cities.CalcFlugdauer(startCity, destCity, plane->ptGeschwindigkeit);
@@ -380,6 +383,9 @@ bool BotPlaner::applySolutionForPlane(int planeId, const BotPlaner::Solution &so
 
 int BotPlaner::planFlights(const std::vector<int> &planeIdsInput, bool bUseImprovedAlgo) {
 #ifdef PRINT_OVERALL
+    auto t_begin = std::chrono::steady_clock::now();
+#endif
+#ifdef PRINT_DETAIL
     hprintf("BotPlaner::planFlights(): Current time: %d", Sim.GetHour());
 #endif
 
@@ -422,7 +428,7 @@ int BotPlaner::planFlights(const std::vector<int> &planeIdsInput, bool bUseImpro
         std::tie(planeState.availTime, planeState.currentCity) = Helper::getPlaneAvailableTimeLoc(qPlanes[i], mScheduleFromTime);
         planeState.currentCity = Cities.find(planeState.currentCity);
         assert(planeState.currentCity >= 0 && planeState.currentCity < Cities.AnzEntries());
-#ifdef PRINT_OVERALL
+#ifdef PRINT_DETAIL
         Helper::checkPlaneSchedule(qPlayer, i, false);
         hprintf("BotPlaner::planFlights(): After %s %ld: Plane %s is in %s @ %s %d", (LPCTSTR)Helper::getWeekday(mScheduleFromTime.getDate()),
                 mScheduleFromTime.getHour(), (LPCTSTR)qPlanes[i].Name, (LPCTSTR)Cities[planeState.currentCity].Kuerzel,
@@ -432,27 +438,6 @@ int BotPlaner::planFlights(const std::vector<int> &planeIdsInput, bool bUseImpro
 
     /* find number of unique plane types */
     findPlaneTypes();
-    int nPlaneTypes = mPlaneTypeToPlane.size();
-    for (auto &job : mJobList) {
-        job.bPlaneTypeEligible.resize(nPlaneTypes);
-    }
-
-    /* figure out which jobs are eligible for which plane */
-    for (auto &planeState : mPlaneStates) {
-        const auto &qPlane = qPlanes[planeState.planeId];
-
-        /* filter jobs that exceed range / seats */
-        int eligibleJobs = 0;
-        for (auto &job : mJobList) {
-            if (job.auftrag.Personen <= qPlane.ptPassagiere && job.auftrag.FitsInPlane(qPlane)) {
-                job.bPlaneTypeEligible[planeState.planeTypeId] = 1;
-                eligibleJobs++;
-            }
-        }
-#ifdef PRINT_DETAIL
-        std::cout << "Plane " << qPlane.Name << " is able to fly " << eligibleJobs << " / " << mJobList.size() << " jobs" << std::endl;
-#endif
-    }
 
     /* prepare graph */
     mGraphs = prepareGraph();
@@ -485,6 +470,16 @@ int BotPlaner::planFlights(const std::vector<int> &planeIdsInput, bool bUseImpro
     hprintf("Scheduled %d out of %d new jobs.", nNewJobsScheduled, nNewJobs);
 #endif
 
+#ifdef PRINT_OVERALL
+    auto t_end = std::chrono::steady_clock::now();
+    auto delta = std::chrono::duration_cast<std::chrono::milliseconds>(t_end - t_begin).count();
+    if (bUseImprovedAlgo) {
+        std::cout << "Elapsed time in total using algo2(): " << delta << " ms" << std::endl;
+    } else {
+        std::cout << "Elapsed time using total in algo1(): " << delta << " ms" << std::endl;
+    }
+#endif
+
     return totalGain;
 }
 
@@ -507,7 +502,7 @@ bool BotPlaner::applySolution() {
         totalGain += newGain;
         totalDiff += diff;
 
-#ifdef PRINT_OVERALL
+#ifdef PRINT_DETAIL
         Helper::checkPlaneSchedule(qPlayer, p, false);
         if (diff > 0) {
             hprintf("%s: Improved gain: %d => %d (+%d)", (LPCTSTR)qPlanes[planeId].Name, oldGain, newGain, diff);
