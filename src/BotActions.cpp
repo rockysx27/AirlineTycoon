@@ -865,6 +865,10 @@ void Bot::actionBuyAdsForRoutes(__int64 moneyAvailable) {
         }
     }
 
+    if (mRoutesSortedByImage.empty()) {
+        return;
+    }
+
     auto prioEntry = condBuyAdsForRoutes(moneyAvailable);
     while (condBuyAdsForRoutes(moneyAvailable) == prioEntry) {
         const auto &qRoute = mRoutes[mRoutesSortedByImage[0]];
