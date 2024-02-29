@@ -238,9 +238,8 @@ bool BotPlaner::algo2MakeRoom(Graph &g, int nodeToMoveLeft, int nodeToMoveRight)
 void BotPlaner::algo2ApplySolutionToGraph() {
     for (int p = 0; p < mPlaneStates.size(); p++) {
         auto &qPlaneState = mPlaneStates[p];
-        const auto &qPlane = qPlanes[qPlaneState.planeId];
         auto &g = mGraphs[qPlaneState.planeTypeId];
-        const auto &qFlightPlan = qPlane.Flugplan.Flug;
+        const auto &qFlightPlan = qPlanes[qPlaneState.planeId].Flugplan.Flug;
 
         qPlaneState.currentNode = p;
 
@@ -296,8 +295,10 @@ void BotPlaner::algo2GenSolutionsFromGraph(int planeIdx) {
     auto &g = mGraphs[planeState.planeTypeId];
 
     planeState.currentSolution = {planeState.currentPremium - planeState.currentCost};
-    auto &qJobList = planeState.currentSolution.jobs;
+    planeState.currentSolution.planeId = planeState.planeId;
+    planeState.currentSolution.scheduleFromTime = mScheduleFromTime;
 
+    auto &qJobList = planeState.currentSolution.jobs;
     int node = g.nodeState[planeIdx].nextNode;
     while (node != -1) {
         int jobIdx = g.nodeInfo[node].jobIdx;
@@ -723,6 +724,7 @@ std::pair<int, int> BotPlaner::algo2() {
 #endif
     }
 
+    /* restore best path */
     for (int planeIdx = 0; planeIdx < mPlaneStates.size(); planeIdx++) {
         killPath(planeIdx);
     }

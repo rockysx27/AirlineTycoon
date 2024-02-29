@@ -41,8 +41,8 @@ int run(bool useImproved, int numPasses) {
         }
 
         BotPlaner planer(qPlayer, qPlayer.Planes, source, cities);
-        planer.planFlights(planeIds, useImproved);
-        planer.applySolution();
+        auto solutions = planer.planFlights(planeIds, useImproved);
+        planer.applySolution(qPlayer, solutions);
         int nIncorrect = Helper::checkFlightJobs(qPlayer, true);
         if (nIncorrect > 0) {
             break;
