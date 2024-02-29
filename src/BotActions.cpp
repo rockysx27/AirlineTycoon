@@ -49,7 +49,7 @@ void Bot::actionStartDay(__int64 moneyAvailable) {
 
     if (mDoRoutes) {
         updateRouteInfo();
-        requestPlanRoutes();
+        requestPlanRoutes(true);
     }
 
     /* check if we still have enough personal */
@@ -138,7 +138,7 @@ void Bot::actionCallInternational() {
 
     if (!cities.empty()) {
         BotPlaner planer(qPlayer, qPlayer.Planes, BotPlaner::JobOwner::International, cities);
-        grabFlights(planer);
+        grabFlights(planer, true);
 
         // Frachtaufträge:
         // RobotUse(ROBOT_USE_MUCH_FRACHT)
@@ -151,7 +151,7 @@ void Bot::actionCheckLastMinute() {
     LastMinuteAuftraege.RefillForLastMinute();
 
     BotPlaner planer(qPlayer, qPlayer.Planes, BotPlaner::JobOwner::LastMinute, {});
-    grabFlights(planer);
+    grabFlights(planer, false);
 
     LastMinuteAuftraege.RefillForLastMinute();
 }
@@ -170,22 +170,22 @@ void Bot::actionCheckTravelAgency() {
     ReisebueroAuftraege.RefillForReisebuero();
 
     BotPlaner planer(qPlayer, qPlayer.Planes, BotPlaner::JobOwner::TravelAgency, {});
-    grabFlights(planer);
+    grabFlights(planer, false);
 
     ReisebueroAuftraege.RefillForReisebuero();
 }
 
-void Bot::grabFlights(BotPlaner &planer) {
+void Bot::grabFlights(BotPlaner &planer, bool areWeInOffice) {
     if (HowToPlan::None == canWePlanFlights()) {
         redprintf("Bot::grabFlights(): Tried to grab plans without ability to plan them");
         return;
     }
 
     mPlanerSolution = planer.planFlights(mPlanesForJobs, true);
-    requestPlanFlights();
+    requestPlanFlights(areWeInOffice);
 }
 
-void Bot::requestPlanFlights() {
+void Bot::requestPlanFlights(bool areWeInOffice) {
     auto res = canWePlanFlights();
     if (res == HowToPlan::Laptop) {
         planFlights();
@@ -193,6 +193,12 @@ void Bot::requestPlanFlights() {
     } else {
         mNeedToPlanJobs = true;
         hprintf("Bot::requestPlanFlights(): No laptop, need to go to office");
+    }
+
+    if (res == HowToPlan::Office && areWeInOffice) {
+        planFlights();
+        hprintf("Bot::requestPlanFlights(): Already in office, planning right now");
+        mNeedToPlanJobs = false;
     }
 }
 
@@ -292,7 +298,7 @@ void Bot::actionBuyNewPlane(__int64 /*moneyAvailable*/) {
         hprintf("Bot::actionBuyNewPlane(): Bought plane (%s) %s", (LPCTSTR)qPlayer.Planes[i].Name, (LPCTSTR)PlaneTypes[bestPlaneTypeId].Name);
         if (mDoRoutes) {
             mPlanesForRoutesUnassigned.push_back(i);
-            requestPlanRoutes();
+            requestPlanRoutes(false);
         } else {
             if (checkPlaneAvailable(i, true)) {
                 mPlanesForJobs.push_back(i);
@@ -858,7 +864,7 @@ void Bot::actionRentRoute(SLONG routeA, SLONG planeTypeId) {
                 (LPCTSTR)PlaneTypes[planeTypeId].Name);
 
         updateRouteInfo();
-        requestPlanRoutes();
+        requestPlanRoutes(false);
     }
 }
 
@@ -1040,7 +1046,7 @@ void Bot::updateRouteInfo() {
     }
 }
 
-void Bot::requestPlanRoutes() {
+void Bot::requestPlanRoutes(bool areWeInOffice) {
     auto res = canWePlanFlights();
     if (res == HowToPlan::Laptop) {
         planRoutes();
@@ -1048,6 +1054,12 @@ void Bot::requestPlanRoutes() {
     } else {
         mNeedToPlanRoutes = true;
         hprintf("Bot::requestPlanRoutes(): No laptop, need to go to office");
+    }
+
+    if (res == HowToPlan::Office && areWeInOffice) {
+        planRoutes();
+        hprintf("Bot::requestPlanRoutes(): Already in office, planning right now");
+        mNeedToPlanRoutes = false;
     }
 }
 

@@ -165,6 +165,10 @@ Bot::Prio Bot::condCallInternational() {
     if (mPlanesForJobs.empty()) {
         return Prio::None;
     }
+    if (!mPlanerSolution.empty()) {
+        return Prio::None;
+    }
+
     for (SLONG c = 0; c < 4; c++) {
         if ((Sim.Players.Players[c].IsOut == 0) && (qPlayer.Kooperation[c] != 0)) {
             return Prio::High; /* we have a cooperation partner, we can check if they have a branch office */
@@ -178,6 +182,7 @@ Bot::Prio Bot::condCallInternational() {
             return Prio::High; /* we have our own branch office */
         }
     }
+
     return Prio::None;
 }
 
@@ -185,21 +190,46 @@ Bot::Prio Bot::condCheckLastMinute() {
     if (!hoursPassed(ACTION_CHECKAGENT1, 2)) {
         return Prio::None;
     }
-    if (HowToPlan::None != canWePlanFlights()) {
+    if (mPlanesForJobs.empty()) {
+        return Prio::None;
+    }
+    if (!mPlanerSolution.empty()) {
+        return Prio::None;
+    }
+
+    auto res = canWePlanFlights();
+    if (HowToPlan::Office == res && Sim.GetHour() >= 17) {
+        return Prio::None; /* might be too late to reach office */
+    }
+    if (HowToPlan::None != res) {
         return Prio::High;
     }
+
     return Prio::None;
 }
 Bot::Prio Bot::condCheckTravelAgency() {
     if (!hoursPassed(ACTION_CHECKAGENT2, 2)) {
         return Prio::None;
     }
-    if (HowToPlan::None != canWePlanFlights()) {
+    if (mPlanesForJobs.empty()) {
+        return Prio::None;
+    }
+    if (!mPlanerSolution.empty()) {
+        return Prio::None;
+    }
+
+    auto res = canWePlanFlights();
+    if (HowToPlan::Office == res && Sim.GetHour() >= 17) {
+        return Prio::None; /* might be too late to reach office */
+    }
+    if (HowToPlan::None != res) {
         return Prio::High;
     }
+
     if (mItemAntiVirus == 0) {
         return Prio::Low;
     }
+
     return Prio::None;
 }
 Bot::Prio Bot::condCheckFreight() {
@@ -209,9 +239,18 @@ Bot::Prio Bot::condCheckFreight() {
     if (!qPlayer.RobotUse(ROBOT_USE_FRACHT) || true) { // TODO
         return Prio::None;
     }
-    if (HowToPlan::None != canWePlanFlights()) {
+    if (!mPlanerSolution.empty()) {
+        return Prio::None;
+    }
+
+    auto res = canWePlanFlights();
+    if (HowToPlan::Office == res && Sim.GetHour() >= 17) {
+        return Prio::None; /* might be too late to reach office */
+    }
+    if (HowToPlan::None != res) {
         return Prio::Medium;
     }
+
     return Prio::None;
 }
 

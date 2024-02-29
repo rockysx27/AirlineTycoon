@@ -330,7 +330,7 @@ void Bot::RobotExecuteAction() {
     /* temporary data */
     __int64 moneyAvailable = getMoneyAvailable();
 
-    greenprintf("Bot.cpp: Enter RobotExecuteAction(): Executing %s", getRobotActionName(qRobotActions[0].ActionId));
+    greenprintf("Bot.cpp: Enter RobotExecuteAction(): Executing %s, current time: %d", getRobotActionName(qRobotActions[0].ActionId), Sim.GetHour());
 
     switch (qRobotActions[0].ActionId) {
     case 0:

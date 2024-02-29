@@ -99,8 +99,8 @@ class Bot {
     void actionCallInternational();
     void actionCheckLastMinute();
     void actionCheckTravelAgency();
-    void grabFlights(BotPlaner &planer);
-    void requestPlanFlights();
+    void grabFlights(BotPlaner &planer, bool areWeInOffice);
+    void requestPlanFlights(bool areWeInOffice);
     void planFlights();
     void actionUpgradePlanes(__int64 moneyAvailable);
     void actionBuyNewPlane(__int64 moneyAvailable);
@@ -123,7 +123,7 @@ class Bot {
     SLONG getRouteTurnAroundDuration(const CRoute &qRoute, SLONG planeTypeId) const;
     void checkLostRoutes();
     void updateRouteInfo();
-    void requestPlanRoutes();
+    void requestPlanRoutes(bool areWeInOffice);
     void planRoutes();
 
     /* misc */
