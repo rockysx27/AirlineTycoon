@@ -137,6 +137,7 @@ class Bot {
     const CRoute &getRoute(const RouteInfo &routeInfo) const;
     SLONG getDailyOpSaldo() const;
     SLONG getWeeklyOpSaldo() const;
+    void forceReplanning();
 
     TEAKRAND LocalRandom;
     PLAYER &qPlayer;

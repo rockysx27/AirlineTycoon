@@ -112,6 +112,9 @@ void Bot::actionStartDay(__int64 moneyAvailable) {
 
     /* always use tanks: We get discount from advisor and by using cheap kerosine */
     GameMechanic::setKerosinTankOpen(qPlayer, true);
+
+    /* some conditions might have changed (plane availability) */
+    forceReplanning();
 }
 
 void Bot::actionBuero() {
@@ -163,7 +166,7 @@ void Bot::actionCheckTravelAgency() {
             mItemAntiVirus = 1;
         }
         if (HowToPlan::None == canWePlanFlights()) {
-            return;
+            return; /* avoid warning in grabFlights(). We only came here for the item */
         }
     }
 
@@ -176,12 +179,22 @@ void Bot::actionCheckTravelAgency() {
 }
 
 void Bot::grabFlights(BotPlaner &planer, bool areWeInOffice) {
-    if (HowToPlan::None == canWePlanFlights()) {
+    auto res = canWePlanFlights();
+    if (HowToPlan::None == res) {
         redprintf("Bot::grabFlights(): Tried to grab plans without ability to plan them");
         return;
     }
 
-    mPlanerSolution = planer.planFlights(mPlanesForJobs, true);
+    int extraBufferTime = kAvailTimeExtra;
+    if (!areWeInOffice && HowToPlan::Office == res) {
+        extraBufferTime += 1;
+        if (Sim.GetMinute() >= 30) {
+            extraBufferTime += 1;
+        }
+        hprintf("Bot::grabFlights(): Extra time planned for walking to office: %d", extraBufferTime);
+    }
+    mPlanerSolution = planer.planFlights(mPlanesForJobs, true, extraBufferTime);
+
     requestPlanFlights(areWeInOffice);
 }
 
@@ -193,6 +206,7 @@ void Bot::requestPlanFlights(bool areWeInOffice) {
     } else {
         mNeedToPlanJobs = true;
         hprintf("Bot::requestPlanFlights(): No laptop, need to go to office");
+        forceReplanning();
     }
 
     if (res == HowToPlan::Office && areWeInOffice) {
@@ -1054,6 +1068,7 @@ void Bot::requestPlanRoutes(bool areWeInOffice) {
     } else {
         mNeedToPlanRoutes = true;
         hprintf("Bot::requestPlanRoutes(): No laptop, need to go to office");
+        forceReplanning();
     }
 
     if (res == HowToPlan::Office && areWeInOffice) {
@@ -1130,7 +1145,7 @@ void Bot::planRoutes() {
             /* where is the plane right now and when can it be in the origin city? */
             PlaneTime availTime;
             SLONG availCity{};
-            std::tie(availTime, availCity) = Helper::getPlaneAvailableTimeLoc(qPlane, {});
+            std::tie(availTime, availCity) = Helper::getPlaneAvailableTimeLoc(qPlane, {}, {});
             availCity = Cities.find(availCity);
 #ifdef PRINT_ROUTE_DETAILS
             hprintf("BotPlaner::planRoutes(): Plane %s is in %s @ %s %ld", (LPCTSTR)qPlane.Name, (LPCTSTR)Cities[availCity].Kuerzel,

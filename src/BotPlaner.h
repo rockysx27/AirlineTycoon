@@ -150,7 +150,7 @@ class BotPlaner {
     BotPlaner() = default;
     BotPlaner(PLAYER &player, const CPlanes &planes, JobOwner jobOwner, std::vector<int> intJobSource);
 
-    SolutionList planFlights(const std::vector<int> &planeIdsInput, bool bUseImprovedAlgo);
+    SolutionList planFlights(const std::vector<int> &planeIdsInput, bool bUseImprovedAlgo, int extraBufferTime);
     static bool applySolution(PLAYER &qPlayer, const SolutionList &solutions);
 
   private:

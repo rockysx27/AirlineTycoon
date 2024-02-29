@@ -115,7 +115,7 @@ const CFlugplanEintrag *getLastFlightNotAfter(const CPlane &qPlane, PlaneTime ig
     return nullptr;
 }
 
-std::pair<PlaneTime, int> getPlaneAvailableTimeLoc(const CPlane &qPlane, std::optional<PlaneTime> ignoreFrom) {
+std::pair<PlaneTime, int> getPlaneAvailableTimeLoc(const CPlane &qPlane, std::optional<PlaneTime> ignoreFrom, std::optional<PlaneTime> earliest) {
     std::pair<PlaneTime, int> res{};
     res.second = qPlane.Flugplan.StartCity;
 
@@ -125,6 +125,9 @@ std::pair<PlaneTime, int> getPlaneAvailableTimeLoc(const CPlane &qPlane, std::op
         res.second = qFPE->NachCity;
     }
     PlaneTime currentTime{Sim.Date, Sim.GetHour() + kAvailTimeExtra};
+    if (earliest.has_value() && earliest.value() > currentTime) {
+        currentTime = earliest.value();
+    }
     if (currentTime > res.first) {
         res.first = currentTime;
     }

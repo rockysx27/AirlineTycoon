@@ -145,6 +145,8 @@ SLONG Bot::getDailyOpSaldo() const { return qPlayer.BilanzGestern.GetOpSaldo(); 
 
 SLONG Bot::getWeeklyOpSaldo() const { return qPlayer.BilanzWoche.Hole().GetOpSaldo(); }
 
+void Bot::forceReplanning() { qPlayer.RobotActions[1].ActionId = ACTION_NONE; }
+
 Bot::Bot(PLAYER &player) : qPlayer(player) {}
 
 void Bot::RobotInit() {
@@ -330,7 +332,8 @@ void Bot::RobotExecuteAction() {
     /* temporary data */
     __int64 moneyAvailable = getMoneyAvailable();
 
-    greenprintf("Bot.cpp: Enter RobotExecuteAction(): Executing %s, current time: %d", getRobotActionName(qRobotActions[0].ActionId), Sim.GetHour());
+    greenprintf("Bot.cpp: Enter RobotExecuteAction(): Executing %s, current time: %d:%d", getRobotActionName(qRobotActions[0].ActionId), Sim.GetHour(),
+                Sim.GetMinute());
 
     switch (qRobotActions[0].ActionId) {
     case 0:

@@ -10,7 +10,7 @@
 // #define PRINT_DETAIL 1
 #define PRINT_OVERALL 1
 
-const int kAvailTimeExtra = 3;
+const int kAvailTimeExtra = 2;
 const int kDurationExtra = 1;
 const int kScheduleForNextDays = 4;
 static const bool kCanDropJobs = false;
@@ -342,8 +342,8 @@ bool BotPlaner::applySolutionForPlane(PLAYER &qPlayer, int planeId, const BotPla
             continue;
         }
         const auto &auftrag = qPlayer.Auftraege[iter.objectId];
-        const auto &startTime = iter.start;
-        const auto &endTime = iter.end;
+        const auto startTime = iter.start;
+        const auto endTime = iter.end - kDurationExtra;
 
         /* plan taken jobs */
         if (!iter.bIsFreight) {
@@ -377,7 +377,7 @@ bool BotPlaner::applySolutionForPlane(PLAYER &qPlayer, int planeId, const BotPla
                           (LPCTSTR)qPlanes[planeId].Name, d, Helper::getJobName(auftrag).c_str(), (LPCTSTR)Helper::getWeekday(flug.Startdate), flug.Startzeit,
                           (LPCTSTR)Helper::getWeekday(startTime.getDate()), startTime.getHour());
             }
-            if ((PlaneTime(flug.Landedate, flug.Landezeit) + kDurationExtra) != endTime) {
+            if (PlaneTime(flug.Landedate, flug.Landezeit) != endTime) {
                 redprintf(
                     "BotPlaner::applySolutionForPlane(): Plane %s, schedule entry %ld: GameMechanic scheduled job (%s) with different landing time (%s %d "
                     "instead of %s %d)!",
@@ -392,7 +392,7 @@ bool BotPlaner::applySolutionForPlane(PLAYER &qPlayer, int planeId, const BotPla
     return true;
 }
 
-BotPlaner::SolutionList BotPlaner::planFlights(const std::vector<int> &planeIdsInput, bool bUseImprovedAlgo) {
+BotPlaner::SolutionList BotPlaner::planFlights(const std::vector<int> &planeIdsInput, bool bUseImprovedAlgo, int extraBufferTime) {
 #ifdef PRINT_OVERALL
     auto t_begin = std::chrono::steady_clock::now();
 #endif
@@ -400,7 +400,7 @@ BotPlaner::SolutionList BotPlaner::planFlights(const std::vector<int> &planeIdsI
     hprintf("BotPlaner::planFlights(): Current time: %d", Sim.GetHour());
 #endif
 
-    mScheduleFromTime = {Sim.Date, Sim.GetHour() + kAvailTimeExtra};
+    mScheduleFromTime = {Sim.Date, Sim.GetHour() + extraBufferTime};
 
     /* find valid plane IDs */
     std::vector<int> planeIds;
@@ -436,7 +436,7 @@ BotPlaner::SolutionList BotPlaner::planFlights(const std::vector<int> &planeIdsI
         planeState.bJobIdAssigned.resize(mJobList.size());
 
         /* determine when and where the plane will be available */
-        std::tie(planeState.availTime, planeState.startCity) = Helper::getPlaneAvailableTimeLoc(qPlanes[i], mScheduleFromTime);
+        std::tie(planeState.availTime, planeState.startCity) = Helper::getPlaneAvailableTimeLoc(qPlanes[i], mScheduleFromTime, mScheduleFromTime);
         planeState.startCity = Cities.find(planeState.startCity);
         assert(planeState.startCity >= 0 && planeState.startCity < Cities.AnzEntries());
 #ifdef PRINT_DETAIL
