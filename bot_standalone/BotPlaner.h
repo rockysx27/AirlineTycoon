@@ -165,7 +165,7 @@ class BotPlaner {
         /* static data */
         int planeId{-1};
         int planeTypeId{-1};
-        int currentCity{-1};
+        int startCity{-1};
         /* both algos: */
         PlaneTime availTime{};
         Solution currentSolution{};
@@ -215,9 +215,16 @@ class BotPlaner {
 
     /* algo 1 */
     Solution algo1FindFlightPlan(Graph &g, int planeIdx, PlaneTime availTime, const std::vector<int> &eligibleJobIds);
-    std::pair<int, int> algo1();
+    int algo1();
 
     /* algo 2 */
+    inline int allPlaneGain() {
+        int iterGain = 0;
+        for (int planeIdx = 0; planeIdx < mPlaneStates.size(); planeIdx++) {
+            iterGain += mPlaneStates[planeIdx].currentPremium - mPlaneStates[planeIdx].currentCost;
+        }
+        return iterGain;
+    }
     void savePath(int planeIdx, std::vector<int> &path) const;
     void restorePath(int planeIdx, const std::vector<int> &path);
     void killPath(int planeIdx);
@@ -230,8 +237,9 @@ class BotPlaner {
     int algo2FindNext(const Graph &g, PlaneState &planeState, int choice) const;
     void algo2InsertNode(Graph &g, int planeIdx, int nextNode);
     void algo2RemoveNode(Graph &g, int planeIdx, int currentNode);
-    std::pair<int, int> algo2RunForPlane(int planeIdx, int temperature);
-    std::pair<int, int> algo2();
+    int algo2RunForPlaneRemove(int planeIdx, int numToRemove);
+    int algo2RunForPlaneAdd(int planeIdx, int numToAdd, int choice);
+    int algo2();
 
     /* apply solution */
     bool takeJobs(PlaneState &planeState);

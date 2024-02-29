@@ -241,7 +241,7 @@ std::vector<Graph> BotPlaner::prepareGraph() {
                     continue; /* self edge not allowed */
                 }
 
-                int startCity = (i >= nPlanes) ? mJobList[i - nPlanes].auftrag.NachCity : mPlaneStates[i].currentCity;
+                int startCity = (i >= nPlanes) ? mJobList[i - nPlanes].auftrag.NachCity : mPlaneStates[i].startCity;
                 int destCity = mJobList[j - nPlanes].auftrag.VonCity;
                 startCity = Cities.find(startCity);
                 destCity = Cities.find(destCity);
@@ -331,11 +331,14 @@ bool BotPlaner::takeJobs(PlaneState &planeState) {
 
 bool BotPlaner::applySolutionForPlane(PLAYER &qPlayer, int planeId, const BotPlaner::Solution &solution) {
     const auto &qPlanes = qPlayer.Planes;
-    assert(planeId >= 0x1000000 && qPlanes.IsInAlbum(planeId));
+    if (planeId < 0x1000000 || !qPlanes.IsInAlbum(planeId)) {
+        redprintf("BotPlaner::applySolutionForPlane(): Skipping invalid plane: %d", planeId);
+        return false;
+    }
 
     for (auto &iter : solution.jobs) {
         if (!qPlayer.Auftraege.IsInAlbum(iter.objectId)) {
-            redprintf("BotPlaner::applySolutionForPlane(): Skipping invalid job!");
+            redprintf("BotPlaner::applySolutionForPlane(): Skipping invalid job: %d", iter.objectId);
             continue;
         }
         const auto &auftrag = qPlayer.Auftraege[iter.objectId];
@@ -433,13 +436,13 @@ BotPlaner::SolutionList BotPlaner::planFlights(const std::vector<int> &planeIdsI
         planeState.bJobIdAssigned.resize(mJobList.size());
 
         /* determine when and where the plane will be available */
-        std::tie(planeState.availTime, planeState.currentCity) = Helper::getPlaneAvailableTimeLoc(qPlanes[i], mScheduleFromTime);
-        planeState.currentCity = Cities.find(planeState.currentCity);
-        assert(planeState.currentCity >= 0 && planeState.currentCity < Cities.AnzEntries());
+        std::tie(planeState.availTime, planeState.startCity) = Helper::getPlaneAvailableTimeLoc(qPlanes[i], mScheduleFromTime);
+        planeState.startCity = Cities.find(planeState.startCity);
+        assert(planeState.startCity >= 0 && planeState.startCity < Cities.AnzEntries());
 #ifdef PRINT_DETAIL
         Helper::checkPlaneSchedule(qPlayer, i, false);
         hprintf("BotPlaner::planFlights(): After %s %ld: Plane %s is in %s @ %s %d", (LPCTSTR)Helper::getWeekday(mScheduleFromTime.getDate()),
-                mScheduleFromTime.getHour(), (LPCTSTR)qPlanes[i].Name, (LPCTSTR)Cities[planeState.currentCity].Kuerzel,
+                mScheduleFromTime.getHour(), (LPCTSTR)qPlanes[i].Name, (LPCTSTR)Cities[planeState.startCity].Kuerzel,
                 (LPCTSTR)Helper::getWeekday(planeState.availTime.getDate()), planeState.availTime.getHour());
 #endif
     }
@@ -451,12 +454,10 @@ BotPlaner::SolutionList BotPlaner::planFlights(const std::vector<int> &planeIdsI
     mGraphs = prepareGraph();
 
     /* start algo */
-    int nJobsScheduled{0};
-    int totalGain{0};
     if (bUseImprovedAlgo) {
-        std::tie(nJobsScheduled, totalGain) = algo2();
+        algo2();
     } else {
-        std::tie(nJobsScheduled, totalGain) = algo1();
+        algo1();
     }
 
     /* check statistics */

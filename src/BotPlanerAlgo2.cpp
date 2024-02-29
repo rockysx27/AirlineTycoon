@@ -9,8 +9,8 @@
 // #define PRINT_DETAIL 1
 // #define PRINT_OVERALL 1
 
-int kNumToAdd = 4;
-int kNumToRemove = 1;
+int kNumToAdd = 99;
+int kNumToRemove = 3;
 int kTempStart = 1000;
 int kTempStep = 100;
 extern const int kScheduleForNextDays;
@@ -236,8 +236,9 @@ bool BotPlaner::algo2MakeRoom(Graph &g, int nodeToMoveLeft, int nodeToMoveRight)
 void BotPlaner::algo2ApplySolutionToGraph() {
     for (int p = 0; p < mPlaneStates.size(); p++) {
         auto &qPlaneState = mPlaneStates[p];
+        const auto &qPlane = qPlanes[qPlaneState.planeId];
         auto &g = mGraphs[qPlaneState.planeTypeId];
-        const auto &qFlightPlan = qPlanes[qPlaneState.planeId].Flugplan.Flug;
+        const auto &qFlightPlan = qPlane.Flugplan.Flug;
 
         qPlaneState.currentNode = p;
 
@@ -321,8 +322,10 @@ int BotPlaner::algo2FindNext(const Graph &g, PlaneState &planeState, int choice)
 #endif
 
     /* determine next node for plane */
-    int outIdx = 0;
-    while (outIdx < curInfo.bestNeighbors.size()) {
+    int iter = 0;
+    int outIdx = -1;
+    while (iter < curInfo.bestNeighbors.size()) {
+        outIdx = (iter + choice) % curInfo.bestNeighbors.size();
         int nextNode = curInfo.bestNeighbors[outIdx];
         assert(nextNode >= g.nPlanes && nextNode < g.nNodes);
         const auto &nextInfo = g.nodeInfo[nextNode];
@@ -335,7 +338,7 @@ int BotPlaner::algo2FindNext(const Graph &g, PlaneState &planeState, int choice)
 
         int jobIdx = nextInfo.jobIdx;
         if (mJobList[jobIdx].assignedtoPlaneIdx != -1) {
-            outIdx++;
+            iter++;
 #ifdef PRINT_DETAIL
             std::cout << "??? Already assigned to plane " << mJobList[jobIdx].assignedtoPlaneIdx << std::endl;
 #endif
@@ -347,7 +350,7 @@ int BotPlaner::algo2FindNext(const Graph &g, PlaneState &planeState, int choice)
         std::cout << "??? tEarliest = " << Helper::getWeekday(tEarliest.getDate()) << tEarliest.getHour() << std::endl;
 #endif
         if (tEarliest.getDate() > nextInfo.latest) {
-            outIdx++;
+            iter++;
 #ifdef PRINT_DETAIL
             std::cout << "??? we are too late" << std::endl;
 #endif
@@ -378,19 +381,16 @@ int BotPlaner::algo2FindNext(const Graph &g, PlaneState &planeState, int choice)
             std::cout << "??? duration = " << duration << std::endl;
 #endif
             if (duration < 0 || tEarliestOvernext > g.nodeState[overnextNode].startTime) {
-                outIdx++;
+                iter++;
 #ifdef PRINT_DETAIL
                 std::cout << "??? no room for auto flight to next node" << std::endl;
 #endif
                 continue; /* no room */
             }
         }
-
-        if (choice-- == 0) {
-            break;
-        }
+        break;
     }
-    if (outIdx == curInfo.bestNeighbors.size()) {
+    if (iter == curInfo.bestNeighbors.size()) {
         return -1;
     }
 
@@ -532,10 +532,9 @@ void BotPlaner::algo2RemoveNode(Graph &g, int planeIdx, int currentNode) {
 #endif
 }
 
-std::pair<int, int> BotPlaner::algo2RunForPlane(int planeIdx, int temperature) {
+int BotPlaner::algo2RunForPlaneRemove(int planeIdx, int numToRemove) {
     auto &planeState = mPlaneStates[planeIdx];
     auto &g = mGraphs[planeState.planeTypeId];
-    int oldGain = planeState.currentPremium - planeState.currentCost;
 
 #ifdef PRINT_OVERALL
     std::cout << "****************************************" << std::endl;
@@ -547,14 +546,9 @@ std::pair<int, int> BotPlaner::algo2RunForPlane(int planeIdx, int temperature) {
     Helper::checkPlaneSchedule(qPlayer, qPlanes[planeState.planeId], false);
 #endif
 
-    /* record current path */
-    std::vector<int> originalPath;
-    originalPath.reserve(planeState.numNodes);
-    savePath(planeIdx, originalPath);
-
     /* remove some nodes */
     int nRemoved = 0;
-    for (int pass = 0; pass < kNumToRemove; pass++) {
+    for (int pass = 0; pass < numToRemove; pass++) {
         int worstNode = -1;
         int worstGain = INT_MAX;
 
@@ -582,12 +576,19 @@ std::pair<int, int> BotPlaner::algo2RunForPlane(int planeIdx, int temperature) {
         }
     }
 
+    return nRemoved;
+}
+
+int BotPlaner::algo2RunForPlaneAdd(int planeIdx, int numToAdd, int choice) {
+    auto &planeState = mPlaneStates[planeIdx];
+    auto &g = mGraphs[planeState.planeTypeId];
+
     /* try to insert new nodes */
 #ifdef PRINT_OVERALL
     std::cout << "Trying to insert" << std::endl;
 #endif
     int nScheduled = 0;
-    for (int pass = 0; pass < kNumToAdd; pass++) {
+    for (int pass = 0; pass < numToAdd; pass++) {
         /* make room after random node */
         if (planeState.numNodes > 0) {
             int whereToInsert = getRandInt(0, planeState.numNodes);
@@ -637,7 +638,7 @@ std::pair<int, int> BotPlaner::algo2RunForPlane(int planeIdx, int temperature) {
             continue;
         }
 
-        int nextNode = algo2FindNext(g, planeState, 0); // TODO: Randomize choice
+        int nextNode = algo2FindNext(g, planeState, choice);
         if (nextNode != -1) {
             algo2InsertNode(g, planeIdx, nextNode);
             nScheduled++;
@@ -650,34 +651,10 @@ std::pair<int, int> BotPlaner::algo2RunForPlane(int planeIdx, int temperature) {
         }
     }
 
-    /* check final gain */
-    int newGain = planeState.currentPremium - planeState.currentCost;
-    int diff = newGain - oldGain;
-    if (SA_accept(diff, temperature, getRandInt(1, 100))) {
-        return {nScheduled - nRemoved, diff};
-    }
-
-    /* roll back */
-#ifdef PRINT_OVERALL
-    std::cout << "Gains is too low (" << diff << "), rolling back" << std::endl;
-#endif
-
-    killPath(planeIdx);
-    restorePath(planeIdx, originalPath);
-    assert(oldGain == (planeState.currentPremium - planeState.currentCost));
-
-#ifdef PRINT_OVERALL
-    std::cout << "Gains is too low, rolled back" << std::endl;
-    algo2GenSolutionsFromGraph(planeIdx);
-    GameMechanic::killFlightPlanFrom(qPlayer, planeState.planeId, mScheduleFromTime.getDate(), mScheduleFromTime.getHour());
-    applySolutionForPlane(planeState.planeId, planeState.currentSolution);
-    Helper::checkPlaneSchedule(qPlayer, qPlanes[planeState.planeId], false);
-#endif
-
-    return {0, 0};
+    return nScheduled;
 }
 
-std::pair<int, int> BotPlaner::algo2() {
+int BotPlaner::algo2() {
     for (auto &g : mGraphs) {
         for (int n = 0; n < g.nPlanes; n++) {
             g.nodeState[n].startTime = mPlaneStates[n].availTime;
@@ -687,33 +664,77 @@ std::pair<int, int> BotPlaner::algo2() {
     }
 
     /* apply existing solution to graph and plane state */
-    std::vector<std::vector<int>> bestPath(mPlaneStates.size());
+    int overallBestGain = allPlaneGain();
+    std::vector<std::vector<int>> overallBestPath(mPlaneStates.size());
     algo2ApplySolutionToGraph();
     for (int planeIdx = 0; planeIdx < mPlaneStates.size(); planeIdx++) {
-        savePath(planeIdx, bestPath[planeIdx]);
+        savePath(planeIdx, overallBestPath[planeIdx]);
+    }
+
+    /* current best */
+    int currentBestGain = allPlaneGain();
+    std::vector<std::vector<int>> currentBestPath(mPlaneStates.size());
+    for (int planeIdx = 0; planeIdx < mPlaneStates.size(); planeIdx++) {
+        savePath(planeIdx, currentBestPath[planeIdx]);
     }
 
     /* main algo */
-    int nTotalScheduled = 0;
-    int totalGain = 0;
-    int bestGain = 0;
     int temperature = kTempStart;
     while (temperature > 0) {
+        int iterScheduled = 0;
         for (int planeIdx = 0; planeIdx < mPlaneStates.size(); planeIdx++) {
-
-            int nScheduled = 0;
-            int gain = 0;
-            std::tie(nScheduled, gain) = algo2RunForPlane(planeIdx, temperature);
-
-            nTotalScheduled += nScheduled;
-            totalGain += gain;
+            iterScheduled += algo2RunForPlaneRemove(planeIdx, kNumToRemove);
         }
 
-        if (totalGain > bestGain) {
-            bestGain = totalGain;
+        for (int i = 0; i < kNumToAdd; i++) {
+            int added = 0;
             for (int planeIdx = 0; planeIdx < mPlaneStates.size(); planeIdx++) {
-                savePath(planeIdx, bestPath[planeIdx]);
+                added += algo2RunForPlaneAdd(planeIdx, 1, getRandInt(0, 3));
             }
+            if (added == 0) {
+                break;
+            }
+            iterScheduled += added;
+        }
+
+        int iterGain = allPlaneGain();
+        if (!SA_accept(iterGain, temperature, getRandInt(1, 100))) {
+            /* roll back */
+#ifdef PRINT_OVERALL
+            std::cout << "Gains is too low (" << diff << "), rolling back" << std::endl;
+#endif
+            for (int planeIdx = 0; planeIdx < mPlaneStates.size(); planeIdx++) {
+                killPath(planeIdx);
+            }
+            for (int planeIdx = 0; planeIdx < mPlaneStates.size(); planeIdx++) {
+                restorePath(planeIdx, currentBestPath[planeIdx]);
+            }
+#ifdef PRINT_OVERALL
+            std::cout << "Gains is too low, rolled back" << std::endl;
+            algo2GenSolutionsFromGraph(planeIdx);
+            GameMechanic::killFlightPlanFrom(qPlayer, planeState.planeId, mScheduleFromTime.getDate(), mScheduleFromTime.getHour());
+            applySolutionForPlane(planeState.planeId, planeState.currentSolution);
+            Helper::checkPlaneSchedule(qPlayer, qPlanes[planeState.planeId], false);
+#endif
+            continue;
+        }
+
+        // if (iterGain > currentBestGain) {
+        currentBestGain = iterGain;
+        for (int planeIdx = 0; planeIdx < mPlaneStates.size(); planeIdx++) {
+            savePath(planeIdx, currentBestPath[planeIdx]);
+        }
+        // std::cout << temperature << ", " << currentBestGain << std::endl;
+        //}
+
+        if (iterGain > overallBestGain) {
+            int test = 0;
+            overallBestGain = iterGain;
+            for (int planeIdx = 0; planeIdx < mPlaneStates.size(); planeIdx++) {
+                savePath(planeIdx, overallBestPath[planeIdx]);
+                test += mPlaneStates[planeIdx].currentPremium - mPlaneStates[planeIdx].currentCost;
+            }
+            assert(test == overallBestGain);
         }
 
         temperature -= kTempStep;
@@ -729,9 +750,9 @@ std::pair<int, int> BotPlaner::algo2() {
 
     /* generate solution */
     for (int planeIdx = 0; planeIdx < mPlaneStates.size(); planeIdx++) {
-        restorePath(planeIdx, bestPath[planeIdx]);
+        restorePath(planeIdx, overallBestPath[planeIdx]);
         algo2GenSolutionsFromGraph(planeIdx);
     }
 
-    return {nTotalScheduled, totalGain};
+    return overallBestGain;
 }

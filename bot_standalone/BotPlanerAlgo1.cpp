@@ -175,10 +175,9 @@ BotPlaner::Solution BotPlaner::algo1FindFlightPlan(Graph &g, int planeIdx, Plane
     return solutions[bestPremiumIdx];
 }
 
-std::pair<int, int> BotPlaner::algo1() {
+int BotPlaner::algo1() {
     int nPlanes = mPlaneStates.size();
     int nPlaneTypes = mPlaneTypeToPlane.size();
-    int nJobsScheduled = 0;
     int totalDelta = 0;
     for (int i = 0; i < mJobList.size(); i++) {
         auto &jobState = mJobList[i];
@@ -221,7 +220,6 @@ std::pair<int, int> BotPlaner::algo1() {
 
                 jobState.assignedtoPlaneIdx = bestPlane;
                 totalDelta += bestDelta;
-                nJobsScheduled++;
 
 #ifdef PRINT_OVERALL
                 const auto &qPlane = qPlanes[planeState.planeId];
@@ -241,5 +239,5 @@ std::pair<int, int> BotPlaner::algo1() {
     hprintf("Improved gain in total by %d", totalDelta);
 #endif
 
-    return {nJobsScheduled, totalDelta};
+    return totalDelta;
 }
