@@ -175,9 +175,11 @@ void Bot::grabFlights(BotPlaner &planer, bool areWeInOffice) {
         }
         hprintf("Bot::grabFlights(): Extra time planned for walking to office: %d", extraBufferTime);
     }
-    mPlanerSolution = planer.planFlights(mPlanesForJobs, true, extraBufferTime);
 
-    requestPlanFlights(areWeInOffice);
+    mPlanerSolution = planer.planFlights(mPlanesForJobs, true, extraBufferTime);
+    if (!mPlanerSolution.empty()) {
+        requestPlanFlights(areWeInOffice);
+    }
 }
 
 void Bot::requestPlanFlights(bool areWeInOffice) {
@@ -300,6 +302,7 @@ void Bot::actionBuyNewPlane(__int64 /*moneyAvailable*/) {
         } else {
             if (checkPlaneAvailable(i, true)) {
                 mPlanesForJobs.push_back(i);
+                grabNewFlights();
             } else {
                 mPlanesForJobsUnassigned.push_back(i);
             }
@@ -819,13 +822,15 @@ std::pair<SLONG, SLONG> Bot::actionFindBestRoute(TEAKRAND &rnd) const {
         }
     }
 
+    /* sort routes by score */
     std::sort(bestRoutes.begin(), bestRoutes.end(), [](const RouteScore &a, const RouteScore &b) { return a.score > b.score; });
+
+    // #ifdef PRINT_ROUTE_DETAILS
     for (const auto &i : bestRoutes) {
         hprintf("Bot::actionFindBestRoute(): Score of route %s (using plane type %s, need %ld) is: %.2f", Helper::getRouteName(Routen[i.routeId]).c_str(),
                 (LPCTSTR)PlaneTypes[i.planeTypeId].Name, i.numPlanes, i.score);
     }
-#ifdef PRINT_ROUTE_DETAILS
-#endif
+    // #endif
 
     /* pick best route we can afford */
     __int64 moneyAvailable = qPlayer.Money + getWeeklyOpSaldo();

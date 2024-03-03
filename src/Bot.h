@@ -34,7 +34,7 @@ class Bot {
     void setNoticedSickness() { mIsSickToday = true; }
 
     // private:
-    enum class Prio { None, Low, Medium, High, Top };
+    enum class Prio { None, Low, Medium, High, Higher, Top };
     struct RouteInfo {
         RouteInfo() = default;
         RouteInfo(SLONG id, SLONG id2, SLONG typeId) : routeId(id), routeReverseId(id2), planeTypeId(typeId) {}
@@ -53,6 +53,7 @@ class Bot {
     bool isOfficeUsable() const;
     __int64 getMoneyAvailable() const;
     bool hoursPassed(SLONG room, SLONG hours) const;
+    void grabNewFlights();
     bool haveDiscount() const;
     enum class HowToPlan { None, Laptop, Office };
     HowToPlan canWePlanFlights();

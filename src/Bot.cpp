@@ -17,6 +17,8 @@ static const char *getPrioName(Bot::Prio prio) {
     switch (prio) {
     case Bot::Prio::Top:
         return "Top";
+    case Bot::Prio::Higher:
+        return "Higher";
     case Bot::Prio::High:
         return "High";
     case Bot::Prio::Medium:

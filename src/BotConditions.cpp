@@ -21,6 +21,14 @@ bool Bot::hoursPassed(SLONG room, SLONG hours) const {
     return (Sim.Time - it->second > hours * 60000);
 }
 
+void Bot::grabNewFlights() {
+    mLastTimeInRoom.erase(ACTION_CALL_INTERNATIONAL);
+    mLastTimeInRoom.erase(ACTION_CALL_INTER_HANDY);
+    mLastTimeInRoom.erase(ACTION_CHECKAGENT1);
+    mLastTimeInRoom.erase(ACTION_CHECKAGENT2);
+    mLastTimeInRoom.erase(ACTION_CHECKAGENT3);
+}
+
 bool Bot::haveDiscount() const {
     if (qPlayer.HasBerater(BERATERTYP_SICHERHEIT) >= 50 || Sim.Date >= 3) {
         return true; /* wait until we have some discount */
@@ -278,7 +286,7 @@ Bot::Prio Bot::condCheckTravelAgency() {
         return Prio::None; /* might be too late to reach office */
     }
     if (HowToPlan::None != res) {
-        return Prio::High;
+        return Prio::Higher;
     }
 
     if (mItemAntiVirus == 0) {
@@ -626,7 +634,7 @@ Bot::Prio Bot::condVisitDutyFree(__int64 &moneyAvailable) {
     /* emergency shopping: Laptop because office is destroyed */
     if (hoursPassed(ACTION_VISITDUTYFREE, 24) && moneyAvailable >= 0) {
         if (!mDayStarted && !isOfficeUsable() && qPlayer.LaptopQuality == 0) {
-            return Prio::High;
+            return Prio::Higher;
         }
     }
 
