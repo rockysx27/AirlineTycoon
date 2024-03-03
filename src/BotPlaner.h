@@ -208,7 +208,7 @@ class BotPlaner {
 
     /* algo 1 */
     Solution algo1FindFlightPlan(Graph &g, int planeIdx, PlaneTime availTime, const std::vector<int> &eligibleJobIds);
-    int algo1();
+    bool algo1();
 
     /* algo 2 */
     inline int allPlaneGain() {
@@ -232,7 +232,7 @@ class BotPlaner {
     void algo2RemoveNode(Graph &g, int planeIdx, int currentNode);
     int algo2RunForPlaneRemove(int planeIdx, int numToRemove);
     int algo2RunForPlaneAdd(int planeIdx, int numToAdd, int choice);
-    int algo2();
+    bool algo2();
 
     /* apply solution */
     bool takeJobs(PlaneState &planeState);

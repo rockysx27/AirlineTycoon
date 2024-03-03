@@ -654,7 +654,7 @@ int BotPlaner::algo2RunForPlaneAdd(int planeIdx, int numToAdd, int choice) {
     return nScheduled;
 }
 
-int BotPlaner::algo2() {
+bool BotPlaner::algo2() {
     for (auto &g : mGraphs) {
         for (int n = 0; n < g.nPlanes; n++) {
             g.nodeState[n].startTime = mPlaneStates[n].availTime;
@@ -664,7 +664,8 @@ int BotPlaner::algo2() {
     }
 
     /* apply existing solution to graph and plane state */
-    int overallBestGain = allPlaneGain();
+    int oldGain = allPlaneGain();
+    int overallBestGain = oldGain;
     std::vector<std::vector<int>> overallBestPath(mPlaneStates.size());
     algo2ApplySolutionToGraph();
     for (int planeIdx = 0; planeIdx < mPlaneStates.size(); planeIdx++) {
@@ -754,5 +755,5 @@ int BotPlaner::algo2() {
         algo2GenSolutionsFromGraph(planeIdx);
     }
 
-    return overallBestGain;
+    return (overallBestGain > oldGain);
 }

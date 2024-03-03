@@ -199,26 +199,26 @@ BOOL CTakeOffApp::InitInstance(int argc, char *argv[]) {
     gMouseStartup = TRUE;
 
     // Die Standardsprachen:
-    //#define LANGUAGE_D       0             //D-Deutsch, inklusive
-    //#define LANGUAGE_E       1             //E-Englisch, bezahlt
-    //#define LANGUAGE_F       2             //F-Französisch, bezahlt
-    //#define LANGUAGE_T       3             //T-Taiwanesisch, gilt als englische
-    //#define LANGUAGE_P       4             //P-Polnisch, inklusive
-    //#define LANGUAGE_N       5             //N-Niederländisch, bezahlt
-    //#define LANGUAGE_I       6             //I-Italienisch, bezahlt
-    //#define LANGUAGE_S       7             //S-Spanisch, bezahlt
-    //#define LANGUAGE_O       8             //O-Portugisisch, bezahlt
-    //#define LANGUAGE_B       9             //B-Brasiliasnisch, nicht von mir
-    //#define LANGUAGE_1      10             //J-Tschechisch
-    //#define LANGUAGE_2      11             //K-noch frei
-    //#define LANGUAGE_3      12             //L-noch frei
-    //#define LANGUAGE_4      13             //M-noch frei
-    //#define LANGUAGE_5      14             //N-noch frei
-    //#define LANGUAGE_6      15             //Q-noch frei
-    //#define LANGUAGE_7      16             //R-noch frei
-    //#define LANGUAGE_8      17             //T-noch frei
-    //#define LANGUAGE_9      18             //U-noch frei
-    //#define LANGUAGE_10     19             //V-noch frei
+    // #define LANGUAGE_D       0             //D-Deutsch, inklusive
+    // #define LANGUAGE_E       1             //E-Englisch, bezahlt
+    // #define LANGUAGE_F       2             //F-Französisch, bezahlt
+    // #define LANGUAGE_T       3             //T-Taiwanesisch, gilt als englische
+    // #define LANGUAGE_P       4             //P-Polnisch, inklusive
+    // #define LANGUAGE_N       5             //N-Niederländisch, bezahlt
+    // #define LANGUAGE_I       6             //I-Italienisch, bezahlt
+    // #define LANGUAGE_S       7             //S-Spanisch, bezahlt
+    // #define LANGUAGE_O       8             //O-Portugisisch, bezahlt
+    // #define LANGUAGE_B       9             //B-Brasiliasnisch, nicht von mir
+    // #define LANGUAGE_1      10             //J-Tschechisch
+    // #define LANGUAGE_2      11             //K-noch frei
+    // #define LANGUAGE_3      12             //L-noch frei
+    // #define LANGUAGE_4      13             //M-noch frei
+    // #define LANGUAGE_5      14             //N-noch frei
+    // #define LANGUAGE_6      15             //Q-noch frei
+    // #define LANGUAGE_7      16             //R-noch frei
+    // #define LANGUAGE_8      17             //T-noch frei
+    // #define LANGUAGE_9      18             //U-noch frei
+    // #define LANGUAGE_10     19             //V-noch frei
 
     DoAppPath();
     gLanguage = LANGUAGE_D;
@@ -1556,6 +1556,8 @@ void CTakeOffApp::GameLoop(void * /*unused*/) {
                                                     qPlayer.CalcRoom();
                                                     if (qPlayer.Locations[d] != ROOM_AIRPORT) {
                                                         qPlayer.RobotExecuteAction();
+                                                    } else if (qPlayer.RobotActions[0].ActionId == ACTION_CALL_INTER_HANDY) {
+                                                        qPlayer.RobotExecuteAction();
                                                     }
 
                                                     SLONG Room = (qPlayer.Locations[d] & ~ROOM_LEAVING);
@@ -2185,8 +2187,12 @@ void CTakeOffApp::LadeWeitereStandardTexte() {
     StandardTexte.UpdateText(TOKEN_MONEY, 2101, "E::(Balance of order %s)D::(Saldo f\xFCr Auftragsflug %s)");
     StandardTexte.UpdateText(TOKEN_MONEY, 2102, "E::(Balance of empty flight %s)D::(Saldo f\xFCr Leerflug %s)");
     StandardTexte.UpdateText(TOKEN_MONEY, 2103, "E::(Balance of cargo flight %s)D::(Saldo f\xFCr Frachtflug %s)");
-    StandardTexte.UpdateText(TOKEN_MONEY, 3161, "E::Emission indemnifications (paid)D::Emissions-Entsch\xE4""digung (gezahlt)");
-    StandardTexte.AddText(TOKEN_MONEY, 3163, "E::Emission indemnifications(received)D::Emissions-Entsch\xE4""digung (erhalten)");
+    StandardTexte.UpdateText(TOKEN_MONEY, 3161,
+                             "E::Emission indemnifications (paid)D::Emissions-Entsch\xE4"
+                             "digung (gezahlt)");
+    StandardTexte.AddText(TOKEN_MONEY, 3163,
+                          "E::Emission indemnifications(received)D::Emissions-Entsch\xE4"
+                          "digung (erhalten)");
 
     StandardTexte.UpdateText(TOKEN_AKTIE, 3030, "E::New account balance (incl. fee)D::Neuer Kontostand (inkl. Geb\xFChr)");
 
@@ -2195,14 +2201,20 @@ void CTakeOffApp::LadeWeitereStandardTexte() {
     StandardTexte.UpdateText(TOKEN_EXPERT, 2003, "E::Weekly balanceD::Wochenbilanz");
     StandardTexte.AddText(TOKEN_EXPERT, 2004, "E::Overall balanceD::Gesamtbilanz");
     StandardTexte.AddText(TOKEN_EXPERT, 2005, "E::Income through planesD::Flugzeugeinnahmen");
-    StandardTexte.AddText(TOKEN_EXPERT, 2006, "E::Competitors (overview)D::Konkurrenz (\xDC""bersicht)");
+    StandardTexte.AddText(TOKEN_EXPERT, 2006,
+                          "E::Competitors (overview)D::Konkurrenz (\xDC"
+                          "bersicht)");
     StandardTexte.AddText(TOKEN_EXPERT, 2007, "E:: SummariesD:: Zusammenfassungen");
     StandardTexte.AddText(TOKEN_EXPERT, 2008, "E:: Weekly balance of %sD:: Wochenbilanz von %s");
     StandardTexte.AddText(TOKEN_EXPERT, 2009, "E:: Weekly balance of %sD:: Wochenbilanz von %s");
     StandardTexte.AddText(TOKEN_EXPERT, 2010, "E:: Weekly balance of %sD:: Wochenbilanz von %s");
     StandardTexte.AddText(TOKEN_EXPERT, 2011, "E::Kerosene advisorD::Kerosinberater");
-    StandardTexte.AddText(TOKEN_EXPERT, 3003, "E::You need a better qualified informer for this report.D::Sie brauchen einen h\xF6her qualifizierteren Informanten um diesen Bericht zu erhalten.");
-    StandardTexte.AddText(TOKEN_EXPERT, 3004, "E::You need a better qualified kerosene advisor for this report.D::Sie brauchen einen h\xF6her qualifizierteren Kerosinberater um diesen Bericht zu erhalten.");
+    StandardTexte.AddText(
+        TOKEN_EXPERT, 3003,
+        "E::You need a better qualified informer for this report.D::Sie brauchen einen h\xF6her qualifizierteren Informanten um diesen Bericht zu erhalten.");
+    StandardTexte.AddText(TOKEN_EXPERT, 3004,
+                          "E::You need a better qualified kerosene advisor for this report.D::Sie brauchen einen h\xF6her qualifizierteren Kerosinberater um "
+                          "diesen Bericht zu erhalten.");
 
     StandardTexte.UpdateText(TOKEN_EXPERT, 3404, "E::OrdersD::Auftr\xE4ge");
     StandardTexte.AddText(TOKEN_EXPERT, 10000, "E::Kerosine for planeD::Kerosinkauf Flugzeug");
@@ -2228,12 +2240,18 @@ void CTakeOffApp::LadeWeitereStandardTexte() {
     StandardTexte.AddText(TOKEN_EXPERT, 10019, "E::Other expensesD::Sonstige Ausgaben");
     StandardTexte.AddText(TOKEN_EXPERT, 10020, "E::Stock saleD::Aktienverkauf");
     StandardTexte.AddText(TOKEN_EXPERT, 10021, "E::Stock emissionsD::Aktienemissionen");
-    StandardTexte.AddText(TOKEN_EXPERT, 10022, "E::Emission indemnifications\r\n(received)D::Emissions-Entsch\xE4""digung\r\n(erhalten)");
+    StandardTexte.AddText(TOKEN_EXPERT, 10022,
+                          "E::Emission indemnifications\r\n(received)D::Emissions-Entsch\xE4"
+                          "digung\r\n(erhalten)");
     StandardTexte.AddText(TOKEN_EXPERT, 10023, "E::Stock purchaseD::Aktienkauf");
     StandardTexte.AddText(TOKEN_EXPERT, 10024, "E::Emission feesD::Emissions-Geb\xFChr");
-    StandardTexte.AddText(TOKEN_EXPERT, 10025, "E::Emission indemnifications\r\n(received)D::Emissions-Entsch\xE4""digung\r\n(gezahlt)");
+    StandardTexte.AddText(TOKEN_EXPERT, 10025,
+                          "E::Emission indemnifications\r\n(received)D::Emissions-Entsch\xE4"
+                          "digung\r\n(gezahlt)");
     StandardTexte.AddText(TOKEN_EXPERT, 10026, "E::Planes soldD::Flugzeugverkauf");
-    StandardTexte.AddText(TOKEN_EXPERT, 10027, "E::TakeoversD::\xDC""bernahmen");
+    StandardTexte.AddText(TOKEN_EXPERT, 10027,
+                          "E::TakeoversD::\xDC"
+                          "bernahmen");
     StandardTexte.AddText(TOKEN_EXPERT, 10028, "E::Planes boughtD::Flugzeugkauf");
     StandardTexte.AddText(TOKEN_EXPERT, 10029, "E::Plane equipmentD::Flugzeugausr\xFCstung");
     StandardTexte.AddText(TOKEN_EXPERT, 10030, "E::Buying of\r\nbranch officesD::Kauf von\r\nNiederlassungen");
@@ -2248,10 +2266,14 @@ void CTakeOffApp::LadeWeitereStandardTexte() {
     StandardTexte.AddText(TOKEN_EXPERT, 10039, "E::Dividend paidD::Dividende gezahlt");
 
     StandardTexte.AddText(TOKEN_EXPERT, 10050, "E::Overall balance (1000 \x24)D::Bilanzsumme (1000 \x80)");
-    StandardTexte.AddText(TOKEN_EXPERT, 10051, "E::Business operations (1000 \x24)D::Operatives Gesch\xE4""ft (1000 \x80)");
+    StandardTexte.AddText(TOKEN_EXPERT, 10051,
+                          "E::Business operations (1000 \x24)D::Operatives Gesch\xE4"
+                          "ft (1000 \x80)");
     StandardTexte.AddText(TOKEN_EXPERT, 10052, "E::Personal and rent (1000 \x24)D::Personal und Miete (1000 \x80)");
     StandardTexte.AddText(TOKEN_EXPERT, 10053, "E::Interest and loans (1000 \x24)D::Zinsen und Kredite (1000 \x80)");
-    StandardTexte.AddText(TOKEN_EXPERT, 10054, "E::Stock trading (1000 \x24)D::Aktiengesch\xE4""fte (1000 \x80)");
+    StandardTexte.AddText(TOKEN_EXPERT, 10054,
+                          "E::Stock trading (1000 \x24)D::Aktiengesch\xE4"
+                          "fte (1000 \x80)");
     StandardTexte.AddText(TOKEN_EXPERT, 10055, "E::Expansion (1000 \x24)D::Expansion (1000 \x80)");
     StandardTexte.AddText(TOKEN_EXPERT, 10056, "E::Sabotage (1000 \x24)D::Sabotage (1000 \x80)");
     StandardTexte.AddText(TOKEN_EXPERT, 10057, "E::Other (1000 \x24)D::Sonstiges (1000 \x80)");
@@ -2260,7 +2282,9 @@ void CTakeOffApp::LadeWeitereStandardTexte() {
     StandardTexte.AddText(TOKEN_EXPERT, 10101, "E::Operational lossD::Operativer Verlust");
     StandardTexte.AddText(TOKEN_EXPERT, 10102, "E::Operating balanceD::Operatives Saldo");
     StandardTexte.AddText(TOKEN_EXPERT, 10103, "E::proportion of op. profitD::Anteil an op. Gewinn");
-    StandardTexte.AddText(TOKEN_EXPERT, 10150, "E::thereof business operationsD::davon operatives Gesch\xE4""ft");
+    StandardTexte.AddText(TOKEN_EXPERT, 10150,
+                          "E::thereof business operationsD::davon operatives Gesch\xE4"
+                          "ft");
     StandardTexte.AddText(TOKEN_EXPERT, 10151, "E::Weekly balance (1000 \x24)D::Wochenbilanz (1000 \x80)");
     StandardTexte.AddText(TOKEN_EXPERT, 10152, "E::Obligations (1000 \x24)D::Verpflichtungen");
     StandardTexte.AddText(TOKEN_EXPERT, 10153, "E::each week (1000 \x24)D::je Woche (1000 \x80)");
@@ -2288,14 +2312,31 @@ void CTakeOffApp::LadeWeitereStandardTexte() {
     StandardTexte.AddText(TOKEN_EXPERT, 10314, "E::Money saved (yesterday)D::Geld gespart (gestern)");
     StandardTexte.AddText(TOKEN_EXPERT, 10315, "E::Money saved (week)D::Geld gespart (Woche)");
     StandardTexte.AddText(TOKEN_EXPERT, 10316, "E::Money saved (overall)D::Geld gespart (gesamt)");
-    StandardTexte.AddText(TOKEN_EXPERT, 10317, "E::Kerosene quality is disastrous! We should buy top of the range kerosene.D::Die Kerosinqualit\xE4t ist katastrohpal! Wir sollten hochwertiges Kerosin kaufen.");
-    StandardTexte.AddText(TOKEN_EXPERT, 10318, "E::Kerosene quality is disastrous! We should buy %li barrel top of the range kerosene.D::Die Kerosinqualit\xE4t ist katastrohpal! Wir sollten %li Barrel hochwertiges Kerosin kaufen.");
-    StandardTexte.AddText(TOKEN_EXPERT, 10319, "E::Kerosene quality is bad. We should buy top of the range kerosene.D::Die Kerosinqualit\xE4t ist schlecht. Wir sollten hochwertiges Kerosin kaufen.");
-    StandardTexte.AddText(TOKEN_EXPERT, 10320, "E::Kerosene quality is bad. We should buy %li barrel top of the range kerosene.D::Die Kerosinqualit\xE4t ist schlecht. Wir sollten %li Barrel hochwertiges Kerosin kaufen.");
-    StandardTexte.AddText(TOKEN_EXPERT, 10321, "E::Kerosene quality is way too good. We should save money and buy cheap kerosene.D::Die Kerosinqualit\xE4t ist viel zu gut. Wir sollten Geld sparen und billiges Kerosin kaufen.");
-    StandardTexte.AddText(TOKEN_EXPERT, 10322, "E::Kerosene quality is way too good. We should save money and buy %li barrel of cheap kerosene.D::Die Kerosinqualit\xE4t ist viel zu gut. Wir sollten Geld sparen und %li Barrel billiges Kerosin kaufen.");
-    StandardTexte.AddText(TOKEN_EXPERT, 10323, "E::Kerosene quality is fine. We could save money and buy cheap kerosene if our planes can support this.D::Die Kerosinqualit\xE4t ist okay. Wir k\xF6nnten Geld sparen und billiges Kerosin kaufen, wenn unsere Flugzeuge das noch vertragen.");
-    StandardTexte.AddText(TOKEN_EXPERT, 10324, "E::Kerosene quality is fine. We could save money and buy %li barrel of cheap kerosene if our planes can support this.D::Die Kerosinqualit\xE4t ist okay. Wir k\xF6nnten Geld sparen und %li Barrel billiges Kerosin kaufen, wenn unsere Flugzeuge das noch vertragen.");
+    StandardTexte.AddText(TOKEN_EXPERT, 10317,
+                          "E::Kerosene quality is disastrous! We should buy top of the range kerosene.D::Die Kerosinqualit\xE4t ist katastrohpal! Wir sollten "
+                          "hochwertiges Kerosin kaufen.");
+    StandardTexte.AddText(TOKEN_EXPERT, 10318,
+                          "E::Kerosene quality is disastrous! We should buy %li barrel top of the range kerosene.D::Die Kerosinqualit\xE4t ist katastrohpal! "
+                          "Wir sollten %li Barrel hochwertiges Kerosin kaufen.");
+    StandardTexte.AddText(
+        TOKEN_EXPERT, 10319,
+        "E::Kerosene quality is bad. We should buy top of the range kerosene.D::Die Kerosinqualit\xE4t ist schlecht. Wir sollten hochwertiges Kerosin kaufen.");
+    StandardTexte.AddText(TOKEN_EXPERT, 10320,
+                          "E::Kerosene quality is bad. We should buy %li barrel top of the range kerosene.D::Die Kerosinqualit\xE4t ist schlecht. Wir sollten "
+                          "%li Barrel hochwertiges Kerosin kaufen.");
+    StandardTexte.AddText(TOKEN_EXPERT, 10321,
+                          "E::Kerosene quality is way too good. We should save money and buy cheap kerosene.D::Die Kerosinqualit\xE4t ist viel zu gut. Wir "
+                          "sollten Geld sparen und billiges Kerosin kaufen.");
+    StandardTexte.AddText(TOKEN_EXPERT, 10322,
+                          "E::Kerosene quality is way too good. We should save money and buy %li barrel of cheap kerosene.D::Die Kerosinqualit\xE4t ist viel "
+                          "zu gut. Wir sollten Geld sparen und %li Barrel billiges Kerosin kaufen.");
+    StandardTexte.AddText(TOKEN_EXPERT, 10323,
+                          "E::Kerosene quality is fine. We could save money and buy cheap kerosene if our planes can support this.D::Die Kerosinqualit\xE4t "
+                          "ist okay. Wir k\xF6nnten Geld sparen und billiges Kerosin kaufen, wenn unsere Flugzeuge das noch vertragen.");
+    StandardTexte.AddText(
+        TOKEN_EXPERT, 10324,
+        "E::Kerosene quality is fine. We could save money and buy %li barrel of cheap kerosene if our planes can support this.D::Die Kerosinqualit\xE4t ist "
+        "okay. Wir k\xF6nnten Geld sparen und %li Barrel billiges Kerosin kaufen, wenn unsere Flugzeuge das noch vertragen.");
     StandardTexte.AddText(TOKEN_EXPERT, 10350, "E::Kerosene reportD::Kerosinbericht");
 
     /*SLONG tmpList[5] = {1, 2, 3, 5, 10};
@@ -2303,12 +2344,16 @@ void CTakeOffApp::LadeWeitereStandardTexte() {
         DialogTexte.UpdateText(TOKEN_ARAB, 691+i, bprintf("[[P1\\MA\\141]]%li St\xFC""ck (=%%s \x80)", tmpList[i]));
     }*/
     for (SLONG i = 0; i < 4; ++i) {
-        DialogTexte.UpdateText(TOKEN_ARAB, 900+i, bprintf("E::[[P1\\AA\\900]]I will take the one with %li gallons (\x24 %li).D::[[P1\\AA\\900]]Ich nehme den mit %lil (%li \x80).", TankSize[i], TankPrice[i], TankSize[i], TankPrice[i]));
+        DialogTexte.UpdateText(TOKEN_ARAB, 900 + i,
+                               bprintf("E::[[P1\\AA\\900]]I will take the one with %li gallons (\x24 %li).D::[[P1\\AA\\900]]Ich nehme den mit %lil (%li \x80).",
+                                       TankSize[i], TankPrice[i], TankSize[i], TankPrice[i]));
     }
 
     StandardTexte.AddText(TOKEN_JOBS, 2003, "E::Route advisorD::Routenberaterin");
 
-    StandardTexte.UpdateText(TOKEN_MISC, 3201, "E::Opening hours.\xB5 \xB5Mon-Sat:10-19\xB5Sun:closedD::\xD6""ffnungszeiten.\xB5 \xB5Mo-Sa:10-19 Uhr\xB5So:geschlossen");
+    StandardTexte.UpdateText(TOKEN_MISC, 3201,
+                             "E::Opening hours.\xB5 \xB5Mon-Sat:10-19\xB5Sun:closedD::\xD6"
+                             "ffnungszeiten.\xB5 \xB5Mo-Sa:10-19 Uhr\xB5So:geschlossen");
 
     StandardTexte.AddText(TOKEN_MISC, 1152, "E::Mission %li: %s (%s)D::Mission %li: %s (%s)");
     StandardTexte.AddText(TOKEN_MISC, 1153, "E::Free game: %s (%s)D::Freies Spiel: %s (%s)");

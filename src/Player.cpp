@@ -108,6 +108,13 @@ PLAYER::~PLAYER() {
     mBot = nullptr;
 }
 
+void PLAYER::ReInitBot() {
+    if (mBot) {
+        delete mBot;
+    }
+    mBot = new Bot(*this);
+}
+
 //--------------------------------------------------------------------------------------------
 // Fügt 5 Flüge vom Uhrig hinzu:
 //--------------------------------------------------------------------------------------------
@@ -2570,6 +2577,14 @@ BOOL PLAYER::WalkToRoom(UBYTE RoomId) {
     UpdateWaypoints();
     BroadcastPosition();
 
+    for (SLONG c = 0; c < 10; c++) {
+        if ((Locations[c] & (~(ROOM_ENTERING | ROOM_LEAVING))) == RoomId) {
+            Locations[c] |= (ROOM_ENTERING);
+            Locations[c] &= (~ROOM_LEAVING);
+            return (TRUE);
+        }
+    }
+
     return (TRUE);
 }
 
@@ -3069,6 +3084,15 @@ void PLAYER::RobotPump() {
     if (Owner != 1 || (Editor != 0)) {
         return; // War Irtum, kein Computerspieler
     }
+
+    if (mBot->getOnThePhone()) {
+        PERSON &qPerson = Sim.Persons[static_cast<SLONG>(Sim.Persons.GetPlayerIndex(PlayerNum))];
+        if (qPerson.LookDir == 8) {
+            qPerson.Phase = 6;
+            mBot->decOnThePhone();
+        }
+    }
+
     if ((Sim.bNetwork != 0) && (Sim.bIsHost == 0)) {
         return; // Im Netzwerk bestimmt der Host, wie die Computerspieler sich verhalten
     }
@@ -3106,6 +3130,9 @@ void PLAYER::RobotPump() {
         // Alles in der Queue einen weiterschieben
         for (c = 0; c < RobotActions.AnzEntries() - 1; c++) {
             RobotActions[c] = RobotActions[c + 1];
+        }
+        if (IsSuperBot()) {
+            hprintf("RobotPump(): Action 0: %s", getRobotActionName(RobotActions[0].ActionId));
         }
 
         RobotActions[RobotActions.AnzEntries() - 1].ActionId = ACTION_NONE;
@@ -3225,6 +3252,9 @@ void PLAYER::RobotPump() {
             [[fallthrough]];
         case ACTION_WERBUNG_ROUTES:
             rc = WalkToRoom(ROOM_WERBUNG);
+            break;
+        case ACTION_CALL_INTER_HANDY:
+            rc = TRUE;
             break;
         default:
             DebugBreak();
@@ -3974,40 +4004,42 @@ void PLAYER::RobotExecuteAction() {
     // NetGenericSync (101, RobotActions[0].ActionId);
 
     // Evtl. den Spieler anrufen:
-    SLONG TargetPlayer = LocalRandom.Rand(4);
-    if (Sim.Players.Players[TargetPlayer].Owner != 1 && Sim.Players.Players[TargetPlayer].IsOut != 1) {
-        if (Sim.Players.Players[TargetPlayer].IsOkayToCallThisPlayer() != 0) {
-            if (((Kooperation[TargetPlayer] != 0) && Sympathie[TargetPlayer] < -20) ||
-                (Kooperation[TargetPlayer] == FALSE && Sympathie[TargetPlayer] > 50 && (CalledPlayer == 0))) {
-                if (RobotActions[0].ActionId == ACTION_STARTDAY || (HasItem(ITEM_HANDY) != 0)) {
-                    if (TargetPlayer == Sim.localPlayer) {
-                        gUniversalFx.Stop();
-                        gUniversalFx.ReInit("phone.raw");
-                        gUniversalFx.Play(DSBPLAY_NOSTOP, Sim.Options.OptionEffekte * 100 / 7);
+    if (!IsSuperBot()) {
+        SLONG TargetPlayer = LocalRandom.Rand(4);
+        if (Sim.Players.Players[TargetPlayer].Owner != 1 && Sim.Players.Players[TargetPlayer].IsOut != 1) {
+            if (Sim.Players.Players[TargetPlayer].IsOkayToCallThisPlayer() != 0) {
+                if (((Kooperation[TargetPlayer] != 0) && Sympathie[TargetPlayer] < -20) ||
+                    (Kooperation[TargetPlayer] == FALSE && Sympathie[TargetPlayer] > 50 && (CalledPlayer == 0))) {
+                    if (RobotActions[0].ActionId == ACTION_STARTDAY || (HasItem(ITEM_HANDY) != 0)) {
+                        if (TargetPlayer == Sim.localPlayer) {
+                            gUniversalFx.Stop();
+                            gUniversalFx.ReInit("phone.raw");
+                            gUniversalFx.Play(DSBPLAY_NOSTOP, Sim.Options.OptionEffekte * 100 / 7);
 
-                        CalledPlayer = 2;
-                        bgWarp = FALSE;
-                        if (CheatTestGame == 0) {
-                            Sim.Players.Players[TargetPlayer].GameSpeed = 0;
-                            if (Sim.bNetwork != 0) {
-                                SIM::SendSimpleMessage(ATNET_SETSPEED, 0, Sim.localPlayer, Sim.Players.Players[TargetPlayer].GameSpeed);
+                            CalledPlayer = 2;
+                            bgWarp = FALSE;
+                            if (CheatTestGame == 0) {
+                                Sim.Players.Players[TargetPlayer].GameSpeed = 0;
+                                if (Sim.bNetwork != 0) {
+                                    SIM::SendSimpleMessage(ATNET_SETSPEED, 0, Sim.localPlayer, Sim.Players.Players[TargetPlayer].GameSpeed);
+                                }
                             }
-                        }
 
-                        (Sim.Players.Players[TargetPlayer].LocationWin)->StartDialog(TALKER_COMPETITOR, MEDIUM_HANDY, PlayerNum, 1);
-                        (Sim.Players.Players[TargetPlayer].LocationWin)->PayingForCall = FALSE;
+                            (Sim.Players.Players[TargetPlayer].LocationWin)->StartDialog(TALKER_COMPETITOR, MEDIUM_HANDY, PlayerNum, 1);
+                            (Sim.Players.Players[TargetPlayer].LocationWin)->PayingForCall = FALSE;
 
-                        if (Sim.bNetwork != 0) {
-                            SIM::SendSimpleMessage(ATNET_DIALOG_LOCK, 0, PlayerNum);
-                            SIM::SendSimpleMessage(ATNET_DIALOG_LOCK, 0, Sim.Players.Players[TargetPlayer].PlayerNum);
+                            if (Sim.bNetwork != 0) {
+                                SIM::SendSimpleMessage(ATNET_DIALOG_LOCK, 0, PlayerNum);
+                                SIM::SendSimpleMessage(ATNET_DIALOG_LOCK, 0, Sim.Players.Players[TargetPlayer].PlayerNum);
 
-                            PERSON &qRobotPlayer = Sim.Persons[Sim.Persons.GetPlayerIndex(PlayerNum)];
-                            PERSON &qHumanPlayer = Sim.Persons[Sim.Persons.GetPlayerIndex(TargetPlayer)];
+                                PERSON &qRobotPlayer = Sim.Persons[Sim.Persons.GetPlayerIndex(PlayerNum)];
+                                PERSON &qHumanPlayer = Sim.Persons[Sim.Persons.GetPlayerIndex(TargetPlayer)];
 
-                            BroadcastPosition();
-                            Sim.Players.Players[TargetPlayer].BroadcastPosition();
-                            SIM::SendSimpleMessage(ATNET_PLAYERLOOK, 0, qRobotPlayer.State, qRobotPlayer.Phase);
-                            SIM::SendSimpleMessage(ATNET_PLAYERLOOK, 0, qHumanPlayer.State, qHumanPlayer.Phase);
+                                BroadcastPosition();
+                                Sim.Players.Players[TargetPlayer].BroadcastPosition();
+                                SIM::SendSimpleMessage(ATNET_PLAYERLOOK, 0, qRobotPlayer.State, qRobotPlayer.Phase);
+                                SIM::SendSimpleMessage(ATNET_PLAYERLOOK, 0, qHumanPlayer.State, qHumanPlayer.Phase);
+                            }
                         }
                     }
                 }

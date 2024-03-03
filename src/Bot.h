@@ -50,15 +50,18 @@ class Bot {
     };
 
     /* in BotConditions.cpp */
+    bool isOfficeUsable() const;
     __int64 getMoneyAvailable() const;
-    bool hoursPassed(SLONG room, SLONG hours);
+    bool hoursPassed(SLONG room, SLONG hours) const;
     bool haveDiscount() const;
     enum class HowToPlan { None, Laptop, Office };
     HowToPlan canWePlanFlights();
+    bool canWeCallInternational();
     Prio condAll(SLONG actionId);
     Prio condStartDay();
     Prio condBuero();
     Prio condCallInternational();
+    Prio condCallInternationalHandy();
     Prio condCheckLastMinute();
     Prio condCheckTravelAgency();
     Prio condCheckFreight();
@@ -130,6 +133,7 @@ class Bot {
     SLONG numPlanes() const { return mPlanesForJobs.size() + mPlanesForRoutes.size() + mPlanesForRoutesUnassigned.size(); }
     std::vector<SLONG> findBestAvailablePlaneType() const;
     SLONG calcCurrentGainFromJobs() const;
+    bool checkPlaneLists();
     bool findPlanesWithoutCrew(std::vector<SLONG> &listAvailable, std::deque<SLONG> &listUnassigned);
     bool findPlanesWithCrew(std::deque<SLONG> &listUnassigned, std::vector<SLONG> &listAvailable);
     bool checkPlaneAvailable(SLONG planeId, bool printIfAvailable) const;
@@ -138,6 +142,10 @@ class Bot {
     SLONG getDailyOpSaldo() const;
     SLONG getWeeklyOpSaldo() const;
     void forceReplanning();
+
+    /* anim state */
+    bool getOnThePhone() const { return mOnThePhone > 0; }
+    void decOnThePhone() { mOnThePhone--; }
 
     TEAKRAND LocalRandom;
     PLAYER &qPlayer;
@@ -188,6 +196,9 @@ class Bot {
 
     /* current solution (not planned yet) */
     BotPlaner::SolutionList mPlanerSolution;
+
+    /* anim state */
+    int mOnThePhone{0};
 };
 
 TEAKFILE &operator<<(TEAKFILE &File, const PlaneTime &planeTime);

@@ -95,16 +95,60 @@ bool Bot::checkPlaneAvailable(SLONG planeId, bool printIfAvailable) const {
     return true;
 }
 
+bool Bot::checkPlaneLists() {
+    bool foundProblem = false;
+    std::unordered_map<int, bool> uniquePlaneIds;
+    for (const auto &i : mPlanesForJobs) {
+        if (uniquePlaneIds.find(i) != uniquePlaneIds.end()) {
+            redprintf("Bot::checkPlaneLists(): Plane ID appears in multiple lists: %ld.", i);
+            foundProblem = true;
+        }
+        uniquePlaneIds[i] = true;
+    }
+    for (const auto &i : mPlanesForRoutes) {
+        if (uniquePlaneIds.find(i) != uniquePlaneIds.end()) {
+            redprintf("Bot::checkPlaneLists(): Plane ID appears in multiple lists: %ld.", i);
+            foundProblem = true;
+        }
+        uniquePlaneIds[i] = true;
+    }
+    for (const auto &i : mPlanesForJobsUnassigned) {
+        if (uniquePlaneIds.find(i) != uniquePlaneIds.end()) {
+            redprintf("Bot::checkPlaneLists(): Plane ID appears in multiple lists: %ld.", i);
+            foundProblem = true;
+        }
+        uniquePlaneIds[i] = true;
+    }
+    for (const auto &i : mPlanesForRoutesUnassigned) {
+        if (uniquePlaneIds.find(i) != uniquePlaneIds.end()) {
+            redprintf("Bot::checkPlaneLists(): Plane ID appears in multiple lists: %ld.", i);
+            foundProblem = true;
+        }
+        uniquePlaneIds[i] = true;
+    }
+    for (SLONG i = 0; i < qPlayer.Planes.AnzEntries(); i++) {
+        int id = qPlayer.Planes.GetIdFromIndex(i);
+        if (qPlayer.Planes.IsInAlbum(i) && uniquePlaneIds.find(id) == uniquePlaneIds.end()) {
+            redprintf("Bot::checkPlaneLists(): Found new plane: %ld.", id);
+            mPlanesForJobsUnassigned.push_back(id);
+            foundProblem = true;
+        }
+    }
+    return foundProblem;
+}
+
 bool Bot::findPlanesWithoutCrew(std::vector<SLONG> &listAvailable, std::deque<SLONG> &listUnassigned) {
     hprintf("Bot::findPlanesWithoutCrew: Checking for planes with not enough crew members");
-    bool found = false;
+    bool planesGoneMissing = false;
     std::vector<SLONG> newAvailable;
     for (const auto id : listAvailable) {
-        if (checkPlaneAvailable(id, false)) {
+        if (!qPlayer.Planes.IsInAlbum(id)) {
+            redprintf("Bot::findPlanesWithoutCrew: We lost the plane with ID = %ld", id);
+            planesGoneMissing = true;
+        } else if (checkPlaneAvailable(id, false)) {
             newAvailable.push_back(id);
         } else {
             listUnassigned.push_back(id);
-            found = true;
             GameMechanic::killFlightPlan(qPlayer, id);
             for (auto &route : mRoutes) {
                 auto it = route.planeIds.begin();
@@ -118,23 +162,25 @@ bool Bot::findPlanesWithoutCrew(std::vector<SLONG> &listAvailable, std::deque<SL
         }
     }
     std::swap(listAvailable, newAvailable);
-    return found;
+    return planesGoneMissing;
 }
 
 bool Bot::findPlanesWithCrew(std::deque<SLONG> &listUnassigned, std::vector<SLONG> &listAvailable) {
     hprintf("Bot::findPlanesWithCrew: Checking for planes that now have enough crew members");
-    bool found = false;
+    bool planesGoneMissing = false;
     std::deque<SLONG> newUnassigned;
     for (const auto id : listUnassigned) {
-        if (checkPlaneAvailable(id, false)) {
+        if (!qPlayer.Planes.IsInAlbum(id)) {
+            redprintf("Bot::findPlanesWithCrew: We lost the plane with ID = %ld", id);
+            planesGoneMissing = true;
+        } else if (checkPlaneAvailable(id, false)) {
             listAvailable.push_back(id);
         } else {
             newUnassigned.push_back(id);
-            found = true;
         }
     }
     std::swap(listUnassigned, newUnassigned);
-    return found;
+    return planesGoneMissing;
 }
 
 const CRentRoute &Bot::getRentRoute(const Bot::RouteInfo &routeInfo) const { return qPlayer.RentRouten.RentRouten[routeInfo.routeId]; }
@@ -155,6 +201,8 @@ void Bot::RobotInit() {
     auto &qRobotActions = qPlayer.RobotActions;
 
     if (mFirstRun) {
+        hprintf("Bot::RobotInit(): First run.");
+
         /* random source */
         LocalRandom.SRand(qPlayer.WaitWorkTill);
 
@@ -199,13 +247,13 @@ void Bot::RobotPlan() {
 
     auto &qRobotActions = qPlayer.RobotActions;
 
-    SLONG actions[] = {ACTION_STARTDAY,          ACTION_BUERO,          ACTION_CALL_INTERNATIONAL, ACTION_CHECKAGENT1,    ACTION_CHECKAGENT2,
-                       ACTION_CHECKAGENT3,       ACTION_UPGRADE_PLANES, ACTION_BUYNEWPLANE,        ACTION_PERSONAL,       ACTION_BUY_KEROSIN,
-                       ACTION_BUY_KEROSIN_TANKS, ACTION_SABOTAGE,       ACTION_SET_DIVIDEND,       ACTION_RAISEMONEY,     ACTION_DROPMONEY,
-                       ACTION_EMITSHARES,        ACTION_SELLSHARES,     ACTION_BUYSHARES,          ACTION_VISITMECH,      ACTION_VISITNASA,
-                       ACTION_VISITTELESCOPE,    ACTION_VISITMAKLER,    ACTION_VISITRICK,          ACTION_VISITKIOSK,     ACTION_BUYUSEDPLANE,
-                       ACTION_VISITDUTYFREE,     ACTION_VISITAUFSICHT,  ACTION_EXPANDAIRPORT,      ACTION_VISITROUTEBOX,  ACTION_VISITROUTEBOX2,
-                       ACTION_VISITSECURITY,     ACTION_VISITSECURITY2, ACTION_VISITDESIGNER,      ACTION_WERBUNG_ROUTES, ACTION_WERBUNG};
+    SLONG actions[] = {
+        ACTION_STARTDAY,       ACTION_BUERO,          ACTION_CALL_INTERNATIONAL, ACTION_CALL_INTER_HANDY, ACTION_CHECKAGENT1,    ACTION_CHECKAGENT2,
+        ACTION_CHECKAGENT3,    ACTION_UPGRADE_PLANES, ACTION_BUYNEWPLANE,        ACTION_PERSONAL,         ACTION_BUY_KEROSIN,    ACTION_BUY_KEROSIN_TANKS,
+        ACTION_SABOTAGE,       ACTION_SET_DIVIDEND,   ACTION_RAISEMONEY,         ACTION_DROPMONEY,        ACTION_EMITSHARES,     ACTION_SELLSHARES,
+        ACTION_BUYSHARES,      ACTION_VISITMECH,      ACTION_VISITNASA,          ACTION_VISITTELESCOPE,   ACTION_VISITMAKLER,    ACTION_VISITRICK,
+        ACTION_VISITKIOSK,     ACTION_BUYUSEDPLANE,   ACTION_VISITDUTYFREE,      ACTION_VISITAUFSICHT,    ACTION_EXPANDAIRPORT,  ACTION_VISITROUTEBOX,
+        ACTION_VISITROUTEBOX2, ACTION_VISITSECURITY,  ACTION_VISITSECURITY2,     ACTION_VISITDESIGNER,    ACTION_WERBUNG_ROUTES, ACTION_WERBUNG};
 
     if (qRobotActions[0].ActionId != ACTION_NONE || qRobotActions[1].ActionId != ACTION_NONE) {
         hprintf("Bot.cpp: Leaving RobotPlan() (actions already planned)\n");
@@ -215,10 +263,8 @@ void Bot::RobotPlan() {
     qRobotActions[2].ActionId = ACTION_NONE;
 
     /* data to make decision */
-    mDislike = -1;
-    mBestPlaneTypeId = findBestAvailablePlaneType()[0];
-
     {
+        mDislike = -1;
         SLONG n = 0;
         for (SLONG c = 0; c < 4; c++) {
             if (qPlayer.Sympathie[c] < 0 && (Sim.Players.Players[c].IsOut == 0)) {
@@ -332,8 +378,10 @@ void Bot::RobotExecuteAction() {
     /* temporary data */
     __int64 moneyAvailable = getMoneyAvailable();
 
-    greenprintf("Bot.cpp: Enter RobotExecuteAction(): Executing %s, current time: %d:%d", getRobotActionName(qRobotActions[0].ActionId), Sim.GetHour(),
+    greenprintf("Bot.cpp: Enter RobotExecuteAction(): Executing %s, current time: %02d:%02d", getRobotActionName(qRobotActions[0].ActionId), Sim.GetHour(),
                 Sim.GetMinute());
+
+    mOnThePhone = 0;
 
     switch (qRobotActions[0].ActionId) {
     case 0:
@@ -359,9 +407,20 @@ void Bot::RobotExecuteAction() {
         break;
 
     case ACTION_CALL_INTERNATIONAL:
-        // Im Ausland anrufen:
         if (condCallInternational() != Prio::None) {
+            hprintf("Bot::RobotExecuteAction(): Calling international using office phone.");
             actionCallInternational();
+        } else {
+            redprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+        }
+        qWorkCountdown = 20 * 5;
+        break;
+
+    case ACTION_CALL_INTER_HANDY:
+        if (condCallInternationalHandy() != Prio::None) {
+            hprintf("Bot::RobotExecuteAction(): Calling international using mobile phone.");
+            actionCallInternational();
+            mOnThePhone = 30;
         } else {
             redprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
@@ -613,9 +672,13 @@ void Bot::RobotExecuteAction() {
 
     case ACTION_VISITMAKLER:
         if (condVisitMakler() != Prio::None) {
-            if (GameMechanic::PickUpItemResult::PickedUp == GameMechanic::pickUpItem(qPlayer, ITEM_BH)) {
-                hprintf("Bot::RobotExecuteAction(): Picked up item BH");
-                mItemAntiStrike = 1;
+            mBestPlaneTypeId = findBestAvailablePlaneType()[0];
+
+            if (mItemAntiStrike == 0) {
+                if (GameMechanic::PickUpItemResult::PickedUp == GameMechanic::pickUpItem(qPlayer, ITEM_BH)) {
+                    hprintf("Bot::RobotExecuteAction(): Picked up item BH");
+                    mItemAntiStrike = 1;
+                }
             }
         } else {
             redprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");

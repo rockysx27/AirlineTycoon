@@ -1918,6 +1918,10 @@ bool GameMechanic::takeInternationalFreightJob(PLAYER &qPlayer, SLONG cityId, SL
         redprintf("GameMechanic::takeInternationalFreightJob: Invalid jobId (%ld).", jobId);
         return false;
     }
+    if (!canCallInternational(qPlayer, cityId)) {
+        redprintf("GameMechanic::takeInternationalFreightJob: Impossible to call this location (%ld).", cityId);
+        return false;
+    }
 
     auto &qFracht = AuslandsFrachten[cityId][jobId];
     if (qFracht.Praemie <= 0) {

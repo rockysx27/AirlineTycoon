@@ -39,6 +39,7 @@ static constexpr int ceil_div(int a, int b) {
 }
 
 void Bot::actionStartDay(__int64 moneyAvailable) {
+    /* print inventory */
     printf("Inventory: ");
     for (SLONG d = 0; d < 6; d++) {
         if (qPlayer.Items[d] != 0xff) {
@@ -47,10 +48,14 @@ void Bot::actionStartDay(__int64 moneyAvailable) {
     }
     printf("\n");
 
+    /* check routes */
     if (mDoRoutes) {
         updateRouteInfo();
         requestPlanRoutes(true);
     }
+
+    /* double check lists of planes */
+    checkPlaneLists();
 
     /* check if we still have enough personal */
     findPlanesWithoutCrew(mPlanesForJobs, mPlanesForJobsUnassigned);
@@ -58,33 +63,6 @@ void Bot::actionStartDay(__int64 moneyAvailable) {
 
     /* maybe some planes now have crew? planes for routes will be checked in planRoutes() */
     findPlanesWithCrew(mPlanesForJobsUnassigned, mPlanesForJobs);
-
-    /* double check lists of planes */
-    std::unordered_map<int, bool> uniquePlaneIds;
-    for (const auto &i : mPlanesForJobs) {
-        if (uniquePlaneIds.find(i) != uniquePlaneIds.end()) {
-            redprintf("Bot::actionStartDay(): Plane ID appears in multiple lists: %ld.", i);
-        }
-        uniquePlaneIds[i] = true;
-    }
-    for (const auto &i : mPlanesForRoutes) {
-        if (uniquePlaneIds.find(i) != uniquePlaneIds.end()) {
-            redprintf("Bot::actionStartDay(): Plane ID appears in multiple lists: %ld.", i);
-        }
-        uniquePlaneIds[i] = true;
-    }
-    for (const auto &i : mPlanesForJobsUnassigned) {
-        if (uniquePlaneIds.find(i) != uniquePlaneIds.end()) {
-            redprintf("Bot::actionStartDay(): Plane ID appears in multiple lists: %ld.", i);
-        }
-        uniquePlaneIds[i] = true;
-    }
-    for (const auto &i : mPlanesForRoutesUnassigned) {
-        if (uniquePlaneIds.find(i) != uniquePlaneIds.end()) {
-            redprintf("Bot::actionStartDay(): Plane ID appears in multiple lists: %ld.", i);
-        }
-        uniquePlaneIds[i] = true;
-    }
 
     /* logic for switching to routes */
     if (!mDoRoutes && mBestPlaneTypeId != -1) {
@@ -139,6 +117,7 @@ void Bot::actionCallInternational() {
         cities.push_back(n);
     }
 
+    hprintf("Bot::actionCallInternational(): There are %u cities we can call.", cities.size());
     if (!cities.empty()) {
         BotPlaner planer(qPlayer, qPlayer.Planes, BotPlaner::JobOwner::International, cities);
         grabFlights(planer, true);
@@ -147,6 +126,12 @@ void Bot::actionCallInternational() {
         // RobotUse(ROBOT_USE_MUCH_FRACHT)
         // RobotUse(ROBOT_USE_MUCH_FRACHT_BONUS)
         // TODO
+
+        SLONG cost = cities.size();
+        qPlayer.History.AddCallCost(cost);
+        qPlayer.Money -= cost;
+        qPlayer.Statistiken[STAT_A_SONSTIGES].AddAtPastDay(-cost);
+        qPlayer.Bilanz.SonstigeAusgaben -= cost;
     }
 }
 
@@ -221,10 +206,12 @@ void Bot::planFlights() {
 
     SLONG oldGain = calcCurrentGainFromJobs();
     BotPlaner::applySolution(qPlayer, mPlanerSolution);
-    hprintf("Bot::printGainFromJobs(): Improved gain from jobs from %ld to %ld.", oldGain, calcCurrentGainFromJobs());
+    hprintf("Bot::planFlights(): Improved gain from jobs from %ld to %ld.", oldGain, calcCurrentGainFromJobs());
     Helper::checkFlightJobs(qPlayer, true);
 
     mPlanerSolution = {};
+
+    forceReplanning();
 }
 
 void Bot::actionUpgradePlanes(__int64 moneyAvailable) {
@@ -676,7 +663,7 @@ void Bot::actionBuyShares(__int64 moneyAvailable) {
     }
 }
 
-void Bot::actionVisitDutyFree(__int64 /*moneyAvailable*/) {
+void Bot::actionVisitDutyFree(__int64 moneyAvailable) {
     if (mItemAntiStrike == 1) {
         if (GameMechanic::useItem(qPlayer, ITEM_BH)) {
             hprintf("Bot::actionVisitDutyFree(): Used item BH");
@@ -696,11 +683,16 @@ void Bot::actionVisitDutyFree(__int64 /*moneyAvailable*/) {
         }
     }
 
+    __int64 money = qPlayer.Money;
     if (qPlayer.LaptopQuality < 4) {
         auto quali = qPlayer.LaptopQuality;
         GameMechanic::buyDutyFreeItem(qPlayer, ITEM_LAPTOP);
         hprintf("Bot::RobotExecuteAction(): Buying laptop (%ld => %ld)", quali, qPlayer.LaptopQuality);
-    } else if (!qPlayer.HasItem(ITEM_HANDY)) {
+    }
+    __int64 moneySpent = std::max(0LL, (money - qPlayer.Money));
+    moneyAvailable -= moneySpent;
+
+    if (moneyAvailable > 0 && !qPlayer.HasItem(ITEM_HANDY)) {
         hprintf("Bot::RobotExecuteAction(): Buying cell phone");
         GameMechanic::buyDutyFreeItem(qPlayer, ITEM_HANDY);
     }
@@ -830,12 +822,12 @@ std::pair<SLONG, SLONG> Bot::actionFindBestRoute(TEAKRAND &rnd) const {
         }
     }
 
-#ifdef PRINT_ROUTE_DETAILS
     std::sort(bestRoutes.begin(), bestRoutes.end(), [](const RouteScore &a, const RouteScore &b) { return a.score > b.score; });
     for (const auto &i : bestRoutes) {
         hprintf("Bot::actionFindBestRoute(): Score of route %s (using plane type %s, need %ld) is: %.2f", Helper::getRouteName(Routen[i.routeId]).c_str(),
                 (LPCTSTR)PlaneTypes[i.planeTypeId].Name, i.numPlanes, i.score);
     }
+#ifdef PRINT_ROUTE_DETAILS
 #endif
 
     /* pick best route we can afford */

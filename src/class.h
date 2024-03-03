@@ -2162,6 +2162,7 @@ class PLAYER {
   public:
     PLAYER();
     ~PLAYER();
+    void ReInitBot();
     void Add5UhrigFlights(void);
     SLONG AnzPlanesOnRoute(ULONG RouteId);
     void BookBuroRent(void); // Zieht Miete vom Geld ab

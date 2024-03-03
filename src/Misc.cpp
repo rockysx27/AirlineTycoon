@@ -2152,6 +2152,8 @@ const char *getRobotActionName(SLONG a) {
         return "ACTION_VISITROUTEBOX2";
     case ACTION_EXPANDAIRPORT:
         return "ACTION_EXPANDAIRPORT";
+    case ACTION_CALL_INTER_HANDY:
+        return "ACTION_CALL_INTER_HANDY";
     default:
         hprintf("Misc.cpp: Default case should not be reached.");
         DebugBreak();

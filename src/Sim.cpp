@@ -1111,6 +1111,10 @@ void SIM::ChooseStartup(BOOL /*GameModeQuick*/) {
         }
     }
 
+    for (c = 0; c < Players.AnzPlayers; c++) {
+        Players.Players[c].ReInitBot();
+    }
+
     Players.RobotInit();
 
     // Aushänge für Versteigerungen, Aufträge, ..:

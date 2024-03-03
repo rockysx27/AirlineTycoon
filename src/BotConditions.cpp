@@ -9,9 +9,11 @@
 // Preise verstehen sich pro Sitzplatz:
 extern SLONG SeatCosts[];
 
+bool Bot::isOfficeUsable() const { return (qPlayer.OfficeState != 2); }
+
 __int64 Bot::getMoneyAvailable() const { return qPlayer.Money - kMoneyEmergencyFund; }
 
-bool Bot::hoursPassed(SLONG room, SLONG hours) {
+bool Bot::hoursPassed(SLONG room, SLONG hours) const {
     const auto it = mLastTimeInRoom.find(room);
     if (it == mLastTimeInRoom.end()) {
         return true;
@@ -35,10 +37,45 @@ Bot::HowToPlan Bot::canWePlanFlights() {
             return HowToPlan::Laptop;
         }
     }
-    if (qPlayer.OfficeState != 2) {
+    if (isOfficeUsable()) {
         return HowToPlan::Office;
     }
     return HowToPlan::None;
+}
+
+bool Bot::canWeCallInternational() {
+    if (!qPlayer.RobotUse(ROBOT_USE_ABROAD)) {
+        return false;
+    }
+    if (qPlayer.RobotUse(ROBOT_USE_MUCH_FRACHT) && Sim.GetHour() <= 9) {
+        return false;
+    }
+
+    if (qPlayer.TelephoneDown != 0) {
+        return false;
+    }
+
+    if (mPlanesForJobs.empty()) {
+        return false;
+    }
+    if (!mPlanerSolution.empty()) {
+        return false;
+    }
+
+    for (SLONG c = 0; c < 4; c++) {
+        if ((Sim.Players.Players[c].IsOut == 0) && (qPlayer.Kooperation[c] != 0)) {
+            return true; /* we have a cooperation partner, we can check if they have a branch office */
+        }
+    }
+    for (SLONG n = 0; n < Cities.AnzEntries(); n++) {
+        if (n == Cities.find(Sim.HomeAirportId)) {
+            continue;
+        }
+        if (qPlayer.RentCities.RentCities[n].Rang != 0U) {
+            return true; /* we have our own branch office */
+        }
+    }
+    return false;
 }
 
 Bot::Prio Bot::condAll(SLONG actionId) {
@@ -70,8 +107,6 @@ Bot::Prio Bot::condAll(SLONG actionId) {
         return condVisitDutyFree(moneyAvailable);
     case ACTION_VISITAUFSICHT:
         return condVisitBoss(moneyAvailable);
-    case ACTION_EXPANDAIRPORT:
-        return condExpandAirport(moneyAvailable);
     case ACTION_VISITNASA:
         return condVisitNasa(moneyAvailable);
     case ACTION_VISITTELESCOPE:
@@ -82,8 +117,6 @@ Bot::Prio Bot::condAll(SLONG actionId) {
         return condVisitRick();
     case ACTION_VISITROUTEBOX:
         return condVisitRouteBoxPlanning();
-    case ACTION_VISITROUTEBOX2:
-        return condVisitRouteBoxRenting(moneyAvailable);
     case ACTION_VISITSECURITY:
         return condVisitSecurity(moneyAvailable);
     case ACTION_VISITDESIGNER:
@@ -114,6 +147,12 @@ Bot::Prio Bot::condAll(SLONG actionId) {
         return condBuyAdsForRoutes(moneyAvailable);
     case ACTION_CALL_INTERNATIONAL:
         return condCallInternational();
+    case ACTION_VISITROUTEBOX2:
+        return condVisitRouteBoxRenting(moneyAvailable);
+    case ACTION_EXPANDAIRPORT:
+        return condExpandAirport(moneyAvailable);
+    case ACTION_CALL_INTER_HANDY:
+        return condCallInternationalHandy();
     default:
         redprintf("Bot.cpp: Default case should not be reached.");
         return Prio::None;
@@ -140,7 +179,7 @@ Bot::Prio Bot::condStartDay() {
 
 Bot::Prio Bot::condBuero() {
     // not necesary to check hoursPassed()
-    if (qPlayer.OfficeState == 2) {
+    if (!isOfficeUsable()) {
         return Prio::None; /* office is destroyed */
     }
     if (mNeedToPlanJobs) {
@@ -156,33 +195,28 @@ Bot::Prio Bot::condCallInternational() {
     if (!hoursPassed(ACTION_CALL_INTERNATIONAL, 2)) {
         return Prio::None;
     }
-    if (!qPlayer.RobotUse(ROBOT_USE_ABROAD)) {
-        return Prio::None;
+    if (qPlayer.HasItem(ITEM_HANDY)) {
+        return Prio::None; /* we rather use mobile to call */
     }
-    if (qPlayer.RobotUse(ROBOT_USE_MUCH_FRACHT) && Sim.GetHour() <= 9) {
-        return Prio::None;
+    if (!isOfficeUsable()) {
+        return Prio::None; /* office is destroyed */
     }
-    if (mPlanesForJobs.empty()) {
-        return Prio::None;
+    if (canWeCallInternational()) {
+        return Prio::High;
     }
-    if (!mPlanerSolution.empty()) {
-        return Prio::None;
-    }
+    return Prio::None;
+}
 
-    for (SLONG c = 0; c < 4; c++) {
-        if ((Sim.Players.Players[c].IsOut == 0) && (qPlayer.Kooperation[c] != 0)) {
-            return Prio::High; /* we have a cooperation partner, we can check if they have a branch office */
-        }
+Bot::Prio Bot::condCallInternationalHandy() {
+    if (!hoursPassed(ACTION_CALL_INTER_HANDY, 2)) {
+        return Prio::None;
     }
-    for (SLONG n = 0; n < Cities.AnzEntries(); n++) {
-        if (n == Cities.find(Sim.HomeAirportId)) {
-            continue;
-        }
-        if (qPlayer.RentCities.RentCities[n].Rang != 0U) {
-            return Prio::High; /* we have our own branch office */
-        }
+    if (!qPlayer.HasItem(ITEM_HANDY) || qPlayer.IsStuck != 0) {
+        return Prio::None; /* cannot use mobile */
     }
-
+    if (canWeCallInternational()) {
+        return Prio::High;
+    }
     return Prio::None;
 }
 
@@ -261,6 +295,9 @@ Bot::Prio Bot::condUpgradePlanes(__int64 &moneyAvailable) {
     }
     if (!qPlayer.RobotUse(ROBOT_USE_LUXERY)) {
         return Prio::None;
+    }
+    if (!isOfficeUsable()) {
+        return Prio::None; /* office is destroyed */
     }
     if (!haveDiscount()) {
         return Prio::None; /* wait until we have some discount */
@@ -515,6 +552,9 @@ Bot::Prio Bot::condVisitMech(__int64 &moneyAvailable) {
 
 Bot::Prio Bot::condVisitNasa(__int64 &moneyAvailable) {
     moneyAvailable = getMoneyAvailable();
+    if (!hoursPassed(ACTION_VISITNASA, 4)) {
+        return Prio::None;
+    }
     if (!qPlayer.RobotUse(ROBOT_USE_NASA)) {
         return Prio::None;
     }
@@ -522,6 +562,7 @@ Bot::Prio Bot::condVisitNasa(__int64 &moneyAvailable) {
 }
 
 Bot::Prio Bot::condVisitMisc() {
+    /* misc action, can do as often as the bot likes */
     if (qPlayer.RobotUse(ROBOT_USE_NOCHITCHAT)) {
         return Prio::None;
     }
@@ -535,10 +576,11 @@ Bot::Prio Bot::condVisitMakler() {
     if (mItemAntiStrike == 0) {
         return Prio::Low; /* take BH */
     }
-    return Prio::None;
+    return condVisitMisc();
 }
 
 Bot::Prio Bot::condVisitRick() {
+    /* misc action, can do as often as the bot likes */
     if (qPlayer.StrikeHours > 0 && qPlayer.StrikeEndType != 0 && mItemAntiStrike >= 3) {
         return Prio::Top;
     }
@@ -554,10 +596,8 @@ Bot::Prio Bot::condBuyUsedPlane(__int64 &moneyAvailable) {
 }
 
 Bot::Prio Bot::condVisitDutyFree(__int64 &moneyAvailable) {
+    /* misc action, can do as often as the bot likes */
     moneyAvailable = getMoneyAvailable();
-    if (!hoursPassed(ACTION_VISITDUTYFREE, 4)) {
-        return Prio::None;
-    }
     moneyAvailable -= 100 * 1000;
     if (moneyAvailable >= 0 && (qPlayer.LaptopQuality < 4)) {
         return Prio::Low;
