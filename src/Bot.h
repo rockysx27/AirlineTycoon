@@ -59,6 +59,7 @@ class Bot {
     bool canWeCallInternational();
     Prio condAll(SLONG actionId);
     Prio condStartDay();
+    Prio condStartDayLaptop();
     Prio condBuero();
     Prio condCallInternational();
     Prio condCallInternationalHandy();
@@ -98,6 +99,7 @@ class Bot {
 
     /* in BotActions.cpp */
     void actionStartDay(__int64 moneyAvailable);
+    void actionStartDayLaptop(__int64 moneyAvailable);
     void actionBuero();
     void actionCallInternational();
     void actionCheckLastMinute();
@@ -165,12 +167,13 @@ class Bot {
     SLONG mBuyPlaneForRouteId{-1};
     SLONG mWantToRentRouteId{-1};
     bool mFirstRun{true};
+    bool mDayStarted{false};
     bool mDoRoutes{false};
     bool mOutOfGates{false};
     bool mNeedToPlanJobs{false};
     bool mNeedToPlanRoutes{false};
 
-    /* visit boss office */
+    /* status boss office */
     SLONG mBossNumCitiesAvailable{-1};
     bool mBossGateAvailable{false};
 

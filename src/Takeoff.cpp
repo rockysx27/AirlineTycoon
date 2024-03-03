@@ -1558,6 +1558,8 @@ void CTakeOffApp::GameLoop(void * /*unused*/) {
                                                         qPlayer.RobotExecuteAction();
                                                     } else if (qPlayer.RobotActions[0].ActionId == ACTION_CALL_INTER_HANDY) {
                                                         qPlayer.RobotExecuteAction();
+                                                    } else if (qPlayer.RobotActions[0].ActionId == ACTION_STARTDAY_LAPTOP) {
+                                                        qPlayer.RobotExecuteAction();
                                                     }
 
                                                     SLONG Room = (qPlayer.Locations[d] & ~ROOM_LEAVING);

@@ -198,7 +198,14 @@ Bot::Bot(PLAYER &player) : qPlayer(player) {}
 void Bot::RobotInit() {
     hprintf("Bot.cpp: Enter RobotInit()");
 
-    auto &qRobotActions = qPlayer.RobotActions;
+    /* print inventory */
+    printf("Inventory: ");
+    for (SLONG d = 0; d < 6; d++) {
+        if (qPlayer.Items[d] != 0xff) {
+            printf("%s, ", Helper::getItemName(qPlayer.Items[d]));
+        }
+    }
+    printf("\n");
 
     if (mFirstRun) {
         hprintf("Bot::RobotInit(): First run.");
@@ -214,15 +221,21 @@ void Bot::RobotInit() {
         mFirstRun = false;
     }
 
-    for (auto &i : qRobotActions) {
+    for (auto &i : qPlayer.RobotActions) {
         i = {};
     }
 
     mLastTimeInRoom.clear();
+
+    /* strategy state */
     mDislike = -1;
-    mBestPlaneTypeId = -1;
+    mDayStarted = false;
+
+    /* status boss office */
     mBossNumCitiesAvailable = -1;
     mBossGateAvailable = false;
+
+    /* items */
     mIsSickToday = false;
 
     RobotPlan();
@@ -247,13 +260,14 @@ void Bot::RobotPlan() {
 
     auto &qRobotActions = qPlayer.RobotActions;
 
-    SLONG actions[] = {
-        ACTION_STARTDAY,       ACTION_BUERO,          ACTION_CALL_INTERNATIONAL, ACTION_CALL_INTER_HANDY, ACTION_CHECKAGENT1,    ACTION_CHECKAGENT2,
-        ACTION_CHECKAGENT3,    ACTION_UPGRADE_PLANES, ACTION_BUYNEWPLANE,        ACTION_PERSONAL,         ACTION_BUY_KEROSIN,    ACTION_BUY_KEROSIN_TANKS,
-        ACTION_SABOTAGE,       ACTION_SET_DIVIDEND,   ACTION_RAISEMONEY,         ACTION_DROPMONEY,        ACTION_EMITSHARES,     ACTION_SELLSHARES,
-        ACTION_BUYSHARES,      ACTION_VISITMECH,      ACTION_VISITNASA,          ACTION_VISITTELESCOPE,   ACTION_VISITMAKLER,    ACTION_VISITRICK,
-        ACTION_VISITKIOSK,     ACTION_BUYUSEDPLANE,   ACTION_VISITDUTYFREE,      ACTION_VISITAUFSICHT,    ACTION_EXPANDAIRPORT,  ACTION_VISITROUTEBOX,
-        ACTION_VISITROUTEBOX2, ACTION_VISITSECURITY,  ACTION_VISITSECURITY2,     ACTION_VISITDESIGNER,    ACTION_WERBUNG_ROUTES, ACTION_WERBUNG};
+    SLONG actions[] = {ACTION_STARTDAY, ACTION_STARTDAY_LAPTOP,
+                       /* repeated actions */
+                       ACTION_BUERO, ACTION_CALL_INTERNATIONAL, ACTION_CALL_INTER_HANDY, ACTION_CHECKAGENT1, ACTION_CHECKAGENT2, ACTION_CHECKAGENT3,
+                       ACTION_UPGRADE_PLANES, ACTION_BUYNEWPLANE, ACTION_PERSONAL, ACTION_BUY_KEROSIN, ACTION_BUY_KEROSIN_TANKS, ACTION_SABOTAGE,
+                       ACTION_SET_DIVIDEND, ACTION_RAISEMONEY, ACTION_DROPMONEY, ACTION_EMITSHARES, ACTION_SELLSHARES, ACTION_BUYSHARES, ACTION_VISITMECH,
+                       ACTION_VISITNASA, ACTION_VISITTELESCOPE, ACTION_VISITMAKLER, ACTION_VISITRICK, ACTION_VISITKIOSK, ACTION_BUYUSEDPLANE,
+                       ACTION_VISITDUTYFREE, ACTION_VISITAUFSICHT, ACTION_EXPANDAIRPORT, ACTION_VISITROUTEBOX, ACTION_VISITROUTEBOX2, ACTION_VISITSECURITY,
+                       ACTION_VISITSECURITY2, ACTION_VISITDESIGNER, ACTION_WERBUNG_ROUTES, ACTION_WERBUNG};
 
     if (qRobotActions[0].ActionId != ACTION_NONE || qRobotActions[1].ActionId != ACTION_NONE) {
         hprintf("Bot.cpp: Leaving RobotPlan() (actions already planned)\n");
@@ -391,6 +405,15 @@ void Bot::RobotExecuteAction() {
     case ACTION_STARTDAY:
         if (condStartDay() != Prio::None) {
             actionStartDay(moneyAvailable);
+        } else {
+            redprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+        }
+        qWorkCountdown = 20 * 5;
+        break;
+
+    case ACTION_STARTDAY_LAPTOP:
+        if (condStartDayLaptop() != Prio::None) {
+            actionStartDayLaptop(moneyAvailable);
         } else {
             redprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }

@@ -39,14 +39,14 @@ static constexpr int ceil_div(int a, int b) {
 }
 
 void Bot::actionStartDay(__int64 moneyAvailable) {
-    /* print inventory */
-    printf("Inventory: ");
-    for (SLONG d = 0; d < 6; d++) {
-        if (qPlayer.Items[d] != 0xff) {
-            printf("%s, ", Helper::getItemName(qPlayer.Items[d]));
-        }
-    }
-    printf("\n");
+    actionStartDayLaptop(moneyAvailable);
+
+    /* always use tanks: We get discount from advisor and by using cheap kerosine */
+    GameMechanic::setKerosinTankOpen(qPlayer, true);
+}
+
+void Bot::actionStartDayLaptop(__int64 moneyAvailable) {
+    mDayStarted = true;
 
     /* check routes */
     if (mDoRoutes) {
@@ -87,9 +87,6 @@ void Bot::actionStartDay(__int64 moneyAvailable) {
     mKerosineLevelLastChecked = qPlayer.TankInhalt;
     mTankRatioEmptiedYesterday = 1.0 * mKerosineUsedTodaySoFar / qPlayer.Tank;
     mKerosineUsedTodaySoFar = 0;
-
-    /* always use tanks: We get discount from advisor and by using cheap kerosine */
-    GameMechanic::setKerosinTankOpen(qPlayer, true);
 
     /* some conditions might have changed (plane availability) */
     forceReplanning();

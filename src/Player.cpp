@@ -3256,6 +3256,9 @@ void PLAYER::RobotPump() {
         case ACTION_CALL_INTER_HANDY:
             rc = TRUE;
             break;
+        case ACTION_STARTDAY_LAPTOP:
+            rc = TRUE;
+            break;
         default:
             DebugBreak();
         }

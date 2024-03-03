@@ -29,6 +29,9 @@ bool Bot::haveDiscount() const {
 }
 
 Bot::HowToPlan Bot::canWePlanFlights() {
+    if (!mDayStarted) {
+        return HowToPlan::None;
+    }
     if (qPlayer.HasItem(ITEM_LAPTOP)) {
         if ((qPlayer.LaptopVirus == 1) && (qPlayer.HasItem(ITEM_DISKETTE) == 1)) {
             GameMechanic::useItem(qPlayer, ITEM_DISKETTE);
@@ -60,6 +63,10 @@ bool Bot::canWeCallInternational() {
     }
     if (!mPlanerSolution.empty()) {
         return false;
+    }
+
+    if (HowToPlan::None == canWePlanFlights()) {
+        return false; /* plane list not updated */
     }
 
     for (SLONG c = 0; c < 4; c++) {
@@ -153,6 +160,8 @@ Bot::Prio Bot::condAll(SLONG actionId) {
         return condExpandAirport(moneyAvailable);
     case ACTION_CALL_INTER_HANDY:
         return condCallInternationalHandy();
+    case ACTION_STARTDAY_LAPTOP:
+        return condStartDayLaptop();
     default:
         redprintf("Bot.cpp: Default case should not be reached.");
         return Prio::None;
@@ -171,7 +180,19 @@ Bot::Prio Bot::condAll(SLONG actionId) {
  */
 
 Bot::Prio Bot::condStartDay() {
-    if (!hoursPassed(ACTION_STARTDAY, 24)) {
+    // not necesary to check hoursPassed()
+    if (mDayStarted || !isOfficeUsable()) {
+        return Prio::None;
+    }
+    return Prio::Top;
+}
+
+Bot::Prio Bot::condStartDayLaptop() {
+    // not necesary to check hoursPassed()
+    if (mDayStarted || isOfficeUsable()) {
+        return Prio::None;
+    }
+    if (!qPlayer.HasItem(ITEM_LAPTOP) || qPlayer.LaptopVirus == 1) {
         return Prio::None;
     }
     return Prio::Top;
@@ -296,6 +317,9 @@ Bot::Prio Bot::condUpgradePlanes(__int64 &moneyAvailable) {
     if (!qPlayer.RobotUse(ROBOT_USE_LUXERY)) {
         return Prio::None;
     }
+    if (!mDayStarted) {
+        return Prio::None; /* plane list not updated */
+    }
     if (!isOfficeUsable()) {
         return Prio::None; /* office is destroyed */
     }
@@ -375,8 +399,8 @@ Bot::Prio Bot::condBuyKerosine(__int64 &moneyAvailable) {
     if (!qPlayer.RobotUse(ROBOT_USE_PETROLAIR)) {
         return Prio::None;
     }
-    if (qPlayer.HasBerater(BERATERTYP_KEROSIN) < 30) {
-        return Prio::None;
+    if (qPlayer.HasBerater(BERATERTYP_KEROSIN) < 30 || !mDayStarted) {
+        return Prio::None; /* no access to advisor report */
     }
     if (!haveDiscount()) {
         return Prio::None; /* wait until we have some discount */
@@ -395,11 +419,11 @@ Bot::Prio Bot::condBuyKerosineTank(__int64 &moneyAvailable) {
     if (!hoursPassed(ACTION_BUY_KEROSIN_TANKS, 24)) {
         return Prio::None;
     }
-    if (!qPlayer.RobotUse(ROBOT_USE_PETROLAIR)) {
+    if (!qPlayer.RobotUse(ROBOT_USE_PETROLAIR) || !qPlayer.RobotUse(ROBOT_USE_TANKS)) {
         return Prio::None;
     }
-    if (!qPlayer.RobotUse(ROBOT_USE_TANKS) || qPlayer.HasBerater(BERATERTYP_KEROSIN) < 30) {
-        return Prio::None;
+    if (qPlayer.HasBerater(BERATERTYP_KEROSIN) < 30 || !mDayStarted) {
+        return Prio::None; /* no access to advisor report */
     }
     if (!haveDiscount()) {
         return Prio::None; /* wait until we have some discount */
@@ -596,9 +620,17 @@ Bot::Prio Bot::condBuyUsedPlane(__int64 &moneyAvailable) {
 }
 
 Bot::Prio Bot::condVisitDutyFree(__int64 &moneyAvailable) {
-    /* misc action, can do as often as the bot likes */
     moneyAvailable = getMoneyAvailable();
     moneyAvailable -= 100 * 1000;
+
+    /* emergency shopping: Laptop because office is destroyed */
+    if (hoursPassed(ACTION_VISITDUTYFREE, 24) && moneyAvailable >= 0) {
+        if (!mDayStarted && !isOfficeUsable() && qPlayer.LaptopQuality == 0) {
+            return Prio::High;
+        }
+    }
+
+    /* misc action, can do as often as the bot likes */
     if (moneyAvailable >= 0 && (qPlayer.LaptopQuality < 4)) {
         return Prio::Low;
     }
@@ -641,6 +673,9 @@ Bot::Prio Bot::condExpandAirport(__int64 &moneyAvailable) {
     }
     if (GameMechanic::ExpandAirportResult::Ok != GameMechanic::canExpandAirport(qPlayer)) {
         return Prio::None;
+    }
+    if (!mDayStarted) {
+        return Prio::None; /* no access to gate utilization */
     }
 
     DOUBLE gateUtilization = 0;
@@ -742,6 +777,9 @@ Bot::Prio Bot::condBuyAdsForRoutes(__int64 &moneyAvailable) {
     }
     if (!haveDiscount()) {
         return Prio::None; /* wait until we have some discount */
+    }
+    if (!mDayStarted) {
+        return Prio::None; /* routes not updated */
     }
 
     auto minCost = gWerbePrice[1 * 6 + kSmallestAdCampaign];
