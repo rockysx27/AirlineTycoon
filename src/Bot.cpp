@@ -394,8 +394,8 @@ void Bot::RobotExecuteAction() {
     /* temporary data */
     __int64 moneyAvailable = getMoneyAvailable();
 
-    greenprintf("Bot.cpp: Enter RobotExecuteAction(): Executing %s, current time: %02d:%02d", getRobotActionName(qRobotActions[0].ActionId), Sim.GetHour(),
-                Sim.GetMinute());
+    greenprintf("Bot.cpp: Enter RobotExecuteAction(): Executing %s, current time: %02d:%02d, money: %s $", getRobotActionName(qRobotActions[0].ActionId),
+                Sim.GetHour(), Sim.GetMinute(), Insert1000erDots64(qPlayer.Money).c_str());
 
     mOnThePhone = 0;
 

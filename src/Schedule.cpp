@@ -944,12 +944,13 @@ void CFlugplanEintrag::BookFlight(CPlane *Plane, SLONG PlayerNum) {
     // auto ZustandAlt = Plane->Zustand;
     if (KerosinGesamtQuali > 1.0) {
         faktorKerosin += 10 * (KerosinGesamtQuali - 1.0) * (KerosinGesamtQuali - 1.0);
-        /*hprintf("Player %li: Schlechtes Kerosin (%.2f) reduziert Flugzeugzustand um %d statt um %d", PlayerNum, KerosinGesamtQuali,
-                (int)(faktorDistanz * faktorBaujahr * faktorKerosin / 15), (int)(faktorDistanz * faktorBaujahr / 15));*/
+        hprintf("Player %li: Schlechtes Kerosin (%.2f) reduziert Flugzeugzustand um %d statt um %d", PlayerNum, KerosinGesamtQuali,
+                (int)(faktorDistanz * faktorBaujahr * faktorKerosin / 15), (int)(faktorDistanz * faktorBaujahr / 15));
     }
+    auto ZustandAlt = Plane->Zustand;
     Plane->Zustand = UBYTE(Plane->Zustand - faktorDistanz * faktorBaujahr * faktorKerosin / 15);
-    /*hprintf("Player %li: Zustand: %i -> %i. Faktoren: faktorDistanz = %f, faktorBaujahr = %f, faktorKerosin = %f", PlayerNum, ZustandAlt, Plane->Zustand,
-            faktorDistanz, faktorBaujahr, faktorKerosin);*/
+    hprintf("Player %li: Zustand: %i -> %i. Faktoren: faktorDistanz = %f, faktorBaujahr = %f, faktorKerosin = %f", PlayerNum, ZustandAlt, Plane->Zustand,
+            faktorDistanz, faktorBaujahr, faktorKerosin);
     if (Plane->Zustand > 200) {
         Plane->Zustand = 0;
     }

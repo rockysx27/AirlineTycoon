@@ -215,11 +215,13 @@ void PLAYER::BuyPlane(CXPlane &plane, TEAKRAND *pRnd) {
 //--------------------------------------------------------------------------------------------
 void PLAYER::ChangeMoney(__int64 Money, SLONG Reason, const CString &Par1, char *Par2) {
 
-    /*if (Money > 0) {
-        hprintf("ChangeMoney: player %li: Erhält %lld wegen %li", PlayerNum, Money, Reason);
-    } else if (Money < 0) {
-        hprintf("ChangeMoney: player %li: Gibt %lld für %li aus", PlayerNum, -Money, Reason);
-    }*/
+    if (PlayerNum == 3) {
+        if (Money > 0) {
+            hprintf("ChangeMoney: player %li: Erhält %lld wegen %li", PlayerNum, Money, Reason);
+        } else if (Money < 0) {
+            hprintf("ChangeMoney: player %li: Gibt %lld für %li aus", PlayerNum, -Money, Reason);
+        }
+    }
 
     if (LocationWin != nullptr) {
         (LocationWin)->StatusCount = 3;
@@ -2577,10 +2579,17 @@ BOOL PLAYER::WalkToRoom(UBYTE RoomId) {
     UpdateWaypoints();
     BroadcastPosition();
 
+    /* if we already are in the destination room */
     for (SLONG c = 0; c < 10; c++) {
         if ((Locations[c] & (~(ROOM_ENTERING | ROOM_LEAVING))) == RoomId) {
             Locations[c] |= (ROOM_ENTERING);
             Locations[c] &= (~ROOM_LEAVING);
+            if (Sim.CallItADay != 0) {
+                SpeedCount = 1;
+            }
+            if (PlayerNum == 3) {
+                hprintf("WalkToRoom: already there");
+            }
             return (TRUE);
         }
     }
@@ -3254,10 +3263,12 @@ void PLAYER::RobotPump() {
             rc = WalkToRoom(ROOM_WERBUNG);
             break;
         case ACTION_CALL_INTER_HANDY:
-            rc = TRUE;
-            break;
+            [[fallthrough]];
         case ACTION_STARTDAY_LAPTOP:
             rc = TRUE;
+            if (Sim.CallItADay != 0) {
+                SpeedCount = 1;
+            }
             break;
         default:
             DebugBreak();

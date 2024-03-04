@@ -541,11 +541,11 @@ bool BotPlaner::applySolution(PLAYER &qPlayer, const SolutionList &solutions) {
 
 #ifdef PRINT_OVERALL
     if (totalDiff > 0) {
-        hprintf("Total gain improved: %d (+%d)", totalGain, totalDiff);
+        hprintf("Total gain improved: %s $ (+%s $)", Insert1000erDots(totalGain).c_str(), Insert1000erDots(totalDiff).c_str());
     } else if (totalDiff == 0) {
-        hprintf("Total gain did not change: %d", totalGain);
+        hprintf("Total gain did not change: %s $", Insert1000erDots(totalGain).c_str());
     } else {
-        hprintf("Total gain got worse: %d (%d)", totalGain, totalDiff);
+        hprintf("Total gain got worse: %s $ (%s $)", Insert1000erDots(totalGain).c_str(), Insert1000erDots(totalDiff).c_str());
     }
 #endif
 
