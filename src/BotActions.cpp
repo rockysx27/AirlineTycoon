@@ -57,12 +57,14 @@ void Bot::actionStartDayLaptop(__int64 moneyAvailable) {
     /* double check lists of planes */
     checkPlaneLists();
 
+    /* check Zustand of each plane */
+
     /* check if we still have enough personal */
-    findPlanesWithoutCrew(mPlanesForJobs, mPlanesForJobsUnassigned);
-    findPlanesWithoutCrew(mPlanesForRoutes, mPlanesForRoutesUnassigned);
+    findPlanesNotAvailableForService(mPlanesForJobs, mPlanesForJobsUnassigned);
+    findPlanesNotAvailableForService(mPlanesForRoutes, mPlanesForRoutesUnassigned);
 
     /* maybe some planes now have crew? planes for routes will be checked in planRoutes() */
-    findPlanesWithCrew(mPlanesForJobsUnassigned, mPlanesForJobs);
+    findPlanesAvailableForService(mPlanesForJobsUnassigned, mPlanesForJobs);
 
     /* logic for switching to routes */
     if (!mDoRoutes && mBestPlaneTypeId != -1) {

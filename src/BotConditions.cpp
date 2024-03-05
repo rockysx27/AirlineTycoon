@@ -522,6 +522,17 @@ Bot::Prio Bot::condSellShares(__int64 &moneyAvailable) {
     if (!hoursPassed(ACTION_SELLSHARES, 1)) {
         return Prio::None;
     }
+
+    int numShares = 0;
+    for (SLONG c = 0; c < Sim.Players.AnzPlayers; c++) {
+        if (c != qPlayer.PlayerNum) {
+            numShares += qPlayer.OwnsAktien[c];
+        }
+    }
+    if (numShares == 0) {
+        return Prio::None;
+    }
+
     if (qPlayer.Money < 0) {
         if (qPlayer.CalcCreditLimit() >= 1000) {
             return Prio::High; /* first take out credit */

@@ -12,6 +12,7 @@ const SLONG kMaximumRouteUtilization = 90;
 const SLONG kMaximumPlaneUtilization = 90;
 const DOUBLE kMaxTicketPriceFactor = 3.0;
 const SLONG kTargetEmployeeHappiness = 90;
+const SLONG kPlaneMinimumZustand = 80;
 
 static const char *getPrioName(Bot::Prio prio) {
     switch (prio) {
@@ -139,19 +140,36 @@ bool Bot::checkPlaneLists() {
     return foundProblem;
 }
 
-bool Bot::findPlanesWithoutCrew(std::vector<SLONG> &listAvailable, std::deque<SLONG> &listUnassigned) {
-    hprintf("Bot::findPlanesWithoutCrew: Checking for planes with not enough crew members");
+bool Bot::findPlanesNotAvailableForService(std::vector<SLONG> &listAvailable, std::deque<SLONG> &listUnassigned) {
     bool planesGoneMissing = false;
     std::vector<SLONG> newAvailable;
     for (const auto id : listAvailable) {
         if (!qPlayer.Planes.IsInAlbum(id)) {
-            redprintf("Bot::findPlanesWithoutCrew: We lost the plane with ID = %ld", id);
+            redprintf("Bot::findPlanesNotAvailableForService(): We lost the plane with ID = %ld", id);
             planesGoneMissing = true;
-        } else if (checkPlaneAvailable(id, false)) {
-            newAvailable.push_back(id);
-        } else {
+            continue;
+        }
+
+        auto &qPlane = qPlayer.Planes[id];
+        hprintf("Bot::findPlanesNotAvailableForService(): Flugzeug %s (%s): Zustand = %u", (LPCTSTR)qPlane.Name, (LPCTSTR)PlaneTypes[qPlane.TypeId].Name,
+                qPlane.Zustand);
+
+        int mode = 0; /* 0: keep plane in service */
+        if (qPlane.Zustand <= kPlaneMinimumZustand) {
+            redprintf("Bot::findPlanesNotAvailableForService(): Plane %s not available for service: Needs repairs.", (LPCTSTR)qPlane.Name);
+            mode = 1; /* 1: phase plane out */
+        }
+        if (!checkPlaneAvailable(id, false)) {
+            redprintf("Bot::findPlanesNotAvailableForService(): Plane %s not available for service: No crew.", (LPCTSTR)qPlane.Name);
+            mode = 2; /* 2: remove plane immediately from service */
+        }
+        if (mode > 0) {
             listUnassigned.push_back(id);
-            GameMechanic::killFlightPlan(qPlayer, id);
+            if (mode == 2) {
+                GameMechanic::killFlightPlan(qPlayer, id);
+            }
+
+            /* remove plane from route */
             for (auto &route : mRoutes) {
                 auto it = route.planeIds.begin();
                 while (it != route.planeIds.end() && *it != id) {
@@ -161,24 +179,37 @@ bool Bot::findPlanesWithoutCrew(std::vector<SLONG> &listAvailable, std::deque<SL
                     route.planeIds.erase(it);
                 }
             }
+        } else {
+            newAvailable.push_back(id);
         }
     }
     std::swap(listAvailable, newAvailable);
     return planesGoneMissing;
 }
 
-bool Bot::findPlanesWithCrew(std::deque<SLONG> &listUnassigned, std::vector<SLONG> &listAvailable) {
-    hprintf("Bot::findPlanesWithCrew: Checking for planes that now have enough crew members");
+bool Bot::findPlanesAvailableForService(std::deque<SLONG> &listUnassigned, std::vector<SLONG> &listAvailable) {
     bool planesGoneMissing = false;
     std::deque<SLONG> newUnassigned;
     for (const auto id : listUnassigned) {
         if (!qPlayer.Planes.IsInAlbum(id)) {
-            redprintf("Bot::findPlanesWithCrew: We lost the plane with ID = %ld", id);
+            redprintf("Bot::findPlanesAvailableForService(): We lost the plane with ID = %ld", id);
             planesGoneMissing = true;
-        } else if (checkPlaneAvailable(id, false)) {
-            listAvailable.push_back(id);
-        } else {
+            continue;
+        }
+
+        auto &qPlane = qPlayer.Planes[id];
+        hprintf("Bot::findPlanesAvailableForService(): Flugzeug %s (%s): Zustand = %u", (LPCTSTR)qPlane.Name, (LPCTSTR)PlaneTypes[qPlane.TypeId].Name,
+                qPlane.Zustand);
+
+        if (qPlane.Zustand <= kPlaneMinimumZustand) {
+            redprintf("Bot::findPlanesAvailableForService(): Plane %s not available for service: Needs repairs.", (LPCTSTR)qPlane.Name);
             newUnassigned.push_back(id);
+        } else if (!checkPlaneAvailable(id, false)) {
+            redprintf("Bot::findPlanesAvailableForService(): Plane %s not available for service: No crew.", (LPCTSTR)qPlane.Name);
+            newUnassigned.push_back(id);
+        } else {
+            hprintf("Bot::findPlanesAvailableForService(): Putting plane %s back into service.", (LPCTSTR)qPlane.Name);
+            listAvailable.push_back(id);
         }
     }
     std::swap(listUnassigned, newUnassigned);
