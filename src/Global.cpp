@@ -29,6 +29,7 @@ BOOL CheatMissions = FALSE;
 SLONG CheatBerater = 0;
 BOOL CheatAnimNow = FALSE;
 SLONG CheatTestGame = 0;
+SLONG CheatAutoSkip = 0;
 
 //--------------------------------------------------------------------------------------------
 // Die Zufallsgeneratoren:
@@ -48,7 +49,7 @@ SLONG MissionKeys3[] = {298, 346, 532, 2098, 3331, 3333, 4001, 4098, 4800, 8099}
 //--------------------------------------------------------------------------------------------
 // Pointer auf Fenster:
 //--------------------------------------------------------------------------------------------
-CStdRaum *TopWin; //Übergeordnetes Fenster, z.B. load Airport
+CStdRaum *TopWin; // Übergeordnetes Fenster, z.B. load Airport
 
 //--------------------------------------------------------------------------------------------
 // Einige *WIRKLICH* globale Ressourcen:
@@ -348,9 +349,9 @@ CSmoker Smokers[5];
 //--------------------------------------------------------------------------------------------
 SBBMS gItemBms;
 CTafelData TafelData;
-CAuftraege LastMinuteAuftraege;           // Die hängen gerade aus
-CAuftraege ReisebueroAuftraege;           // Die hängen gerade aus
-CFrachten gFrachten;                      // Die Frachtaufträge
+CAuftraege LastMinuteAuftraege;            // Die hängen gerade aus
+CAuftraege ReisebueroAuftraege;            // Die hängen gerade aus
+CFrachten gFrachten;                       // Die Frachtaufträge
 std::vector<CAuftraege> AuslandsAuftraege; // Aus dem Ausland
 std::vector<SLONG> AuslandsRefill;         // Aus dem Ausland
 std::vector<CFrachten> AuslandsFrachten;   // Aus dem Ausland

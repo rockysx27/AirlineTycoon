@@ -1868,6 +1868,19 @@ void GameFrame::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) {
             }
         }
 
+        // AUTORUN
+        if (TypeBuffer[23] == 'A' && TypeBuffer[24] == 'U' && TypeBuffer[25] == 'T' && TypeBuffer[26] == 'O' && TypeBuffer[27] == 'R' &&
+            TypeBuffer[28] == 'U' && TypeBuffer[29] == 'N') {
+            if ((Sim.bAllowCheating != 0) || (Sim.bNetwork == 0)) {
+                Sim.bCheatedSession = 1;
+                CheatAutoSkip ^= 1;
+                CheatSound();
+
+                SIM::SendChatBroadcast(bprintf(StandardTexte.GetS(TOKEN_MISC, 7014), (LPCTSTR)Sim.Players.Players[Sim.localPlayer].NameX));
+                SIM::SendSimpleMessage(ATNET_CHEAT, 0, Sim.localPlayer, 2);
+            }
+        }
+
         // BUBBLEGUM
         if (TypeBuffer[21] == 'B' && TypeBuffer[22] == 'U' && TypeBuffer[23] == 'B' && TypeBuffer[24] == 'B' && TypeBuffer[25] == 'L' &&
             TypeBuffer[26] == 'E' && TypeBuffer[27] == 'G' && TypeBuffer[28] == 'U' && TypeBuffer[29] == 'M') {

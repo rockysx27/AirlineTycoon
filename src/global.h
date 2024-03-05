@@ -32,6 +32,7 @@ extern BOOL CheatMissions;
 extern SLONG CheatBerater;
 extern BOOL CheatAnimNow;
 extern SLONG CheatTestGame;
+extern SLONG CheatAutoSkip;
 
 //--------------------------------------------------------------------------------------------
 // Die Zufallsgeneratoren:
@@ -51,7 +52,7 @@ extern SLONG MissionKeys3[]; // Die Schlüsselwerte für die Registry
 //--------------------------------------------------------------------------------------------
 // Pointer auf Fenster:
 //--------------------------------------------------------------------------------------------
-extern CStdRaum *TopWin; //Übergeordnetes Fenster, z.B. load Airport
+extern CStdRaum *TopWin; // Übergeordnetes Fenster, z.B. load Airport
 
 //--------------------------------------------------------------------------------------------
 // Einige *WIRKLICH* globale Ressourcen:
@@ -194,8 +195,8 @@ extern CString SmackerPath;  // Die Smacker-Filmchen
 extern CString IntroPath;    // Der Intro-Film
 extern CString AppPath;      // Der Ganze Pfad, z.B. "f:\project\takeoff\"
 extern CString AppPrefPath;
-extern CString VoicePath;    // die Sprache
-extern CString MyPlanePath;  // die eigenen Flugzeuge
+extern CString VoicePath;   // die Sprache
+extern CString MyPlanePath; // die eigenen Flugzeuge
 
 //--------------------------------------------------------------------------------------------
 // Die Simulationswelt mit ihren Parameter (Zeit, Spieler, Schwierigkeit, ..)
@@ -331,9 +332,9 @@ extern CSmoker Smokers[5];
 //--------------------------------------------------------------------------------------------
 extern SBBMS gItemBms;
 extern CTafelData TafelData;
-extern CAuftraege LastMinuteAuftraege;           // Die hängen gerade aus
-extern CAuftraege ReisebueroAuftraege;           // Die hängen gerade aus
-extern CFrachten gFrachten;                      // Die Frachtaufträge
+extern CAuftraege LastMinuteAuftraege;            // Die hängen gerade aus
+extern CAuftraege ReisebueroAuftraege;            // Die hängen gerade aus
+extern CFrachten gFrachten;                       // Die Frachtaufträge
 extern std::vector<CAuftraege> AuslandsAuftraege; // Aus dem Ausland
 extern std::vector<SLONG> AuslandsRefill;         // Aus dem Ausland
 extern std::vector<CFrachten> AuslandsFrachten;   // Aus dem Ausland
