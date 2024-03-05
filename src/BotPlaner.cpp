@@ -13,6 +13,7 @@
 const int kAvailTimeExtra = 2;
 const int kDurationExtra = 1;
 const int kScheduleForNextDays = 4;
+const int64_t timeBudgetMS = 100;
 static const bool kCanDropJobs = false;
 
 static bool canFlyThisJob(const CAuftrag &job, const CPlane &plane) { return (job.Personen <= plane.ptPassagiere && job.FitsInPlane(plane)); }
@@ -393,13 +394,11 @@ bool BotPlaner::applySolutionForPlane(PLAYER &qPlayer, int planeId, const BotPla
 }
 
 BotPlaner::SolutionList BotPlaner::planFlights(const std::vector<int> &planeIdsInput, bool bUseImprovedAlgo, int extraBufferTime) {
-#ifdef PRINT_OVERALL
     auto t_begin = std::chrono::steady_clock::now();
-#endif
+
 #ifdef PRINT_DETAIL
     hprintf("BotPlaner::planFlights(): Current time: %d", Sim.GetHour());
 #endif
-
     mScheduleFromTime = {Sim.Date, Sim.GetHour() + extraBufferTime};
 
     /* find valid plane IDs */
@@ -456,7 +455,9 @@ BotPlaner::SolutionList BotPlaner::planFlights(const std::vector<int> &planeIdsI
     /* start algo */
     bool improved = false;
     if (bUseImprovedAlgo) {
-        improved = algo2();
+        auto t_current = std::chrono::steady_clock::now();
+        auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(t_current - t_begin).count();
+        improved = algo2(timeBudgetMS - diff);
     } else {
         improved = algo1();
     }

@@ -232,7 +232,7 @@ class BotPlaner {
     void algo2RemoveNode(Graph &g, int planeIdx, int currentNode);
     int algo2RunForPlaneRemove(int planeIdx, int numToRemove);
     int algo2RunForPlaneAdd(int planeIdx, int numToAdd, int choice);
-    bool algo2();
+    bool algo2(int64_t timeBudget);
 
     /* apply solution */
     bool takeJobs(PlaneState &planeState);
