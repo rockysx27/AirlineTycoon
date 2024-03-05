@@ -457,10 +457,11 @@ BotPlaner::SolutionList BotPlaner::planFlights(const std::vector<int> &planeIdsI
     mGraphs = prepareGraph();
 
     /* start algo */
+    bool improved = false;
     if (bUseImprovedAlgo) {
-        algo2();
+        improved = algo2();
     } else {
-        algo1();
+        improved = algo1();
     }
 
     /* check statistics */
@@ -486,11 +487,16 @@ BotPlaner::SolutionList BotPlaner::planFlights(const std::vector<int> &planeIdsI
     auto t_end = std::chrono::steady_clock::now();
     auto delta = std::chrono::duration_cast<std::chrono::milliseconds>(t_end - t_begin).count();
     if (bUseImprovedAlgo) {
-        std::cout << "Elapsed time in total using algo2(): " << delta << " ms" << std::endl;
+        hprintf("Elapsed time in total using algo2(): %lld ms", delta);
     } else {
-        std::cout << "Elapsed time using total in algo1(): " << delta << " ms" << std::endl;
+        hprintf("Elapsed time in total using algo1(): %lld ms", delta);
     }
 #endif
+
+    if (!improved) {
+        hprintf("Scheduling algo did not improve anything, returning empty solution.");
+        return {};
+    }
 
     /* now take all jobs */
     for (auto &planeState : mPlaneStates) {
@@ -538,9 +544,11 @@ bool BotPlaner::applySolution(PLAYER &qPlayer, const SolutionList &solutions) {
 
 #ifdef PRINT_OVERALL
     if (totalDiff > 0) {
-        hprintf("Total gain improved: %d (+%d)", totalGain, totalDiff);
+        hprintf("Total gain improved: %s $ (+%s $)", Insert1000erDots(totalGain).c_str(), Insert1000erDots(totalDiff).c_str());
+    } else if (totalDiff == 0) {
+        hprintf("Total gain did not change: %s $", Insert1000erDots(totalGain).c_str());
     } else {
-        hprintf("Total gain did not improve: %d (%d)", totalGain, totalDiff);
+        hprintf("Total gain got worse: %s $ (%s $)", Insert1000erDots(totalGain).c_str(), Insert1000erDots(totalDiff).c_str());
     }
 #endif
 

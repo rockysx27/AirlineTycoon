@@ -175,7 +175,7 @@ BotPlaner::Solution BotPlaner::algo1FindFlightPlan(Graph &g, int planeIdx, Plane
     return solutions[bestPremiumIdx];
 }
 
-int BotPlaner::algo1() {
+bool BotPlaner::algo1() {
     int nPlanes = mPlaneStates.size();
     int nPlaneTypes = mPlaneTypeToPlane.size();
     int totalDelta = 0;
@@ -239,5 +239,5 @@ int BotPlaner::algo1() {
     hprintf("Improved gain in total by %d", totalDelta);
 #endif
 
-    return totalDelta;
+    return (totalDelta > 0);
 }
