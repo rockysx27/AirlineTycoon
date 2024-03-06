@@ -54,17 +54,8 @@ void Bot::actionStartDayLaptop(__int64 moneyAvailable) {
         requestPlanRoutes(true);
     }
 
-    /* double check lists of planes */
+    /* check lists of planes, check which planes are available for service and which are not */
     checkPlaneLists();
-
-    /* check Zustand of each plane */
-
-    /* check if we still have enough personal */
-    findPlanesNotAvailableForService(mPlanesForJobs, mPlanesForJobsUnassigned);
-    findPlanesNotAvailableForService(mPlanesForRoutes, mPlanesForRoutesUnassigned);
-
-    /* maybe some planes now have crew? planes for routes will be checked in planRoutes() */
-    findPlanesAvailableForService(mPlanesForJobsUnassigned, mPlanesForJobs);
 
     /* logic for switching to routes */
     if (!mDoRoutes && mBestPlaneTypeId != -1) {
@@ -663,6 +654,66 @@ void Bot::actionBuyShares(__int64 moneyAvailable) {
             moneyAvailable = getMoneyAvailable();
         }
     }
+}
+
+void Bot::actionVisitMech() {
+    if (qPlayer.MechMode != 3) {
+        hprintf("Bot::RobotExecuteAction(): Setting mech mode to 3");
+        GameMechanic::setMechMode(qPlayer, 3);
+    }
+
+    const auto &qPlanes = qPlayer.Planes;
+
+    /* save old repair targets */
+    std::vector<std::pair<SLONG, UBYTE>> planeList;
+    for (SLONG c = 0; c < qPlanes.AnzEntries(); c++) {
+        if (qPlanes.IsInAlbum(c) == 0) {
+            continue;
+        }
+
+        auto &qPlane = qPlanes[c];
+        if (qPlanes[c].TargetZustand <= qPlane.WorstZustand + 20) {
+            continue; /* this plane won't cost extra */
+        }
+
+        /* WorstZustand more than 20 lower than repair target means extra cost! */
+        planeList.emplace_back(c, qPlane.TargetZustand);
+        GameMechanic::setPlaneTargetZustand(qPlayer, c, qPlane.WorstZustand + 20);
+    }
+
+    /* distribute available money for repair extra costs */
+    mMoneyReservedForRepairs = 0;
+    auto moneyAvailable = getMoneyAvailable() - kMoneyNotForRepairs;
+    bool keepGoing = true;
+    while (keepGoing && moneyAvailable > 0) {
+        keepGoing = false;
+        for (const auto &iter : planeList) {
+            auto &qPlane = qPlanes[iter.first];
+            if (qPlane.TargetZustand < 100) {
+                GameMechanic::setPlaneTargetZustand(qPlayer, iter.first, qPlane.TargetZustand + 1);
+                keepGoing = true;
+
+                __int64 improvement = qPlane.TargetZustand - (qPlane.WorstZustand + 20);
+                if (improvement > 0) {
+                    mMoneyReservedForRepairs += (improvement * qPlane.ptPreis / 110);
+                    moneyAvailable = getMoneyAvailable();
+                }
+            }
+        }
+    }
+
+    for (const auto &iter : planeList) {
+        auto &qPlane = qPlanes[iter.first];
+        if (qPlane.TargetZustand > iter.second) {
+            hprintf("Bot::actionVisitMech(): Increasing repair target of plane %s: %ld => %ld (Zustand = %u, WorstZustand = %u)", (LPCTSTR)qPlane.Name,
+                    iter.second, qPlane.TargetZustand, qPlane.Zustand, qPlane.WorstZustand);
+        } else if (qPlane.TargetZustand < iter.second) {
+            hprintf("Bot::actionVisitMech(): Lowering repair target of plane %s: %ld => %ld (Zustand = %u, WorstZustand = %u)", (LPCTSTR)qPlane.Name,
+                    iter.second, qPlane.TargetZustand, qPlane.Zustand, qPlane.WorstZustand);
+        }
+    }
+    hprintf("Bot::actionVisitMech(): We are reserving %s $ for repairs, available money: %s $", (LPCTSTR)Insert1000erDots64(mMoneyReservedForRepairs),
+            (LPCTSTR)Insert1000erDots64(getMoneyAvailable()));
 }
 
 void Bot::actionVisitDutyFree(__int64 moneyAvailable) {

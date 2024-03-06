@@ -12,7 +12,8 @@ const SLONG kMaximumRouteUtilization = 90;
 const SLONG kMaximumPlaneUtilization = 90;
 const DOUBLE kMaxTicketPriceFactor = 3.0;
 const SLONG kTargetEmployeeHappiness = 90;
-const SLONG kPlaneMinimumZustand = 80;
+const SLONG kPlaneMinimumZustand = 90;
+const SLONG kMoneyNotForRepairs = 0;
 
 static const char *getPrioName(Bot::Prio prio) {
     switch (prio) {
@@ -137,6 +138,19 @@ bool Bot::checkPlaneLists() {
             foundProblem = true;
         }
     }
+
+    /* check if we still have enough personal */
+    findPlanesNotAvailableForService(mPlanesForJobs, mPlanesForJobsUnassigned);
+    findPlanesNotAvailableForService(mPlanesForRoutes, mPlanesForRoutesUnassigned);
+
+    /* maybe some planes now have crew? planes for routes will be checked in planRoutes() */
+    findPlanesAvailableForService(mPlanesForJobsUnassigned, mPlanesForJobs);
+
+    hprintf("Bot::checkPlaneLists(): Planes for jobs: %ld / %ld are available.", mPlanesForJobs.size(),
+            mPlanesForJobs.size() + mPlanesForJobsUnassigned.size());
+    hprintf("Bot::checkPlaneLists(): Planes for routes: %ld / %ld are available.", mPlanesForRoutes.size(),
+            mPlanesForRoutes.size() + mPlanesForRoutesUnassigned.size());
+
     return foundProblem;
 }
 
@@ -151,12 +165,12 @@ bool Bot::findPlanesNotAvailableForService(std::vector<SLONG> &listAvailable, st
         }
 
         auto &qPlane = qPlayer.Planes[id];
-        hprintf("Bot::findPlanesNotAvailableForService(): Flugzeug %s (%s): Zustand = %u", (LPCTSTR)qPlane.Name, (LPCTSTR)PlaneTypes[qPlane.TypeId].Name,
-                qPlane.Zustand);
+        hprintf("Bot::findPlanesNotAvailableForService(): Plane %s (%s): Zustand = %u, WorstZustand = %u", (LPCTSTR)qPlane.Name,
+                (LPCTSTR)PlaneTypes[qPlane.TypeId].Name, qPlane.Zustand, qPlane.WorstZustand);
 
         int mode = 0; /* 0: keep plane in service */
         if (qPlane.Zustand <= kPlaneMinimumZustand) {
-            redprintf("Bot::findPlanesNotAvailableForService(): Plane %s not available for service: Needs repairs.", (LPCTSTR)qPlane.Name);
+            hprintf("Bot::findPlanesNotAvailableForService(): Plane %s not available for service: Needs repairs.", (LPCTSTR)qPlane.Name);
             mode = 1; /* 1: phase plane out */
         }
         if (!checkPlaneAvailable(id, false)) {
@@ -198,14 +212,14 @@ bool Bot::findPlanesAvailableForService(std::deque<SLONG> &listUnassigned, std::
         }
 
         auto &qPlane = qPlayer.Planes[id];
-        hprintf("Bot::findPlanesAvailableForService(): Flugzeug %s (%s): Zustand = %u", (LPCTSTR)qPlane.Name, (LPCTSTR)PlaneTypes[qPlane.TypeId].Name,
-                qPlane.Zustand);
+        hprintf("Bot::findPlanesNotAvailableForService(): Plane %s (%s): Zustand = %u, WorstZustand = %u", (LPCTSTR)qPlane.Name,
+                (LPCTSTR)PlaneTypes[qPlane.TypeId].Name, qPlane.Zustand, qPlane.WorstZustand);
 
-        if (qPlane.Zustand <= kPlaneMinimumZustand) {
-            redprintf("Bot::findPlanesAvailableForService(): Plane %s not available for service: Needs repairs.", (LPCTSTR)qPlane.Name);
+        if (qPlane.Zustand < 100 && (qPlane.Zustand < qPlane.WorstZustand + 20)) {
+            hprintf("Bot::findPlanesAvailableForService(): Plane %s still not available for service: Needs repairs.", (LPCTSTR)qPlane.Name);
             newUnassigned.push_back(id);
         } else if (!checkPlaneAvailable(id, false)) {
-            redprintf("Bot::findPlanesAvailableForService(): Plane %s not available for service: No crew.", (LPCTSTR)qPlane.Name);
+            redprintf("Bot::findPlanesAvailableForService(): Plane %s still not available for service: No crew.", (LPCTSTR)qPlane.Name);
             newUnassigned.push_back(id);
         } else {
             hprintf("Bot::findPlanesAvailableForService(): Putting plane %s back into service.", (LPCTSTR)qPlane.Name);
@@ -412,9 +426,6 @@ void Bot::RobotExecuteAction() {
         hprintf("Bot.cpp: Leaving RobotExecuteAction() (not initialized)\n");
         return;
     }
-
-    /* handy references to player data (ro) */
-    const auto &qPlanes = qPlayer.Planes;
 
     /* handy references to player data (rw) */
     auto &qRobotActions = qPlayer.RobotActions;
@@ -679,31 +690,15 @@ void Bot::RobotExecuteAction() {
         } else {
             redprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
-
         qWorkCountdown = 20 * 5;
         break;
 
     case ACTION_VISITMECH:
-        if (condVisitMech(moneyAvailable) != Prio::None) {
-            for (SLONG c = 0; c < qPlanes.AnzEntries(); c++) {
-                if (qPlanes.IsInAlbum(c) == 0) {
-                    continue;
-                }
-                auto target = min(qPlanes[c].TargetZustand + 2, 100);
-                if (qPlanes[c].TargetZustand < target) {
-                    hprintf("Bot::RobotExecuteAction(): Setting repair target of plane %s to %ld", (LPCTSTR)qPlanes[c].Name, target);
-                    GameMechanic::setPlaneTargetZustand(qPlayer, c, target);
-                }
-            }
-
-            if (qPlayer.MechMode != 3) {
-                hprintf("Bot::RobotExecuteAction(): Setting mech mode to 3");
-                GameMechanic::setMechMode(qPlayer, 3);
-            }
+        if (condVisitMech() != Prio::None) {
+            actionVisitMech();
         } else {
             redprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
-
         qWorkCountdown = 20 * 5;
         break;
 

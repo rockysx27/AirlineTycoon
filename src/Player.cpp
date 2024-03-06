@@ -1623,11 +1623,12 @@ void PLAYER::NewDay() {
 
                 // Reparaturkosten auch in die Salden (aber nur wenn etwas repariert werden soll)
                 if (Planes[c].Zustand < Planes[c].TargetZustand + 2) {
-                    SLONG OldZustand = Planes[c].Zustand;
+                    UBYTE OldZustand = Planes[c].Zustand;
 
                     if (Planes[c].Zustand < Planes[c].WorstZustand) {
                         Planes[c].WorstZustand = Planes[c].Zustand;
                     }
+                    UBYTE OldWorst = Planes[c].WorstZustand;
 
                     switch (MechMode) {
                     // Putzfrau:
@@ -1690,17 +1691,22 @@ void PLAYER::NewDay() {
                     }
 
                     // Wartungskosten berechnen:
-                    SLONG delta = gRepairPrice[MechMode] / 30;
+                    SLONG salary = gRepairPrice[MechMode] / 30;
+                    SLONG costImprovement = 0;
+                    SLONG costRepairs = 0;
 
                     if (Planes[c].Zustand > OldZustand) {
                         Planes[c].WorstZustand = max(Planes[c].WorstZustand, Planes[c].Zustand - 20);
 
-                        delta += Improvement * Planes[c].ptPreis / 110;
+                        costImprovement = Improvement * Planes[c].ptPreis / 110;
 
-                        delta += SLONG((Planes[c].Zustand - OldZustand) * 10 * Planes[c].ptWartungsfaktor * (2100 - Planes[c].Baujahr) / 100 *
-                                       (200 - Planes[c].Zustand) / 100);
+                        costRepairs = SLONG((Planes[c].Zustand - OldZustand) * 10 * Planes[c].ptWartungsfaktor * (2100 - Planes[c].Baujahr) / 100 *
+                                            (200 - Planes[c].Zustand) / 100);
                     }
 
+                    SLONG delta = salary + costImprovement + costRepairs;
+                    hprintf("Player.cpp: Repair of plane %s (%u => %u; worst %u => %u) costs: %ld+%ld+%ld=%ld", (LPCTSTR)Planes[c].Name, OldZustand,
+                            Planes[c].Zustand, OldWorst, Planes[c].WorstZustand, salary, costImprovement, costRepairs, delta);
                     if (delta < 0) {
                         delta = 0;
                         redprintf("Player.cpp: Repair cost for Player %li negative!", PlayerNum);

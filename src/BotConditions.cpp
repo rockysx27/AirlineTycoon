@@ -11,7 +11,7 @@ extern SLONG SeatCosts[];
 
 bool Bot::isOfficeUsable() const { return (qPlayer.OfficeState != 2); }
 
-__int64 Bot::getMoneyAvailable() const { return qPlayer.Money - kMoneyEmergencyFund; }
+__int64 Bot::getMoneyAvailable() const { return qPlayer.Money - mMoneyReservedForRepairs - kMoneyEmergencyFund; }
 
 bool Bot::hoursPassed(SLONG room, SLONG hours) const {
     const auto it = mLastTimeInRoom.find(room);
@@ -117,7 +117,7 @@ Bot::Prio Bot::condAll(SLONG actionId) {
     case ACTION_VISITKIOSK:
         return condVisitMisc();
     case ACTION_VISITMECH:
-        return condVisitMech(moneyAvailable);
+        return condVisitMech();
     case ACTION_VISITDUTYFREE:
         return condVisitDutyFree(moneyAvailable);
     case ACTION_VISITAUFSICHT:
@@ -319,7 +319,7 @@ Bot::Prio Bot::condCheckFreight() {
 
 Bot::Prio Bot::condUpgradePlanes(__int64 &moneyAvailable) {
     moneyAvailable = getMoneyAvailable();
-    if (!hoursPassed(ACTION_UPGRADE_PLANES, 4)) {
+    if (!hoursPassed(ACTION_UPGRADE_PLANES, 24)) {
         return Prio::None;
     }
     if (!qPlayer.RobotUse(ROBOT_USE_LUXERY)) {
@@ -581,16 +581,11 @@ Bot::Prio Bot::condBuyNemesisShares(__int64 &moneyAvailable, SLONG dislike) {
     return Prio::None;
 }
 
-Bot::Prio Bot::condVisitMech(__int64 &moneyAvailable) {
-    moneyAvailable = getMoneyAvailable();
+Bot::Prio Bot::condVisitMech() {
     if (!hoursPassed(ACTION_VISITMECH, 4)) {
         return Prio::None;
     }
-    moneyAvailable -= 2000 * 1000;
-    if (moneyAvailable >= 0) {
-        return Prio::Low;
-    }
-    return Prio::None;
+    return Prio::Medium;
 }
 
 Bot::Prio Bot::condVisitNasa(__int64 &moneyAvailable) {
@@ -664,7 +659,7 @@ Bot::Prio Bot::condVisitDutyFree(__int64 &moneyAvailable) {
 
 Bot::Prio Bot::condVisitBoss(__int64 &moneyAvailable) {
     moneyAvailable = getMoneyAvailable();
-    if (!hoursPassed(ACTION_VISITAUFSICHT, 1)) {
+    if (!hoursPassed(ACTION_VISITAUFSICHT, 2)) {
         return Prio::None;
     }
     moneyAvailable -= 10 * 1000;

@@ -22,6 +22,9 @@ extern const SLONG kMaximumRouteUtilization;
 extern const SLONG kMaximumPlaneUtilization;
 extern const DOUBLE kMaxTicketPriceFactor;
 extern const SLONG kTargetEmployeeHappiness;
+extern const SLONG kPlaneMinimumZustand;
+extern const SLONG kPlaneRepairMax;
+extern const SLONG kMoneyNotForRepairs;
 
 class Bot {
   public:
@@ -81,7 +84,7 @@ class Bot {
     Prio condBuyShares(__int64 &moneyAvailable, SLONG dislike);
     Prio condBuyOwnShares(__int64 &moneyAvailable);
     Prio condBuyNemesisShares(__int64 &moneyAvailable, SLONG dislike);
-    Prio condVisitMech(__int64 &moneyAvailable);
+    Prio condVisitMech();
     Prio condVisitNasa(__int64 &moneyAvailable);
     Prio condVisitMisc();
     Prio condVisitMakler();
@@ -118,6 +121,7 @@ class Bot {
     SLONG calcNumOfFreeShares(SLONG playerId) const;
     void actionEmitShares();
     void actionBuyShares(__int64 moneyAvailable);
+    void actionVisitMech();
     void actionVisitDutyFree(__int64 moneyAvailable);
     void actionVisitBoss(__int64 moneyAvailable);
     std::pair<SLONG, SLONG> actionFindBestRoute(TEAKRAND &rnd) const;
@@ -173,6 +177,7 @@ class Bot {
     bool mOutOfGates{false};
     bool mNeedToPlanJobs{false};
     bool mNeedToPlanRoutes{false};
+    __int64 mMoneyReservedForRepairs{0};
 
     /* status boss office */
     SLONG mBossNumCitiesAvailable{-1};

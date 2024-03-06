@@ -949,8 +949,9 @@ void CFlugplanEintrag::BookFlight(CPlane *Plane, SLONG PlayerNum) {
     }
     auto ZustandAlt = Plane->Zustand;
     Plane->Zustand = UBYTE(Plane->Zustand - faktorDistanz * faktorBaujahr * faktorKerosin / 15);
-    hprintf("Player %li: Zustand: %i -> %i. Faktoren: faktorDistanz = %f, faktorBaujahr = %f, faktorKerosin = %f", PlayerNum, ZustandAlt, Plane->Zustand,
-            faktorDistanz, faktorBaujahr, faktorKerosin);
+    hprintf("Player %li: Plane %s (%s): Zustand: %u => %u (worst = %u), faktorDistanz = %f, faktorBaujahr = %f, faktorKerosin = %f", PlayerNum,
+            (LPCTSTR)Plane->Name, (LPCTSTR)PlaneTypes[Plane->TypeId].Name, ZustandAlt, Plane->Zustand, Plane->WorstZustand, faktorDistanz, faktorBaujahr,
+            faktorKerosin);
     if (Plane->Zustand > 200) {
         Plane->Zustand = 0;
     }
