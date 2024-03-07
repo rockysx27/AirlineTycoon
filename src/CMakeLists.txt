@@ -147,6 +147,13 @@ if(MSVC)
     target_compile_options(AT PUBLIC "/std:c++17")
 endif()
 
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Debug)
+elseif (CMAKE_BUILD_TYPE STREQUAL "Release")
+    set(CMAKE_BUILD_TYPE Release)
+    add_compile_definitions(NDEBUG)
+endif()
+
 if(NOT ${CMAKE_VERSION} VERSION_LESS "3.16.0")
     target_precompile_headers(AT PUBLIC StdAfx.h)
 endif()
