@@ -856,9 +856,7 @@ std::pair<SLONG, SLONG> Bot::actionFindBestRoute(TEAKRAND &rnd) const {
 
         // Ist die Route für die Mission wichtig?
         if (qPlayer.RobotUse(ROBOT_USE_ROUTEMISSION)) {
-            SLONG d = 0;
-
-            for (d = 0; d < 6; d++) {
+            for (SLONG d = 0; d < 6; d++) {
                 if ((Routen[c].VonCity == static_cast<ULONG>(Sim.HomeAirportId) && Routen[c].NachCity == static_cast<ULONG>(Sim.MissionCities[d])) ||
                     (Routen[c].NachCity == static_cast<ULONG>(Sim.HomeAirportId) && Routen[c].VonCity == static_cast<ULONG>(Sim.MissionCities[d]))) {
                     bestForMission.routeId = c;
@@ -869,7 +867,7 @@ std::pair<SLONG, SLONG> Bot::actionFindBestRoute(TEAKRAND &rnd) const {
                 }
             }
             if (bestForMission.routeId != -1) {
-                hprintf("Bot::actionFindBestRoute(): Best route for mission (using plane type %s) is: ", (LPCTSTR)PlaneTypes[bestForMission.routeId].Name);
+                hprintf("Bot::actionFindBestRoute(): Best route for mission (using plane type %s) is: ", (LPCTSTR)PlaneTypes[bestForMission.planeTypeId].Name);
                 Helper::printRoute(Routen[bestForMission.routeId]);
                 return {bestForMission.routeId, bestForMission.planeTypeId};
             }

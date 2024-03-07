@@ -1103,6 +1103,9 @@ void CTakeOffApp::GameLoop(void * /*unused*/) {
                         break;
                     case 5:
                         Multiplier = 600;
+                        if (CheatAutoSkip == 1) {
+                            Multiplier *= 10;
+                        }
                         break;
                     default:
                         printf("Takeoff.cpp: Default case should not be reached.");
