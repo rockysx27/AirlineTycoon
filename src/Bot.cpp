@@ -922,9 +922,11 @@ TEAKFILE &operator<<(TEAKFILE &File, const Bot &bot) {
     File << bot.mBuyPlaneForRouteId;
     File << bot.mWantToRentRouteId;
     File << bot.mFirstRun;
+    File << bot.mDayStarted;
     File << bot.mDoRoutes;
     File << bot.mOutOfGates;
     File << bot.mNeedToPlanJobs << bot.mNeedToPlanRoutes;
+    File << bot.mMoneyReservedForRepairs;
 
     File << bot.mBossNumCitiesAvailable;
     File << bot.mBossGateAvailable;
@@ -975,6 +977,8 @@ TEAKFILE &operator<<(TEAKFILE &File, const Bot &bot) {
         File << solution.planeId;
         File << solution.scheduleFromTime;
     }
+
+    File << bot.mOnThePhone;
 
     SLONG magicnumber = 0x42;
     File << magicnumber;
@@ -1033,9 +1037,11 @@ TEAKFILE &operator>>(TEAKFILE &File, Bot &bot) {
     File >> bot.mBuyPlaneForRouteId;
     File >> bot.mWantToRentRouteId;
     File >> bot.mFirstRun;
+    File >> bot.mDayStarted;
     File >> bot.mDoRoutes;
     File >> bot.mOutOfGates;
     File >> bot.mNeedToPlanJobs >> bot.mNeedToPlanRoutes;
+    File >> bot.mMoneyReservedForRepairs;
 
     File >> bot.mBossNumCitiesAvailable;
     File >> bot.mBossGateAvailable;
@@ -1101,6 +1107,8 @@ TEAKFILE &operator>>(TEAKFILE &File, Bot &bot) {
         File >> solution.planeId;
         File >> solution.scheduleFromTime;
     }
+
+    File >> bot.mOnThePhone;
 
     SLONG magicnumber = 0;
     File >> magicnumber;

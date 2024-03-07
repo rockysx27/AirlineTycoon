@@ -200,7 +200,7 @@ Bot::Prio Bot::condStartDayLaptop() {
     if (mDayStarted || isOfficeUsable()) {
         return Prio::None;
     }
-    if (!qPlayer.HasItem(ITEM_LAPTOP) || qPlayer.LaptopVirus == 1) {
+    if (!qPlayer.HasItem(ITEM_LAPTOP) || qPlayer.LaptopVirus != 0) {
         return Prio::None;
     }
     return Prio::Top;
