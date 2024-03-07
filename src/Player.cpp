@@ -3282,6 +3282,7 @@ void PLAYER::RobotPump() {
 
         if ((RobotActions[0].Running || RobotUse(ROBOT_USE_ALLRUN)) && Sim.GetMinute() > 0) {
             Sim.Persons[Sim.Persons.GetPlayerIndex(PlayerNum)].Running = TRUE;
+            SpeedCount /= 4;
             BroadcastPosition();
         } else {
             Sim.Persons[Sim.Persons.GetPlayerIndex(PlayerNum)].Running = FALSE;
