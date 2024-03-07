@@ -37,7 +37,15 @@ class Bot {
     void setNoticedSickness() { mIsSickToday = true; }
 
     // private:
-    enum class Prio { None, Low, Medium, High, Higher, Top };
+    enum class Prio {
+        None,   /* conditions not met: Forbidden to perform this action! */
+        Lowest, /* unimportant actions (mostly wasting time at bar, telescope, shops, ...) */
+        Low,    /* not completely unimportant (for example collect items) */
+        Medium, /* most main tasks that do not need higher priority */
+        High,   /* important to do soon (grab flights, important investments) */
+        Higher, /* important to do very soon (grab flights from travel agency) */
+        Top     /* survial at stake */
+    };
     struct RouteInfo {
         RouteInfo() = default;
         RouteInfo(SLONG id, SLONG id2, SLONG typeId) : routeId(id), routeReverseId(id2), planeTypeId(typeId) {}
@@ -88,6 +96,7 @@ class Bot {
     Prio condVisitNasa(__int64 &moneyAvailable);
     Prio condVisitMisc();
     Prio condVisitMakler();
+    Prio condVisitArab();
     Prio condVisitRick();
     Prio condBuyUsedPlane(__int64 &moneyAvailable);
     Prio condVisitDutyFree(__int64 &moneyAvailable);

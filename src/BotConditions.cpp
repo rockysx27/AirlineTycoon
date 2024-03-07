@@ -128,6 +128,8 @@ Bot::Prio Bot::condAll(SLONG actionId) {
         return condVisitMisc();
     case ACTION_VISITMAKLER:
         return condVisitMakler();
+    case ACTION_VISITARAB:
+        return condVisitArab();
     case ACTION_VISITRICK:
         return condVisitRick();
     case ACTION_VISITROUTEBOX:
@@ -290,7 +292,7 @@ Bot::Prio Bot::condCheckTravelAgency() {
     }
 
     if (mItemAntiVirus == 0) {
-        return Prio::Low;
+        return Prio::Low; /* collect tarantula */
     }
 
     return Prio::None;
@@ -456,7 +458,7 @@ Bot::Prio Bot::condSabotage(__int64 &moneyAvailable) {
         return Prio::None;
     }
     if (qPlayer.ArabTrust > 0 && (mItemAntiVirus == 1 || mItemAntiVirus == 2)) {
-        return Prio::Low;
+        return Prio::Low; /* collect darts */
     }
     return Prio::None;
 }
@@ -604,7 +606,7 @@ Bot::Prio Bot::condVisitMisc() {
     if (qPlayer.RobotUse(ROBOT_USE_NOCHITCHAT)) {
         return Prio::None;
     }
-    return Prio::Low;
+    return Prio::Lowest;
 }
 
 Bot::Prio Bot::condVisitMakler() {
@@ -617,9 +619,17 @@ Bot::Prio Bot::condVisitMakler() {
     return condVisitMisc();
 }
 
+Bot::Prio Bot::condVisitArab() {
+    /* misc action, can do as often as the bot likes */
+    if (qPlayer.HasItem(ITEM_MG)) {
+        return Prio::Low;
+    }
+    return condVisitMisc();
+}
+
 Bot::Prio Bot::condVisitRick() {
     /* misc action, can do as often as the bot likes */
-    if (qPlayer.StrikeHours > 0 && qPlayer.StrikeEndType != 0 && mItemAntiStrike >= 3) {
+    if (qPlayer.StrikeHours > 0 && qPlayer.StrikeEndType == 0 && mItemAntiStrike >= 3) {
         return Prio::Top;
     }
     if (mItemAntiStrike == 3) {
@@ -637,23 +647,28 @@ Bot::Prio Bot::condVisitDutyFree(__int64 &moneyAvailable) {
     moneyAvailable = getMoneyAvailable();
     moneyAvailable -= 100 * 1000;
 
-    /* emergency shopping: Laptop because office is destroyed */
     if (hoursPassed(ACTION_VISITDUTYFREE, 24) && moneyAvailable >= 0) {
+        /* emergency shopping: Laptop because office is destroyed */
         if (!mDayStarted && !isOfficeUsable() && qPlayer.LaptopQuality == 0) {
             return Prio::Higher;
+        }
+
+        if (qPlayer.LaptopQuality < 4) {
+            return Prio::Low;
         }
     }
 
     /* misc action, can do as often as the bot likes */
-    if (moneyAvailable >= 0 && (qPlayer.LaptopQuality < 4)) {
-        return Prio::Low;
-    }
     if (moneyAvailable >= 0 && !qPlayer.HasItem(ITEM_HANDY)) {
         return Prio::Low;
     }
     if (mItemAntiStrike >= 1 && mItemAntiStrike <= 2) {
         return Prio::Low; /* we still need to aquire the horse shoe */
     }
+    if (mItemArabTrust == 0 && Sim.Date > 0 && qPlayer.ArabTrust == 0) {
+        return Prio::Low; /* we still need to aquire the MG */
+    }
+
     return condVisitMisc();
 }
 
@@ -767,7 +782,7 @@ Bot::Prio Bot::condSabotageSecurity() {
     if (qPlayer.HasItem(ITEM_ZANGE) == 0) {
         return Prio::None;
     }
-    return Prio::Low;
+    return Prio::Lowest;
 }
 
 Bot::Prio Bot::condVisitDesigner(__int64 &moneyAvailable) {

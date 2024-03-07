@@ -27,6 +27,8 @@ static const char *getPrioName(Bot::Prio prio) {
         return "Medium";
     case Bot::Prio::Low:
         return "Low";
+    case Bot::Prio::Lowest:
+        return "Lowest";
     case Bot::Prio::None:
         return "None";
     default:
@@ -313,7 +315,7 @@ void Bot::RobotPlan() {
                        ACTION_BUERO, ACTION_CALL_INTERNATIONAL, ACTION_CALL_INTER_HANDY, ACTION_CHECKAGENT1, ACTION_CHECKAGENT2, ACTION_CHECKAGENT3,
                        ACTION_UPGRADE_PLANES, ACTION_BUYNEWPLANE, ACTION_PERSONAL, ACTION_BUY_KEROSIN, ACTION_BUY_KEROSIN_TANKS, ACTION_SABOTAGE,
                        ACTION_SET_DIVIDEND, ACTION_RAISEMONEY, ACTION_DROPMONEY, ACTION_EMITSHARES, ACTION_SELLSHARES, ACTION_BUYSHARES, ACTION_VISITMECH,
-                       ACTION_VISITNASA, ACTION_VISITTELESCOPE, ACTION_VISITMAKLER, ACTION_VISITRICK, ACTION_VISITKIOSK, ACTION_BUYUSEDPLANE,
+                       ACTION_VISITNASA, ACTION_VISITTELESCOPE, ACTION_VISITMAKLER, ACTION_VISITARAB, ACTION_VISITRICK, ACTION_VISITKIOSK, ACTION_BUYUSEDPLANE,
                        ACTION_VISITDUTYFREE, ACTION_VISITAUFSICHT, ACTION_EXPANDAIRPORT, ACTION_VISITROUTEBOX, ACTION_VISITROUTEBOX2, ACTION_VISITSECURITY,
                        ACTION_VISITSECURITY2, ACTION_VISITDESIGNER, ACTION_WERBUNG_ROUTES, ACTION_WERBUNG};
 
@@ -748,6 +750,20 @@ void Bot::RobotExecuteAction() {
         qWorkCountdown = 20 * 5;
         break;
 
+    case ACTION_VISITARAB:
+        if (condVisitArab() != Prio::None) {
+            if (mItemArabTrust == 1) {
+                if (GameMechanic::useItem(qPlayer, ITEM_MG)) {
+                    hprintf("Bot::RobotExecuteAction(): Used item MG");
+                    mItemArabTrust = 2;
+                }
+            }
+        } else {
+            redprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+        }
+        qWorkCountdown = 20 * 5;
+        break;
+
     case ACTION_VISITRICK:
         if (condVisitRick() != Prio::None) {
             if (mItemAntiStrike == 3) {
@@ -756,7 +772,7 @@ void Bot::RobotExecuteAction() {
                     mItemAntiStrike = 4;
                 }
             }
-            if (qPlayer.StrikeHours > 0 && qPlayer.StrikeEndType != 0 && mItemAntiStrike == 4) {
+            if (qPlayer.StrikeHours > 0 && qPlayer.StrikeEndType == 0 && mItemAntiStrike == 4) {
                 hprintf("Bot::RobotExecuteAction(): Ended strike using drunk guy");
                 GameMechanic::endStrike(qPlayer, GameMechanic::EndStrikeMode::Drunk);
             }
