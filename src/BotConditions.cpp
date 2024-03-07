@@ -846,7 +846,7 @@ Bot::Prio Bot::condBuyAds(__int64 &moneyAvailable) {
     auto minCost = gWerbePrice[0 * 6 + kSmallestAdCampaign];
     moneyAvailable -= minCost;
     if (moneyAvailable >= 0) {
-        if (qPlayer.Image < 0 || (mDoRoutes && qPlayer.Image < 300)) {
+        if (qPlayer.Image < 0 || (mDoRoutes && qPlayer.Image < 300) || qPlayer.RobotUse(ROBOT_USE_MUCHWERBUNG)) {
             return Prio::Medium;
         }
         auto imageDelta = minCost / 10000 * (kSmallestAdCampaign + 6) / 55;
