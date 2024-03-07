@@ -800,8 +800,9 @@ Bot::Prio Bot::condBuyAdsForRoutes(__int64 &moneyAvailable) {
     moneyAvailable -= minCost;
     if (moneyAvailable >= 0 && !mRoutesSortedByImage.empty()) {
         SLONG imageDelta = UBYTE(minCost / 30000);
-        if (mRoutes[mRoutesSortedByImage[0]].image + imageDelta <= 100) {
-            return (mRoutes[mRoutesSortedByImage[0]].image < 80) ? Prio::High : Prio::Medium;
+        SLONG idx = mRoutesSortedByImage[0];
+        if (idx < mRoutes.size() && mRoutes[idx].image + imageDelta <= 100) {
+            return (mRoutes[idx].image < 80) ? Prio::High : Prio::Medium;
         }
     }
 

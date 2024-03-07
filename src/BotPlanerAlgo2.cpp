@@ -746,9 +746,9 @@ bool BotPlaner::algo2(int64_t timeBudget) {
             temperature = 1; /* ensure final greedy run */
         }
 
-        // #ifdef PRINT_OVERALL
+#ifdef PRINT_OVERALL
         hprintf("%f ms left, temp now %d. Current gain = %d (overall = %d)", (timeBudget - delta) / 1000.0, temperature, currentBestGain, overallBestGain);
-        // #endif
+#endif
     }
 
     /* restore best path */

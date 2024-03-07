@@ -323,7 +323,7 @@ bool GameMechanic::activateSaboteurJob(PLAYER &qPlayer) {
 
         qPlayer.NetSynchronizeSabotage();
     } else if (type == 2) {
-        if (number < 1 || number >= 5) {
+        if (number < 1 || number >= 7) {
             redprintf("GameMechanic::activateSaboteurJob: Invalid job number (%ld).", number);
             return false;
         }

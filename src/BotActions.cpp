@@ -50,6 +50,7 @@ void Bot::actionStartDayLaptop(__int64 moneyAvailable) {
 
     /* check routes */
     if (mDoRoutes) {
+        checkLostRoutes();
         updateRouteInfo();
         requestPlanRoutes(true);
     }
@@ -1034,12 +1035,17 @@ void Bot::checkLostRoutes() {
     if (numRented / 2 < mRoutes.size()) {
         redprintf("We lost %ld routes!", mRoutes.size() - numRented / 2);
 
-        std::vector<RouteInfo> routes;
+        std::vector<RouteInfo> routesNew;
+        std::vector<SLONG> planesForRoutesNew;
         for (const auto &route : mRoutes) {
             if (qRRouten[route.routeId].Rang != 0) {
-                routes.emplace_back(route);
+                /* route still exists */
+                routesNew.emplace_back(route);
+                for (auto planeId : route.planeIds) {
+                    planesForRoutesNew.push_back(planeId);
+                }
             } else {
-                /* move planes from lost routes back into the "unassigned" pile */
+                /* route is gone! move planes from route back into the "unassigned" pile */
                 for (auto planeId : route.planeIds) {
                     mPlanesForRoutesUnassigned.push_back(planeId);
                     GameMechanic::killFlightPlan(qPlayer, planeId);
@@ -1047,7 +1053,8 @@ void Bot::checkLostRoutes() {
                 }
             }
         }
-        std::swap(mRoutes, routes);
+        std::swap(mRoutes, routesNew);
+        std::swap(mPlanesForRoutes, planesForRoutesNew);
     }
 }
 
@@ -1248,7 +1255,7 @@ void Bot::planRoutes() {
                 curTime += durationB;
                 numScheduled++;
             }
-            hprintf("Bot::actionPlanRoutes(): Scheduled route %s %ld times for plane %s, starting at %s %ld", Helper::getRouteName(getRoute(qRoute)).c_str(),
+            hprintf("Bot::planRoutes(): Scheduled route %s %ld times for plane %s, starting at %s %ld", Helper::getRouteName(getRoute(qRoute)).c_str(),
                     numScheduled, (LPCTSTR)qPlane.Name, (LPCTSTR)Helper::getWeekday(availTime.getDate()), availTime.getHour());
             Helper::checkPlaneSchedule(qPlayer, planeId, true);
         }
@@ -1275,7 +1282,7 @@ void Bot::planRoutes() {
         priceNew = priceNew / 10 * 10;
         if (priceNew != priceOld) {
             GameMechanic::setRouteTicketPriceBoth(qPlayer, qRoute.routeId, priceNew, priceNew * 2);
-            hprintf("Bot::actionPlanRoutes(): Changing ticket prices for route %s: %ld => %ld (%.2f => %.2f)", Helper::getRouteName(getRoute(qRoute)).c_str(),
+            hprintf("Bot::planRoutes(): Changing ticket prices for route %s: %ld => %ld (%.2f => %.2f)", Helper::getRouteName(getRoute(qRoute)).c_str(),
                     priceOld, priceNew, factorOld, qRoute.ticketCostFactor);
         }
     }

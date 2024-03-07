@@ -101,39 +101,40 @@ bool Bot::checkPlaneAvailable(SLONG planeId, bool printIfAvailable) const {
 
 bool Bot::checkPlaneLists() {
     bool foundProblem = false;
-    std::unordered_map<int, bool> uniquePlaneIds;
+    std::unordered_map<SLONG, SLONG> uniquePlaneIds;
     for (const auto &i : mPlanesForJobs) {
         if (uniquePlaneIds.find(i) != uniquePlaneIds.end()) {
-            redprintf("Bot::checkPlaneLists(): Plane ID appears in multiple lists: %ld.", i);
+            redprintf("Bot::checkPlaneLists(): Plane with ID = %ld appears in multiple lists: 1 and %ld.", i, uniquePlaneIds[i]);
             foundProblem = true;
         }
-        uniquePlaneIds[i] = true;
+        uniquePlaneIds[i] = 1;
     }
     for (const auto &i : mPlanesForRoutes) {
         if (uniquePlaneIds.find(i) != uniquePlaneIds.end()) {
-            redprintf("Bot::checkPlaneLists(): Plane ID appears in multiple lists: %ld.", i);
+            redprintf("Bot::checkPlaneLists(): Plane with ID = %ld appears in multiple lists: 2 and %ld.", i, uniquePlaneIds[i]);
             foundProblem = true;
         }
-        uniquePlaneIds[i] = true;
+        uniquePlaneIds[i] = 2;
     }
     for (const auto &i : mPlanesForJobsUnassigned) {
         if (uniquePlaneIds.find(i) != uniquePlaneIds.end()) {
-            redprintf("Bot::checkPlaneLists(): Plane ID appears in multiple lists: %ld.", i);
+            redprintf("Bot::checkPlaneLists(): Plane with ID = %ld appears in multiple lists: 3 and %ld.", i, uniquePlaneIds[i]);
             foundProblem = true;
         }
-        uniquePlaneIds[i] = true;
+        uniquePlaneIds[i] = 3;
     }
     for (const auto &i : mPlanesForRoutesUnassigned) {
         if (uniquePlaneIds.find(i) != uniquePlaneIds.end()) {
-            redprintf("Bot::checkPlaneLists(): Plane ID appears in multiple lists: %ld.", i);
+            redprintf("Bot::checkPlaneLists(): Plane with ID = %ld appears in multiple lists: 4 and %ld.", i, uniquePlaneIds[i]);
             foundProblem = true;
         }
-        uniquePlaneIds[i] = true;
+        uniquePlaneIds[i] = 4;
     }
     for (SLONG i = 0; i < qPlayer.Planes.AnzEntries(); i++) {
         int id = qPlayer.Planes.GetIdFromIndex(i);
         if (qPlayer.Planes.IsInAlbum(i) && uniquePlaneIds.find(id) == uniquePlaneIds.end()) {
-            redprintf("Bot::checkPlaneLists(): Found new plane: %ld.", id);
+            const auto &qPlane = qPlayer.Planes[i];
+            redprintf("Bot::checkPlaneLists(): Found new plane: %s (%lx).", (LPCTSTR)qPlane.Name, id);
             mPlanesForJobsUnassigned.push_back(id);
             foundProblem = true;
         }
@@ -427,20 +428,30 @@ void Bot::RobotExecuteAction() {
         return;
     }
 
+    /* refuse to work outside working hours (game sometimes calls this too early) */
+    if (Sim.GetHour() < 9 || (Sim.Time == 540000)) { /* check if it is precisely 09:00 or earlier */
+        hprintf("Bot.cpp: Leaving RobotExecuteAction() (too early)\n");
+        forceReplanning();
+        return;
+    }
+    if (Sim.GetHour() >= 18) {
+        hprintf("Bot.cpp: Leaving RobotExecuteAction() (too late)\n");
+        forceReplanning();
+        return;
+    }
+
     /* handy references to player data (rw) */
     auto &qRobotActions = qPlayer.RobotActions;
     auto &qWorkCountdown = qPlayer.WorkCountdown;
 
     LocalRandom.Rand(2); // Sicherheitshalber, damit wir immer genau ein Random ausführen
 
-    /* temporary data */
-    __int64 moneyAvailable = getMoneyAvailable();
-
     greenprintf("Bot.cpp: Enter RobotExecuteAction(): Executing %s, current time: %02d:%02d, money: %s $", getRobotActionName(qRobotActions[0].ActionId),
                 Sim.GetHour(), Sim.GetMinute(), Insert1000erDots64(qPlayer.Money).c_str());
 
     mOnThePhone = 0;
 
+    __int64 moneyAvailable = getMoneyAvailable();
     switch (qRobotActions[0].ActionId) {
     case 0:
         qWorkCountdown = 2;
