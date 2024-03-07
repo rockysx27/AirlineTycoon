@@ -704,34 +704,28 @@ bool BotPlaner::algo2(int64_t timeBudget) {
         int iterGain = allPlaneGain();
         if (!SA_accept(iterGain, temperature, getRandInt(1, 100))) {
             /* roll back */
-#ifdef PRINT_OVERALL
-            std::cout << "Gains is too low (" << iterGain << "), rolling back" << std::endl;
-#endif
             for (int planeIdx = 0; planeIdx < mPlaneStates.size(); planeIdx++) {
                 killPath(planeIdx);
             }
             for (int planeIdx = 0; planeIdx < mPlaneStates.size(); planeIdx++) {
                 restorePath(planeIdx, currentBestPath[planeIdx]);
             }
-#ifdef PRINT_OVERALL
-            std::cout << "Gains is too low, rolled back" << std::endl;
-#endif
-            continue;
-        }
-
-        currentBestGain = iterGain;
-        for (int planeIdx = 0; planeIdx < mPlaneStates.size(); planeIdx++) {
-            savePath(planeIdx, currentBestPath[planeIdx]);
-        }
-
-        if (iterGain > overallBestGain) {
-            int test = 0;
-            overallBestGain = iterGain;
+        } else {
+            /* save current best solution */
+            currentBestGain = iterGain;
             for (int planeIdx = 0; planeIdx < mPlaneStates.size(); planeIdx++) {
-                savePath(planeIdx, overallBestPath[planeIdx]);
-                test += mPlaneStates[planeIdx].currentPremium - mPlaneStates[planeIdx].currentCost;
+                savePath(planeIdx, currentBestPath[planeIdx]);
             }
-            assert(test == overallBestGain);
+
+            if (iterGain > overallBestGain) {
+                int test = 0;
+                overallBestGain = iterGain;
+                for (int planeIdx = 0; planeIdx < mPlaneStates.size(); planeIdx++) {
+                    savePath(planeIdx, overallBestPath[planeIdx]);
+                    test += mPlaneStates[planeIdx].currentPremium - mPlaneStates[planeIdx].currentCost;
+                }
+                assert(test == overallBestGain);
+            }
         }
 
         /* adjust temperature based on amount of time left */
