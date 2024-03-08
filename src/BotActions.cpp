@@ -659,7 +659,7 @@ void Bot::actionBuyShares(__int64 moneyAvailable) {
 
 void Bot::actionVisitMech() {
     if (qPlayer.MechMode != 3) {
-        hprintf("Bot::RobotExecuteAction(): Setting mech mode to 3");
+        hprintf("Bot::actionVisitMech(): Setting mech mode to 3");
         GameMechanic::setMechMode(qPlayer, 3);
     }
 
@@ -694,11 +694,13 @@ void Bot::actionVisitMech() {
                 GameMechanic::setPlaneTargetZustand(qPlayer, iter.first, qPlane.TargetZustand + 1);
                 keepGoing = true;
 
-                __int64 improvement = qPlane.TargetZustand - (qPlane.WorstZustand + 20);
-                if (improvement > 0) {
-                    mMoneyReservedForRepairs += (improvement * qPlane.ptPreis / 110);
+                if (qPlane.TargetZustand > (qPlane.WorstZustand + 20)) {
+                    mMoneyReservedForRepairs += (qPlane.ptPreis / 110);
                     moneyAvailable = getMoneyAvailable();
                 }
+            }
+            if (moneyAvailable <= 0) {
+                break;
             }
         }
     }
@@ -741,13 +743,13 @@ void Bot::actionVisitDutyFree(__int64 moneyAvailable) {
     if (qPlayer.LaptopQuality < 4) {
         auto quali = qPlayer.LaptopQuality;
         GameMechanic::buyDutyFreeItem(qPlayer, ITEM_LAPTOP);
-        hprintf("Bot::RobotExecuteAction(): Buying laptop (%ld => %ld)", quali, qPlayer.LaptopQuality);
+        hprintf("Bot::actionVisitDutyFree(): Buying laptop (%ld => %ld)", quali, qPlayer.LaptopQuality);
     }
     __int64 moneySpent = std::max(0LL, (money - qPlayer.Money));
     moneyAvailable -= moneySpent;
 
     if (moneyAvailable > 0 && !qPlayer.HasItem(ITEM_HANDY)) {
-        hprintf("Bot::RobotExecuteAction(): Buying cell phone");
+        hprintf("Bot::actionVisitDutyFree(): Buying cell phone");
         GameMechanic::buyDutyFreeItem(qPlayer, ITEM_HANDY);
     }
 }
