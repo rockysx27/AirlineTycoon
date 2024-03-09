@@ -78,7 +78,7 @@ class Bot {
     Prio condCheckLastMinute();
     Prio condCheckTravelAgency();
     Prio condCheckFreight();
-    Prio condUpgradePlanes(__int64 &moneyAvailable);
+    Prio condUpgradePlanes();
     Prio condBuyNewPlane(__int64 &moneyAvailable);
     Prio condVisitHR();
     Prio condBuyKerosine(__int64 &moneyAvailable);
@@ -120,7 +120,7 @@ class Bot {
     void grabFlights(BotPlaner &planer, bool areWeInOffice);
     void requestPlanFlights(bool areWeInOffice);
     void planFlights();
-    void actionUpgradePlanes(__int64 moneyAvailable);
+    void actionUpgradePlanes();
     void actionBuyNewPlane(__int64 moneyAvailable);
     void actionVisitHR();
     std::pair<SLONG, SLONG> kerosineQualiOptimization(__int64 moneyAvailable, DOUBLE targetFillRatio) const;
@@ -187,6 +187,7 @@ class Bot {
     bool mNeedToPlanJobs{false};
     bool mNeedToPlanRoutes{false};
     __int64 mMoneyReservedForRepairs{0};
+    __int64 mMoneyReservedForUpgrades{0};
 
     /* status boss office */
     SLONG mBossNumCitiesAvailable{-1};

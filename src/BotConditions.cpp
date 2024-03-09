@@ -11,7 +11,7 @@ extern SLONG SeatCosts[];
 
 bool Bot::isOfficeUsable() const { return (qPlayer.OfficeState != 2); }
 
-__int64 Bot::getMoneyAvailable() const { return qPlayer.Money - mMoneyReservedForRepairs - kMoneyEmergencyFund; }
+__int64 Bot::getMoneyAvailable() const { return qPlayer.Money - mMoneyReservedForRepairs - mMoneyReservedForUpgrades - kMoneyEmergencyFund; }
 
 bool Bot::hoursPassed(SLONG room, SLONG hours) const {
     const auto it = mLastTimeInRoom.find(room);
@@ -149,7 +149,7 @@ Bot::Prio Bot::condAll(SLONG actionId) {
     case ACTION_SABOTAGE:
         return condSabotage(moneyAvailable);
     case ACTION_UPGRADE_PLANES:
-        return condUpgradePlanes(moneyAvailable);
+        return condUpgradePlanes();
     case ACTION_BUY_KEROSIN:
         return condBuyKerosine(moneyAvailable);
     case ACTION_BUY_KEROSIN_TANKS:
@@ -319,8 +319,7 @@ Bot::Prio Bot::condCheckFreight() {
     return Prio::None;
 }
 
-Bot::Prio Bot::condUpgradePlanes(__int64 &moneyAvailable) {
-    moneyAvailable = getMoneyAvailable();
+Bot::Prio Bot::condUpgradePlanes() {
     if (!hoursPassed(ACTION_UPGRADE_PLANES, 24)) {
         return Prio::None;
     }
@@ -336,9 +335,15 @@ Bot::Prio Bot::condUpgradePlanes(__int64 &moneyAvailable) {
     if (!haveDiscount()) {
         return Prio::None; /* wait until we have some discount */
     }
-    moneyAvailable -= 1000 * 1000;
+    /* we are not checking money here because plane upgrades happen asynchronously.
+     * Instead, we earmark money in the variable mMoneyReservedForUpgrades.
+     * We need to execute this action regularly even when we now money since we
+     * might cancel previously planned upgrades to have more available money. */
     SLONG minCost = 550 * (SeatCosts[2] - SeatCosts[0] / 2); /* assuming 550 seats (777) */
-    if (!mPlanesForRoutes.empty() && moneyAvailable >= minCost) {
+    if (getMoneyAvailable() < minCost && mMoneyReservedForUpgrades == 0) {
+        return Prio::None;
+    }
+    if (!mPlanesForRoutes.empty()) {
         return Prio::Medium;
     }
     return Prio::None;
@@ -525,7 +530,7 @@ Bot::Prio Bot::condSellShares(__int64 &moneyAvailable) {
         return Prio::None;
     }
 
-    int numShares = 0;
+    SLONG numShares = 0;
     for (SLONG c = 0; c < Sim.Players.AnzPlayers; c++) {
         if (c != qPlayer.PlayerNum) {
             numShares += qPlayer.OwnsAktien[c];
@@ -585,6 +590,13 @@ Bot::Prio Bot::condBuyNemesisShares(__int64 &moneyAvailable, SLONG dislike) {
 
 Bot::Prio Bot::condVisitMech() {
     if (!hoursPassed(ACTION_VISITMECH, 4)) {
+        return Prio::None;
+    }
+    /* we are not checking money here because plane repairs happen asynchronously.
+     * Instead, we earmark money in the variable mMoneyReservedForRepairs.
+     * We need to execute this action regularly even when we now money since we
+     * might cancel previously planned repairs to have more available money. */
+    if (getMoneyAvailable() < 0 && mMoneyReservedForRepairs == 0) {
         return Prio::None;
     }
     return Prio::Medium;

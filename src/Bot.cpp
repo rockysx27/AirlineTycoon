@@ -133,7 +133,7 @@ bool Bot::checkPlaneLists() {
         uniquePlaneIds[i] = 4;
     }
     for (SLONG i = 0; i < qPlayer.Planes.AnzEntries(); i++) {
-        int id = qPlayer.Planes.GetIdFromIndex(i);
+        SLONG id = qPlayer.Planes.GetIdFromIndex(i);
         if (qPlayer.Planes.IsInAlbum(i) && uniquePlaneIds.find(id) == uniquePlaneIds.end()) {
             const auto &qPlane = qPlayer.Planes[i];
             redprintf("Bot::checkPlaneLists(): Found new plane: %s (%lx).", (LPCTSTR)qPlane.Name, id);
@@ -171,7 +171,7 @@ bool Bot::findPlanesNotAvailableForService(std::vector<SLONG> &listAvailable, st
         hprintf("Bot::findPlanesNotAvailableForService(): Plane %s (%s): Zustand = %u, WorstZustand = %u", (LPCTSTR)qPlane.Name,
                 (LPCTSTR)PlaneTypes[qPlane.TypeId].Name, qPlane.Zustand, qPlane.WorstZustand);
 
-        int mode = 0; /* 0: keep plane in service */
+        SLONG mode = 0; /* 0: keep plane in service */
         if (qPlane.Zustand <= kPlaneMinimumZustand) {
             hprintf("Bot::findPlanesNotAvailableForService(): Plane %s not available for service: Needs repairs.", (LPCTSTR)qPlane.Name);
             mode = 1; /* 1: phase plane out */
@@ -542,8 +542,8 @@ void Bot::RobotExecuteAction() {
         break;
 
     case ACTION_UPGRADE_PLANES:
-        if (condUpgradePlanes(moneyAvailable) != Prio::None) {
-            actionUpgradePlanes(moneyAvailable);
+        if (condUpgradePlanes() != Prio::None) {
+            actionUpgradePlanes();
         } else {
             redprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
@@ -942,7 +942,7 @@ TEAKFILE &operator<<(TEAKFILE &File, const Bot &bot) {
     File << bot.mDoRoutes;
     File << bot.mOutOfGates;
     File << bot.mNeedToPlanJobs << bot.mNeedToPlanRoutes;
-    File << bot.mMoneyReservedForRepairs;
+    File << bot.mMoneyReservedForRepairs << bot.mMoneyReservedForUpgrades;
 
     File << bot.mBossNumCitiesAvailable;
     File << bot.mBossGateAvailable;
@@ -1057,7 +1057,7 @@ TEAKFILE &operator>>(TEAKFILE &File, Bot &bot) {
     File >> bot.mDoRoutes;
     File >> bot.mOutOfGates;
     File >> bot.mNeedToPlanJobs >> bot.mNeedToPlanRoutes;
-    File >> bot.mMoneyReservedForRepairs;
+    File >> bot.mMoneyReservedForRepairs >> bot.mMoneyReservedForUpgrades;
 
     File >> bot.mBossNumCitiesAvailable;
     File >> bot.mBossGateAvailable;

@@ -207,19 +207,38 @@ void Bot::planFlights() {
     forceReplanning();
 }
 
-void Bot::actionUpgradePlanes(__int64 moneyAvailable) {
-    SLONG anzahl = 4;
-    const auto &qPlanes = qPlayer.Planes;
-    while (moneyAvailable > 0 && anzahl-- > 0) {
-        for (SLONG bpass = 0; bpass < 3; bpass++) {
-            auto idx = LocalRandom.Rand(mPlanesForRoutes.size());
-            CPlane &qPlane = const_cast<CPlane &>(qPlanes[mPlanesForRoutes[idx]]);
+void Bot::actionUpgradePlanes() {
+    /* cancel all currently planned plane ugprades */
+    mMoneyReservedForUpgrades = 0;
+    for (SLONG c = 0; c < mPlanesForRoutes.size(); c++) {
+        auto &qPlane = qPlayer.Planes[mPlanesForRoutes[c]];
+
+        qPlane.SitzeTarget = qPlane.Sitze;
+        qPlane.TablettsTarget = qPlane.Tabletts;
+        qPlane.DecoTarget = qPlane.Deco;
+        qPlane.ReifenTarget = qPlane.Reifen;
+        qPlane.TriebwerkTarget = qPlane.Triebwerk;
+        qPlane.SicherheitTarget = qPlane.Sicherheit;
+        qPlane.ElektronikTarget = qPlane.Elektronik;
+    }
+
+    /* plan new plane ugprades until we run out of money */
+    auto randOffset = LocalRandom.Rand(mPlanesForRoutes.size());
+    auto moneyAvailable = getMoneyAvailable() - 2500 * 1000;
+    bool keepGoing = true;
+    while (keepGoing && moneyAvailable > 0) {
+        keepGoing = false;
+        for (SLONG c = 0; c < mPlanesForRoutes.size() && (moneyAvailable > 0); c++) {
+            SLONG idx = (c + randOffset) % mPlanesForRoutes.size();
+            CPlane &qPlane = qPlayer.Planes[mPlanesForRoutes[idx]];
             auto ptPassagiere = qPlane.ptPassagiere;
 
             SLONG cost = ptPassagiere * (SeatCosts[2] - SeatCosts[qPlane.Sitze] / 2);
             if (qPlane.SitzeTarget < 2 && cost <= moneyAvailable) {
                 qPlane.SitzeTarget = 2;
                 moneyAvailable -= cost;
+                mMoneyReservedForUpgrades += cost;
+                keepGoing = true;
                 hprintf("Bot::actionUpgradePlanes(): Upgrading seats in %s.", (LPCTSTR)qPlane.Name);
                 continue;
             }
@@ -228,6 +247,8 @@ void Bot::actionUpgradePlanes(__int64 moneyAvailable) {
             if (qPlane.TablettsTarget < 2 && cost <= moneyAvailable) {
                 qPlane.TablettsTarget = 2;
                 moneyAvailable -= cost;
+                mMoneyReservedForUpgrades += cost;
+                keepGoing = true;
                 hprintf("Bot::actionUpgradePlanes(): Upgrading tabletts in %s.", (LPCTSTR)qPlane.Name);
                 continue;
             }
@@ -236,6 +257,8 @@ void Bot::actionUpgradePlanes(__int64 moneyAvailable) {
             if (qPlane.DecoTarget < 2 && cost <= moneyAvailable) {
                 qPlane.DecoTarget = 2;
                 moneyAvailable -= cost;
+                mMoneyReservedForUpgrades += cost;
+                keepGoing = true;
                 hprintf("Bot::actionUpgradePlanes(): Upgrading deco in %s.", (LPCTSTR)qPlane.Name);
                 continue;
             }
@@ -244,6 +267,8 @@ void Bot::actionUpgradePlanes(__int64 moneyAvailable) {
             if (qPlane.ReifenTarget < 2 && cost <= moneyAvailable) {
                 qPlane.ReifenTarget = 2;
                 moneyAvailable -= cost;
+                mMoneyReservedForUpgrades += cost;
+                keepGoing = true;
                 hprintf("Bot::actionUpgradePlanes(): Upgrading tires in %s.", (LPCTSTR)qPlane.Name);
                 continue;
             }
@@ -252,6 +277,8 @@ void Bot::actionUpgradePlanes(__int64 moneyAvailable) {
             if (qPlane.TriebwerkTarget < 2 && cost <= moneyAvailable) {
                 qPlane.TriebwerkTarget = 2;
                 moneyAvailable -= cost;
+                mMoneyReservedForUpgrades += cost;
+                keepGoing = true;
                 hprintf("Bot::actionUpgradePlanes(): Upgrading engines in %s.", (LPCTSTR)qPlane.Name);
                 continue;
             }
@@ -260,6 +287,8 @@ void Bot::actionUpgradePlanes(__int64 moneyAvailable) {
             if (qPlane.SicherheitTarget < 2 && cost <= moneyAvailable) {
                 qPlane.SicherheitTarget = 2;
                 moneyAvailable -= cost;
+                mMoneyReservedForUpgrades += cost;
+                keepGoing = true;
                 hprintf("Bot::actionUpgradePlanes(): Upgrading safety in %s.", (LPCTSTR)qPlane.Name);
                 continue;
             }
@@ -268,11 +297,15 @@ void Bot::actionUpgradePlanes(__int64 moneyAvailable) {
             if (qPlane.ElektronikTarget < 2 && cost <= moneyAvailable) {
                 qPlane.ElektronikTarget = 2;
                 moneyAvailable -= cost;
+                mMoneyReservedForUpgrades += cost;
+                keepGoing = true;
                 hprintf("Bot::actionUpgradePlanes(): Upgrading electronics in %s.", (LPCTSTR)qPlane.Name);
                 continue;
             }
         }
     }
+    hprintf("Bot::actionUpgradePlanes(): We are reserving %s $ for plane upgrades, available money: %s $",
+            (LPCTSTR)Insert1000erDots64(mMoneyReservedForUpgrades), (LPCTSTR)Insert1000erDots64(getMoneyAvailable()));
 }
 
 void Bot::actionBuyNewPlane(__int64 /*moneyAvailable*/) {
@@ -1086,7 +1119,7 @@ void Bot::updateRouteInfo() {
     /* sort routes by utilization and by image */
     mRoutesSortedByUtilization.resize(mRoutes.size());
     mRoutesSortedByImage.resize(mRoutes.size());
-    for (int i = 0; i < mRoutes.size(); i++) {
+    for (SLONG i = 0; i < mRoutes.size(); i++) {
         mRoutesSortedByUtilization[i] = i;
         mRoutesSortedByImage[i] = i;
     }
@@ -1140,7 +1173,7 @@ void Bot::planRoutes() {
 
     /* assign planes to routes */
     SLONG numUnassigned = mPlanesForRoutesUnassigned.size();
-    for (int i = 0; i < numUnassigned; i++) {
+    for (SLONG i = 0; i < numUnassigned; i++) {
         if (mRoutes[mRoutesSortedByUtilization[0]].routeUtilization >= kMaximumRouteUtilization) {
             break; /* No more underutilized routes */
         }
