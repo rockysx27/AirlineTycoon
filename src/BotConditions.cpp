@@ -11,7 +11,9 @@ extern SLONG SeatCosts[];
 
 bool Bot::isOfficeUsable() const { return (qPlayer.OfficeState != 2); }
 
-__int64 Bot::getMoneyAvailable() const { return qPlayer.Money - mMoneyReservedForRepairs - mMoneyReservedForUpgrades - kMoneyEmergencyFund; }
+__int64 Bot::getMoneyAvailable() const {
+    return qPlayer.Money - mMoneyReservedForRepairs - mMoneyReservedForUpgrades - mMoneyReservedForAuctions - kMoneyEmergencyFund;
+}
 
 bool Bot::hoursPassed(SLONG room, SLONG hours) const {
     const auto it = mLastTimeInRoom.find(room);
@@ -30,7 +32,7 @@ void Bot::grabNewFlights() {
 }
 
 bool Bot::haveDiscount() const {
-    if (qPlayer.HasBerater(BERATERTYP_SICHERHEIT) >= 50 || Sim.Date >= 3) {
+    if (qPlayer.HasBerater(BERATERTYP_SICHERHEIT) >= 50 || Sim.Date > 7) {
         return true; /* wait until we have some discount */
     }
     return false;
@@ -67,14 +69,14 @@ bool Bot::canWeCallInternational() {
     }
 
     if (mPlanesForJobs.empty()) {
-        return false;
+        return false; /* no planes */
     }
     if (!mPlanerSolution.empty()) {
-        return false;
+        return false; /* previously grabbed flights still not scheduled */
     }
 
     if (HowToPlan::None == canWePlanFlights()) {
-        return false; /* plane list not updated */
+        return false;
     }
 
     for (SLONG c = 0; c < 4; c++) {
@@ -255,11 +257,12 @@ Bot::Prio Bot::condCheckLastMinute() {
     if (!hoursPassed(ACTION_CHECKAGENT1, 2)) {
         return Prio::None;
     }
+
     if (mPlanesForJobs.empty()) {
-        return Prio::None;
+        return Prio::None; /* no planes */
     }
     if (!mPlanerSolution.empty()) {
-        return Prio::None;
+        return Prio::None; /* previously grabbed flights still not scheduled */
     }
 
     auto res = canWePlanFlights();
@@ -276,11 +279,12 @@ Bot::Prio Bot::condCheckTravelAgency() {
     if (!hoursPassed(ACTION_CHECKAGENT2, 2)) {
         return Prio::None;
     }
+
     if (mPlanesForJobs.empty()) {
-        return Prio::None;
+        return Prio::None; /* no planes */
     }
     if (!mPlanerSolution.empty()) {
-        return Prio::None;
+        return Prio::None; /* previously grabbed flights still not scheduled */
     }
 
     auto res = canWePlanFlights();
@@ -304,8 +308,12 @@ Bot::Prio Bot::condCheckFreight() {
     if (!qPlayer.RobotUse(ROBOT_USE_FRACHT) || true) { // TODO
         return Prio::None;
     }
+
+    if (mPlanesForJobs.empty()) {
+        return Prio::None; /* no planes */
+    }
     if (!mPlanerSolution.empty()) {
-        return Prio::None;
+        return Prio::None; /* previously grabbed flights still not scheduled */
     }
 
     auto res = canWePlanFlights();
@@ -337,7 +345,7 @@ Bot::Prio Bot::condUpgradePlanes() {
     }
     /* we are not checking money here because plane upgrades happen asynchronously.
      * Instead, we earmark money in the variable mMoneyReservedForUpgrades.
-     * We need to execute this action regularly even when we now money since we
+     * We need to execute this action regularly even if we have no money since we
      * might cancel previously planned upgrades to have more available money. */
     SLONG minCost = 550 * (SeatCosts[2] - SeatCosts[0] / 2); /* assuming 550 seats (777) */
     if (getMoneyAvailable() < minCost && mMoneyReservedForUpgrades == 0) {
@@ -447,7 +455,7 @@ Bot::Prio Bot::condBuyKerosineTank(__int64 &moneyAvailable) {
         return Prio::None;
     }
     auto nTankTypes = sizeof(TankSize) / sizeof(TankSize[0]);
-    moneyAvailable -= 200 * 1000;
+    moneyAvailable -= kMoneyReserveBuyTanks;
     if (moneyAvailable > TankPrice[nTankTypes - 1]) {
         moneyAvailable = TankPrice[nTankTypes - 1]; /* do not spend more than 1x largest tank at once*/
     }
@@ -481,7 +489,7 @@ Bot::Prio Bot::condIncreaseDividend(__int64 &moneyAvailable) {
     if (qPlayer.Dividende >= 25) {
         return Prio::None;
     }
-    moneyAvailable -= 100 * 1000;
+    moneyAvailable -= kMoneyReserveIncreaseDividend;
     if (moneyAvailable >= 0) {
         return Prio::Medium;
     }
@@ -507,7 +515,7 @@ Bot::Prio Bot::condDropMoney(__int64 &moneyAvailable) {
     if (!hoursPassed(ACTION_DROPMONEY, 24)) {
         return Prio::None;
     }
-    moneyAvailable -= 1500 * 1000;
+    moneyAvailable -= kMoneyReservePaybackCredit;
     if (moneyAvailable >= 0 && qPlayer.Credit > 0) {
         return Prio::Medium;
     }
@@ -567,7 +575,7 @@ Bot::Prio Bot::condBuyOwnShares(__int64 &moneyAvailable) {
     if (qPlayer.OwnsAktien[qPlayer.PlayerNum] >= qPlayer.AnzAktien / 4) {
         return Prio::None;
     }
-    moneyAvailable -= 6000 * 1000;
+    moneyAvailable -= kMoneyReserveBuyOwnShares;
     if ((moneyAvailable >= 0) && (qPlayer.Credit == 0)) {
         return Prio::Low;
     }
@@ -581,7 +589,7 @@ Bot::Prio Bot::condBuyNemesisShares(__int64 &moneyAvailable, SLONG dislike) {
     if (qPlayer.RobotUse(ROBOT_USE_DONTBUYANYSHARES)) {
         return Prio::None;
     }
-    moneyAvailable -= 2000 * 1000;
+    moneyAvailable -= kMoneyReserveBuyNemesisShares;
     if ((dislike != -1) && (moneyAvailable >= 0) && (qPlayer.Credit == 0)) {
         return Prio::Low;
     }
@@ -594,7 +602,7 @@ Bot::Prio Bot::condVisitMech() {
     }
     /* we are not checking money here because plane repairs happen asynchronously.
      * Instead, we earmark money in the variable mMoneyReservedForRepairs.
-     * We need to execute this action regularly even when we now money since we
+     * We need to execute this action regularly even if we have no money since we
      * might cancel previously planned repairs to have more available money. */
     if (getMoneyAvailable() < 0 && mMoneyReservedForRepairs == 0) {
         return Prio::None;
@@ -624,6 +632,9 @@ Bot::Prio Bot::condVisitMisc() {
 Bot::Prio Bot::condVisitMakler() {
     if (!hoursPassed(ACTION_VISITMAKLER, 4)) {
         return Prio::None;
+    }
+    if (mBestPlaneTypeId == -1) {
+        return Prio::Low;
     }
     if (mItemAntiStrike == 0) {
         return Prio::Low; /* take BH */
@@ -689,7 +700,7 @@ Bot::Prio Bot::condVisitBoss(__int64 &moneyAvailable) {
     if (!hoursPassed(ACTION_VISITAUFSICHT, 2)) {
         return Prio::None;
     }
-    moneyAvailable -= 10 * 1000;
+    moneyAvailable -= kMoneyReserveBossOffice;
     if (moneyAvailable >= 0) {
         if (Sim.Time > (16 * 60000) && (mBossNumCitiesAvailable > 0 || mBossGateAvailable)) {
             return Prio::High; /* check again right before end of day */
@@ -726,7 +737,7 @@ Bot::Prio Bot::condExpandAirport(__int64 &moneyAvailable) {
     if (gateUtilization / (24 * 7) < (qPlayer.Gates.NumRented - 1)) {
         return Prio::None;
     }
-    moneyAvailable -= 1000 * 1000;
+    moneyAvailable -= kMoneyReserveExpandAirport;
     if (moneyAvailable >= 0) {
         return Prio::Medium;
     }

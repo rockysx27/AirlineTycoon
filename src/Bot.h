@@ -22,9 +22,18 @@ extern const SLONG kMaximumRouteUtilization;
 extern const SLONG kMaximumPlaneUtilization;
 extern const DOUBLE kMaxTicketPriceFactor;
 extern const SLONG kTargetEmployeeHappiness;
+extern const SLONG kMinimumEmployeeSkill;
 extern const SLONG kPlaneMinimumZustand;
 extern const SLONG kPlaneRepairMax;
-extern const SLONG kMoneyNotForRepairs;
+extern const SLONG kMoneyReserveRepairs;
+extern const SLONG kMoneyReservePlaneUpgrades;
+extern const SLONG kMoneyReserveBuyTanks;
+extern const SLONG kMoneyReserveIncreaseDividend;
+extern const SLONG kMoneyReservePaybackCredit;
+extern const SLONG kMoneyReserveBuyOwnShares;
+extern const SLONG kMoneyReserveBuyNemesisShares;
+extern const SLONG kMoneyReserveBossOffice;
+extern const SLONG kMoneyReserveExpandAirport;
 
 class Bot {
   public:
@@ -114,7 +123,7 @@ class Bot {
     void actionStartDay(__int64 moneyAvailable);
     void actionStartDayLaptop(__int64 moneyAvailable);
     void actionBuero();
-    void actionCallInternational();
+    void actionCallInternational(bool areWeInOffice);
     void actionCheckLastMinute();
     void actionCheckTravelAgency();
     void grabFlights(BotPlaner &planer, bool areWeInOffice);
@@ -132,8 +141,8 @@ class Bot {
     void actionBuyShares(__int64 moneyAvailable);
     void actionVisitMech();
     void actionVisitDutyFree(__int64 moneyAvailable);
-    void actionVisitBoss(__int64 moneyAvailable);
-    std::pair<SLONG, SLONG> actionFindBestRoute(TEAKRAND &rnd) const;
+    void actionVisitBoss();
+    std::pair<SLONG, SLONG> actionFindBestRoute() const;
     void actionRentRoute(SLONG routeA, SLONG planeTypeId);
     void actionBuyAdsForRoutes(__int64 moneyAvailable);
     void actionBuyAds(__int64 moneyAvailable);
@@ -188,6 +197,7 @@ class Bot {
     bool mNeedToPlanRoutes{false};
     __int64 mMoneyReservedForRepairs{0};
     __int64 mMoneyReservedForUpgrades{0};
+    __int64 mMoneyReservedForAuctions{0};
 
     /* status boss office */
     SLONG mBossNumCitiesAvailable{-1};

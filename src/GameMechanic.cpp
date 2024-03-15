@@ -710,6 +710,15 @@ bool GameMechanic::buyStock(PLAYER &qPlayer, SLONG airlineNum, SLONG amount) {
     }
 
     PLAYER::NetSynchronizeMoney();
+
+    if (qPlayer.Owner == 1) {
+        TEAKRAND rnd;
+        if (airlineNum == Sim.localPlayer && (Sim.Players.Players[Sim.localPlayer].HasBerater(BERATERTYP_INFO) >= rnd.Rand(100))) {
+            Sim.Players.Players[Sim.localPlayer].Messages.AddMessage(
+                BERATERTYP_INFO, bprintf(StandardTexte.GetS(TOKEN_ADVICE, 9005), (LPCTSTR)qPlayer.NameX, (LPCTSTR)qPlayer.AirlineX, amount));
+        }
+    }
+
     return true;
 }
 
@@ -933,6 +942,15 @@ bool GameMechanic::bidOnGate(PLAYER &qPlayer, SLONG idx) {
     if (qGate.Player == qPlayer.PlayerNum) {
         return false;
     }
+
+    if (qPlayer.Owner == 1) {
+        TEAKRAND rnd;
+        if (qGate.Player == Sim.localPlayer && (Sim.Players.Players[Sim.localPlayer].HasBerater(BERATERTYP_INFO) >= rnd.Rand(100))) {
+            Sim.Players.Players[Sim.localPlayer].Messages.AddMessage(
+                BERATERTYP_INFO, bprintf(StandardTexte.GetS(TOKEN_ADVICE, 9001), (LPCTSTR)qPlayer.NameX, (LPCTSTR)qPlayer.AirlineX));
+        }
+    }
+
     qGate.Preis += qGate.Preis / 10;
     qGate.Player = qPlayer.PlayerNum;
     if (qPlayer.PlayerNum == Sim.localPlayer) {
@@ -951,6 +969,15 @@ bool GameMechanic::bidOnCity(PLAYER &qPlayer, SLONG idx) {
     if (qCity.Player == qPlayer.PlayerNum) {
         return false;
     }
+
+    if (qPlayer.Owner == 1) {
+        TEAKRAND rnd;
+        if (qCity.Player == Sim.localPlayer && (Sim.Players.Players[Sim.localPlayer].HasBerater(BERATERTYP_INFO) >= rnd.Rand(100))) {
+            Sim.Players.Players[Sim.localPlayer].Messages.AddMessage(BERATERTYP_INFO, bprintf(StandardTexte.GetS(TOKEN_ADVICE, 9002), (LPCTSTR)qPlayer.NameX,
+                                                                                              (LPCTSTR)qPlayer.AirlineX, (LPCTSTR)Cities[qCity.ZettelId].Name));
+        }
+    }
+
     qCity.Preis += qCity.Preis / 10;
     qCity.Player = qPlayer.PlayerNum;
     if (qPlayer.PlayerNum == Sim.localPlayer) {
@@ -1056,11 +1083,11 @@ bool GameMechanic::buyAdvertisement(PLAYER &qPlayer, SLONG adCampaignType, SLONG
         }
     } else if (adCampaignType == 1) {
         auto &qRouteA = qPlayer.RentRouten.RentRouten[routeA];
-        qRouteA.Image += UBYTE(cost / 30000);
+        qRouteA.Image += static_cast<UBYTE>(cost / 30000);
         Limit(static_cast<UBYTE>(0), qRouteA.Image, static_cast<UBYTE>(100));
 
         auto &qRouteB = qPlayer.RentRouten.RentRouten[routeB];
-        qRouteB.Image += UBYTE(cost / 30000);
+        qRouteB.Image += static_cast<UBYTE>(cost / 30000);
         Limit(static_cast<UBYTE>(0), qRouteB.Image, static_cast<UBYTE>(100));
 
         if (adCampaignSize == 0) {

@@ -12,8 +12,18 @@ const SLONG kMaximumRouteUtilization = 90;
 const SLONG kMaximumPlaneUtilization = 90;
 const DOUBLE kMaxTicketPriceFactor = 3.0;
 const SLONG kTargetEmployeeHappiness = 90;
+const SLONG kMinimumEmployeeSkill = 70;
 const SLONG kPlaneMinimumZustand = 90;
-const SLONG kMoneyNotForRepairs = 0;
+
+const SLONG kMoneyReserveRepairs = 0;
+const SLONG kMoneyReservePlaneUpgrades = 2500 * 1000;
+const SLONG kMoneyReserveBuyTanks = 200 * 1000;
+const SLONG kMoneyReserveIncreaseDividend = 100 * 1000;
+const SLONG kMoneyReservePaybackCredit = 1500 * 1000;
+const SLONG kMoneyReserveBuyOwnShares = 2000 * 1000;
+const SLONG kMoneyReserveBuyNemesisShares = 6000 * 1000;
+const SLONG kMoneyReserveBossOffice = 10 * 1000;
+const SLONG kMoneyReserveExpandAirport = 1000 * 1000;
 
 static const char *getPrioName(Bot::Prio prio) {
     switch (prio) {
@@ -489,7 +499,7 @@ void Bot::RobotExecuteAction() {
     case ACTION_CALL_INTERNATIONAL:
         if (condCallInternational() != Prio::None) {
             hprintf("Bot::RobotExecuteAction(): Calling international using office phone.");
-            actionCallInternational();
+            actionCallInternational(true);
         } else {
             redprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
@@ -499,7 +509,7 @@ void Bot::RobotExecuteAction() {
     case ACTION_CALL_INTER_HANDY:
         if (condCallInternationalHandy() != Prio::None) {
             hprintf("Bot::RobotExecuteAction(): Calling international using mobile phone.");
-            actionCallInternational();
+            actionCallInternational(false);
             mOnThePhone = 30;
         } else {
             redprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
@@ -620,17 +630,12 @@ void Bot::RobotExecuteAction() {
             } else if (qPlayer.RobotUse(ROBOT_USE_HIGHSHAREPRICE)) {
                 _dividende = 25;
             } else if (LocalRandom.Rand(10) == 0) {
-                if (LocalRandom.Rand(5) == 0) {
-                    _dividende++;
-                }
-                if (LocalRandom.Rand(10) == 0) {
-                    _dividende++;
-                }
+                _dividende++;
                 Limit(5, _dividende, 25);
             }
 
             if (_dividende != qPlayer.Dividende) {
-                hprintf("Bot::RobotExecuteAction(): Setting divident to %ld", _dividende);
+                hprintf("Bot::RobotExecuteAction(): Setting dividend to %ld", _dividende);
                 GameMechanic::setDividend(qPlayer, _dividende);
             }
         } else {
@@ -802,7 +807,7 @@ void Bot::RobotExecuteAction() {
 
     case ACTION_VISITAUFSICHT:
         if (condVisitBoss(moneyAvailable) != Prio::None) {
-            actionVisitBoss(moneyAvailable);
+            actionVisitBoss();
         } else {
             redprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
@@ -821,7 +826,7 @@ void Bot::RobotExecuteAction() {
 
     case ACTION_VISITROUTEBOX:
         if (condVisitRouteBoxPlanning() != Prio::None) {
-            std::tie(mWantToRentRouteId, mBuyPlaneForRouteId) = actionFindBestRoute(LocalRandom);
+            std::tie(mWantToRentRouteId, mBuyPlaneForRouteId) = actionFindBestRoute();
         } else {
             redprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
@@ -942,7 +947,7 @@ TEAKFILE &operator<<(TEAKFILE &File, const Bot &bot) {
     File << bot.mDoRoutes;
     File << bot.mOutOfGates;
     File << bot.mNeedToPlanJobs << bot.mNeedToPlanRoutes;
-    File << bot.mMoneyReservedForRepairs << bot.mMoneyReservedForUpgrades;
+    File << bot.mMoneyReservedForRepairs << bot.mMoneyReservedForUpgrades << bot.mMoneyReservedForAuctions;
 
     File << bot.mBossNumCitiesAvailable;
     File << bot.mBossGateAvailable;
@@ -1057,7 +1062,7 @@ TEAKFILE &operator>>(TEAKFILE &File, Bot &bot) {
     File >> bot.mDoRoutes;
     File >> bot.mOutOfGates;
     File >> bot.mNeedToPlanJobs >> bot.mNeedToPlanRoutes;
-    File >> bot.mMoneyReservedForRepairs >> bot.mMoneyReservedForUpgrades;
+    File >> bot.mMoneyReservedForRepairs >> bot.mMoneyReservedForUpgrades >> bot.mMoneyReservedForAuctions;
 
     File >> bot.mBossNumCitiesAvailable;
     File >> bot.mBossGateAvailable;

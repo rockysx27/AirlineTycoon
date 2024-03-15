@@ -4851,11 +4851,6 @@ void PLAYER::RobotExecuteAction() {
 
                 if (Anz != 0) {
                     GameMechanic::buyStock(*this, dislike, Anz);
-
-                    if (dislike == Sim.localPlayer && (Sim.Players.Players[Sim.localPlayer].HasBerater(BERATERTYP_INFO) >= rnd.Rand(100))) {
-                        Sim.Players.Players[Sim.localPlayer].Messages.AddMessage(
-                            BERATERTYP_INFO, bprintf(StandardTexte.GetS(TOKEN_ADVICE, 9005), (LPCTSTR)NameX, (LPCTSTR)AirlineX, Anz));
-                    }
                 }
             }
         }
@@ -5443,10 +5438,6 @@ void PLAYER::RobotExecuteAction() {
                 }
 
                 if (n != -1) {
-                    if (TafelData.Gate[n].Player == Sim.localPlayer && (Sim.Players.Players[Sim.localPlayer].HasBerater(BERATERTYP_INFO) >= rnd.Rand(100))) {
-                        Sim.Players.Players[Sim.localPlayer].Messages.AddMessage(
-                            BERATERTYP_INFO, bprintf(StandardTexte.GetS(TOKEN_ADVICE, 9001), (LPCTSTR)NameX, (LPCTSTR)AirlineX));
-                    }
                     GameMechanic::bidOnGate(*this, n);
                 }
             }
@@ -5463,12 +5454,6 @@ void PLAYER::RobotExecuteAction() {
                          (TafelData.City[c].Player == -1 && LocalRandom.Rand(3) == 0)) &&
                         BilanzGestern.GetSumme() > TafelData.City[c].Preis * 10 && Credit * 2 < Money * 3 && Money > 0 &&
                         ((TafelData.Route[c].Player == dislike || RobotUse(ROBOT_USE_BUY_MORE_ABROAD) || RobotUse(ROBOT_USE_ABROAD)))) {
-                        if (TafelData.City[c].Player == Sim.localPlayer &&
-                            (Sim.Players.Players[Sim.localPlayer].HasBerater(BERATERTYP_INFO) >= rnd.Rand(100))) {
-                            Sim.Players.Players[Sim.localPlayer].Messages.AddMessage(
-                                BERATERTYP_INFO, bprintf(StandardTexte.GetS(TOKEN_ADVICE, 9002), (LPCTSTR)NameX, (LPCTSTR)AirlineX,
-                                                         (LPCTSTR)Cities[TafelData.City[c].ZettelId].Name));
-                        }
                         GameMechanic::bidOnCity(*this, c);
                     }
                 }
