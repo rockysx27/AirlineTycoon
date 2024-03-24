@@ -513,7 +513,9 @@ bool BotPlaner::applySolution(PLAYER &qPlayer, const SolutionList &solutions) {
     for (const auto &solution : solutions) {
         int planeId = solution.planeId;
         auto time = solution.scheduleFromTime;
-        GameMechanic::killFlightPlanFrom(qPlayer, planeId, time.getDate(), time.getHour());
+        if (!GameMechanic::killFlightPlanFrom(qPlayer, planeId, time.getDate(), time.getHour())) {
+            return false;
+        }
     }
 
     /* apply solution */

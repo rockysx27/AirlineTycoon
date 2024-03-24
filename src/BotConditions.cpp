@@ -113,8 +113,12 @@ bool Bot::canWeCallInternational() {
         return false; /* previously grabbed flights still not scheduled */
     }
 
-    if (HowToPlan::None == canWePlanFlights()) {
+    auto res = canWePlanFlights();
+    if (HowToPlan::None == res) {
         return false;
+    }
+    if (HowToPlan::Office == res && Sim.GetHour() >= 17) {
+        return false; /* might be too late to reach office */
     }
 
     for (SLONG c = 0; c < 4; c++) {
@@ -563,7 +567,7 @@ Bot::Prio Bot::condDropMoney(__int64 &moneyAvailable) {
     }
 
     moneyAvailable -= kMoneyReservePaybackCredit;
-    if (moneyAvailable >= 0 && qPlayer.Credit > 0) {
+    if (moneyAvailable >= 0 && qPlayer.Credit > 0 && getWeeklyOpSaldo() > 1000 * 1000) {
         return Prio::Medium;
     }
     return Prio::None;

@@ -1288,7 +1288,7 @@ template <typename T> class ALBUM_V {
             TeakLibW_Exception(nullptr, 0, ExcAlbumFind, Name.c_str());
         }
 
-        SLONG target = (random != nullptr) ? random->Rand(used) : rand() % 5;
+        SLONG target = (random != nullptr) ? random->Rand(used) : rand() % used;
         SLONG index = 0;
         for (SLONG i = AnzEntries() - 1; i >= 0; --i) {
             if (List[i].second == 0) {

@@ -172,8 +172,8 @@ class Bot {
     bool checkPlaneAvailable(SLONG planeId, bool printIfAvailable) const;
     const CRentRoute &getRentRoute(const RouteInfo &routeInfo) const;
     const CRoute &getRoute(const RouteInfo &routeInfo) const;
-    SLONG getDailyOpSaldo() const;
-    SLONG getWeeklyOpSaldo() const;
+    __int64 getDailyOpSaldo() const;
+    __int64 getWeeklyOpSaldo() const;
     void forceReplanning();
 
     /* anim state */

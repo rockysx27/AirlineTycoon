@@ -251,9 +251,9 @@ const CRentRoute &Bot::getRentRoute(const Bot::RouteInfo &routeInfo) const { ret
 
 const CRoute &Bot::getRoute(const Bot::RouteInfo &routeInfo) const { return Routen[routeInfo.routeId]; }
 
-SLONG Bot::getDailyOpSaldo() const { return qPlayer.BilanzGestern.GetOpSaldo(); }
+__int64 Bot::getDailyOpSaldo() const { return qPlayer.BilanzGestern.GetOpSaldo(); }
 
-SLONG Bot::getWeeklyOpSaldo() const { return qPlayer.BilanzWoche.Hole().GetOpSaldo(); }
+__int64 Bot::getWeeklyOpSaldo() const { return qPlayer.BilanzWoche.Hole().GetOpSaldo(); }
 
 void Bot::forceReplanning() { qPlayer.RobotActions[1].ActionId = ACTION_NONE; }
 
@@ -289,7 +289,7 @@ void Bot::RobotInit() {
         for (SLONG routeID = 0; routeID < qRRouten.AnzEntries(); routeID++) {
             if (qRRouten[routeID].Rang != 0) {
                 GameMechanic::killRoute(qPlayer, routeID);
-                hprintf("Bot::RobotInit(): Removing initial route %s", Helper::getRouteName(Routen[routeID]));
+                hprintf("Bot::RobotInit(): Removing initial route %s", Helper::getRouteName(Routen[routeID]).c_str());
             }
         }
 
@@ -671,12 +671,12 @@ void Bot::RobotExecuteAction() {
     case ACTION_RAISEMONEY:
         if (condRaiseMoney() != Prio::None) {
             __int64 limit = qPlayer.CalcCreditLimit();
-            __int64 m = min(limit, (kMoneyEmergencyFund + kMoneyEmergencyFund / 2) - qPlayer.Money);
+            __int64 m = std::min(limit, (kMoneyEmergencyFund + kMoneyEmergencyFund / 2) - qPlayer.Money);
             if (mSaveForFinalObjective) {
                 m = limit;
             }
             if (m > 0) {
-                hprintf("Bot::RobotExecuteAction(): Taking loan: %lld", m);
+                hprintf("Bot::RobotExecuteAction(): Taking loan: %s $", (LPCTSTR)Insert1000erDots64(m));
                 GameMechanic::takeOutCredit(qPlayer, m);
                 moneyAvailable = getMoneyAvailable();
             }
@@ -688,8 +688,8 @@ void Bot::RobotExecuteAction() {
 
     case ACTION_DROPMONEY:
         if (condDropMoney(moneyAvailable) != Prio::None) {
-            __int64 m = min(qPlayer.Credit, moneyAvailable);
-            hprintf("Bot::RobotExecuteAction(): Paying back loan: %lld", m);
+            __int64 m = std::min({qPlayer.Credit, moneyAvailable, getWeeklyOpSaldo()});
+            hprintf("Bot::RobotExecuteAction(): Paying back loan: %s $", (LPCTSTR)Insert1000erDots64(m));
             GameMechanic::payBackCredit(qPlayer, m);
             moneyAvailable = getMoneyAvailable();
         } else {

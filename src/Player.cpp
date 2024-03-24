@@ -3228,6 +3228,8 @@ void PLAYER::RobotPump() {
         case ACTION_VISITTELESCOPE:
             if (Sim.Difficulty == DIFF_FINAL) {
                 rc = WalkToRoom(ROOM_INSEL);
+            } else if (Sim.Difficulty == DIFF_ADDON10) {
+                rc = WalkToRoom(ROOM_WELTALL);
             } else {
                 rc = WalkToRoom(ROOM_RUSHMORE);
             }

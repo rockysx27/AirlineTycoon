@@ -246,7 +246,16 @@ void Bot::planFlights() {
     mNeedToPlanJobs = false;
 
     SLONG oldGain = calcCurrentGainFromJobs();
-    BotPlaner::applySolution(qPlayer, mPlanerSolution);
+    if (!BotPlaner::applySolution(qPlayer, mPlanerSolution)) {
+        redprintf("Bot::planFlights(): Solution does not apply! Need to re-plan.");
+
+        BotPlaner planer(qPlayer, qPlayer.Planes, BotPlaner::JobOwner::Backlog, {});
+        mPlanerSolution = planer.planFlights(mPlanesForJobs, true, kAvailTimeExtra);
+        if (!mPlanerSolution.empty()) {
+            BotPlaner::applySolution(qPlayer, mPlanerSolution);
+        }
+    }
+
     hprintf("Bot::planFlights(): Improved gain from jobs from %ld to %ld.", oldGain, calcCurrentGainFromJobs());
     Helper::checkFlightJobs(qPlayer, true);
 
@@ -697,7 +706,7 @@ void Bot::actionEmitShares() {
 
     // Direkt wieder auf ein Viertel aufkaufen
     SLONG amountToBuy = qPlayer.AnzAktien / 4 - qPlayer.OwnsAktien[qPlayer.PlayerNum];
-    amountToBuy = min(amountToBuy, calcBuyShares(moneyAvailable, qPlayer.Kurse[0]));
+    amountToBuy = std::min(amountToBuy, calcBuyShares(moneyAvailable, qPlayer.Kurse[0]));
     if (amountToBuy > 0) {
         hprintf("Bot::actionEmitShares(): Buying own stock: %ld", amountToBuy);
         GameMechanic::buyStock(qPlayer, qPlayer.PlayerNum, amountToBuy);
@@ -710,7 +719,7 @@ void Bot::actionBuyShares(__int64 moneyAvailable) {
         auto &qDislikedPlayer = Sim.Players.Players[mDislike];
         SLONG amount = calcNumOfFreeShares(mDislike);
         SLONG amountCanAfford = calcBuyShares(moneyAvailable, qDislikedPlayer.Kurse[0]);
-        amount = min(amount, amountCanAfford);
+        amount = std::min(amount, amountCanAfford);
 
         if (amount > 0) {
             hprintf("Bot::actionBuyShares(): Buying nemesis stock: %ld", amount);
@@ -724,8 +733,7 @@ void Bot::actionBuyShares(__int64 moneyAvailable) {
         SLONG amount = calcNumOfFreeShares(qPlayer.PlayerNum);
         SLONG amountToBuy = qPlayer.AnzAktien / 4 - qPlayer.OwnsAktien[qPlayer.PlayerNum];
         SLONG amountCanAfford = calcBuyShares(moneyAvailable, qPlayer.Kurse[0]);
-        amount = min(amount, amountToBuy);
-        amount = min(amount, amountCanAfford);
+        amount = std::min({amount, amountToBuy, amountCanAfford});
 
         if (amount > 0) {
             hprintf("Bot::actionBuyShares(): Buying own stock: %ld", amount);
@@ -738,7 +746,7 @@ void Bot::actionBuyShares(__int64 moneyAvailable) {
 void Bot::actionSellShares(__int64 moneyAvailable) {
     __int64 howMuchToRaise = -(moneyAvailable - qPlayer.Credit);
     if (mSaveForFinalObjective) {
-        howMuchToRaise = max(howMuchToRaise, mMoneyForFinalObjective);
+        howMuchToRaise = std::max(howMuchToRaise, mMoneyForFinalObjective);
     }
     if (howMuchToRaise < 0) {
         redprintf("Bot::actionSellShares(): We do not actually need money");
@@ -749,7 +757,7 @@ void Bot::actionSellShares(__int64 moneyAvailable) {
         SLONG c = qPlayer.PlayerNum;
         if (qPlayer.OwnsAktien[c] > 0) {
             SLONG sellsNeeded = calcSellShares(howMuchToRaise, qPlayer.Kurse[0]);
-            SLONG sells = min(qPlayer.OwnsAktien[c], sellsNeeded);
+            SLONG sells = std::min(qPlayer.OwnsAktien[c], sellsNeeded);
             hprintf("Bot::RobotExecuteAction(): Selling own stock: %ld", sells);
             GameMechanic::sellStock(qPlayer, c, sells);
         }
@@ -760,7 +768,7 @@ void Bot::actionSellShares(__int64 moneyAvailable) {
             }
 
             SLONG sellsNeeded = calcSellShares(howMuchToRaise, Sim.Players.Players[c].Kurse[0]);
-            SLONG sells = min(qPlayer.OwnsAktien[c], sellsNeeded);
+            SLONG sells = std::min(qPlayer.OwnsAktien[c], sellsNeeded);
             hprintf("Bot::RobotExecuteAction(): Selling stock from player %ld: %ld", c, sells);
             GameMechanic::sellStock(qPlayer, c, sells);
 
@@ -788,33 +796,33 @@ void Bot::actionVisitMech() {
         }
 
         auto &qPlane = qPlanes[c];
-        if (qPlanes[c].TargetZustand <= qPlane.WorstZustand + 20) {
+
+        /* WorstZustand more than 20 lower than repair target means extra cost! */
+        GameMechanic::setPlaneTargetZustand(qPlayer, c, std::min(100, qPlane.WorstZustand + 20));
+
+        if (qPlanes[c].TargetZustand == 100) {
             continue; /* this plane won't cost extra */
         }
 
-        /* WorstZustand more than 20 lower than repair target means extra cost! */
         planeList.emplace_back(c, qPlane.TargetZustand);
-        GameMechanic::setPlaneTargetZustand(qPlayer, c, qPlane.WorstZustand + 20);
     }
 
     /* distribute available money for repair extra costs */
     mMoneyReservedForRepairs = 0;
     auto moneyAvailable = getMoneyAvailable() - kMoneyReserveRepairs;
     bool keepGoing = true;
-    while (keepGoing && moneyAvailable > 0) {
+    while (keepGoing && moneyAvailable >= 0) {
         keepGoing = false;
         for (const auto &iter : planeList) {
             auto &qPlane = qPlanes[iter.first];
-            if (qPlane.TargetZustand < 100) {
+            SLONG cost = (qPlane.TargetZustand + 1 > (qPlane.WorstZustand + 20)) ? (qPlane.ptPreis / 110) : 0;
+            if (qPlane.TargetZustand < 100 && moneyAvailable >= cost) {
                 GameMechanic::setPlaneTargetZustand(qPlayer, iter.first, qPlane.TargetZustand + 1);
                 keepGoing = true;
-
-                if (qPlane.TargetZustand > (qPlane.WorstZustand + 20)) {
-                    mMoneyReservedForRepairs += (qPlane.ptPreis / 110);
-                    moneyAvailable = getMoneyAvailable();
-                }
+                mMoneyReservedForRepairs += cost;
+                moneyAvailable = getMoneyAvailable();
             }
-            if (moneyAvailable <= 0) {
+            if (moneyAvailable < 0) {
                 break;
             }
         }

@@ -428,11 +428,11 @@ bool checkRoomOpen(SLONG roomId) {
     case ACTION_BUY_KEROSIN_TANKS:
         return (time >= timeArabOpen && Sim.Weekday != 6);
     case ACTION_CHECKAGENT1:
-        return (time <= timeLastClose - 60000 && Sim.Weekday != 5);
+        return (time <= timeLastClose - 60000 && Sim.Weekday != 5 && GlobalUse(USE_TRAVELHOLDING));
     case ACTION_BUYUSEDPLANE:
         return (time >= timeMuseOpen && Sim.Weekday != 5 && Sim.Weekday != 6);
     case ACTION_CHECKAGENT2:
-        return (time <= timeReisClose - 60000);
+        return (time <= timeReisClose - 60000 && GlobalUse(USE_TRAVELHOLDING));
     case ACTION_BUYNEWPLANE:
         return (time <= timeMaklClose - 60000);
     case ACTION_WERBUNG:
