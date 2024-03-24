@@ -344,11 +344,11 @@ SLONG FX::Load(const char *file) {
     } else {
         _fxData.pBuffer = Mix_LoadWAV(file);
     }
-    _fxData.bufferSize = _fxData.pBuffer->alen;
+    _fxData.bufferSize = _fxData.pBuffer ? _fxData.pBuffer->alen : 0;
     return SSE_OK;
 }
 
-SLONG FX::Fusion(const std::vector<FX*>& Fx) {
+SLONG FX::Fusion(const std::vector<FX *> &Fx) {
     for (SLONG i = 0; i < Fx.size(); i++) {
         if ((Fx[i] == nullptr) || (Fx[i]->_fxData.pBuffer == nullptr)) {
             return SSE_INVALIDPARAM;
