@@ -1855,7 +1855,7 @@ bool GameMechanic::takeFreightJob(PLAYER &qPlayer, SLONG jobId, SLONG &outObject
     }
 
     auto &qAuftrag = gFrachten[jobId];
-    if (qAuftrag.Praemie <= 0) {
+    if (qAuftrag.Praemie < 0) {
         return false;
     }
     if (qPlayer.Frachten.GetNumFree() < 3) {
@@ -1951,7 +1951,7 @@ bool GameMechanic::takeInternationalFreightJob(PLAYER &qPlayer, SLONG cityId, SL
     }
 
     auto &qFracht = AuslandsFrachten[cityId][jobId];
-    if (qFracht.Praemie <= 0) {
+    if (qFracht.Praemie < 0) {
         return false;
     }
     if (qPlayer.Frachten.GetNumFree() < 3) {
