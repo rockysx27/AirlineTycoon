@@ -286,6 +286,7 @@ void Bot::RobotInit() {
     }
 
     mLastTimeInRoom.clear();
+    mNumActionsToday = 0;
 
     /* strategy state */
     mDislike = -1;
@@ -425,9 +426,16 @@ void Bot::RobotPlan() {
         endIdx--;
     }
 
-    hprintf("Action 0: %s", getRobotActionName(qRobotActions[0].ActionId));
-    greenprintf("Action 1: %s with prio %s", getRobotActionName(qRobotActions[1].ActionId), getPrioName(prioAction1));
-    greenprintf("Action 2: %s with prio %s", getRobotActionName(qRobotActions[2].ActionId), getPrioName(prioAction2));
+    hprintf("Bot::RobotPlan(): Action 0: %s", getRobotActionName(qRobotActions[0].ActionId));
+    greenprintf("Bot::RobotPlan(): Action 1: %s with prio %s", getRobotActionName(qRobotActions[1].ActionId), getPrioName(prioAction1));
+    greenprintf("Bot::RobotPlan(): Action 2: %s with prio %s", getRobotActionName(qRobotActions[2].ActionId), getPrioName(prioAction2));
+
+    if (qRobotActions[1].ActionId == ACTION_NONE) {
+        redprintf("Did not plan action for slot #1");
+    }
+    if (qRobotActions[2].ActionId == ACTION_NONE) {
+        redprintf("Did not plan action for slot #2");
+    }
 
     hprintf("Bot.cpp: Leaving RobotPlan()\n");
 }
@@ -458,8 +466,9 @@ void Bot::RobotExecuteAction() {
 
     LocalRandom.Rand(2); // Sicherheitshalber, damit wir immer genau ein Random ausführen
 
-    greenprintf("Bot.cpp: Enter RobotExecuteAction(): Executing %s, current time: %02d:%02d, money: %s $", getRobotActionName(qRobotActions[0].ActionId),
-                Sim.GetHour(), Sim.GetMinute(), Insert1000erDots64(qPlayer.Money).c_str());
+    mNumActionsToday += 1;
+    greenprintf("Bot.cpp: Enter RobotExecuteAction(): Executing %s (#%d), current time: %02d:%02d, money: %s $", getRobotActionName(qRobotActions[0].ActionId),
+                mNumActionsToday, Sim.GetHour(), Sim.GetMinute(), Insert1000erDots64(qPlayer.Money).c_str());
 
     mOnThePhone = 0;
 
@@ -918,6 +927,8 @@ TEAKFILE &operator<<(TEAKFILE &File, const Bot &bot) {
         File << i.first << i.second;
     }
 
+    File << bot.mNumActionsToday;
+
     File << static_cast<SLONG>(bot.mPlanesForJobs.size());
     for (const auto &i : bot.mPlanesForJobs) {
         File << i;
@@ -1028,6 +1039,8 @@ TEAKFILE &operator>>(TEAKFILE &File, Bot &bot) {
         bot.mLastTimeInRoom[key] = value;
     }
     assert(bot.mLastTimeInRoom.size() == size);
+
+    File >> bot.mNumActionsToday;
 
     File >> size;
     bot.mPlanesForJobs.resize(size);

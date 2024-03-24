@@ -175,8 +175,9 @@ class Bot {
     TEAKRAND LocalRandom;
     PLAYER &qPlayer;
 
-    /* to not keep doing the same thing */
+    /* action economy */
     std::unordered_map<SLONG, SLONG> mLastTimeInRoom;
+    SLONG mNumActionsToday{0};
 
     /* planes used for what? */
     std::vector<SLONG> mPlanesForJobs;

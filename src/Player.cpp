@@ -2560,7 +2560,8 @@ BOOL PLAYER::WalkToRoom(UBYTE RoomId) {
 
     PrimaryTarget = Airport.GetRandomTypedRune(RUNE_2SHOP, RoomId);
 
-    if (Sim.CallItADay != 0) {
+    /* always calculate SpeedCount, because Sim.CallItADay might be set any moment */
+    {
         PERSON &qPerson = Sim.Persons[Sim.Persons.GetPlayerIndex(PlayerNum)];
 
         SpeedCount = abs(qPerson.Position.x - PrimaryTarget.x);
@@ -2569,6 +2570,7 @@ BOOL PLAYER::WalkToRoom(UBYTE RoomId) {
         if (abs(qPerson.Position.y - PrimaryTarget.y) > 4600) {
             SpeedCount -= 4600;
         }
+        SpeedCount = max(1, SpeedCount);
     }
 
     PrimaryTarget.x /= 44;
@@ -2590,12 +2592,8 @@ BOOL PLAYER::WalkToRoom(UBYTE RoomId) {
         if ((Locations[c] & (~(ROOM_ENTERING | ROOM_LEAVING))) == RoomId) {
             Locations[c] |= (ROOM_ENTERING);
             Locations[c] &= (~ROOM_LEAVING);
-            if (Sim.CallItADay != 0) {
-                SpeedCount = 1;
-            }
-            if (PlayerNum == 3) {
-                hprintf("WalkToRoom: already there");
-            }
+
+            SpeedCount = 1;
             return (TRUE);
         }
     }
@@ -3272,29 +3270,25 @@ void PLAYER::RobotPump() {
             [[fallthrough]];
         case ACTION_STARTDAY_LAPTOP:
             rc = TRUE;
-            if (Sim.CallItADay != 0) {
-                SpeedCount = 1;
-            }
+            SpeedCount = 1;
             break;
         default:
             DebugBreak();
         }
 
+        SpeedCount = std::max(1, SpeedCount / WalkSpeed);
         if ((RobotActions[0].Running || RobotUse(ROBOT_USE_ALLRUN)) && Sim.GetMinute() > 0) {
             Sim.Persons[Sim.Persons.GetPlayerIndex(PlayerNum)].Running = TRUE;
-            SpeedCount = std::max(1, SpeedCount / 4);
+            SpeedCount = std::max(1, SpeedCount / 2);
             BroadcastPosition();
         } else {
             Sim.Persons[Sim.Persons.GetPlayerIndex(PlayerNum)].Running = FALSE;
         }
 
         if (rc == 0) {
-            if (RobotActions[0].ActionId == ACTION_NONE && RobotActions[1].ActionId == ACTION_NONE) {
-                RobotPlan();
-            }
             LastActionId = LastLastActionId;
             RobotActions[0].ActionId = ACTION_NONE;
-
+            RobotPlan();
             return;
         }
     }
