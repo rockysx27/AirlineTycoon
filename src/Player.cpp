@@ -217,9 +217,9 @@ void PLAYER::ChangeMoney(__int64 Money, SLONG Reason, const CString &Par1, char 
 
     if (PlayerNum == 3) {
         if (Money > 0) {
-            hprintf("ChangeMoney: player %li: Erhält %lld wegen %li", PlayerNum, Money, Reason);
+            hprintf("ChangeMoney: player %li: Erhält %s $ wegen %li", PlayerNum, (LPCTSTR)Insert1000erDots(Money), Reason);
         } else if (Money < 0) {
-            hprintf("ChangeMoney: player %li: Gibt %lld für %li aus", PlayerNum, -Money, Reason);
+            hprintf("ChangeMoney: player %li: Gibt %s $ für %li aus", PlayerNum, (LPCTSTR)Insert1000erDots(-Money), Reason);
         }
     }
 

@@ -17,6 +17,8 @@ class PLAYER;
 typedef long long __int64;
 
 extern const SLONG kMoneyEmergencyFund;
+extern const SLONG kSwitchToRoutesNumPlanesMin;
+extern const SLONG kSwitchToRoutesNumPlanesMax;
 extern const SLONG kSmallestAdCampaign;
 extern const SLONG kMaximumRouteUtilization;
 extern const SLONG kMaximumPlaneUtilization;
@@ -24,7 +26,9 @@ extern const DOUBLE kMaxTicketPriceFactor;
 extern const SLONG kTargetEmployeeHappiness;
 extern const SLONG kMinimumEmployeeSkill;
 extern const SLONG kPlaneMinimumZustand;
-extern const SLONG kPlaneRepairMax;
+extern const SLONG kStockEmissionMode;
+extern const bool kReduceDividend;
+
 extern const SLONG kMoneyReserveRepairs;
 extern const SLONG kMoneyReservePlaneUpgrades;
 extern const SLONG kMoneyReserveBuyTanks;
@@ -77,6 +81,8 @@ class Bot {
     bool haveDiscount() const;
     enum class HowToPlan { None, Laptop, Office };
     HowToPlan canWePlanFlights();
+    enum class HowToGetMoney { None, SellShares, SellOwnShares, IncreaseCredit, EmitShares };
+    HowToGetMoney howToGetMoney();
     bool canWeCallInternational();
     Prio condAll(SLONG actionId);
     Prio condStartDay();
@@ -94,7 +100,7 @@ class Bot {
     Prio condBuyKerosineTank(__int64 &moneyAvailable);
     Prio condSabotage(__int64 &moneyAvailable);
     Prio condIncreaseDividend(__int64 &moneyAvailable);
-    Prio condRaiseMoney(__int64 &moneyAvailable);
+    Prio condRaiseMoney();
     Prio condDropMoney(__int64 &moneyAvailable);
     Prio condEmitShares();
     Prio condSellShares(__int64 &moneyAvailable);
@@ -135,10 +141,12 @@ class Bot {
     std::pair<SLONG, SLONG> kerosineQualiOptimization(__int64 moneyAvailable, DOUBLE targetFillRatio) const;
     void actionBuyKerosine(__int64 moneyAvailable);
     void actionBuyKerosineTank(__int64 moneyAvailable);
-    SLONG calcNumberOfShares(__int64 moneyAvailable, DOUBLE kurs) const;
+    SLONG calcBuyShares(__int64 moneyAvailable, DOUBLE kurs) const;
+    SLONG calcSellShares(__int64 moneyToGet, DOUBLE kurs) const;
     SLONG calcNumOfFreeShares(SLONG playerId) const;
     void actionEmitShares();
     void actionBuyShares(__int64 moneyAvailable);
+    void actionSellShares(__int64 moneyAvailable);
     void actionVisitMech();
     void actionVisitDutyFree(__int64 moneyAvailable);
     void actionVisitBoss();
@@ -193,6 +201,8 @@ class Bot {
     bool mFirstRun{true};
     bool mDayStarted{false};
     bool mDoRoutes{false};
+    bool mSaveForFinalObjective{false};
+    __int64 mMoneyForFinalObjective{0};
     bool mOutOfGates{false};
     bool mNeedToPlanJobs{false};
     bool mNeedToPlanRoutes{false};

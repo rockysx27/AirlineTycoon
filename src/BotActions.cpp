@@ -64,7 +64,7 @@ void Bot::actionStartDayLaptop(__int64 moneyAvailable) {
         SLONG costRouteAd = gWerbePrice[1 * 6 + 5];
         __int64 moneyNeeded = 2 * costRouteAd + bestPlaneType.Preis;
         SLONG numPlanes = mPlanesForJobs.size() + mPlanesForJobsUnassigned.size();
-        if (numPlanes >= 4 && moneyAvailable >= moneyNeeded) {
+        if ((numPlanes >= kSwitchToRoutesNumPlanesMin && moneyAvailable >= moneyNeeded) || numPlanes >= kSwitchToRoutesNumPlanesMax) {
             mDoRoutes = true;
             hprintf("Bot::actionStartDay(): Switching to routes.");
         }
@@ -72,6 +72,55 @@ void Bot::actionStartDayLaptop(__int64 moneyAvailable) {
         if (qPlayer.RobotUse(ROBOT_USE_FORCEROUTES)) {
             mDoRoutes = true;
             hprintf("Bot::actionStartDay(): Switching to routes (forced).");
+        }
+    }
+
+    /* logic for switching to final target run */
+    if (!mSaveForFinalObjective) {
+        if (qPlayer.RobotUse(ROBOT_USE_NASA)) {
+            const auto &qPrices = (Sim.Difficulty == DIFF_FINAL) ? RocketPrices : StationPrices;
+            auto nParts = sizeof(qPrices) / sizeof(qPrices[0]);
+
+            __int64 requiredMoney = 0;
+            for (SLONG i = 0; i < nParts; i++) {
+                requiredMoney += qPrices[i];
+            }
+
+            if (requiredMoney < (moneyAvailable + getWeeklyOpSaldo() * 2)) {
+                mSaveForFinalObjective = true;
+                mMoneyForFinalObjective = requiredMoney;
+                hprintf("Bot::actionStartDay(): Switching to final target run (enough money).");
+            }
+
+            /* check how far our competitors are */
+            SLONG nemesis = -1;
+            DOUBLE nemesisRatio = 0;
+            for (SLONG p = 0; p < 4; p++) {
+                if (p == qPlayer.PlayerNum) {
+                    continue;
+                }
+                __int64 sum = 0;
+                for (SLONG i = 0; i < nParts; i++) {
+                    if ((Sim.Players.Players[p].RocketFlags & (1 << i)) != 0) {
+                        sum += qPrices[i];
+                    }
+                }
+                DOUBLE ratio = sum * 1.0 / requiredMoney;
+                if (ratio > nemesisRatio) {
+                    nemesisRatio = ratio;
+                    nemesis = p;
+                }
+            }
+            if (nemesis != -1) {
+                hprintf("Bot::actionStartDay(): Most dangerous competitor is %s with %.1f %% of goal achieved.", (LPCTSTR)Sim.Players.Players[nemesis].AirlineX,
+                        nemesisRatio * 100);
+
+                if (nemesisRatio > 0.5) {
+                    mSaveForFinalObjective = true;
+                    mMoneyForFinalObjective = requiredMoney;
+                    hprintf("Bot::actionStartDay(): Switching to final target run (competitor too close).");
+                }
+            }
         }
     }
 
@@ -628,7 +677,8 @@ void Bot::actionBuyKerosineTank(__int64 moneyAvailable) {
     }
 }
 
-SLONG Bot::calcNumberOfShares(__int64 moneyAvailable, DOUBLE kurs) const { return static_cast<SLONG>(std::floor((moneyAvailable - 100) / (1.1 * kurs))); }
+SLONG Bot::calcBuyShares(__int64 moneyAvailable, DOUBLE kurs) const { return static_cast<SLONG>(std::floor((moneyAvailable - 100) / (1.1 * kurs))); }
+SLONG Bot::calcSellShares(__int64 moneyToGet, DOUBLE kurs) const { return static_cast<SLONG>(std::floor((moneyToGet + 100) / (0.9 * kurs))); }
 
 SLONG Bot::calcNumOfFreeShares(SLONG playerId) const {
     auto &player = Sim.Players.Players[playerId];
@@ -642,12 +692,12 @@ SLONG Bot::calcNumOfFreeShares(SLONG playerId) const {
 void Bot::actionEmitShares() {
     SLONG neueAktien = (qPlayer.MaxAktien - qPlayer.AnzAktien) / 100 * 100;
     hprintf("Bot::actionEmitShares(): Emitting stock: %ld", neueAktien);
-    GameMechanic::emitStock(qPlayer, neueAktien, 2);
+    GameMechanic::emitStock(qPlayer, neueAktien, kStockEmissionMode);
     auto moneyAvailable = getMoneyAvailable();
 
     // Direkt wieder auf ein Viertel aufkaufen
     SLONG amountToBuy = qPlayer.AnzAktien / 4 - qPlayer.OwnsAktien[qPlayer.PlayerNum];
-    amountToBuy = min(amountToBuy, calcNumberOfShares(moneyAvailable, qPlayer.Kurse[0]));
+    amountToBuy = min(amountToBuy, calcBuyShares(moneyAvailable, qPlayer.Kurse[0]));
     if (amountToBuy > 0) {
         hprintf("Bot::actionEmitShares(): Buying own stock: %ld", amountToBuy);
         GameMechanic::buyStock(qPlayer, qPlayer.PlayerNum, amountToBuy);
@@ -659,7 +709,7 @@ void Bot::actionBuyShares(__int64 moneyAvailable) {
     if (condBuyNemesisShares(moneyAvailable, mDislike) != Prio::None) {
         auto &qDislikedPlayer = Sim.Players.Players[mDislike];
         SLONG amount = calcNumOfFreeShares(mDislike);
-        SLONG amountCanAfford = calcNumberOfShares(moneyAvailable, qDislikedPlayer.Kurse[0]);
+        SLONG amountCanAfford = calcBuyShares(moneyAvailable, qDislikedPlayer.Kurse[0]);
         amount = min(amount, amountCanAfford);
 
         if (amount > 0) {
@@ -670,11 +720,10 @@ void Bot::actionBuyShares(__int64 moneyAvailable) {
         }
     }
 
-    // buy own shares
     if (condBuyOwnShares(moneyAvailable) != Prio::None) {
         SLONG amount = calcNumOfFreeShares(qPlayer.PlayerNum);
         SLONG amountToBuy = qPlayer.AnzAktien / 4 - qPlayer.OwnsAktien[qPlayer.PlayerNum];
-        SLONG amountCanAfford = calcNumberOfShares(moneyAvailable, qPlayer.Kurse[0]);
+        SLONG amountCanAfford = calcBuyShares(moneyAvailable, qPlayer.Kurse[0]);
         amount = min(amount, amountToBuy);
         amount = min(amount, amountCanAfford);
 
@@ -682,6 +731,43 @@ void Bot::actionBuyShares(__int64 moneyAvailable) {
             hprintf("Bot::actionBuyShares(): Buying own stock: %ld", amount);
             GameMechanic::buyStock(qPlayer, qPlayer.PlayerNum, amount);
             moneyAvailable = getMoneyAvailable();
+        }
+    }
+}
+
+void Bot::actionSellShares(__int64 moneyAvailable) {
+    __int64 howMuchToRaise = -(moneyAvailable - qPlayer.Credit);
+    if (mSaveForFinalObjective) {
+        howMuchToRaise = max(howMuchToRaise, mMoneyForFinalObjective);
+    }
+    if (howMuchToRaise < 0) {
+        redprintf("Bot::actionSellShares(): We do not actually need money");
+    }
+
+    auto res = howToGetMoney();
+    if (res == HowToGetMoney::SellOwnShares) {
+        SLONG c = qPlayer.PlayerNum;
+        if (qPlayer.OwnsAktien[c] > 0) {
+            SLONG sellsNeeded = calcSellShares(howMuchToRaise, qPlayer.Kurse[0]);
+            SLONG sells = min(qPlayer.OwnsAktien[c], sellsNeeded);
+            hprintf("Bot::RobotExecuteAction(): Selling own stock: %ld", sells);
+            GameMechanic::sellStock(qPlayer, c, sells);
+        }
+    } else if (res == HowToGetMoney::SellShares) {
+        for (SLONG c = 0; c < Sim.Players.AnzPlayers; c++) {
+            if (qPlayer.OwnsAktien[c] == 0 || c == qPlayer.PlayerNum) {
+                continue;
+            }
+
+            SLONG sellsNeeded = calcSellShares(howMuchToRaise, Sim.Players.Players[c].Kurse[0]);
+            SLONG sells = min(qPlayer.OwnsAktien[c], sellsNeeded);
+            hprintf("Bot::RobotExecuteAction(): Selling stock from player %ld: %ld", c, sells);
+            GameMechanic::sellStock(qPlayer, c, sells);
+
+            if (condSellShares(moneyAvailable) == Prio::None) {
+                break;
+            }
+            howMuchToRaise = -(moneyAvailable - qPlayer.Credit);
         }
     }
 }

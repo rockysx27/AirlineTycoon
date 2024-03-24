@@ -7,6 +7,8 @@
 #include <algorithm>
 
 const SLONG kMoneyEmergencyFund = 100000;
+const SLONG kSwitchToRoutesNumPlanesMin = 4;
+const SLONG kSwitchToRoutesNumPlanesMax = 8;
 const SLONG kSmallestAdCampaign = 4;
 const SLONG kMaximumRouteUtilization = 90;
 const SLONG kMaximumPlaneUtilization = 90;
@@ -14,6 +16,8 @@ const DOUBLE kMaxTicketPriceFactor = 3.0;
 const SLONG kTargetEmployeeHappiness = 90;
 const SLONG kMinimumEmployeeSkill = 70;
 const SLONG kPlaneMinimumZustand = 90;
+const SLONG kStockEmissionMode = 2;
+const bool kReduceDividend = false;
 
 const SLONG kMoneyReserveRepairs = 0;
 const SLONG kMoneyReservePlaneUpgrades = 2500 * 1000;
@@ -273,11 +277,22 @@ void Bot::RobotInit() {
         /* random source */
         LocalRandom.SRand(qPlayer.WaitWorkTill);
 
+        /* starting planes */
         for (SLONG i = 0; i < qPlayer.Planes.AnzEntries(); i++) {
             if (qPlayer.Planes.IsInAlbum(i)) {
                 mPlanesForJobsUnassigned.push_back(qPlayer.Planes.GetIdFromIndex(i));
             }
         }
+
+        /* starting routes */
+        const auto &qRRouten = qPlayer.RentRouten.RentRouten;
+        for (SLONG routeID = 0; routeID < qRRouten.AnzEntries(); routeID++) {
+            if (qRRouten[routeID].Rang != 0) {
+                GameMechanic::killRoute(qPlayer, routeID);
+                hprintf("Bot::RobotInit(): Removing initial route %s", Helper::getRouteName(Routen[routeID]));
+            }
+        }
+
         mFirstRun = false;
     }
 
@@ -633,7 +648,7 @@ void Bot::RobotExecuteAction() {
         if (condIncreaseDividend(moneyAvailable) != Prio::None) {
             SLONG _dividende = qPlayer.Dividende;
             SLONG maxToEmit = (2500000 - qPlayer.MaxAktien) / 100 * 100;
-            if (maxToEmit < 10000) {
+            if (kReduceDividend && maxToEmit < 10000) {
                 /* we cannot emit any shares anymore. We do not care about stock prices now. */
                 _dividende = 0;
             } else if (qPlayer.RobotUse(ROBOT_USE_HIGHSHAREPRICE)) {
@@ -654,9 +669,12 @@ void Bot::RobotExecuteAction() {
         break;
 
     case ACTION_RAISEMONEY:
-        if (condRaiseMoney(moneyAvailable) != Prio::None) {
+        if (condRaiseMoney() != Prio::None) {
             __int64 limit = qPlayer.CalcCreditLimit();
             __int64 m = min(limit, (kMoneyEmergencyFund + kMoneyEmergencyFund / 2) - qPlayer.Money);
+            if (mSaveForFinalObjective) {
+                m = limit;
+            }
             if (m > 0) {
                 hprintf("Bot::RobotExecuteAction(): Taking loan: %lld", m);
                 GameMechanic::takeOutCredit(qPlayer, m);
@@ -691,19 +709,7 @@ void Bot::RobotExecuteAction() {
 
     case ACTION_SELLSHARES:
         if (condSellShares(moneyAvailable) != Prio::None) {
-            for (SLONG c = 0; c < Sim.Players.AnzPlayers; c++) {
-                if (qPlayer.OwnsAktien[c] == 0 || c == qPlayer.PlayerNum) {
-                    continue;
-                }
-
-                SLONG sells = min(qPlayer.OwnsAktien[c], 20 * 1000);
-                hprintf("Bot::RobotExecuteAction(): Selling stock from player %ld: %ld", c, sells);
-                GameMechanic::sellStock(qPlayer, c, sells);
-                moneyAvailable = getMoneyAvailable();
-                if (condSellShares(moneyAvailable) == Prio::None) {
-                    break;
-                }
-            }
+            actionSellShares(moneyAvailable);
         } else {
             redprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
@@ -730,9 +736,17 @@ void Bot::RobotExecuteAction() {
         break;
 
     case ACTION_VISITNASA:
-        // TODO
         if (condVisitNasa(moneyAvailable) != Prio::None) {
-            moneyAvailable = getMoneyAvailable();
+            const auto &qPrices = (Sim.Difficulty == DIFF_FINAL) ? RocketPrices : StationPrices;
+            auto nParts = sizeof(qPrices) / sizeof(qPrices[0]);
+            for (SLONG i = 0; i < nParts; i++) {
+                if ((qPlayer.RocketFlags & (1 << i)) == 0 && moneyAvailable >= qPrices[i]) {
+                    qPlayer.ChangeMoney(-qPrices[i], 3400, "");
+                    PlayFanfare();
+                    qPlayer.RocketFlags |= (1 << i);
+                }
+                moneyAvailable = getMoneyAvailable();
+            }
         } else {
             redprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
@@ -955,7 +969,7 @@ TEAKFILE &operator<<(TEAKFILE &File, const Bot &bot) {
     File << bot.mWantToRentRouteId;
     File << bot.mFirstRun;
     File << bot.mDayStarted;
-    File << bot.mDoRoutes;
+    File << bot.mDoRoutes << bot.mSaveForFinalObjective << bot.mMoneyForFinalObjective;
     File << bot.mOutOfGates;
     File << bot.mNeedToPlanJobs << bot.mNeedToPlanRoutes;
     File << bot.mMoneyReservedForRepairs << bot.mMoneyReservedForUpgrades << bot.mMoneyReservedForAuctions;
@@ -1072,7 +1086,7 @@ TEAKFILE &operator>>(TEAKFILE &File, Bot &bot) {
     File >> bot.mWantToRentRouteId;
     File >> bot.mFirstRun;
     File >> bot.mDayStarted;
-    File >> bot.mDoRoutes;
+    File >> bot.mDoRoutes >> bot.mSaveForFinalObjective >> bot.mMoneyForFinalObjective;
     File >> bot.mOutOfGates;
     File >> bot.mNeedToPlanJobs >> bot.mNeedToPlanRoutes;
     File >> bot.mMoneyReservedForRepairs >> bot.mMoneyReservedForUpgrades >> bot.mMoneyReservedForAuctions;
