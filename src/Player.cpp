@@ -7433,6 +7433,8 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
     //                                            Basisspiel       Addon        FlightSecu
     //                                                012345   F   0123456789   0123456789
     case ROBOT_USE_SABOTAGE:
+        /* SuperBot: Respects this flag */
+        /* Note: Also disallows visiting ArabAir */
         pFeatureDesc = "-XXXXX"
                        "X"
                        "XXXXXXXXXX"
@@ -7445,54 +7447,63 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
                        "XXXXXXXXXX";
         break;
     case ROBOT_USE_WERBUNG:
+        /* SuperBot: Respects this flag */
         pFeatureDesc = "---XXX"
                        "!"
                        "XXXXXXXXXX"
                        "-XX-X-XXXX";
         break;
     case ROBOT_USE_AUFSICHT:
+        /* SuperBot: Ignores this flag (does not appear to affect regular bots anyway) */
         pFeatureDesc = "----XX"
                        "!"
                        "----------"
                        "----------";
         break;
     case ROBOT_USE_NASA:
+        /* SuperBot: Respects this flag */
         pFeatureDesc = "-----X"
                        "."
                        "---------X"
                        "----------";
         break;
     case ROBOT_USE_NEVERGIVEROUTEUP:
+        /* SuperBot: Ignores this flag */
         pFeatureDesc = "----X-"
                        "."
                        "----------"
                        "----------";
         break;
     case ROBOT_USE_ROUTES:
+        /* unused flag */
         pFeatureDesc = "------"
                        "."
                        "----------"
                        "----------";
         break;
     case ROBOT_USE_SUGGESTROUTES:
+        /* SuperBot: Ignores this flag (what is the difference to ROBOT_USE_ROUTEMISSION?) */
         pFeatureDesc = "---X--"
                        "."
                        "----------"
                        "----------";
         break;
     case ROBOT_USE_FORCEROUTES:
+        /* SuperBot: Respects this flag */
         pFeatureDesc = "------"
                        "."
                        "-----X----"
                        "----------";
         break;
     case ROBOT_USE_HARDWERBUNG:
+        /* SuperBot: Ignores this flag */
         pFeatureDesc = "----XX"
                        "."
                        "------XXXX"
                        "----------";
         break;
     case ROBOT_USE_SELLSHARES:
+        /* SuperBot: Ignores this flag */
         if (PlayerNum != 2) {
             return false;
         }
@@ -7502,12 +7513,14 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
                        "X---------";
         break;
     case ROBOT_USE_BUYOWNSHARES:
+        /* SuperBot: Ignores this flag */
         pFeatureDesc = "----XX"
                        "."
                        "-------XXX"
                        "----------";
         break;
     case ROBOT_USE_REBUYSHARES:
+        /* SuperBot: Ignores this flag */
         if (PlayerNum != 3) {
             return true;
         }
@@ -7517,48 +7530,56 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
                        "----------";
         break;
     case ROBOT_USE_TUTORIALLIMIT:
+        /* SuperBot: Ignores this flag */
         pFeatureDesc = "X-----"
                        "."
                        "----------"
                        "----------";
         break;
     case ROBOT_USE_ROUTEMISSION:
+        /* SuperBot: Respects this flag */
         pFeatureDesc = "---X--"
                        "."
                        "----------"
                        "----------";
         break;
     case ROBOT_USE_MUCHWERBUNG:
+        /* SuperBot: Respects this flag */
         pFeatureDesc = "----X-"
                        "."
                        "----------"
                        "----------";
         break;
     case ROBOT_USE_BONUS_X2:
+        /* SuperBot: Cheat not used */
         pFeatureDesc = "--XXX-"
                        "."
                        "XXX-------"
                        "----------";
         break;
     case ROBOT_USE_BONUS_X4:
+        /* SuperBot: Cheat not used */
         pFeatureDesc = "-----X"
                        "."
                        "---X--X---"
                        "----------";
         break;
     case ROBOT_USE_BONUS_X8:
+        /* SuperBot: Cheat not used */
         pFeatureDesc = "------"
                        "X"
                        "----XX-XXX"
                        "----------";
         break;
     case ROBOT_USE_ROUTEBOX:
+        /* SuperBot: Respects this flag */
         pFeatureDesc = "-XXXXX"
                        "X"
                        "XXXXXXXXXX"
                        "XXX-X-XXXX";
         break;
     case ROBOT_USE_ABROAD:
+        /* SuperBot: Respects this flag */
         pFeatureDesc = "--XXXX"
                        "X"
                        "XXXXXXXXXX"
@@ -7571,6 +7592,7 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
                        "XXXXXXXXXX";
         break;
     case ROBOT_USE_PAYBACK_CREDIT:
+        /* SuperBot: Ignores this flag */
         pFeatureDesc = "------"
                        "."
                        "X---------"
@@ -7604,24 +7626,28 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
                        "-X--------";
         break;
     case ROBOT_USE_IMAGEBONUS:
+        /* SuperBot: Cheat not used */
         pFeatureDesc = "------"
                        "."
                        "-----X----"
                        "----------";
         break;
     case ROBOT_USE_GOODPLANES:
+        /* SuperBot: Ignores this flag */
         pFeatureDesc = "------"
                        "."
                        "-----X----"
                        "-X--------";
         break;
     case ROBOT_USE_REPAIRPLANES:
+        /* SuperBot: Ignores this flag */
         pFeatureDesc = "------"
                        "."
                        "------X---"
                        "----------";
         break;
     case ROBOT_USE_HIGHSHAREPRICE:
+        /* SuperBot: Respects this flag */
         if (PlayerNum == 3 || IsSuperBot()) {
             return true;
         }
@@ -7631,78 +7657,91 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
                        "XXXXXXXXXX";
         break;
     case ROBOT_USE_WORKQUICK:
+        /* SuperBot: Respects this flag */
         pFeatureDesc = "------"
                        "."
                        "---XXXXXXX"
                        "XXXXXXXXXX";
         break;
     case ROBOT_USE_GROSSESKONTO:
+        /* SuperBot: Ignores this flag */
         pFeatureDesc = "------"
                        "."
                        "----------"
                        "X---------";
         break;
     case ROBOT_USE_EMITMUCHSHARES:
+        /* SuperBot: Ignores this flag */
         pFeatureDesc = "------"
                        "."
                        "----------"
                        "X---X--X--";
         break;
     case ROBOT_USE_WORKVERYQUICK:
+        /* SuperBot: Respects this flag */
         pFeatureDesc = "------"
                        "."
                        "----------"
                        "-----XXXXX";
         break;
     case ROBOT_USE_ALLRUN:
+        /* SuperBot: Respects this flag (but always runs for high prio actions) */
         pFeatureDesc = "------"
                        "."
                        "----------"
                        "---------X";
         break;
     case ROBOT_USE_DONTBUYANYSHARES:
+        /* SuperBot: Respects this flag */
         pFeatureDesc = "------"
                        "."
                        "----------"
                        "X---------";
         break;
     case ROBOT_USE_MAXKREDIT:
+        /* SuperBot: Ignores this flag */
         pFeatureDesc = "------"
                        "."
                        "----------"
                        "XXX-----XX";
         break;
     case ROBOT_USE_MAX4PLANES:
+        /* SuperBot: Respects this flag */
         pFeatureDesc = "------"
                        "."
                        "----------"
                        "--X-X--X--";
         break;
     case ROBOT_USE_MAX5PLANES:
+        /* SuperBot: Respects this flag */
         pFeatureDesc = "------"
                        "."
                        "----------"
                        "---X-X----";
         break;
     case ROBOT_USE_MAX10PLANES:
+        /* SuperBot: Respects this flag */
         pFeatureDesc = "------"
                        "."
                        "----------"
                        "-X--------";
         break;
     case ROBOT_USE_NOCHITCHAT:
+        /* SuperBot: Respects this flag */
         pFeatureDesc = "------"
                        "."
                        "----------"
                        "--X----XXX";
         break;
     case ROBOT_USE_OFTENMECH:
+        /* SuperBot: Ignores this flag */
         pFeatureDesc = "------"
                        "."
                        "----------"
                        "-X--X--XXX";
         break;
     case ROBOT_USE_SHORTFLIGHTS:
+        /* SuperBot: Ignores this flag */
         pFeatureDesc = "------"
                        "."
                        "----------"
@@ -7721,18 +7760,21 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
                        "---X-X-X-X";
         break;
     case ROBOT_USE_MAKLER:
+        /* SuperBot: Respects this flag */
         pFeatureDesc = "XXXXXX"
                        "!"
                        "XXXXXXXXXX"
                        "XXX-X-XXXX";
         break;
     case ROBOT_USE_PETROLAIR:
+        /* SuperBot: Respects this flag */
         pFeatureDesc = "XXXXXX"
                        "!"
                        "XXXXXXXXXX"
                        "XXXXX-XX--";
         break;
     case ROBOT_USE_MAX20PERCENT:
+        /* SuperBot: Ignores this flag */
         pFeatureDesc = "XXXXXX"
                        "!"
                        "XXXXXXXXXX"
@@ -7823,9 +7865,9 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
                        "XXXXXXXXXX";
         break;
 
-    // Spezialisierungen der Computerspieler
+    /* specialization of computer players. SuperBot ignores all but the first one. */
     case ROBOT_USE_WORKQUICK_2:
-        return (PlayerNum == 2);
+        return (PlayerNum == 2 || IsSuperBot());
     case ROBOT_USE_EXTRA_SABOTAGE:
         return (PlayerNum == 0);
     case ROBOT_USE_SABO_AFFORD_FINE:

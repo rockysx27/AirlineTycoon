@@ -731,7 +731,7 @@ void CFlugplanEintrag::BookFlight(CPlane *Plane, SLONG PlayerNum) {
     } else if (ObjectType == 2) {
         qPlayer.ChangeMoney(Einnahmen, 2061, CityString);
     } else if (ObjectType == 3) {
-        qPlayer.ChangeMoney(Einnahmen, 2061, CityString); /* TODO: Gewinn für Leerflug */
+        qPlayer.ChangeMoney(Einnahmen, 2061, CityString);
     } else if (ObjectType == 4) {
         qPlayer.ChangeMoney(Einnahmen, 2066, CityString);
     }

@@ -150,6 +150,12 @@ class BotPlaner {
     BotPlaner() = default;
     BotPlaner(PLAYER &player, const CPlanes &planes, JobOwner jobOwner, std::vector<int> intJobSource);
 
+    /* premium weighting factors */
+    void setDistanceFactor(SLONG val) { mDistanceFactor = val; }
+    void setPassengerFactor(SLONG val) { mPassengerFactor = val; }
+    void setUhrigBonus(SLONG val) { mUhrigBonus = val; }
+    void setConstBonus(SLONG val) { mConstBonus = val; }
+
     SolutionList planFlights(const std::vector<int> &planeIdsInput, bool bUseImprovedAlgo, int extraBufferTime);
     static bool applySolution(PLAYER &qPlayer, const SolutionList &solutions);
 
@@ -186,6 +192,7 @@ class BotPlaner {
         int sourceId{-1};
         CAuftrag auftrag;
         JobOwner owner;
+        SLONG score{};
         /* both algos: */
         int assignedtoPlaneIdx{-1};
     };
@@ -249,6 +256,12 @@ class BotPlaner {
     std::vector<int> mIntJobSource;
     const CPlanes &qPlanes;
     PlaneTime mScheduleFromTime;
+
+    /* premium weighting factors */
+    SLONG mDistanceFactor{0};
+    SLONG mPassengerFactor{0};
+    SLONG mUhrigBonus{0};
+    SLONG mConstBonus{0};
 
     /* state */
     std::vector<const CPlane *> mPlaneTypeToPlane;

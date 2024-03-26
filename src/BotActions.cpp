@@ -163,7 +163,6 @@ void Bot::actionCallInternational(bool areWeInOffice) {
 
         // Frachtaufträge:
         // RobotUse(ROBOT_USE_MUCH_FRACHT)
-        // RobotUse(ROBOT_USE_MUCH_FRACHT_BONUS)
         // TODO
 
         SLONG cost = cities.size();
@@ -218,6 +217,17 @@ void Bot::grabFlights(BotPlaner &planer, bool areWeInOffice) {
         hprintf("Bot::grabFlights(): Extra time planned for walking to office: %d", extraBufferTime);
     }
 
+    /* configure weighting for special missions */
+    if (Sim.Difficulty == DIFF_TUTORIAL) {
+        planer.setConstBonus(100 * 1000); /* need to schedule 10 jobs ASAP, so premium does not really matter */
+    } else if (Sim.Difficulty == DIFF_FIRST) {
+        planer.setPassengerFactor(100); /* need to fly as many passengers as possible */
+    } else if (Sim.Difficulty == DIFF_ADDON04) {
+        // planer.setDistanceFactor(1); TODO
+    } else if (Sim.Difficulty == DIFF_ADDON09) {
+        planer.setUhrigBonus(1000 * 1000);
+    }
+
     mPlanerSolution = planer.planFlights(mPlanesForJobs, true, extraBufferTime);
     if (!mPlanerSolution.empty()) {
         requestPlanFlights(areWeInOffice);
@@ -256,8 +266,16 @@ void Bot::planFlights() {
         }
     }
 
-    hprintf("Bot::planFlights(): Improved gain from jobs from %ld to %ld.", oldGain, calcCurrentGainFromJobs());
-    Helper::checkFlightJobs(qPlayer, true);
+    SLONG newGain = calcCurrentGainFromJobs();
+    SLONG diff = newGain - oldGain;
+    if (diff > 0) {
+        hprintf("Total gain improved: %s $ (+%s $)", Insert1000erDots(newGain).c_str(), Insert1000erDots(diff).c_str());
+    } else if (diff == 0) {
+        hprintf("Total gain did not change: %s $", Insert1000erDots(newGain).c_str());
+    } else {
+        hprintf("Total gain got worse: %s $ (%s $)", Insert1000erDots(newGain).c_str(), Insert1000erDots(diff).c_str());
+    }
+    Helper::checkFlightJobs(qPlayer, false);
 
     mPlanerSolution = {};
 
@@ -1323,7 +1341,7 @@ void Bot::planRoutes() {
             const auto &qPlane = qPlayer.Planes[planeId];
 
 #ifdef PRINT_ROUTE_DETAILS
-            hprintf("BotPlaner::planRoutes(): =================== Plane %s ===================", (LPCTSTR)qPlane.Name);
+            hprintf("Bot::planRoutes(): =================== Plane %s ===================", (LPCTSTR)qPlane.Name);
             Helper::printFlightJobs(qPlayer, planeId);
 #endif
 
@@ -1336,7 +1354,7 @@ void Bot::planRoutes() {
             std::tie(availTime, availCity) = Helper::getPlaneAvailableTimeLoc(qPlane, {}, {});
             availCity = Cities.find(availCity);
 #ifdef PRINT_ROUTE_DETAILS
-            hprintf("BotPlaner::planRoutes(): Plane %s is in %s @ %s %ld", (LPCTSTR)qPlane.Name, (LPCTSTR)Cities[availCity].Kuerzel,
+            hprintf("Bot::planRoutes(): Plane %s is in %s @ %s %ld", (LPCTSTR)qPlane.Name, (LPCTSTR)Cities[availCity].Kuerzel,
                     (LPCTSTR)Helper::getWeekday(availTime.getDate()), availTime.getHour());
 #endif
 
@@ -1344,7 +1362,7 @@ void Bot::planRoutes() {
             if (availCity != fromCity && availCity != toCity) {
                 SLONG autoFlightDuration = kDurationExtra + Cities.CalcFlugdauer(availCity, fromCity, qPlane.ptGeschwindigkeit);
                 availTime += autoFlightDuration;
-                hprintf("BotPlaner::planRoutes(): Plane %s: Adding buffer of %ld hours for auto flight from %s to %s", (LPCTSTR)qPlane.Name, autoFlightDuration,
+                hprintf("Bot::planRoutes(): Plane %s: Adding buffer of %ld hours for auto flight from %s to %s", (LPCTSTR)qPlane.Name, autoFlightDuration,
                         (LPCTSTR)Cities[availCity].Kuerzel, (LPCTSTR)Cities[fromCity].Kuerzel);
             }
 

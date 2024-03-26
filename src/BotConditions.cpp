@@ -467,7 +467,7 @@ Bot::Prio Bot::condBuyKerosine(__int64 &moneyAvailable) {
     if (!hoursPassed(ACTION_BUY_KEROSIN, 4)) {
         return Prio::None;
     }
-    if (!qPlayer.RobotUse(ROBOT_USE_PETROLAIR)) {
+    if (!qPlayer.RobotUse(ROBOT_USE_PETROLAIR) || !qPlayer.RobotUse(ROBOT_USE_SABOTAGE)) {
         return Prio::None;
     }
     if (qPlayer.HasBerater(BERATERTYP_KEROSIN) < 30 || !mDayStarted) {
@@ -490,7 +490,7 @@ Bot::Prio Bot::condBuyKerosineTank(__int64 &moneyAvailable) {
     if (!hoursPassed(ACTION_BUY_KEROSIN_TANKS, 24)) {
         return Prio::None;
     }
-    if (!qPlayer.RobotUse(ROBOT_USE_PETROLAIR) || !qPlayer.RobotUse(ROBOT_USE_TANKS)) {
+    if (!qPlayer.RobotUse(ROBOT_USE_PETROLAIR) || !qPlayer.RobotUse(ROBOT_USE_SABOTAGE) || !qPlayer.RobotUse(ROBOT_USE_TANKS)) {
         return Prio::None;
     }
     if (qPlayer.HasBerater(BERATERTYP_KEROSIN) < 30 || !mDayStarted) {
@@ -704,6 +704,9 @@ Bot::Prio Bot::condVisitMakler() {
 
 Bot::Prio Bot::condVisitArab() {
     /* misc action, can do as often as the bot likes */
+    if (!qPlayer.RobotUse(ROBOT_USE_PETROLAIR) || !qPlayer.RobotUse(ROBOT_USE_SABOTAGE)) {
+        return Prio::None;
+    }
     if (qPlayer.HasItem(ITEM_MG)) {
         return Prio::Low;
     }
@@ -948,7 +951,7 @@ Bot::Prio Bot::condBuyAds(__int64 &moneyAvailable) {
     auto minCost = gWerbePrice[0 * 6 + kSmallestAdCampaign];
     moneyAvailable -= minCost;
     if (moneyAvailable >= 0) {
-        if (qPlayer.Image < 0 || (mDoRoutes && qPlayer.Image < 300) || qPlayer.RobotUse(ROBOT_USE_MUCHWERBUNG)) {
+        if (qPlayer.Image < kMinimumImage || (mDoRoutes && qPlayer.Image < 300) || qPlayer.RobotUse(ROBOT_USE_MUCHWERBUNG)) {
             return Prio::Medium;
         }
         auto imageDelta = minCost / 10000 * (kSmallestAdCampaign + 6) / 55;

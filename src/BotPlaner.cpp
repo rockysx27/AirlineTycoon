@@ -134,6 +134,11 @@ void BotPlaner::collectAllFlightJobs(const std::vector<int> &planeIds) {
             }
             if (job.Date <= Sim.Date + kScheduleForNextDays) {
                 mJobList.emplace_back(source.jobs->GetIdFromIndex(i), source.sourceId, job, source.owner);
+                mJobList.back().score = job.Praemie;
+                mJobList.back().score += mDistanceFactor * Cities.CalcDistance(job.VonCity, job.NachCity);
+                mJobList.back().score += mPassengerFactor * job.Personen;
+                mJobList.back().score += mUhrigBonus * job.bUhrigFlight;
+                mJobList.back().score += mConstBonus;
             }
         }
         /* job source B: Freight */
@@ -160,7 +165,9 @@ void BotPlaner::collectAllFlightJobs(const std::vector<int> &planeIds) {
                 continue;
             }
             if (qFPE.ObjectType == 2) {
-                mJobList.emplace_back(qFPE.ObjectId, -1, qPlayer.Auftraege[qFPE.ObjectId], JobOwner::Planned);
+                const auto &job = qPlayer.Auftraege[qFPE.ObjectId];
+                mJobList.emplace_back(qFPE.ObjectId, -1, job, JobOwner::Planned);
+                mJobList.back().score = job.Praemie;
             }
             // TODO: JobOwner::PlannedFreight
         }
@@ -222,10 +229,11 @@ std::vector<Graph> BotPlaner::prepareGraph() {
             auto &qNodeInfo = g.nodeInfo[i];
 
             if (i >= nPlanes && canFlyThisJob(mJobList[i - nPlanes].auftrag, *plane)) {
-                auto &job = mJobList[i - nPlanes].auftrag;
+                auto score = mJobList[i - nPlanes].score;
+                const auto &job = mJobList[i - nPlanes].auftrag;
                 const auto *plane = mPlaneTypeToPlane[pt];
                 qNodeInfo.jobIdx = i - nPlanes;
-                qNodeInfo.premium = job.Praemie - CalculateFlightCostNoTank(job.VonCity, job.NachCity, plane->ptVerbrauch, plane->ptGeschwindigkeit);
+                qNodeInfo.premium = score - CalculateFlightCostNoTank(job.VonCity, job.NachCity, plane->ptVerbrauch, plane->ptGeschwindigkeit);
                 qNodeInfo.duration = kDurationExtra + Cities.CalcFlugdauer(job.VonCity, job.NachCity, plane->ptGeschwindigkeit);
                 qNodeInfo.earliest = job.Date;
                 qNodeInfo.latest = job.BisDate;
@@ -396,6 +404,19 @@ bool BotPlaner::applySolutionForPlane(PLAYER &qPlayer, int planeId, const BotPla
 BotPlaner::SolutionList BotPlaner::planFlights(const std::vector<int> &planeIdsInput, bool bUseImprovedAlgo, int extraBufferTime) {
     auto t_begin = std::chrono::steady_clock::now();
 
+    if (mDistanceFactor > 0) {
+        hprintf("BotPlaner::planFlights(): Using mDistanceFactor = %ld", mDistanceFactor);
+    }
+    if (mPassengerFactor > 0) {
+        hprintf("BotPlaner::planFlights(): Using mPassengerFactor = %ld", mPassengerFactor);
+    }
+    if (mUhrigBonus > 0) {
+        hprintf("BotPlaner::planFlights(): Using mUhrigBonus = %ld", mUhrigBonus);
+    }
+    if (mConstBonus > 0) {
+        hprintf("BotPlaner::planFlights(): Using mConstBonus = %ld", mConstBonus);
+    }
+
 #ifdef PRINT_DETAIL
     hprintf("BotPlaner::planFlights(): Current time: %d", Sim.GetHour());
 #endif
@@ -519,37 +540,41 @@ bool BotPlaner::applySolution(PLAYER &qPlayer, const SolutionList &solutions) {
     }
 
     /* apply solution */
-    int totalGain = 0;
-    int totalDiff = 0;
+    Helper::ScheduleInfo overallInfo;
+    SLONG totalDiff = 0;
     for (const auto &solution : solutions) {
         int planeId = solution.planeId;
 
-        SLONG oldGain = Helper::calculateScheduleGain(qPlayer, planeId);
+        auto oldInfo = Helper::calculateScheduleInfo(qPlayer, planeId);
         applySolutionForPlane(qPlayer, planeId, solution);
 
-        SLONG newGain = Helper::calculateScheduleGain(qPlayer, planeId);
-        SLONG diff = newGain - oldGain;
-        totalGain += newGain;
+        auto newInfo = Helper::calculateScheduleInfo(qPlayer, planeId);
+        overallInfo += newInfo;
+        SLONG diff = newInfo.gain - oldInfo.gain;
         totalDiff += diff;
 
 #ifdef PRINT_DETAIL
         Helper::checkPlaneSchedule(qPlayer, planeId, false);
         if (diff > 0) {
-            hprintf("%s: Improved gain: %d => %d (+%d)", (LPCTSTR)qPlayer.Planes[planeId].Name, oldGain, newGain, diff);
+            hprintf("%s: Improved gain: %d => %d (+%d)", (LPCTSTR)qPlayer.Planes[planeId].Name, oldInfo.gain, newInfo.gain, diff);
         } else {
-            hprintf("%s: Gain did not improve: %d => %d (%d)", (LPCTSTR)qPlayer.Planes[planeId].Name, oldGain, newGain, diff);
+            hprintf("%s: Gain did not improve: %d => %d (%d)", (LPCTSTR)qPlayer.Planes[planeId].Name, oldInfo.gain, newInfo.gain, diff);
         }
 #endif
     }
 
-#ifdef PRINT_OVERALL
+#ifdef PRINT_DETAIL
     if (totalDiff > 0) {
-        hprintf("Total gain improved: %s $ (+%s $)", Insert1000erDots(totalGain).c_str(), Insert1000erDots(totalDiff).c_str());
+        hprintf("Total gain improved: %s $ (+%s $)", Insert1000erDots(overallInfo.gain).c_str(), Insert1000erDots(totalDiff).c_str());
     } else if (totalDiff == 0) {
-        hprintf("Total gain did not change: %s $", Insert1000erDots(totalGain).c_str());
+        hprintf("Total gain did not change: %s $", Insert1000erDots(overallInfo.gain).c_str());
     } else {
-        hprintf("Total gain got worse: %s $ (%s $)", Insert1000erDots(totalGain).c_str(), Insert1000erDots(totalDiff).c_str());
+        hprintf("Total gain got worse: %s $ (%s $)", Insert1000erDots(overallInfo.gain).c_str(), Insert1000erDots(totalDiff).c_str());
     }
+#endif
+
+#ifdef PRINT_OVERALL
+    overallInfo.printDetails();
 #endif
 
     return true;

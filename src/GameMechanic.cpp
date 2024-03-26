@@ -2203,7 +2203,7 @@ bool GameMechanic::hireWorker(PLAYER &qPlayer, SLONG workerId) {
     }
     auto &qWorker = Workers.Workers[workerId];
     if (qWorker.Employer != WORKER_JOBLESS) {
-        redprintf("GameMechanic::fireWorker: Worker not unemployed.");
+        redprintf("GameMechanic::hireWorker: Worker not unemployed.");
         return false;
     }
 

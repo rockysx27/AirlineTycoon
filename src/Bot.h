@@ -20,6 +20,7 @@ extern const SLONG kMoneyEmergencyFund;
 extern const SLONG kSwitchToRoutesNumPlanesMin;
 extern const SLONG kSwitchToRoutesNumPlanesMax;
 extern const SLONG kSmallestAdCampaign;
+extern const SLONG kMinimumImage;
 extern const SLONG kMaximumRouteUtilization;
 extern const SLONG kMaximumPlaneUtilization;
 extern const DOUBLE kMaxTicketPriceFactor;

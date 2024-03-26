@@ -2977,6 +2977,36 @@ void CPlaner::AutoPlan(SLONG mode) {
     SLONG playerNum = CStdRaum::PlayerNum;
     auto &qPlayer = Sim.Players.Players[playerNum];
 
+    std::vector<int> cities;
+    for (SLONG n = 0; n < Cities.AnzEntries(); n++) {
+        if (!GameMechanic::canCallInternational(qPlayer, n)) {
+            continue;
+        }
+
+        GameMechanic::refillFlightJobs(n);
+        cities.push_back(n);
+    }
+
+    std::vector<int> currentPlaneId;
+    for (SLONG c = qPlayer.Blocks.AnzEntries() - 1; c >= 0; c--) {
+        if (qPlayer.Blocks.IsInAlbum(ULONG(c)) == 0) {
+            continue;
+        }
+        auto &qBlock = qPlayer.Blocks[c];
+        if (qPlayer.Planes.IsInAlbum(qBlock.SelectedId) != 0) {
+            SLONG idx = qPlayer.Planes.find(qBlock.SelectedId);
+            currentPlaneId.push_back(qPlayer.Planes.GetIdFromIndex(idx));
+            break;
+        }
+    }
+
+    std::vector<int> planeIds;
+    for (SLONG i = 0; i < qPlayer.Planes.AnzEntries(); i++) {
+        if (qPlayer.Planes.IsInAlbum(i)) {
+            planeIds.push_back(qPlayer.Planes.GetIdFromIndex(i));
+        }
+    }
+
     if (mode == 0) {
         /* only check current plane */
         Helper::checkFlightJobs(qPlayer, false);
@@ -2984,21 +3014,7 @@ void CPlaner::AutoPlan(SLONG mode) {
     }
 
     if (mode == 1) {
-        /* schedule current plane */
-        std::vector<int> planeIds;
-        for (SLONG c = qPlayer.Blocks.AnzEntries() - 1; c >= 0; c--) {
-            if (qPlayer.Blocks.IsInAlbum(ULONG(c)) == 0) {
-                continue;
-            }
-            auto &qBlock = qPlayer.Blocks[c];
-            if (qPlayer.Planes.IsInAlbum(qBlock.SelectedId) != 0) {
-                SLONG idx = qPlayer.Planes.find(qBlock.SelectedId);
-                planeIds.push_back(qPlayer.Planes.GetIdFromIndex(idx));
-                break;
-            }
-        }
-
-        BotPlaner bot(qPlayer, qPlayer.Planes, BotPlaner::JobOwner::Backlog, {});
+        BotPlaner bot(qPlayer, qPlayer.Planes, BotPlaner::JobOwner::International, cities);
         auto solutions = bot.planFlights(planeIds, true, kAvailTimeExtra);
         bot.applySolution(qPlayer, solutions);
         Helper::checkFlightJobs(qPlayer, false);
@@ -3006,15 +3022,8 @@ void CPlaner::AutoPlan(SLONG mode) {
     }
 
     if (mode == 2) {
-        /* schedule all planes and get jobs from agency */
-        std::vector<int> planeIds;
-        for (SLONG i = 0; i < qPlayer.Planes.AnzEntries(); i++) {
-            if (qPlayer.Planes.IsInAlbum(i)) {
-                planeIds.push_back(qPlayer.Planes.GetIdFromIndex(i));
-            }
-        }
-
-        BotPlaner bot(qPlayer, qPlayer.Planes, BotPlaner::JobOwner::TravelAgency, {});
+        BotPlaner bot(qPlayer, qPlayer.Planes, BotPlaner::JobOwner::International, cities);
+        bot.setDistanceFactor(1);
         auto solutions = bot.planFlights(planeIds, true, kAvailTimeExtra);
         bot.applySolution(qPlayer, solutions);
         Helper::checkFlightJobs(qPlayer, false);

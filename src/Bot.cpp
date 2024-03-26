@@ -10,6 +10,7 @@ const SLONG kMoneyEmergencyFund = 100000;
 const SLONG kSwitchToRoutesNumPlanesMin = 4;
 const SLONG kSwitchToRoutesNumPlanesMax = 8;
 const SLONG kSmallestAdCampaign = 4;
+const SLONG kMinimumImage = -4;
 const SLONG kMaximumRouteUtilization = 90;
 const SLONG kMaximumPlaneUtilization = 90;
 const DOUBLE kMaxTicketPriceFactor = 3.0;
@@ -88,7 +89,7 @@ std::vector<SLONG> Bot::findBestAvailablePlaneType() const {
 SLONG Bot::calcCurrentGainFromJobs() const {
     SLONG gain = 0;
     for (auto planeId : mPlanesForJobs) {
-        gain += Helper::calculateScheduleGain(qPlayer, planeId);
+        gain += Helper::calculateScheduleInfo(qPlayer, planeId).gain;
     }
     return gain;
 }
@@ -916,7 +917,7 @@ void Bot::RobotExecuteAction() {
 
     mLastTimeInRoom[qRobotActions[0].ActionId] = Sim.Time;
 
-    if (qWorkCountdown > 2) {
+    if (qPlayer.RobotUse(ROBOT_USE_WORKQUICK_2) && qWorkCountdown > 2) {
         qWorkCountdown /= 2;
     }
 
