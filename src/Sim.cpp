@@ -724,8 +724,7 @@ void SIM::ChooseStartup(BOOL /*GameModeQuick*/) {
             qPlayer.Image = 300;
         }
 
-        if ((Difficulty == DIFF_ATFS09 || Difficulty == DIFF_ATFS10) && qPlayer.Owner == 1) {
-            // MP: Bonus for computer, not controlled by switch
+        if ((Difficulty == DIFF_ATFS09 || Difficulty == DIFF_ATFS10) && qPlayer.Owner == 1 && qPlayer.RobotUse(ROBOT_USE_MISC_CHEATS)) {
             qPlayer.Tank = 5000;
             qPlayer.TankOpen = 1;
         }
@@ -961,8 +960,7 @@ void SIM::ChooseStartup(BOOL /*GameModeQuick*/) {
         qPlayer.bDialogStartSent = FALSE;
         qPlayer.PlayerDialogState = -1;
 
-        if (qPlayer.Owner == 1) {
-            // MP: Bonus for computer, not controlled by switch
+        if (qPlayer.Owner == 1 && qPlayer.RobotUse(ROBOT_USE_MISC_CHEATS)) {
             qPlayer.Kooperation.FillWith(1);
             for (SLONG c = 0; c < 4; c++) {
                 if (Players.Players[c].Owner != 1) {

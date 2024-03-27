@@ -1403,8 +1403,7 @@ void PLAYER::NewDay() {
     if (LaptopVirus == 2) {
         LaptopVirus = 3;
     }
-    if ((LaptopVirus != 0) && Owner == 1) {
-        // MP: Bonus for computer, not controlled by switch
+    if ((LaptopVirus != 0) && Owner == 1 && RobotUse(ROBOT_USE_MISC_CHEATS)) {
         LaptopVirus = 0;
     }
 
@@ -1751,8 +1750,7 @@ void PLAYER::NewDay() {
             }
         }
 
-        if (Owner != 1 && (Sim.Date == 20 || Sim.Date == 45)) {
-            // MP: No malus for computer, not controlled by switch
+        if ((Owner != 1 || !RobotUse(ROBOT_USE_FAKE_PERSONAL)) && (Sim.Date == 20 || Sim.Date == 45)) {
             Workers.AddHappiness(PlayerNum, -45);
         }
     }
@@ -4459,7 +4457,7 @@ void PLAYER::RobotExecuteAction() {
                 // ENDE FRACHTAUFTRÄGE
             }
         }
-        if ((StrikeHours != 0) && LocalRandom.Rand(6) == 0 && RobotUse(ROBOT_USE_END_STRIKE_RAND)) {
+        if ((StrikeHours != 0) && LocalRandom.Rand(6) == 0 && RobotUse(ROBOT_USE_MISC_CHEATS)) {
             Sim.Players.Players[PlayerNum].StrikeHours = 0;
         }
 
@@ -7433,8 +7431,8 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
     //                                            Basisspiel       Addon        FlightSecu
     //                                                012345   F   0123456789   0123456789
     case ROBOT_USE_SABOTAGE:
-        /* SuperBot: Respects this flag */
         /* Note: Also disallows visiting ArabAir */
+        /* SuperBot: Respects this flag (only for sabotage) */
         pFeatureDesc = "-XXXXX"
                        "X"
                        "XXXXXXXXXX"
@@ -7448,6 +7446,7 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
         break;
     case ROBOT_USE_WERBUNG:
         /* SuperBot: Respects this flag */
+        // TODO: Check dashes in evolution missions
         pFeatureDesc = "---XXX"
                        "!"
                        "XXXXXXXXXX"
@@ -7855,7 +7854,7 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
                        "XXXXXXXXXX"
                        "XXXXXXXXXX";
         break;
-    case ROBOT_USE_END_STRIKE_RAND:
+    case ROBOT_USE_MISC_CHEATS:
         if (IsSuperBot()) {
             return false;
         }

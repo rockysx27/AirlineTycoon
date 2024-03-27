@@ -176,12 +176,12 @@ void BotPlaner::collectAllFlightJobs(const std::vector<int> &planeIds) {
     /* sort list of jobs */
     std::sort(mJobList.begin(), mJobList.end(), [](const FlightJob &a, const FlightJob &b) {
         if (kCanDropJobs) {
-            return (a.auftrag.Praemie + (a.wasTaken() ? a.auftrag.Strafe : 0)) > (b.auftrag.Praemie + (b.wasTaken() ? b.auftrag.Strafe : 0));
+            return (a.score + (a.wasTaken() ? a.auftrag.Strafe : 0)) > (b.score + (b.wasTaken() ? b.auftrag.Strafe : 0));
         }
         if (a.wasTaken() != b.wasTaken()) {
             return a.wasTaken();
         }
-        return a.auftrag.Praemie > b.auftrag.Praemie;
+        return a.score > b.score;
     });
 
     for (int i = 0; i < mJobList.size(); i++) {

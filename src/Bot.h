@@ -21,7 +21,10 @@ extern const SLONG kSwitchToRoutesNumPlanesMin;
 extern const SLONG kSwitchToRoutesNumPlanesMax;
 extern const SLONG kSmallestAdCampaign;
 extern const SLONG kMinimumImage;
-extern const SLONG kMaximumRouteUtilization;
+inline SLONG kMaximumRouteUtilization() {
+    /* we only need to hold the route, move on to the next one fast! */
+    return (Sim.Difficulty == DIFF_NORMAL) ? 20 : 90;
+}
 extern const SLONG kMaximumPlaneUtilization;
 extern const DOUBLE kMaxTicketPriceFactor;
 extern const SLONG kTargetEmployeeHappiness;

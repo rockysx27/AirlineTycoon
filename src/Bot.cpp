@@ -11,7 +11,6 @@ const SLONG kSwitchToRoutesNumPlanesMin = 4;
 const SLONG kSwitchToRoutesNumPlanesMax = 8;
 const SLONG kSmallestAdCampaign = 4;
 const SLONG kMinimumImage = -4;
-const SLONG kMaximumRouteUtilization = 90;
 const SLONG kMaximumPlaneUtilization = 90;
 const DOUBLE kMaxTicketPriceFactor = 3.0;
 const SLONG kTargetEmployeeHappiness = 90;
@@ -292,6 +291,15 @@ void Bot::RobotInit() {
                 GameMechanic::killRoute(qPlayer, routeID);
                 hprintf("Bot::RobotInit(): Removing initial route %s", Helper::getRouteName(Routen[routeID]).c_str());
             }
+        }
+
+        /* mission specialization */
+        if (Sim.Difficulty == DIFF_TUTORIAL) {
+            mItemPills = -1;      /* item not available */
+            mItemAntiStrike = -1; /* item not available */
+        }
+        if (Sim.Difficulty <= DIFF_FIRST) {
+            mItemAntiVirus = -1; /* item not available */
         }
 
         mFirstRun = false;

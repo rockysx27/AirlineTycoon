@@ -1253,7 +1253,7 @@ void Bot::updateRouteInfo() {
             mRoutes[lowUtil].routeUtilization);
 
     /* do something about underutilized routes */
-    if (mRoutes[lowUtil].routeUtilization < kMaximumRouteUtilization) {
+    if (mRoutes[lowUtil].routeUtilization < kMaximumRouteUtilization()) {
         mWantToRentRouteId = -1;
         mBuyPlaneForRouteId = mRoutes[lowUtil].planeTypeId;
         hprintf("Bot::updateRouteInfo(): Need to buy another %s for route %s: ", (LPCTSTR)PlaneTypes[mBuyPlaneForRouteId].Name,
@@ -1293,7 +1293,7 @@ void Bot::planRoutes() {
     /* assign planes to routes */
     SLONG numUnassigned = mPlanesForRoutesUnassigned.size();
     for (SLONG i = 0; i < numUnassigned; i++) {
-        if (mRoutes[mRoutesSortedByUtilization[0]].routeUtilization >= kMaximumRouteUtilization) {
+        if (mRoutes[mRoutesSortedByUtilization[0]].routeUtilization >= kMaximumRouteUtilization()) {
             break; /* No more underutilized routes */
         }
 
@@ -1309,7 +1309,7 @@ void Bot::planRoutes() {
         SLONG targetRouteIdx = -1;
         for (SLONG routeIdx : mRoutesSortedByUtilization) {
             auto &qRoute = mRoutes[routeIdx];
-            if (qRoute.routeUtilization >= kMaximumRouteUtilization) {
+            if (qRoute.routeUtilization >= kMaximumRouteUtilization()) {
                 break; /* No more underutilized routes */
             }
             if (qRoute.planeTypeId != qPlane.TypeId) {
@@ -1422,7 +1422,7 @@ void Bot::planRoutes() {
             qRoute.ticketCostFactor += 0.1;
         } else {
             /* planes are not fully utilized */
-            if (qRoute.routeUtilization < kMaximumRouteUtilization) {
+            if (qRoute.routeUtilization < kMaximumRouteUtilization()) {
                 /* decrease one time per each 25% missing */
                 SLONG numDecreases = ceil_div(kMaximumPlaneUtilization - qRoute.planeUtilization, 25);
                 qRoute.ticketCostFactor -= (0.1 * numDecreases);

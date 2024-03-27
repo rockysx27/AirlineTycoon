@@ -467,7 +467,7 @@ Bot::Prio Bot::condBuyKerosine(__int64 &moneyAvailable) {
     if (!hoursPassed(ACTION_BUY_KEROSIN, 4)) {
         return Prio::None;
     }
-    if (!qPlayer.RobotUse(ROBOT_USE_PETROLAIR) || !qPlayer.RobotUse(ROBOT_USE_SABOTAGE)) {
+    if (!qPlayer.RobotUse(ROBOT_USE_PETROLAIR)) {
         return Prio::None;
     }
     if (qPlayer.HasBerater(BERATERTYP_KEROSIN) < 30 || !mDayStarted) {
@@ -490,7 +490,7 @@ Bot::Prio Bot::condBuyKerosineTank(__int64 &moneyAvailable) {
     if (!hoursPassed(ACTION_BUY_KEROSIN_TANKS, 24)) {
         return Prio::None;
     }
-    if (!qPlayer.RobotUse(ROBOT_USE_PETROLAIR) || !qPlayer.RobotUse(ROBOT_USE_SABOTAGE) || !qPlayer.RobotUse(ROBOT_USE_TANKS)) {
+    if (!qPlayer.RobotUse(ROBOT_USE_PETROLAIR) || !qPlayer.RobotUse(ROBOT_USE_TANKS)) {
         return Prio::None;
     }
     if (qPlayer.HasBerater(BERATERTYP_KEROSIN) < 30 || !mDayStarted) {
@@ -523,6 +523,9 @@ Bot::Prio Bot::condSabotage(__int64 &moneyAvailable) {
     }
     if (qPlayer.ArabTrust > 0 && (mItemAntiVirus == 1 || mItemAntiVirus == 2)) {
         return Prio::Low; /* collect darts */
+    }
+    if (!qPlayer.RobotUse(ROBOT_USE_SABOTAGE)) {
+        return Prio::None;
     }
     return Prio::None;
 }
@@ -704,7 +707,7 @@ Bot::Prio Bot::condVisitMakler() {
 
 Bot::Prio Bot::condVisitArab() {
     /* misc action, can do as often as the bot likes */
-    if (!qPlayer.RobotUse(ROBOT_USE_PETROLAIR) || !qPlayer.RobotUse(ROBOT_USE_SABOTAGE)) {
+    if (!qPlayer.RobotUse(ROBOT_USE_PETROLAIR)) {
         return Prio::None;
     }
     if (qPlayer.HasItem(ITEM_MG)) {
@@ -834,7 +837,7 @@ Bot::Prio Bot::condVisitRouteBoxPlanning() {
     if (!Helper::checkRoomOpen(ACTION_WERBUNG_ROUTES)) {
         return Prio::None; /* let's wait until we are able to buy ads for the route */
     }
-    if (mRoutes.empty() || mRoutes[mRoutesSortedByUtilization[0]].routeUtilization >= kMaximumRouteUtilization) {
+    if (mRoutes.empty() || mRoutes[mRoutesSortedByUtilization[0]].routeUtilization >= kMaximumRouteUtilization()) {
         return Prio::Medium;
     }
     return Prio::None;

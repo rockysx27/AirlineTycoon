@@ -315,7 +315,7 @@ SLONG _checkPlaneSchedule(const PLAYER &qPlayer, const CPlane &qPlane, std::unor
     for (const auto &iter : freightTons) {
         auto &qAuftrag = qPlayer.Frachten[iter.first];
         if (iter.second > 0) {
-            printf("Helper::checkPlaneSchedule(): Note: There are still %ld tons open for job %s", iter.second, getFreightName(qAuftrag).c_str());
+            printf("Helper::checkPlaneSchedule(): Note: There are still %d tons open for job %s", iter.second, getFreightName(qAuftrag).c_str());
         }
     }
 
@@ -480,7 +480,9 @@ bool checkRoomOpen(SLONG roomId) {
     case ACTION_BUY_KEROSIN:
         [[fallthrough]];
     case ACTION_BUY_KEROSIN_TANKS:
-        return (time >= timeArabOpen && Sim.Weekday != 6);
+        [[fallthrough]];
+    case ACTION_VISITARAB:
+        return (Sim.Difficulty >= DIFF_EASY || Sim.Difficulty == DIFF_FREEGAME) && (time >= timeArabOpen && Sim.Weekday != 6);
     case ACTION_CHECKAGENT1:
         return (time <= timeLastClose - 60000 && Sim.Weekday != 5 && GlobalUse(USE_TRAVELHOLDING));
     case ACTION_BUYUSEDPLANE:
@@ -497,6 +499,14 @@ bool checkRoomOpen(SLONG roomId) {
         [[fallthrough]];
     case ACTION_VISITSECURITY2:
         return (Sim.nSecOutDays <= 0);
+    case ACTION_VISITROUTEBOX:
+        [[fallthrough]];
+    case ACTION_VISITROUTEBOX2:
+        return (Sim.Difficulty >= DIFF_EASY || Sim.Difficulty == DIFF_FREEGAME);
+    case ACTION_CHECKAGENT3:
+        return (Sim.Difficulty >= DIFF_ADDON01 || Sim.Difficulty == DIFF_FREEGAME);
+    case ACTION_VISITNASA:
+        return (Sim.Difficulty == DIFF_FINAL || Sim.Difficulty == DIFF_ADDON10);
     default:
         return true;
     }
