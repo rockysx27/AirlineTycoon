@@ -22,7 +22,8 @@ std::pair<PlaneTime, int> getPlaneAvailableTimeLoc(const CPlane &qPlane, std::op
 
 SLONG checkPlaneSchedule(const PLAYER &qPlayer, SLONG planeId, bool printOnErrorOnly);
 SLONG checkPlaneSchedule(const PLAYER &qPlayer, const CPlane &qPlane, bool printOnErrorOnly);
-SLONG _checkPlaneSchedule(const PLAYER &qPlayer, const CPlane &qPlane, std::unordered_map<int, CString> &assignedJobs, bool printOnErrorOnly);
+SLONG _checkPlaneSchedule(const PLAYER &qPlayer, const CPlane &qPlane, std::unordered_map<SLONG, CString> &assignedJobs,
+                          std::unordered_map<SLONG, SLONG> freightTons, bool printOnErrorOnly);
 SLONG checkFlightJobs(const PLAYER &qPlayer, bool printOnErrorOnly);
 void printFlightJobs(const PLAYER &qPlayer, SLONG planeId);
 void printFlightJobs(const PLAYER &qPlayer, const CPlane &qPlane);

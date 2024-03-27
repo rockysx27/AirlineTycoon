@@ -90,7 +90,7 @@ void printFPE(const CFlugplanEintrag &qFPE) {
 
 const CFlugplanEintrag *getLastFlight(const CPlane &qPlane) {
     const auto &qFlightPlan = qPlane.Flugplan.Flug;
-    for (int c = qFlightPlan.AnzEntries() - 1; c >= 0; c--) {
+    for (SLONG c = qFlightPlan.AnzEntries() - 1; c >= 0; c--) {
         auto *qFPE = &qFlightPlan[c];
         if (qFPE->ObjectType <= 0) {
             continue;
@@ -102,7 +102,7 @@ const CFlugplanEintrag *getLastFlight(const CPlane &qPlane) {
 
 const CFlugplanEintrag *getLastFlightNotAfter(const CPlane &qPlane, PlaneTime ignoreFrom) {
     const auto &qFlightPlan = qPlane.Flugplan.Flug;
-    for (int c = qFlightPlan.AnzEntries() - 1; c >= 0; c--) {
+    for (SLONG c = qFlightPlan.AnzEntries() - 1; c >= 0; c--) {
         auto *qFPE = &qFlightPlan[c];
         if (qFPE->ObjectType <= 0) {
             continue;
@@ -139,16 +139,19 @@ SLONG checkPlaneSchedule(const PLAYER &qPlayer, SLONG planeId, bool printOnError
         return 0;
     }
     auto &qPlane = qPlayer.Planes[planeId];
-    std::unordered_map<int, CString> assignedJobs;
-    return _checkPlaneSchedule(qPlayer, qPlane, assignedJobs, printOnErrorOnly);
+    std::unordered_map<SLONG, CString> assignedJobs;
+    std::unordered_map<SLONG, SLONG> freightTons;
+    return _checkPlaneSchedule(qPlayer, qPlane, assignedJobs, freightTons, printOnErrorOnly);
 }
 
 SLONG checkPlaneSchedule(const PLAYER &qPlayer, const CPlane &qPlane, bool printOnErrorOnly) {
-    std::unordered_map<int, CString> assignedJobs;
-    return _checkPlaneSchedule(qPlayer, qPlane, assignedJobs, printOnErrorOnly);
+    std::unordered_map<SLONG, CString> assignedJobs;
+    std::unordered_map<SLONG, SLONG> freightTons;
+    return _checkPlaneSchedule(qPlayer, qPlane, assignedJobs, freightTons, printOnErrorOnly);
 }
 
-SLONG _checkPlaneSchedule(const PLAYER &qPlayer, const CPlane &qPlane, std::unordered_map<int, CString> &assignedJobs, bool printOnErrorOnly) {
+SLONG _checkPlaneSchedule(const PLAYER &qPlayer, const CPlane &qPlane, std::unordered_map<SLONG, CString> &assignedJobs,
+                          std::unordered_map<SLONG, SLONG> freightTons, bool printOnErrorOnly) {
     SLONG nIncorrect = 0;
     auto nIncorredOld = nIncorrect;
 
@@ -271,14 +274,11 @@ SLONG _checkPlaneSchedule(const PLAYER &qPlayer, const CPlane &qPlane, std::unor
         if (qFPE.ObjectType == 4) {
             auto &qAuftrag = qPlayer.Frachten[id];
 
-            if (assignedJobs.find(id) != assignedJobs.end()) {
-                nIncorrect++;
-                redprintf("Helper::checkPlaneSchedule(): Job (%s) for plane %s is also scheduled for plane %s", getFreightName(qAuftrag).c_str(),
-                          (LPCTSTR)qPlane.Name, (LPCTSTR)assignedJobs[id]);
-                printFreight(qAuftrag);
-                printFPE(qFPE);
+            if (assignedJobs.find(id) == assignedJobs.end()) {
+                assignedJobs[id] = qPlane.Name;
+                freightTons[id] = qAuftrag.Tons;
             }
-            assignedJobs[id] = qPlane.Name;
+            freightTons[id] -= qPlane.ptPassagiere / 10;
 
             if (qFPE.VonCity != qAuftrag.VonCity || qFPE.NachCity != qAuftrag.NachCity) {
                 nIncorrect++;
@@ -311,6 +311,14 @@ SLONG _checkPlaneSchedule(const PLAYER &qPlayer, const CPlane &qPlane, std::unor
             }
         }
     }
+
+    for (const auto &iter : freightTons) {
+        auto &qAuftrag = qPlayer.Frachten[iter.first];
+        if (iter.second > 0) {
+            printf("Helper::checkPlaneSchedule(): Note: There are still %ld tons open for job %s", iter.second, getFreightName(qAuftrag).c_str());
+        }
+    }
+
     if ((nIncorrect > nIncorredOld) || !printOnErrorOnly) {
         printFlightJobs(qPlayer, qPlane);
     }
@@ -439,13 +447,14 @@ ScheduleInfo calculateScheduleInfo(const PLAYER &qPlayer, SLONG planeId) {
 SLONG checkFlightJobs(const PLAYER &qPlayer, bool printOnErrorOnly) {
     SLONG nIncorrect = 0;
     SLONG nPlanes = 0;
-    std::unordered_map<int, CString> assignedJobs;
+    std::unordered_map<SLONG, CString> assignedJobs;
+    std::unordered_map<SLONG, SLONG> freightTons;
     Helper::ScheduleInfo overallInfo;
     for (SLONG c = 0; c < qPlayer.Planes.AnzEntries(); c++) {
         if (qPlayer.Planes.IsInAlbum(c) == 0) {
             continue;
         }
-        nIncorrect += _checkPlaneSchedule(qPlayer, qPlayer.Planes[c], assignedJobs, printOnErrorOnly);
+        nIncorrect += _checkPlaneSchedule(qPlayer, qPlayer.Planes[c], assignedJobs, freightTons, printOnErrorOnly);
         overallInfo += calculateScheduleInfo(qPlayer, c);
         nPlanes++;
     }
