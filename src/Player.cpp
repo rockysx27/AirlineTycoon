@@ -2100,6 +2100,15 @@ SLONG PLAYER::CalcCreditLimit() const {
 
     return (SLONG(min(0x7fffffff, max(0, cr))));
 }
+SLONG PLAYER::CalcCreditLimit(__int64 money, __int64 credit) const {
+    __int64 cr = (money - credit) / 2 - credit;
+
+    if (credit < 200000) {
+        cr = max(cr, 200000 - credit);
+    }
+
+    return (SLONG(min(0x7fffffff, max(0, cr))));
+}
 
 //--------------------------------------------------------------------------------------------
 // Berechnet wieviele Flugzeuge heute diese Route fliegen

@@ -742,7 +742,7 @@ bool GameMechanic::sellStock(PLAYER &qPlayer, SLONG airlineNum, SLONG amount) {
     }
 
     /* Handel durchführen */
-    auto aktienWert = static_cast<__int64>(Sim.Players.Players[airlineNum].Kurse[0] * amount);
+    auto aktienWert = static_cast<__int64>(Sim.Players.Players[airlineNum].Kurse[0]) * amount;
     auto gesamtPreis = aktienWert - aktienWert / 10 - 100;
     qPlayer.ChangeMoney(gesamtPreis, 3151, "");
     qPlayer.OwnsAktien[airlineNum] -= amount;
@@ -829,16 +829,17 @@ bool GameMechanic::emitStock(PLAYER &qPlayer, SLONG neueAktien, SLONG mode) {
         return false;
     }
 
-    SLONG emissionsKurs = 0;
-    SLONG marktAktien = 0;
+    __int64 emissionsKurs = 0;
+    __int64 marktAktien = 0;
+    auto stockPrice = static_cast<__int64>(qPlayer.Kurse[0]);
     if (mode == 0) {
-        emissionsKurs = SLONG(qPlayer.Kurse[0]) - 5;
+        emissionsKurs = stockPrice - 5;
         marktAktien = neueAktien;
     } else if (mode == 1) {
-        emissionsKurs = SLONG(qPlayer.Kurse[0]) - 3;
+        emissionsKurs = stockPrice - 3;
         marktAktien = neueAktien * 8 / 10;
     } else if (mode == 2) {
-        emissionsKurs = SLONG(qPlayer.Kurse[0]) - 1;
+        emissionsKurs = stockPrice - 1;
         marktAktien = neueAktien * 6 / 10;
     } else {
         redprintf("GameMechanic::emitStock: Invalid mode (%ld).", mode);
@@ -846,8 +847,8 @@ bool GameMechanic::emitStock(PLAYER &qPlayer, SLONG neueAktien, SLONG mode) {
     }
 
     DOUBLE alterKurs = qPlayer.Kurse[0];
-    __int64 emissionsWert = __int64(marktAktien) * emissionsKurs;
-    __int64 emissionsGebuehr = __int64(neueAktien) * emissionsKurs / 10 / 100 * 100;
+    __int64 emissionsWert = marktAktien * emissionsKurs;
+    __int64 emissionsGebuehr = neueAktien * emissionsKurs / 10 / 100 * 100;
 
     qPlayer.ChangeMoney(emissionsWert, 3162, "");
     qPlayer.ChangeMoney(-emissionsGebuehr, 3160, "");

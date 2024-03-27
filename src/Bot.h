@@ -85,8 +85,9 @@ class Bot {
     bool haveDiscount() const;
     enum class HowToPlan { None, Laptop, Office };
     HowToPlan canWePlanFlights();
-    enum class HowToGetMoney { None, SellShares, SellOwnShares, IncreaseCredit, EmitShares };
-    HowToGetMoney howToGetMoney();
+    enum class HowToGetMoney { None, SellShares, SellOwnShares, SellAllOwnShares, IncreaseCredit, EmitShares };
+    HowToGetMoney howToGetMoney(bool extremMeasures);
+    __int64 howMuchMoneyCanWeGet(bool extremMeasures);
     bool canWeCallInternational();
     Prio condAll(SLONG actionId);
     Prio condStartDay();

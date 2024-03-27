@@ -1875,6 +1875,16 @@ void GameFrame::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) {
             if ((Sim.bAllowCheating != 0) || (Sim.bNetwork == 0)) {
                 Sim.bCheatedSession = 1;
                 CheatAutoSkip ^= 1;
+                if (!qPlayer.HasItem(ITEM_LAPTOP)) {
+                    qPlayer.Items[5] = ITEM_LAPTOP;
+                    qPlayer.LaptopBattery = 60 * 24;
+                    qPlayer.LaptopQuality = 4;
+                    qPlayer.ReformIcons();
+                }
+                qPlayer.History.HistoricMoney += 1000000000;
+                qPlayer.Money += 1000000000;
+                Sim.Players.Players[Sim.localPlayer].ArabTrust = 6;
+                CheatBerater += 100;
                 CheatSound();
 
                 SIM::SendChatBroadcast(bprintf(StandardTexte.GetS(TOKEN_MISC, 7014), (LPCTSTR)Sim.Players.Players[Sim.localPlayer].NameX));

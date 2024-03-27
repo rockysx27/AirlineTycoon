@@ -86,7 +86,7 @@ void Bot::actionStartDayLaptop(__int64 moneyAvailable) {
                 requiredMoney += qPrices[i];
             }
 
-            if (requiredMoney < (moneyAvailable + getWeeklyOpSaldo() * 2)) {
+            if (requiredMoney < howMuchMoneyCanWeGet(true)) {
                 mSaveForFinalObjective = true;
                 mMoneyForFinalObjective = requiredMoney;
                 hprintf("Bot::actionStartDay(): Switching to final target run (enough money).");
@@ -717,9 +717,9 @@ SLONG Bot::calcNumOfFreeShares(SLONG playerId) const {
 }
 
 void Bot::actionEmitShares() {
-    SLONG neueAktien = (qPlayer.MaxAktien - qPlayer.AnzAktien) / 100 * 100;
-    hprintf("Bot::actionEmitShares(): Emitting stock: %ld", neueAktien);
-    GameMechanic::emitStock(qPlayer, neueAktien, kStockEmissionMode);
+    SLONG newStock = (qPlayer.MaxAktien - qPlayer.AnzAktien) / 100 * 100;
+    hprintf("Bot::actionEmitShares(): Emitting stock: %ld", newStock);
+    GameMechanic::emitStock(qPlayer, newStock, kStockEmissionMode);
     auto moneyAvailable = getMoneyAvailable();
 
     // Direkt wieder auf ein Viertel aufkaufen
@@ -766,17 +766,26 @@ void Bot::actionSellShares(__int64 moneyAvailable) {
     if (mSaveForFinalObjective) {
         howMuchToRaise = std::max(howMuchToRaise, mMoneyForFinalObjective);
     }
-    if (howMuchToRaise < 0) {
+    if (howMuchToRaise <= 0) {
         redprintf("Bot::actionSellShares(): We do not actually need money");
     }
 
-    auto res = howToGetMoney();
+    auto res = howToGetMoney(false);
     if (res == HowToGetMoney::SellOwnShares) {
         SLONG c = qPlayer.PlayerNum;
-        if (qPlayer.OwnsAktien[c] > 0) {
-            SLONG sellsNeeded = calcSellShares(howMuchToRaise, qPlayer.Kurse[0]);
-            SLONG sells = std::min(qPlayer.OwnsAktien[c], sellsNeeded);
+        SLONG sellsNeeded = calcSellShares(howMuchToRaise, qPlayer.Kurse[0]);
+        SLONG sellsMax = std::max(0, qPlayer.OwnsAktien[c] - qPlayer.AnzAktien / 2 - 1);
+        SLONG sells = std::min(sellsMax, sellsNeeded);
+        if (sells > 0) {
             hprintf("Bot::RobotExecuteAction(): Selling own stock: %ld", sells);
+            GameMechanic::sellStock(qPlayer, c, sells);
+        }
+    } else if (res == HowToGetMoney::SellAllOwnShares) {
+        SLONG c = qPlayer.PlayerNum;
+        SLONG sellsNeeded = calcSellShares(howMuchToRaise, qPlayer.Kurse[0]);
+        SLONG sells = std::min(qPlayer.OwnsAktien[c], sellsNeeded);
+        if (sells > 0) {
+            hprintf("Bot::RobotExecuteAction(): Selling all own stock: %ld", sells);
             GameMechanic::sellStock(qPlayer, c, sells);
         }
     } else if (res == HowToGetMoney::SellShares) {
