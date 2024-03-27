@@ -322,7 +322,6 @@ SLONG _checkPlaneSchedule(const PLAYER &qPlayer, const CPlane &qPlane, std::unor
     if ((nIncorrect > nIncorredOld) || !printOnErrorOnly) {
         printFlightJobs(qPlayer, qPlane);
     }
-    assert(nIncorrect == 0);
     return nIncorrect;
 }
 
@@ -458,9 +457,7 @@ SLONG checkFlightJobs(const PLAYER &qPlayer, bool printOnErrorOnly) {
         overallInfo += calculateScheduleInfo(qPlayer, c);
         nPlanes++;
     }
-    if (nIncorrect > 0) {
-        hprintf("Helper::checkFlightJobs(): Found %ld problems for %ld planes.", nIncorrect, nPlanes);
-    }
+    hprintf("Helper::checkFlightJobs(): %s: Found %ld problems for %ld planes.", (LPCTSTR)qPlayer.AirlineX, nIncorrect, nPlanes);
     overallInfo.printGain();
     overallInfo.printDetails();
     return nIncorrect;

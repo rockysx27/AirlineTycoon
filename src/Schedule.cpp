@@ -814,10 +814,14 @@ void CFlugplanEintrag::BookFlight(CPlane *Plane, SLONG PlayerNum) {
 
         // Add-On Mission 9
         if (Sim.Difficulty == DIFF_ADDON09) {
-            if ((qPlayer.Owner != 1 && (qPlayer.Auftraege[ObjectId].bUhrigFlight != 0)) ||
-                (qPlayer.NumOrderFlightsToday < 5 - static_cast<SLONG>(((Sim.Date + qPlayer.PlayerNum) % 5) == 1) -
-                                                    static_cast<SLONG>(((Sim.Date + qPlayer.PlayerNum) % 11) == 2) -
-                                                    static_cast<SLONG>(((Sim.Date + qPlayer.PlayerNum) % 7) == 0) - ((Sim.Date + qPlayer.PlayerNum) % 2))) {
+            if (qPlayer.Owner == 1 && qPlayer.RobotUse(ROBOT_UHRIG_FLIGHTS_AUTO)) {
+                if (qPlayer.NumOrderFlightsToday < 5 - static_cast<SLONG>(((Sim.Date + qPlayer.PlayerNum) % 5) == 1) -
+                                                       static_cast<SLONG>(((Sim.Date + qPlayer.PlayerNum) % 11) == 2) -
+                                                       static_cast<SLONG>(((Sim.Date + qPlayer.PlayerNum) % 7) == 0) - ((Sim.Date + qPlayer.PlayerNum) % 2)) {
+                    qPlayer.NumOrderFlights++;
+                    qPlayer.NumOrderFlightsToday++;
+                }
+            } else if (qPlayer.Auftraege[ObjectId].bUhrigFlight != 0) {
                 qPlayer.NumOrderFlights++;
                 qPlayer.NumOrderFlightsToday++;
             }

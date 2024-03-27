@@ -7864,6 +7864,15 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
                        "XXXXXXXXXX"
                        "XXXXXXXXXX";
         break;
+    case ROBOT_UHRIG_FLIGHTS_AUTO:
+        if (IsSuperBot()) {
+            return false;
+        }
+        pFeatureDesc = "------"
+                       "."
+                       "--------X-"
+                       "----------";
+        break;
 
     /* specialization of computer players. SuperBot ignores all but the first one. */
     case ROBOT_USE_WORKQUICK_2:

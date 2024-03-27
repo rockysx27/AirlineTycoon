@@ -952,6 +952,7 @@ inline bool operator!=(const CPoint &lhs, const CPoint &rhs) { return !(lhs == r
 #define ROBOT_USE_UPGRADE_TECH 74      // Kauft Tech-Upgrade bei gebrauchten Flugzeugen (FL)
 #define ROBOT_USE_BUY_MORE_ABROAD 75   // Kauft mehr Niederlassungen (SA)
 #define ROBOT_ALWAYS_BUY_GATES 76      // Bietet immer auf Gates (SA)
+#define ROBOT_UHRIG_FLIGHTS_AUTO 77    // Aufträge von Uhrig (Mission DIFF_ADDON09) werden gefaked
 
 // Die Netzwerk-Medien
 #define NET_MEDIUM_UNKNOWN 0
