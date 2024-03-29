@@ -313,7 +313,8 @@ void Bot::RobotInit() {
     mNumActionsToday = 0;
 
     /* strategy state */
-    mDislike = -1;
+    mNemesis = -1;
+    mNemesisScore = 0;
     mDayStarted = false;
 
     /* status boss office */
@@ -360,31 +361,6 @@ void Bot::RobotPlan() {
     }
     qRobotActions[1].ActionId = ACTION_NONE;
     qRobotActions[2].ActionId = ACTION_NONE;
-
-    /* data to make decision */
-    {
-        mDislike = -1;
-        SLONG n = 0;
-        for (SLONG c = 0; c < 4; c++) {
-            if (qPlayer.Sympathie[c] < 0 && (Sim.Players.Players[c].IsOut == 0)) {
-                n++;
-            }
-        }
-
-        if (n != 0) {
-            n = (qPlayer.PlayerExtraRandom.Rand(n)) + 1;
-            for (SLONG c = 0; c < 4; c++) {
-                if (qPlayer.Sympathie[c] >= 0 || (Sim.Players.Players[c].IsOut == 1)) {
-                    continue;
-                }
-                n--;
-                if (n == 0) {
-                    mDislike = c;
-                    break;
-                }
-            }
-        }
-    }
 
     /* populate prio list */
     std::vector<std::pair<SLONG, Prio>> prioList;
@@ -727,7 +703,7 @@ void Bot::RobotExecuteAction() {
 
     case ACTION_BUYSHARES:
         // buy shares from nemesis
-        if (condBuyShares(moneyAvailable, mDislike) != Prio::None) {
+        if (condBuyShares(moneyAvailable, mNemesis) != Prio::None) {
             actionBuyShares(moneyAvailable);
         } else {
             redprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
@@ -972,16 +948,14 @@ TEAKFILE &operator<<(TEAKFILE &File, const Bot &bot) {
         File << i;
     }
 
-    File << bot.mDislike;
-    File << bot.mBestPlaneTypeId;
-    File << bot.mBuyPlaneForRouteId;
+    File << bot.mBestPlaneTypeId << bot.mBuyPlaneForRouteId;
     File << bot.mWantToRentRouteId;
-    File << bot.mFirstRun;
-    File << bot.mDayStarted;
-    File << bot.mDoRoutes << bot.mSaveForFinalObjective << bot.mMoneyForFinalObjective;
+    File << bot.mFirstRun << bot.mDayStarted << bot.mDoRoutes;
+    File << bot.mSaveForFinalObjective << bot.mMoneyForFinalObjective;
     File << bot.mOutOfGates;
     File << bot.mNeedToPlanJobs << bot.mNeedToPlanRoutes;
     File << bot.mMoneyReservedForRepairs << bot.mMoneyReservedForUpgrades << bot.mMoneyReservedForAuctions;
+    File << bot.mNemesis << bot.mNemesisScore;
 
     File << bot.mBossNumCitiesAvailable;
     File << bot.mBossGateAvailable;
@@ -1089,16 +1063,14 @@ TEAKFILE &operator>>(TEAKFILE &File, Bot &bot) {
         File >> bot.mPlanesForRoutesUnassigned[i];
     }
 
-    File >> bot.mDislike;
-    File >> bot.mBestPlaneTypeId;
-    File >> bot.mBuyPlaneForRouteId;
+    File >> bot.mBestPlaneTypeId >> bot.mBuyPlaneForRouteId;
     File >> bot.mWantToRentRouteId;
-    File >> bot.mFirstRun;
-    File >> bot.mDayStarted;
-    File >> bot.mDoRoutes >> bot.mSaveForFinalObjective >> bot.mMoneyForFinalObjective;
+    File >> bot.mFirstRun >> bot.mDayStarted >> bot.mDoRoutes;
+    File >> bot.mSaveForFinalObjective >> bot.mMoneyForFinalObjective;
     File >> bot.mOutOfGates;
     File >> bot.mNeedToPlanJobs >> bot.mNeedToPlanRoutes;
     File >> bot.mMoneyReservedForRepairs >> bot.mMoneyReservedForUpgrades >> bot.mMoneyReservedForAuctions;
+    File >> bot.mNemesis >> bot.mNemesisScore;
 
     File >> bot.mBossNumCitiesAvailable;
     File >> bot.mBossGateAvailable;

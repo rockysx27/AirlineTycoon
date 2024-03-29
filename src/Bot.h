@@ -63,6 +63,13 @@ class Bot {
         Higher, /* important to do very soon (grab flights from travel agency) */
         Top     /* survial at stake */
     };
+    enum class AreWeBroke {
+        No,
+        Somewhat, /* we can use some more, but don't generate cost (loan interest) or problems (sell all stock)*/
+        Yes,      /* we need money, but do not go scorched earth (e.g. sell stock, but not that enemy can take over) */
+        Desperate /* sell everything (TODO: Not fully implemented) */
+    };
+    enum class HowToGetMoney { None, SellShares, SellOwnShares, SellAllOwnShares, IncreaseCredit, EmitShares };
     struct RouteInfo {
         RouteInfo() = default;
         RouteInfo(SLONG id, SLONG id2, SLONG typeId) : routeId(id), routeReverseId(id2), planeTypeId(typeId) {}
@@ -79,14 +86,14 @@ class Bot {
 
     /* in BotConditions.cpp */
     bool isOfficeUsable() const;
-    __int64 getMoneyAvailable() const;
     bool hoursPassed(SLONG room, SLONG hours) const;
     void grabNewFlights();
     bool haveDiscount() const;
     enum class HowToPlan { None, Laptop, Office };
     HowToPlan canWePlanFlights();
-    enum class HowToGetMoney { None, SellShares, SellOwnShares, SellAllOwnShares, IncreaseCredit, EmitShares };
-    HowToGetMoney howToGetMoney(bool extremMeasures);
+    __int64 getMoneyAvailable() const;
+    AreWeBroke areWeBroke() const;
+    HowToGetMoney howToGetMoney();
     __int64 howMuchMoneyCanWeGet(bool extremMeasures);
     bool canWeCallInternational();
     Prio condAll(SLONG actionId);
@@ -131,6 +138,8 @@ class Bot {
     Prio condBuyAds(__int64 &moneyAvailable);
 
     /* in BotActions.cpp */
+    void determineNemesis();
+    void switchToFinalTarget();
     void actionStartDay(__int64 moneyAvailable);
     void actionStartDayLaptop(__int64 moneyAvailable);
     void actionBuero();
@@ -160,14 +169,14 @@ class Bot {
     void actionBuyAdsForRoutes(__int64 moneyAvailable);
     void actionBuyAds(__int64 moneyAvailable);
 
-    /* routes */
+    /* routes (in BotActions.cpp) */
     SLONG getRouteTurnAroundDuration(const CRoute &qRoute, SLONG planeTypeId) const;
     void checkLostRoutes();
     void updateRouteInfo();
     void requestPlanRoutes(bool areWeInOffice);
     void planRoutes();
 
-    /* misc */
+    /* misc (in Bot.cpp) */
     SLONG numPlanes() const { return mPlanesForJobs.size() + mPlanesForRoutes.size() + mPlanesForRoutesUnassigned.size(); }
     std::vector<SLONG> findBestAvailablePlaneType() const;
     SLONG calcCurrentGainFromJobs() const;
@@ -199,7 +208,6 @@ class Bot {
     std::deque<SLONG> mPlanesForRoutesUnassigned;
 
     /* strategy state */
-    SLONG mDislike{-1};
     SLONG mBestPlaneTypeId{-1};
     SLONG mBuyPlaneForRouteId{-1};
     SLONG mWantToRentRouteId{-1};
@@ -214,6 +222,8 @@ class Bot {
     __int64 mMoneyReservedForRepairs{0};
     __int64 mMoneyReservedForUpgrades{0};
     __int64 mMoneyReservedForAuctions{0};
+    SLONG mNemesis{-1};
+    __int64 mNemesisScore{0};
 
     /* status boss office */
     SLONG mBossNumCitiesAvailable{-1};
