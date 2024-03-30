@@ -69,7 +69,19 @@ class Bot {
         Yes,      /* we need money, but do not go scorched earth (e.g. sell stock, but not that enemy can take over) */
         Desperate /* sell everything (TODO: Not fully implemented) */
     };
-    enum class HowToGetMoney { None, SellShares, SellOwnShares, SellAllOwnShares, IncreaseCredit, EmitShares };
+    enum class HowToGetMoney {
+        None,
+        SellShares,       /* sell shares from other airlines */
+        SellOwnShares,    /* sell own shares if > 50% */
+        SellAllOwnShares, /* sell all own shares */
+        IncreaseCredit,
+        EmitShares
+    };
+    enum class FinalPhase {
+        No,
+        SaveMoney, /* stop investing towards other targets */
+        TargetRun  /* invest towards target, liquidize all other assets */
+    };
     struct RouteInfo {
         RouteInfo() = default;
         RouteInfo(SLONG id, SLONG id2, SLONG typeId) : routeId(id), routeReverseId(id2), planeTypeId(typeId) {}
@@ -112,7 +124,7 @@ class Bot {
     Prio condBuyKerosineTank(__int64 &moneyAvailable);
     Prio condSabotage(__int64 &moneyAvailable);
     Prio condIncreaseDividend(__int64 &moneyAvailable);
-    Prio condRaiseMoney();
+    Prio condTakeOutLoan();
     Prio condDropMoney(__int64 &moneyAvailable);
     Prio condEmitShares();
     Prio condSellShares(__int64 &moneyAvailable);
@@ -136,6 +148,7 @@ class Bot {
     Prio condVisitDesigner(__int64 &moneyAvailable);
     Prio condBuyAdsForRoutes(__int64 &moneyAvailable);
     Prio condBuyAds(__int64 &moneyAvailable);
+    Prio condVisitAds();
 
     /* in BotActions.cpp */
     void determineNemesis();
@@ -178,6 +191,19 @@ class Bot {
 
     /* misc (in Bot.cpp) */
     SLONG numPlanes() const { return mPlanesForJobs.size() + mPlanesForRoutes.size() + mPlanesForRoutesUnassigned.size(); }
+    std::vector<SLONG> getAllPlanes() const {
+        std::vector<SLONG> planes = mPlanesForRoutes;
+        for (auto &i : mPlanesForRoutesUnassigned) {
+            planes.push_back(i);
+        }
+        for (auto &i : mPlanesForJobs) {
+            planes.push_back(i);
+        }
+        for (auto &i : mPlanesForJobsUnassigned) {
+            planes.push_back(i);
+        }
+        return planes;
+    }
     std::vector<SLONG> findBestAvailablePlaneType() const;
     SLONG calcCurrentGainFromJobs() const;
     bool checkPlaneLists();
@@ -214,7 +240,7 @@ class Bot {
     bool mFirstRun{true};
     bool mDayStarted{false};
     bool mDoRoutes{false};
-    bool mSaveForFinalObjective{false};
+    FinalPhase mRunToFinalObjective{FinalPhase::No};
     __int64 mMoneyForFinalObjective{0};
     bool mOutOfGates{false};
     bool mNeedToPlanJobs{false};

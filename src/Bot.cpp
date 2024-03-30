@@ -353,7 +353,7 @@ void Bot::RobotPlan() {
                        ACTION_SET_DIVIDEND, ACTION_RAISEMONEY, ACTION_DROPMONEY, ACTION_EMITSHARES, ACTION_SELLSHARES, ACTION_BUYSHARES, ACTION_VISITMECH,
                        ACTION_VISITNASA, ACTION_VISITTELESCOPE, ACTION_VISITMAKLER, ACTION_VISITARAB, ACTION_VISITRICK, ACTION_VISITKIOSK, ACTION_BUYUSEDPLANE,
                        ACTION_VISITDUTYFREE, ACTION_VISITAUFSICHT, ACTION_EXPANDAIRPORT, ACTION_VISITROUTEBOX, ACTION_VISITROUTEBOX2, ACTION_VISITSECURITY,
-                       ACTION_VISITSECURITY2, ACTION_VISITDESIGNER, ACTION_WERBUNG_ROUTES, ACTION_WERBUNG};
+                       ACTION_VISITSECURITY2, ACTION_VISITDESIGNER, ACTION_WERBUNG_ROUTES, ACTION_WERBUNG, ACTION_VISITADS};
 
     if (qRobotActions[0].ActionId != ACTION_NONE || qRobotActions[1].ActionId != ACTION_NONE) {
         hprintf("Bot.cpp: Leaving RobotPlan() (actions already planned)\n");
@@ -654,10 +654,10 @@ void Bot::RobotExecuteAction() {
         break;
 
     case ACTION_RAISEMONEY:
-        if (condRaiseMoney() != Prio::None) {
+        if (condTakeOutLoan() != Prio::None) {
             __int64 limit = qPlayer.CalcCreditLimit();
             __int64 m = std::min(limit, (kMoneyEmergencyFund + kMoneyEmergencyFund / 2) - qPlayer.Money);
-            if (mSaveForFinalObjective) {
+            if (mRunToFinalObjective == FinalPhase::TargetRun) {
                 m = limit;
             }
             if (m > 0) {
@@ -894,6 +894,26 @@ void Bot::RobotExecuteAction() {
         qWorkCountdown = 20 * 7;
         break;
 
+    case ACTION_VISITADS:
+        if (condVisitAds() != Prio::None) {
+            if (mItemAntiVirus == 3) {
+                if (GameMechanic::useItem(qPlayer, ITEM_DART)) {
+                    hprintf("Bot::RobotExecuteAction(): Used item darts");
+                    mItemAntiVirus = 4;
+                }
+            }
+            if (mItemAntiVirus == 4) {
+                if (qPlayer.HasItem(ITEM_DISKETTE) == 0) {
+                    GameMechanic::pickUpItem(qPlayer, ITEM_DISKETTE);
+                    hprintf("Bot::RobotExecuteAction(): Picked up item floppy disk");
+                }
+            }
+        } else {
+            redprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+        }
+        qWorkCountdown = 20 * 7;
+        break;
+
     default:
         redprintf("Bot::RobotExecuteAction(): Trying to execute invalid action: %s", getRobotActionName(qRobotActions[0].ActionId));
         // DebugBreak();
@@ -951,7 +971,7 @@ TEAKFILE &operator<<(TEAKFILE &File, const Bot &bot) {
     File << bot.mBestPlaneTypeId << bot.mBuyPlaneForRouteId;
     File << bot.mWantToRentRouteId;
     File << bot.mFirstRun << bot.mDayStarted << bot.mDoRoutes;
-    File << bot.mSaveForFinalObjective << bot.mMoneyForFinalObjective;
+    File << static_cast<SLONG>(bot.mRunToFinalObjective) << bot.mMoneyForFinalObjective;
     File << bot.mOutOfGates;
     File << bot.mNeedToPlanJobs << bot.mNeedToPlanRoutes;
     File << bot.mMoneyReservedForRepairs << bot.mMoneyReservedForUpgrades << bot.mMoneyReservedForAuctions;
@@ -1063,10 +1083,12 @@ TEAKFILE &operator>>(TEAKFILE &File, Bot &bot) {
         File >> bot.mPlanesForRoutesUnassigned[i];
     }
 
+    SLONG runToFinalObjective = 0;
     File >> bot.mBestPlaneTypeId >> bot.mBuyPlaneForRouteId;
     File >> bot.mWantToRentRouteId;
     File >> bot.mFirstRun >> bot.mDayStarted >> bot.mDoRoutes;
-    File >> bot.mSaveForFinalObjective >> bot.mMoneyForFinalObjective;
+    File >> runToFinalObjective >> bot.mMoneyForFinalObjective;
+    bot.mRunToFinalObjective = static_cast<Bot::FinalPhase>(runToFinalObjective);
     File >> bot.mOutOfGates;
     File >> bot.mNeedToPlanJobs >> bot.mNeedToPlanRoutes;
     File >> bot.mMoneyReservedForRepairs >> bot.mMoneyReservedForUpgrades >> bot.mMoneyReservedForAuctions;

@@ -494,6 +494,8 @@ bool checkRoomOpen(SLONG roomId) {
     case ACTION_WERBUNG:
         [[fallthrough]];
     case ACTION_WERBUNG_ROUTES:
+        [[fallthrough]];
+    case ACTION_VISITADS:
         return (Sim.Difficulty >= DIFF_NORMAL || Sim.Difficulty == DIFF_FREEGAME) && (time >= timeWerbOpen && Sim.Weekday != 5 && Sim.Weekday != 6);
     case ACTION_VISITSECURITY:
         [[fallthrough]];

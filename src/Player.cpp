@@ -3273,6 +3273,8 @@ void PLAYER::RobotPump() {
         case ACTION_WERBUNG:
             [[fallthrough]];
         case ACTION_WERBUNG_ROUTES:
+            [[fallthrough]];
+        case ACTION_VISITADS:
             rc = WalkToRoom(ROOM_WERBUNG);
             break;
         case ACTION_CALL_INTER_HANDY:

@@ -77,8 +77,8 @@ void Bot::determineNemesis() {
 }
 
 void Bot::switchToFinalTarget() {
-    if (mSaveForFinalObjective) {
-        hprintf("Bot::actionStartDay(): We are in final target run.");
+    if (mRunToFinalObjective == FinalPhase::TargetRun) {
+        hprintf("Bot::switchToFinalTarget(): We are in final target run.");
         return;
     }
 
@@ -88,9 +88,14 @@ void Bot::switchToFinalTarget() {
     if (qPlayer.RobotUse(ROBOT_USE_NASA) && (Sim.Difficulty == DIFF_FINAL || Sim.Difficulty == DIFF_ADDON10)) {
         const auto &qPrices = (Sim.Difficulty == DIFF_FINAL) ? RocketPrices : StationPrices;
         auto nParts = sizeof(qPrices) / sizeof(qPrices[0]);
+        SLONG numRequired = 0;
         for (SLONG i = 0; i < nParts; i++) {
-            requiredMoney += qPrices[i];
+            if ((qPlayer.RocketFlags & (1 << i)) == 0) {
+                requiredMoney += qPrices[i];
+                numRequired++;
+            }
         }
+        hprintf("Bot::switchToFinalTarget(): Need %lld to buy %ld missing pieces.", requiredMoney, numRequired);
 
         nemesisRatio = 1.0 * mNemesisScore / requiredMoney;
         if (nemesisRatio > 0.5) {
@@ -101,31 +106,117 @@ void Bot::switchToFinalTarget() {
         SLONG adCampaignSize = 5;
         SLONG numCampaignsRequired = ceil_div((TARGET_IMAGE - qPlayer.Image) * 55, (adCampaignSize + 6) * (gWerbePrice[adCampaignSize] / 10000));
         requiredMoney = numCampaignsRequired * gWerbePrice[adCampaignSize];
+        hprintf("Bot::switchToFinalTarget(): Need %lld to buy %ld ad campaigns.", requiredMoney, numCampaignsRequired);
 
         nemesisRatio = 1.0 * mNemesisScore / TARGET_IMAGE;
         if (nemesisRatio > 0.7) {
             forceSwitch = true;
         }
+    } else if (qPlayer.RobotUse(ROBOT_USE_LUXERY) && Sim.Difficulty == DIFF_ADDON05) {
+        /* how many service points can we get by upgrading? */
+        SLONG servicePointsStart = qPlayer.GetMissionRating();
+        SLONG servicePoints = servicePointsStart;
+        for (SLONG upgradeWhat = 0; upgradeWhat < 7; upgradeWhat++) {
+            if (servicePoints > TARGET_SERVICE) {
+                break;
+            }
+
+            auto planes = getAllPlanes();
+            for (SLONG c = 0; c < planes.size(); c++) {
+                CPlane &qPlane = qPlayer.Planes[planes[c]];
+                auto ptPassagiere = qPlane.ptPassagiere;
+
+                if (servicePoints > TARGET_SERVICE) {
+                    break;
+                }
+
+                switch (upgradeWhat) {
+                case 0:
+                    if (qPlane.SitzeTarget < 2) {
+                        requiredMoney += ptPassagiere * (SeatCosts[2] - SeatCosts[qPlane.Sitze] / 2);
+                        servicePoints += (2 - qPlane.Sitze);
+                    }
+                    break;
+                case 1:
+                    if (qPlane.TablettsTarget < 2) {
+                        requiredMoney += ptPassagiere * (TrayCosts[2] - TrayCosts[qPlane.Tabletts] / 2);
+                        servicePoints += (2 - qPlane.Tabletts);
+                    }
+                    break;
+                case 2:
+                    if (qPlane.DecoTarget < 2) {
+                        requiredMoney += ptPassagiere * (DecoCosts[2] - DecoCosts[qPlane.Deco] / 2);
+                        servicePoints += (2 - qPlane.Deco);
+                    }
+                    break;
+                case 3:
+                    if (qPlane.ReifenTarget < 2) {
+                        requiredMoney += (ReifenCosts[2] - ReifenCosts[qPlane.Reifen] / 2);
+                        servicePoints += (2 - qPlane.Reifen);
+                    }
+                    break;
+                case 4:
+                    if (qPlane.TriebwerkTarget < 2) {
+                        requiredMoney += (TriebwerkCosts[2] - TriebwerkCosts[qPlane.Triebwerk] / 2);
+                        servicePoints += (2 - qPlane.Triebwerk);
+                    }
+                    break;
+                case 5:
+                    if (qPlane.SicherheitTarget < 2) {
+                        requiredMoney += (SicherheitCosts[2] - SicherheitCosts[qPlane.Sicherheit] / 2);
+                        servicePoints += (2 - qPlane.Sicherheit);
+                    }
+                    break;
+                case 6:
+                    if (qPlane.ElektronikTarget < 2) {
+                        requiredMoney += (ElektronikCosts[2] - ElektronikCosts[qPlane.Elektronik] / 2);
+                        servicePoints += (2 - qPlane.Elektronik);
+                    }
+                    break;
+                default:
+                    redprintf("Bot.cpp: Default case should not be reached.");
+                    DebugBreak();
+                }
+            }
+        }
+
+        nemesisRatio = 1.0 * mNemesisScore / TARGET_SERVICE;
+        if (servicePoints <= TARGET_SERVICE) {
+            hprintf("Bot::switchToFinalTarget(): Can only get %ld service points in total (+ %ld) by upgrading existing planes.", servicePoints,
+                    servicePoints - servicePointsStart);
+            requiredMoney = LLONG_MAX; /* we cannot reach target yet */
+        } else {
+            hprintf("Bot::switchToFinalTarget(): Need %lld to upgrade existing planes.", requiredMoney);
+            if (nemesisRatio > 0.7) {
+                forceSwitch = true;
+            }
+        }
+
     } else {
         /* no race to finish for this mission */
         return;
     }
 
     if (nemesisRatio > 0) {
-        hprintf("Bot::actionStartDay(): Most dangerous competitor is %s with %.1f %% of goal achieved.", (LPCTSTR)Sim.Players.Players[mNemesis].AirlineX,
+        hprintf("Bot::switchToFinalTarget(): Most dangerous competitor is %s with %.1f %% of goal achieved.", (LPCTSTR)Sim.Players.Players[mNemesis].AirlineX,
                 nemesisRatio * 100);
-        if (forceSwitch) {
-            hprintf("Bot::actionStartDay(): Competitor too close, forcing switch.");
-        }
+    }
+    if (forceSwitch) {
+        hprintf("Bot::switchToFinalTarget(): Competitor too close, forcing switch.");
     }
 
     auto availableMoney = howMuchMoneyCanWeGet(true);
     auto cash = qPlayer.Money - kMoneyEmergencyFund;
     if (requiredMoney < availableMoney || forceSwitch) {
-        mSaveForFinalObjective = true;
+        mRunToFinalObjective = FinalPhase::TargetRun;
         mMoneyForFinalObjective = requiredMoney;
-        hprintf("Bot::actionStartDay(): Switching to final target run. Need %s $, got %s $ (+ %s $).", (LPCTSTR)Insert1000erDots64(requiredMoney),
+        hprintf("Bot::switchToFinalTarget(): Switching to final target run. Need %s $, got %s $ (+ %s $).", (LPCTSTR)Insert1000erDots64(requiredMoney),
                 (LPCTSTR)Insert1000erDots64(cash), (LPCTSTR)Insert1000erDots64(availableMoney - cash));
+    } else if (requiredMoney < LLONG_MAX) {
+        hprintf("Bot::switchToFinalTarget(): Cannot switch to final target run. Need %s $, got %s $ (+ %s $).", (LPCTSTR)Insert1000erDots64(requiredMoney),
+                (LPCTSTR)Insert1000erDots64(cash), (LPCTSTR)Insert1000erDots64(availableMoney - cash));
+    } else {
+        hprintf("Bot::switchToFinalTarget(): Cannot switch to final target run, target not in reach.");
     }
 }
 
@@ -331,16 +422,8 @@ void Bot::planFlights() {
 void Bot::actionUpgradePlanes() {
     /* which planes to upgrade */
     std::vector<SLONG> planes = mPlanesForRoutes;
-    if (qPlayer.RobotUse(ROBOT_USE_LUXERY)) {
-        for (auto &i : mPlanesForRoutesUnassigned) {
-            planes.push_back(i);
-        }
-        for (auto &i : mPlanesForJobs) {
-            planes.push_back(i);
-        }
-        for (auto &i : mPlanesForJobsUnassigned) {
-            planes.push_back(i);
-        }
+    if ((mRunToFinalObjective == FinalPhase::TargetRun) && qPlayer.RobotUse(ROBOT_USE_LUXERY)) {
+        planes = getAllPlanes();
     }
 
     bool onlySecurity = (Sim.Difficulty == DIFF_ATFS02);
@@ -361,80 +444,83 @@ void Bot::actionUpgradePlanes() {
 
     /* plan new plane ugprades until we run out of money */
     auto randOffset = LocalRandom.Rand(planes.size());
-    bool keepGoing = true;
-    while (keepGoing) {
-        keepGoing = false;
+    for (SLONG upgradeWhat = 0; upgradeWhat < 7; upgradeWhat++) {
+        auto moneyAvailable = getMoneyAvailable() - kMoneyReservePlaneUpgrades;
+        if (moneyAvailable < 0) {
+            break;
+        }
+
         for (SLONG c = 0; c < planes.size(); c++) {
             SLONG idx = (c + randOffset) % planes.size();
             CPlane &qPlane = qPlayer.Planes[planes[idx]];
             auto ptPassagiere = qPlane.ptPassagiere;
 
-            auto moneyAvailable = getMoneyAvailable() - kMoneyReservePlaneUpgrades;
+            moneyAvailable = getMoneyAvailable() - kMoneyReservePlaneUpgrades;
             if (moneyAvailable < 0) {
                 break;
             }
 
-            SLONG cost = ptPassagiere * (SeatCosts[2] - SeatCosts[qPlane.Sitze] / 2);
-            if (qPlane.SitzeTarget < 2 && cost <= moneyAvailable && !onlySecurity) {
-                qPlane.SitzeTarget = 2;
-                mMoneyReservedForUpgrades += cost;
-                keepGoing = true;
-                hprintf("Bot::actionUpgradePlanes(): Upgrading seats in %s.", (LPCTSTR)qPlane.Name);
-                continue;
-            }
-
-            cost = ptPassagiere * (TrayCosts[2] - TrayCosts[qPlane.Tabletts] / 2);
-            if (qPlane.TablettsTarget < 2 && cost <= moneyAvailable && !onlySecurity) {
-                qPlane.TablettsTarget = 2;
-                mMoneyReservedForUpgrades += cost;
-                keepGoing = true;
-                hprintf("Bot::actionUpgradePlanes(): Upgrading tabletts in %s.", (LPCTSTR)qPlane.Name);
-                continue;
-            }
-
-            cost = ptPassagiere * (DecoCosts[2] - DecoCosts[qPlane.Deco] / 2);
-            if (qPlane.DecoTarget < 2 && cost <= moneyAvailable && !onlySecurity) {
-                qPlane.DecoTarget = 2;
-                mMoneyReservedForUpgrades += cost;
-                keepGoing = true;
-                hprintf("Bot::actionUpgradePlanes(): Upgrading deco in %s.", (LPCTSTR)qPlane.Name);
-                continue;
-            }
-
-            cost = (ReifenCosts[2] - ReifenCosts[qPlane.Reifen] / 2);
-            if (qPlane.ReifenTarget < 2 && cost <= moneyAvailable) {
-                qPlane.ReifenTarget = 2;
-                mMoneyReservedForUpgrades += cost;
-                keepGoing = true;
-                hprintf("Bot::actionUpgradePlanes(): Upgrading tires in %s.", (LPCTSTR)qPlane.Name);
-                continue;
-            }
-
-            cost = (TriebwerkCosts[2] - TriebwerkCosts[qPlane.Triebwerk] / 2);
-            if (qPlane.TriebwerkTarget < 2 && cost <= moneyAvailable) {
-                qPlane.TriebwerkTarget = 2;
-                mMoneyReservedForUpgrades += cost;
-                keepGoing = true;
-                hprintf("Bot::actionUpgradePlanes(): Upgrading engines in %s.", (LPCTSTR)qPlane.Name);
-                continue;
-            }
-
-            cost = (SicherheitCosts[2] - SicherheitCosts[qPlane.Sicherheit] / 2);
-            if (qPlane.SicherheitTarget < 2 && cost <= moneyAvailable) {
-                qPlane.SicherheitTarget = 2;
-                mMoneyReservedForUpgrades += cost;
-                keepGoing = true;
-                hprintf("Bot::actionUpgradePlanes(): Upgrading safety in %s.", (LPCTSTR)qPlane.Name);
-                continue;
-            }
-
-            cost = (ElektronikCosts[2] - ElektronikCosts[qPlane.Elektronik] / 2);
-            if (qPlane.ElektronikTarget < 2 && cost <= moneyAvailable) {
-                qPlane.ElektronikTarget = 2;
-                mMoneyReservedForUpgrades += cost;
-                keepGoing = true;
-                hprintf("Bot::actionUpgradePlanes(): Upgrading electronics in %s.", (LPCTSTR)qPlane.Name);
-                continue;
+            SLONG cost = 0;
+            switch (upgradeWhat) {
+            case 0:
+                cost = ptPassagiere * (SeatCosts[2] - SeatCosts[qPlane.Sitze] / 2);
+                if (qPlane.SitzeTarget < 2 && cost <= moneyAvailable && !onlySecurity) {
+                    qPlane.SitzeTarget = 2;
+                    mMoneyReservedForUpgrades += cost;
+                    hprintf("Bot::actionUpgradePlanes(): Upgrading seats in %s.", (LPCTSTR)qPlane.Name);
+                }
+                break;
+            case 1:
+                cost = ptPassagiere * (TrayCosts[2] - TrayCosts[qPlane.Tabletts] / 2);
+                if (qPlane.TablettsTarget < 2 && cost <= moneyAvailable && !onlySecurity) {
+                    qPlane.TablettsTarget = 2;
+                    mMoneyReservedForUpgrades += cost;
+                    hprintf("Bot::actionUpgradePlanes(): Upgrading tabletts in %s.", (LPCTSTR)qPlane.Name);
+                }
+                break;
+            case 2:
+                cost = ptPassagiere * (DecoCosts[2] - DecoCosts[qPlane.Deco] / 2);
+                if (qPlane.DecoTarget < 2 && cost <= moneyAvailable && !onlySecurity) {
+                    qPlane.DecoTarget = 2;
+                    mMoneyReservedForUpgrades += cost;
+                    hprintf("Bot::actionUpgradePlanes(): Upgrading deco in %s.", (LPCTSTR)qPlane.Name);
+                }
+                break;
+            case 3:
+                cost = (ReifenCosts[2] - ReifenCosts[qPlane.Reifen] / 2);
+                if (qPlane.ReifenTarget < 2 && cost <= moneyAvailable) {
+                    qPlane.ReifenTarget = 2;
+                    mMoneyReservedForUpgrades += cost;
+                    hprintf("Bot::actionUpgradePlanes(): Upgrading tires in %s.", (LPCTSTR)qPlane.Name);
+                }
+                break;
+            case 4:
+                cost = (TriebwerkCosts[2] - TriebwerkCosts[qPlane.Triebwerk] / 2);
+                if (qPlane.TriebwerkTarget < 2 && cost <= moneyAvailable) {
+                    qPlane.TriebwerkTarget = 2;
+                    mMoneyReservedForUpgrades += cost;
+                    hprintf("Bot::actionUpgradePlanes(): Upgrading engines in %s.", (LPCTSTR)qPlane.Name);
+                }
+                break;
+            case 5:
+                cost = (SicherheitCosts[2] - SicherheitCosts[qPlane.Sicherheit] / 2);
+                if (qPlane.SicherheitTarget < 2 && cost <= moneyAvailable) {
+                    qPlane.SicherheitTarget = 2;
+                    mMoneyReservedForUpgrades += cost;
+                    hprintf("Bot::actionUpgradePlanes(): Upgrading safety in %s.", (LPCTSTR)qPlane.Name);
+                }
+                break;
+            case 6:
+                cost = (ElektronikCosts[2] - ElektronikCosts[qPlane.Elektronik] / 2);
+                if (qPlane.ElektronikTarget < 2 && cost <= moneyAvailable) {
+                    qPlane.ElektronikTarget = 2;
+                    mMoneyReservedForUpgrades += cost;
+                    hprintf("Bot::actionUpgradePlanes(): Upgrading electronics in %s.", (LPCTSTR)qPlane.Name);
+                }
+                break;
+            default:
+                redprintf("Bot.cpp: Default case should not be reached.");
+                DebugBreak();
             }
         }
     }
@@ -827,7 +913,7 @@ void Bot::actionSellShares(__int64 moneyAvailable) {
     SLONG pass = 0;
     for (; pass < 10; pass++) {
         __int64 howMuchToRaise = -(moneyAvailable - qPlayer.Credit);
-        if (mSaveForFinalObjective) {
+        if (mRunToFinalObjective == FinalPhase::TargetRun) {
             howMuchToRaise = std::max(howMuchToRaise, mMoneyForFinalObjective);
         }
         if (howMuchToRaise <= 0) {
@@ -1159,19 +1245,6 @@ void Bot::actionRentRoute(SLONG routeA, SLONG planeTypeId) {
 }
 
 void Bot::actionBuyAdsForRoutes(__int64 moneyAvailable) {
-    if (mItemAntiVirus == 3) {
-        if (GameMechanic::useItem(qPlayer, ITEM_DART)) {
-            hprintf("Bot::actionBuyAdsForRoutes(): Used item darts");
-            mItemAntiVirus = 4;
-        }
-    }
-    if (mItemAntiVirus == 4) {
-        if (qPlayer.HasItem(ITEM_DISKETTE) == 0) {
-            GameMechanic::pickUpItem(qPlayer, ITEM_DISKETTE);
-            hprintf("Bot::actionBuyAdsForRoutes(): Picked up item floppy disk");
-        }
-    }
-
     if (mRoutesSortedByImage.empty()) {
         return;
     }
@@ -1206,19 +1279,6 @@ void Bot::actionBuyAdsForRoutes(__int64 moneyAvailable) {
 }
 
 void Bot::actionBuyAds(__int64 moneyAvailable) {
-    if (mItemAntiVirus == 3) {
-        if (GameMechanic::useItem(qPlayer, ITEM_DART)) {
-            hprintf("Bot::actionBuyAdsForRoutes(): Used item darts");
-            mItemAntiVirus = 4;
-        }
-    }
-    if (mItemAntiVirus == 4) {
-        if (qPlayer.HasItem(ITEM_DISKETTE) == 0) {
-            GameMechanic::pickUpItem(qPlayer, ITEM_DISKETTE);
-            hprintf("Bot::actionBuyAds(): Picked up item floppy disk");
-        }
-    }
-
     for (SLONG adCampaignSize = 5; adCampaignSize >= kSmallestAdCampaign; adCampaignSize--) {
         SLONG cost = gWerbePrice[0 * 6 + adCampaignSize];
         while (moneyAvailable > cost) {

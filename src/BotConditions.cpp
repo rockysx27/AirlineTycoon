@@ -57,7 +57,7 @@ __int64 Bot::getMoneyAvailable() const {
 }
 
 Bot::AreWeBroke Bot::areWeBroke() const {
-    if (mSaveForFinalObjective) {
+    if (mRunToFinalObjective == FinalPhase::TargetRun) {
         return AreWeBroke::Desperate;
     }
 
@@ -150,10 +150,12 @@ __int64 Bot::howMuchMoneyCanWeGet(bool extremMeasures) {
         moneyEmit = marktAktien * emissionsKurs - newStock * emissionsKurs / 10 / 100 * 100;
         hprintf("Bot::howMuchMoneyCanWeGet(): Can get %s $ by emitting stock", (LPCTSTR)Insert1000erDots(moneyEmit));
     }
+
     if (valueCompetitorShares > 0) {
         moneyStock = valueCompetitorShares - valueCompetitorShares / 10 - 100;
         hprintf("Bot::howMuchMoneyCanWeGet(): Can get %s $ by selling stock", (LPCTSTR)Insert1000erDots(moneyStock));
     }
+
     if (numOwnShares > 0) {
         auto value = stockPrice * numOwnShares;
         moneyStockOwn = value - value / 10 - 100;
@@ -218,7 +220,7 @@ Bot::Prio Bot::condAll(SLONG actionId) {
     __int64 moneyAvailable = 0;
     switch (actionId) {
     case ACTION_RAISEMONEY:
-        return condRaiseMoney();
+        return condTakeOutLoan();
     case ACTION_DROPMONEY:
         return condDropMoney(moneyAvailable);
     case ACTION_EMITSHARES:
@@ -293,6 +295,8 @@ Bot::Prio Bot::condAll(SLONG actionId) {
         return condCallInternationalHandy();
     case ACTION_STARTDAY_LAPTOP:
         return condStartDayLaptop();
+    case ACTION_VISITADS:
+        return condVisitAds();
     default:
         redprintf("Bot.cpp: Default case should not be reached.");
         return Prio::None;
@@ -311,7 +315,7 @@ Bot::Prio Bot::condAll(SLONG actionId) {
  */
 
 Bot::Prio Bot::condStartDay() {
-    // not necesary to check hoursPassed()
+    /* not necesary to check hoursPassed() */
     if (mDayStarted || !isOfficeUsable()) {
         return Prio::None;
     }
@@ -319,18 +323,18 @@ Bot::Prio Bot::condStartDay() {
 }
 
 Bot::Prio Bot::condStartDayLaptop() {
-    // not necesary to check hoursPassed()
+    /* not necesary to check hoursPassed() */
     if (mDayStarted || isOfficeUsable()) {
         return Prio::None;
     }
-    if (!qPlayer.HasItem(ITEM_LAPTOP) || qPlayer.LaptopVirus != 0) {
-        return Prio::None;
+    if (qPlayer.HasItem(ITEM_LAPTOP) && qPlayer.LaptopVirus == 0) {
+        return Prio::Top;
     }
-    return Prio::Top;
+    return Prio::None;
 }
 
 Bot::Prio Bot::condBuero() {
-    // not necesary to check hoursPassed()
+    /* not necesary to check hoursPassed() */
     if (!isOfficeUsable()) {
         return Prio::None; /* office is destroyed */
     }
@@ -459,18 +463,25 @@ Bot::Prio Bot::condUpgradePlanes() {
     if (!haveDiscount()) {
         return Prio::None; /* wait until we have some discount */
     }
-    if (mSaveForFinalObjective) {
+
+    if (mRunToFinalObjective == FinalPhase::SaveMoney) {
         return Prio::None;
     }
-    /* we are not checking money here because plane upgrades happen asynchronously.
-     * Instead, we earmark money in the variable mMoneyReservedForUpgrades.
+    if (!qPlayer.RobotUse(ROBOT_USE_LUXERY) && mRunToFinalObjective > FinalPhase::No) {
+        return Prio::None; /* not a mission where final objective is plane upgrades */
+    }
+
+    /* Plane upgrades happen asynchronously. Therefore, we earmark money in the variable mMoneyReservedForUpgrades.
      * We need to execute this action regularly even if we have no money since we
      * might cancel previously planned upgrades to have more available money. */
     SLONG minCost = 550 * (SeatCosts[2] - SeatCosts[0] / 2); /* assuming 550 seats (777) */
     if (getMoneyAvailable() < minCost && mMoneyReservedForUpgrades == 0) {
         return Prio::None;
     }
-    if (!mPlanesForRoutes.empty() || qPlayer.RobotUse(ROBOT_USE_LUXERY)) {
+    if ((mRunToFinalObjective == FinalPhase::TargetRun) && qPlayer.RobotUse(ROBOT_USE_LUXERY)) {
+        return Prio::High;
+    }
+    if (!mPlanesForRoutes.empty()) {
         return Prio::Medium;
     }
     return Prio::None;
@@ -493,7 +504,7 @@ Bot::Prio Bot::condBuyNewPlane(__int64 &moneyAvailable) {
     if (qPlayer.RobotUse(ROBOT_USE_MAX10PLANES) && numPlanes() >= 10) {
         return Prio::None;
     }
-    if (mSaveForFinalObjective) {
+    if (mRunToFinalObjective > FinalPhase::No) {
         return Prio::None;
     }
     if (HowToPlan::None == canWePlanFlights()) {
@@ -573,7 +584,7 @@ Bot::Prio Bot::condBuyKerosineTank(__int64 &moneyAvailable) {
     if (!haveDiscount()) {
         return Prio::None; /* wait until we have some discount */
     }
-    if (mSaveForFinalObjective) {
+    if (mRunToFinalObjective > FinalPhase::No) {
         return Prio::None;
     }
     if (mTankRatioEmptiedYesterday < 0.5) {
@@ -609,14 +620,14 @@ Bot::Prio Bot::condIncreaseDividend(__int64 &moneyAvailable) {
     if (!hoursPassed(ACTION_SET_DIVIDEND, 24)) {
         return Prio::None;
     }
-    if (mSaveForFinalObjective) {
+    if (mRunToFinalObjective > FinalPhase::No) {
         return Prio::None;
     }
 
     SLONG maxToEmit = (2500000 - qPlayer.MaxAktien) / 100 * 100;
-    if (maxToEmit < 10000) {
+    if (kReduceDividend && maxToEmit < 10000) {
         /* we cannot emit any shares anymore. We do not care about stock prices now. */
-        return (kReduceDividend && qPlayer.Dividende > 0) ? Prio::Medium : Prio::None;
+        return (qPlayer.Dividende > 0) ? Prio::Medium : Prio::None;
     }
     if (qPlayer.Dividende >= 25) {
         return Prio::None;
@@ -628,7 +639,7 @@ Bot::Prio Bot::condIncreaseDividend(__int64 &moneyAvailable) {
     return Prio::None;
 }
 
-Bot::Prio Bot::condRaiseMoney() {
+Bot::Prio Bot::condTakeOutLoan() {
     if (!hoursPassed(ACTION_RAISEMONEY, 1)) {
         return Prio::None;
     }
@@ -643,7 +654,7 @@ Bot::Prio Bot::condDropMoney(__int64 &moneyAvailable) {
     if (!hoursPassed(ACTION_DROPMONEY, 24)) {
         return Prio::None;
     }
-    if (mSaveForFinalObjective) {
+    if (mRunToFinalObjective > FinalPhase::No) {
         return Prio::None;
     }
 
@@ -688,7 +699,7 @@ Bot::Prio Bot::condBuyShares(__int64 &moneyAvailable, SLONG dislike) {
     if (!hoursPassed(ACTION_BUYSHARES, 4)) {
         return Prio::None;
     }
-    if (mSaveForFinalObjective) {
+    if (mRunToFinalObjective > FinalPhase::No) {
         return Prio::None;
     }
     if (qPlayer.RobotUse(ROBOT_USE_DONTBUYANYSHARES)) {
@@ -708,6 +719,7 @@ Bot::Prio Bot::condBuyOwnShares(__int64 &moneyAvailable) {
 }
 Bot::Prio Bot::condBuyNemesisShares(__int64 &moneyAvailable, SLONG dislike) {
     return Prio::None; // TODO
+
     moneyAvailable = getMoneyAvailable() - kMoneyReserveBuyNemesisShares;
     if ((dislike != -1) && (moneyAvailable >= 0) && (qPlayer.Credit == 0)) {
         return Prio::Low;
@@ -719,8 +731,7 @@ Bot::Prio Bot::condVisitMech() {
     if (!hoursPassed(ACTION_VISITMECH, 4)) {
         return Prio::None;
     }
-    /* we are not checking money here because plane repairs happen asynchronously.
-     * Instead, we earmark money in the variable mMoneyReservedForRepairs.
+    /* Plane repairs happen asynchronously. Therefore, we earmark money in the variable mMoneyReservedForRepairs.
      * We need to execute this action regularly even if we have no money since we
      * might cancel previously planned repairs to have more available money. */
     if (getMoneyAvailable() < 0 && mMoneyReservedForRepairs == 0) {
@@ -737,7 +748,7 @@ Bot::Prio Bot::condVisitNasa(__int64 &moneyAvailable) {
     if (!qPlayer.RobotUse(ROBOT_USE_NASA)) {
         return Prio::None;
     }
-    if (!mSaveForFinalObjective) {
+    if (mRunToFinalObjective != FinalPhase::TargetRun) {
         return Prio::None;
     }
 
@@ -833,12 +844,9 @@ Bot::Prio Bot::condVisitBoss(__int64 &moneyAvailable) {
     if (!hoursPassed(ACTION_VISITAUFSICHT, 2)) {
         return Prio::None;
     }
-    if (mSaveForFinalObjective) {
-        return Prio::None;
-    }
 
     moneyAvailable -= kMoneyReserveBossOffice;
-    if (moneyAvailable >= 0) {
+    if ((mRunToFinalObjective == FinalPhase::No) && (moneyAvailable >= 0)) {
         if (Sim.Time > (16 * 60000) && (mBossNumCitiesAvailable > 0 || mBossGateAvailable)) {
             return Prio::High; /* check again right before end of day */
         }
@@ -849,6 +857,7 @@ Bot::Prio Bot::condVisitBoss(__int64 &moneyAvailable) {
             return Prio::Low;
         }
     }
+
     if (mItemPills == 0) {
         return Prio::Low; /* we still need to take the card */
     }
@@ -866,7 +875,7 @@ Bot::Prio Bot::condExpandAirport(__int64 &moneyAvailable) {
     if (!mDayStarted) {
         return Prio::None; /* no access to gate utilization */
     }
-    if (mSaveForFinalObjective) {
+    if (mRunToFinalObjective > FinalPhase::No) {
         return Prio::None;
     }
 
@@ -892,7 +901,7 @@ Bot::Prio Bot::condVisitRouteBoxPlanning() {
     if (!qPlayer.RobotUse(ROBOT_USE_ROUTEBOX) || !mDoRoutes) {
         return Prio::None;
     }
-    if (mSaveForFinalObjective) {
+    if (mRunToFinalObjective > FinalPhase::No) {
         return Prio::None;
     }
     if (HowToPlan::None == canWePlanFlights()) {
@@ -918,7 +927,7 @@ Bot::Prio Bot::condVisitRouteBoxRenting(__int64 &moneyAvailable) {
     if (!qPlayer.RobotUse(ROBOT_USE_ROUTEBOX) || !mDoRoutes) {
         return Prio::None;
     }
-    if (mSaveForFinalObjective) {
+    if (mRunToFinalObjective > FinalPhase::No) {
         return Prio::None;
     }
     if (HowToPlan::None == canWePlanFlights()) {
@@ -970,17 +979,19 @@ Bot::Prio Bot::condBuyAdsForRoutes(__int64 &moneyAvailable) {
     if (!hoursPassed(ACTION_WERBUNG_ROUTES, 4)) {
         return Prio::None;
     }
+
     if (!qPlayer.RobotUse(ROBOT_USE_WERBUNG)) {
         return Prio::None;
     }
     if (!haveDiscount()) {
         return Prio::None; /* wait until we have some discount */
     }
-    if (mSaveForFinalObjective) {
-        return Prio::None;
-    }
     if (!mDayStarted) {
         return Prio::None; /* routes not updated */
+    }
+
+    if (mRunToFinalObjective > FinalPhase::No) {
+        return Prio::None;
     }
 
     auto minCost = gWerbePrice[1 * 6 + kSmallestAdCampaign];
@@ -992,14 +1003,6 @@ Bot::Prio Bot::condBuyAdsForRoutes(__int64 &moneyAvailable) {
             return (mRoutes[idx].image < 80) ? Prio::High : Prio::Medium;
         }
     }
-
-    if (mItemAntiVirus == 3) {
-        return Prio::Low;
-    }
-    if (mItemAntiVirus == 4 && qPlayer.HasItem(ITEM_DISKETTE) == 0) {
-        return Prio::Low;
-    }
-
     return Prio::None;
 }
 
@@ -1008,21 +1011,27 @@ Bot::Prio Bot::condBuyAds(__int64 &moneyAvailable) {
     if (!hoursPassed(ACTION_WERBUNG, 4)) {
         return Prio::None;
     }
+
     if (!qPlayer.RobotUse(ROBOT_USE_WERBUNG)) {
         return Prio::None;
     }
     if (!haveDiscount()) {
         return Prio::None; /* wait until we have some discount */
     }
-    if (mSaveForFinalObjective) {
-        if (qPlayer.RobotUse(ROBOT_USE_MUCHWERBUNG)) {
-            return Prio::High;
-        }
+
+    if (mRunToFinalObjective == FinalPhase::SaveMoney) {
+        return Prio::None;
+    }
+    if (!qPlayer.RobotUse(ROBOT_USE_MUCHWERBUNG) && mRunToFinalObjective > FinalPhase::No) {
+        return Prio::None; /* not a mission where we need to buy ads */
     }
 
     auto minCost = gWerbePrice[0 * 6 + kSmallestAdCampaign];
     moneyAvailable -= minCost;
     if (moneyAvailable >= 0) {
+        if ((mRunToFinalObjective == FinalPhase::TargetRun) && qPlayer.RobotUse(ROBOT_USE_MUCHWERBUNG)) {
+            return Prio::High;
+        }
         if (qPlayer.Image < kMinimumImage || (mDoRoutes && qPlayer.Image < 300)) {
             return Prio::Medium;
         }
@@ -1031,13 +1040,15 @@ Bot::Prio Bot::condBuyAds(__int64 &moneyAvailable) {
             return Prio::Low;
         }
     }
+    return Prio::None;
+}
 
+Bot::Prio Bot::condVisitAds() {
     if (mItemAntiVirus == 3) {
         return Prio::Low;
     }
     if (mItemAntiVirus == 4 && qPlayer.HasItem(ITEM_DISKETTE) == 0) {
         return Prio::Low;
     }
-
     return Prio::None;
 }
