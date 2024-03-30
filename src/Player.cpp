@@ -7581,6 +7581,7 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
         break;
     case ROBOT_USE_ROUTEBOX:
         /* SuperBot: Respects this flag */
+        // TODO: Check dashes in evolution missions
         pFeatureDesc = "-XXXXX"
                        "X"
                        "XXXXXXXXXX"
@@ -7625,9 +7626,7 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
                        "----------";
         break;
     case ROBOT_USE_LUXERY:
-        if (IsSuperBot()) {
-            return true;
-        }
+        /* SuperBot: Respects this flag, but only to buy more early and for all planes */
         pFeatureDesc = "------"
                        "."
                        "----X-----"
@@ -7789,6 +7788,7 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
                        "XXXXX-XXXX";
         break;
     case ROBOT_USE_TANKS:
+        /* SuperBot: Respects this flag */
         if (IsSuperBot()) {
             return true;
         }
@@ -7810,6 +7810,7 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
                        "----X--X--";
         break;
     case ROBOT_USE_BONUS:
+        /* SuperBot: Cheat not used */
         if (IsSuperBot()) {
             return false;
         }
@@ -7819,6 +7820,7 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
                        "XXXXXXXXXX";
         break;
     case ROBOT_USE_ROUTE_BONUS:
+        /* SuperBot: Cheat not used */
         if (IsSuperBot()) {
             return false;
         }
@@ -7828,6 +7830,7 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
                        "XXXXXXXXXX";
         break;
     case ROBOT_USE_FAKE_PERSONAL:
+        /* SuperBot: Cheat not used */
         if (IsSuperBot()) {
             return false;
         }
@@ -7837,6 +7840,7 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
                        "XXXXXXXXXX";
         break;
     case ROBOT_USE_NO_FINE:
+        /* SuperBot: Cheat not used */
         if (IsSuperBot()) {
             return false;
         }
@@ -7846,6 +7850,7 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
                        "XXXXXXXXXX";
         break;
     case ROBOT_USE_NO_CHECK_FLIGHT:
+        /* SuperBot: Cheat not used */
         if (IsSuperBot()) {
             return false;
         }
@@ -7855,6 +7860,7 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
                        "XXXXXXXXXX";
         break;
     case ROBOT_USE_NO_CHECK_FFLIGHT:
+        /* SuperBot: Cheat not used */
         if (IsSuperBot()) {
             return false;
         }
@@ -7864,6 +7870,7 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
                        "XXXXXXXXXX";
         break;
     case ROBOT_USE_MISC_CHEATS:
+        /* SuperBot: Cheat not used */
         if (IsSuperBot()) {
             return false;
         }
@@ -7873,6 +7880,7 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
                        "XXXXXXXXXX";
         break;
     case ROBOT_UHRIG_FLIGHTS_AUTO:
+        /* SuperBot: Cheat not used */
         if (IsSuperBot()) {
             return false;
         }

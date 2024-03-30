@@ -7,8 +7,8 @@
 #include <algorithm>
 
 const SLONG kMoneyEmergencyFund = 100000;
-const SLONG kSwitchToRoutesNumPlanesMin = 4;
-const SLONG kSwitchToRoutesNumPlanesMax = 8;
+const SLONG kSwitchToRoutesNumPlanesMin = 2;
+const SLONG kSwitchToRoutesNumPlanesMax = 4;
 const SLONG kSmallestAdCampaign = 4;
 const SLONG kMinimumImage = -4;
 const SLONG kMaximumPlaneUtilization = 90;

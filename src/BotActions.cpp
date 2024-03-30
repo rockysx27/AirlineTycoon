@@ -150,6 +150,11 @@ void Bot::actionStartDayLaptop(__int64 moneyAvailable) {
     checkPlaneLists();
 
     /* logic for switching to routes */
+    if (!mDoRoutes && qPlayer.RobotUse(ROBOT_USE_FORCEROUTES)) {
+        mDoRoutes = true;
+        hprintf("Bot::actionStartDay(): Switching to routes (forced).");
+    }
+
     if (!mDoRoutes && mBestPlaneTypeId != -1) {
         const auto &bestPlaneType = PlaneTypes[mBestPlaneTypeId];
         SLONG costRouteAd = gWerbePrice[1 * 6 + 5];
@@ -158,11 +163,6 @@ void Bot::actionStartDayLaptop(__int64 moneyAvailable) {
         if ((numPlanes >= kSwitchToRoutesNumPlanesMin && moneyAvailable >= moneyNeeded) || numPlanes >= kSwitchToRoutesNumPlanesMax) {
             mDoRoutes = true;
             hprintf("Bot::actionStartDay(): Switching to routes.");
-        }
-
-        if (qPlayer.RobotUse(ROBOT_USE_FORCEROUTES)) {
-            mDoRoutes = true;
-            hprintf("Bot::actionStartDay(): Switching to routes (forced).");
         }
     }
 
@@ -329,10 +329,26 @@ void Bot::planFlights() {
 }
 
 void Bot::actionUpgradePlanes() {
+    /* which planes to upgrade */
+    std::vector<SLONG> planes = mPlanesForRoutes;
+    if (qPlayer.RobotUse(ROBOT_USE_LUXERY)) {
+        for (auto &i : mPlanesForRoutesUnassigned) {
+            planes.push_back(i);
+        }
+        for (auto &i : mPlanesForJobs) {
+            planes.push_back(i);
+        }
+        for (auto &i : mPlanesForJobsUnassigned) {
+            planes.push_back(i);
+        }
+    }
+
+    bool onlySecurity = (Sim.Difficulty == DIFF_ATFS02);
+
     /* cancel all currently planned plane ugprades */
     mMoneyReservedForUpgrades = 0;
-    for (SLONG c = 0; c < mPlanesForRoutes.size(); c++) {
-        auto &qPlane = qPlayer.Planes[mPlanesForRoutes[c]];
+    for (SLONG c = 0; c < planes.size(); c++) {
+        auto &qPlane = qPlayer.Planes[planes[c]];
 
         qPlane.SitzeTarget = qPlane.Sitze;
         qPlane.TablettsTarget = qPlane.Tabletts;
@@ -344,13 +360,13 @@ void Bot::actionUpgradePlanes() {
     }
 
     /* plan new plane ugprades until we run out of money */
-    auto randOffset = LocalRandom.Rand(mPlanesForRoutes.size());
+    auto randOffset = LocalRandom.Rand(planes.size());
     bool keepGoing = true;
     while (keepGoing) {
         keepGoing = false;
-        for (SLONG c = 0; c < mPlanesForRoutes.size(); c++) {
-            SLONG idx = (c + randOffset) % mPlanesForRoutes.size();
-            CPlane &qPlane = qPlayer.Planes[mPlanesForRoutes[idx]];
+        for (SLONG c = 0; c < planes.size(); c++) {
+            SLONG idx = (c + randOffset) % planes.size();
+            CPlane &qPlane = qPlayer.Planes[planes[idx]];
             auto ptPassagiere = qPlane.ptPassagiere;
 
             auto moneyAvailable = getMoneyAvailable() - kMoneyReservePlaneUpgrades;
@@ -359,7 +375,7 @@ void Bot::actionUpgradePlanes() {
             }
 
             SLONG cost = ptPassagiere * (SeatCosts[2] - SeatCosts[qPlane.Sitze] / 2);
-            if (qPlane.SitzeTarget < 2 && cost <= moneyAvailable) {
+            if (qPlane.SitzeTarget < 2 && cost <= moneyAvailable && !onlySecurity) {
                 qPlane.SitzeTarget = 2;
                 mMoneyReservedForUpgrades += cost;
                 keepGoing = true;
@@ -368,7 +384,7 @@ void Bot::actionUpgradePlanes() {
             }
 
             cost = ptPassagiere * (TrayCosts[2] - TrayCosts[qPlane.Tabletts] / 2);
-            if (qPlane.TablettsTarget < 2 && cost <= moneyAvailable) {
+            if (qPlane.TablettsTarget < 2 && cost <= moneyAvailable && !onlySecurity) {
                 qPlane.TablettsTarget = 2;
                 mMoneyReservedForUpgrades += cost;
                 keepGoing = true;
@@ -377,7 +393,7 @@ void Bot::actionUpgradePlanes() {
             }
 
             cost = ptPassagiere * (DecoCosts[2] - DecoCosts[qPlane.Deco] / 2);
-            if (qPlane.DecoTarget < 2 && cost <= moneyAvailable) {
+            if (qPlane.DecoTarget < 2 && cost <= moneyAvailable && !onlySecurity) {
                 qPlane.DecoTarget = 2;
                 mMoneyReservedForUpgrades += cost;
                 keepGoing = true;

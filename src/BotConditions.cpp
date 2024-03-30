@@ -450,9 +450,6 @@ Bot::Prio Bot::condUpgradePlanes() {
     if (!hoursPassed(ACTION_UPGRADE_PLANES, 24)) {
         return Prio::None;
     }
-    if (!qPlayer.RobotUse(ROBOT_USE_LUXERY)) {
-        return Prio::None;
-    }
     if (!mDayStarted) {
         return Prio::None; /* plane list not updated */
     }
@@ -473,7 +470,7 @@ Bot::Prio Bot::condUpgradePlanes() {
     if (getMoneyAvailable() < minCost && mMoneyReservedForUpgrades == 0) {
         return Prio::None;
     }
-    if (!mPlanesForRoutes.empty()) {
+    if (!mPlanesForRoutes.empty() || qPlayer.RobotUse(ROBOT_USE_LUXERY)) {
         return Prio::Medium;
     }
     return Prio::None;
