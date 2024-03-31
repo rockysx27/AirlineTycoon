@@ -130,6 +130,7 @@ class BotPlaner {
   public:
     enum class JobOwner { Planned, PlannedFreight, Backlog, BacklogFreight, TravelAgency, LastMinute, Freight, International, InternationalFreight };
     struct JobScheduled {
+        JobScheduled() = default;
         JobScheduled(int idx, PlaneTime a, PlaneTime b) : jobIdx(idx), start(a), end(b) {}
         int jobIdx{};
         int objectId{-1};

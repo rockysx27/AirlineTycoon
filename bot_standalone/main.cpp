@@ -51,9 +51,8 @@ int64_t run(bool useImproved, int numPasses) {
 
     int64_t totalGain = 0;
     for (auto planeId : planeIds) {
-        totalGain += Helper::calculateScheduleGain(qPlayer, planeId);
+        totalGain += Helper::calculateScheduleInfo(qPlayer, planeId).gain;
     }
-    std::cout << "total gain this run: " << Insert1000erDots(totalGain).c_str() << std::endl;
     return totalGain;
 }
 
@@ -62,6 +61,7 @@ static const int numAveraged = 5;
 int64_t benchmark(bool useImproved, int numPasses);
 
 int64_t benchmark(bool useImproved, int numPasses) {
+    std::cout << "kNumToAdd = " << kNumToAdd << std::endl;
     std::cout << "kNumToRemove = " << kNumToRemove << std::endl;
     std::cout << "kTempStart = " << kTempStart << std::endl;
     std::cout << "kTempStep = " << kTempStep << std::endl;
@@ -80,22 +80,25 @@ int64_t benchmark(bool useImproved, int numPasses) {
 
 int main(int argc, char *argv[]) {
 
+    int numPasses = 1;
     bool useImproved = false;
     if (argc > 1) {
         useImproved = atoi(argv[1]) > 0;
     }
-    int numPasses = 1;
     if (argc > 2) {
         numPasses = atoi(argv[2]);
     }
     if (argc > 3) {
-        kNumToRemove = atoi(argv[3]);
+        kNumToAdd = atoi(argv[3]);
     }
     if (argc > 4) {
-        kTempStart = atoi(argv[4]);
+        kNumToRemove = atoi(argv[4]);
     }
     if (argc > 5) {
-        kTempStep = atoi(argv[5]);
+        kTempStart = atoi(argv[5]);
+    }
+    if (argc > 6) {
+        kTempStep = atoi(argv[6]);
     }
 
     benchmark(useImproved, numPasses);

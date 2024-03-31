@@ -16,6 +16,7 @@
 const int kAvailTimeExtra = 2;
 const int kDurationExtra = 1;
 const int kScheduleForNextDays = 4;
+const int64_t timeBudgetMS = 100;
 static const bool kCanDropJobs = false;
 
 static bool canFlyThisJob(const CAuftrag &job, const CPlane &plane) { return (job.Personen <= plane.ptPassagiere && job.FitsInPlane(plane)); }
@@ -136,6 +137,11 @@ void BotPlaner::collectAllFlightJobs(const std::vector<int> &planeIds) {
             }
             if (job.Date <= Sim.Date + kScheduleForNextDays) {
                 mJobList.emplace_back(source.jobs->GetIdFromIndex(i), source.sourceId, job, source.owner);
+                mJobList.back().score = job.Praemie;
+                mJobList.back().score += mDistanceFactor * Cities.CalcDistance(job.VonCity, job.NachCity);
+                mJobList.back().score += mPassengerFactor * job.Personen;
+                mJobList.back().score += mUhrigBonus * job.bUhrigFlight;
+                mJobList.back().score += mConstBonus;
             }
         }
         /* job source B: Freight */
@@ -162,7 +168,9 @@ void BotPlaner::collectAllFlightJobs(const std::vector<int> &planeIds) {
                 continue;
             }
             if (qFPE.ObjectType == 2) {
-                mJobList.emplace_back(qFPE.ObjectId, -1, qPlayer.Auftraege[qFPE.ObjectId], JobOwner::Planned);
+                const auto &job = qPlayer.Auftraege[qFPE.ObjectId];
+                mJobList.emplace_back(qFPE.ObjectId, -1, job, JobOwner::Planned);
+                mJobList.back().score = job.Praemie;
             }
             // TODO: JobOwner::PlannedFreight
         }
@@ -171,12 +179,12 @@ void BotPlaner::collectAllFlightJobs(const std::vector<int> &planeIds) {
     /* sort list of jobs */
     std::sort(mJobList.begin(), mJobList.end(), [](const FlightJob &a, const FlightJob &b) {
         if (kCanDropJobs) {
-            return (a.auftrag.Praemie + (a.wasTaken() ? a.auftrag.Strafe : 0)) > (b.auftrag.Praemie + (b.wasTaken() ? b.auftrag.Strafe : 0));
+            return (a.score + (a.wasTaken() ? a.auftrag.Strafe : 0)) > (b.score + (b.wasTaken() ? b.auftrag.Strafe : 0));
         }
         if (a.wasTaken() != b.wasTaken()) {
             return a.wasTaken();
         }
-        return a.auftrag.Praemie > b.auftrag.Praemie;
+        return a.score > b.score;
     });
 
     for (int i = 0; i < mJobList.size(); i++) {
@@ -224,10 +232,11 @@ std::vector<Graph> BotPlaner::prepareGraph() {
             auto &qNodeInfo = g.nodeInfo[i];
 
             if (i >= nPlanes && canFlyThisJob(mJobList[i - nPlanes].auftrag, *plane)) {
-                auto &job = mJobList[i - nPlanes].auftrag;
+                auto score = mJobList[i - nPlanes].score;
+                const auto &job = mJobList[i - nPlanes].auftrag;
                 const auto *plane = mPlaneTypeToPlane[pt];
                 qNodeInfo.jobIdx = i - nPlanes;
-                qNodeInfo.premium = job.Praemie - CalculateFlightCostNoTank(job.VonCity, job.NachCity, plane->ptVerbrauch, plane->ptGeschwindigkeit);
+                qNodeInfo.premium = score - CalculateFlightCostNoTank(job.VonCity, job.NachCity, plane->ptVerbrauch, plane->ptGeschwindigkeit);
                 qNodeInfo.duration = kDurationExtra + Cities.CalcFlugdauer(job.VonCity, job.NachCity, plane->ptGeschwindigkeit);
                 qNodeInfo.earliest = job.Date;
                 qNodeInfo.latest = job.BisDate;
@@ -339,11 +348,13 @@ bool BotPlaner::applySolutionForPlane(PLAYER &qPlayer, int planeId, const BotPla
         return false;
     }
 
+    std::unordered_map<int, JobScheduled> jobHash;
     for (auto &iter : solution.jobs) {
         if (!qPlayer.Auftraege.IsInAlbum(iter.objectId)) {
             redprintf("BotPlaner::applySolutionForPlane(): Skipping invalid job: %d", iter.objectId);
             continue;
         }
+        jobHash[iter.objectId] = iter;
         const auto &auftrag = qPlayer.Auftraege[iter.objectId];
         const auto startTime = iter.start;
         const auto endTime = iter.end - kDurationExtra;
@@ -358,51 +369,66 @@ bool BotPlaner::applySolutionForPlane(PLAYER &qPlayer, int planeId, const BotPla
         } else {
             // TODO
         }
+    }
 
-        /* check flight time */
-        bool found = false;
-        const auto &qFlightPlan = qPlanes[planeId].Flugplan.Flug;
-        for (SLONG d = 0; d < qFlightPlan.AnzEntries(); d++) {
-            const auto &flug = qFlightPlan[d];
-            if (flug.ObjectType != 2) {
-                continue;
-            }
-            if (flug.ObjectId != iter.objectId) {
-                continue;
-            }
-
-            found = true;
-
-            if (PlaneTime(flug.Startdate, flug.Startzeit) != startTime) {
-                redprintf("BotPlaner::applySolutionForPlane(): Plane %s, schedule entry %ld: GameMechanic scheduled job (%s) at different start time (%s %d "
-                          "instead of "
-                          "%s %d)!",
-                          (LPCTSTR)qPlanes[planeId].Name, d, Helper::getJobName(auftrag).c_str(), (LPCTSTR)Helper::getWeekday(flug.Startdate), flug.Startzeit,
-                          (LPCTSTR)Helper::getWeekday(startTime.getDate()), startTime.getHour());
-            }
-            if (PlaneTime(flug.Landedate, flug.Landezeit) != endTime) {
-                redprintf(
-                    "BotPlaner::applySolutionForPlane(): Plane %s, schedule entry %ld: GameMechanic scheduled job (%s) with different landing time (%s %d "
-                    "instead of %s %d)!",
-                    (LPCTSTR)qPlanes[planeId].Name, d, Helper::getJobName(auftrag).c_str(), (LPCTSTR)Helper::getWeekday(flug.Landedate), flug.Landezeit,
-                    (LPCTSTR)Helper::getWeekday(endTime.getDate()), endTime.getHour());
-            }
+    /* check flight time */
+    const auto &qFlightPlan = qPlanes[planeId].Flugplan.Flug;
+    for (SLONG d = 0; d < qFlightPlan.AnzEntries(); d++) {
+        const auto &flug = qFlightPlan[d];
+        if (flug.ObjectType != 2) {
+            continue; /* TODO: freight */
         }
-        if (!found) {
-            redprintf("BotPlaner::applySolutionForPlane(): Did not find job %s in flight plan!", Helper::getJobName(auftrag).c_str());
+        if (jobHash.find(flug.ObjectId) == jobHash.end()) {
+            continue;
+        }
+
+        auto iter = jobHash[flug.ObjectId];
+        jobHash.erase(flug.ObjectId);
+        const auto &auftrag = qPlayer.Auftraege[iter.objectId];
+        const auto startTime = iter.start;
+        const auto endTime = iter.end - kDurationExtra;
+
+        if (PlaneTime(flug.Startdate, flug.Startzeit) != startTime) {
+            redprintf("BotPlaner::applySolutionForPlane(): Plane %s, schedule entry %ld: GameMechanic scheduled job (%s) at different start time (%s %d "
+                      "instead of "
+                      "%s %d)!",
+                      (LPCTSTR)qPlanes[planeId].Name, d, Helper::getJobName(auftrag).c_str(), (LPCTSTR)Helper::getWeekday(flug.Startdate), flug.Startzeit,
+                      (LPCTSTR)Helper::getWeekday(startTime.getDate()), startTime.getHour());
+        }
+        if (PlaneTime(flug.Landedate, flug.Landezeit) != endTime) {
+            redprintf("BotPlaner::applySolutionForPlane(): Plane %s, schedule entry %ld: GameMechanic scheduled job (%s) with different landing time (%s %d "
+                      "instead of %s %d)!",
+                      (LPCTSTR)qPlanes[planeId].Name, d, Helper::getJobName(auftrag).c_str(), (LPCTSTR)Helper::getWeekday(flug.Landedate), flug.Landezeit,
+                      (LPCTSTR)Helper::getWeekday(endTime.getDate()), endTime.getHour());
         }
     }
+    for (const auto &iter : jobHash) {
+        const auto &auftrag = qPlayer.Auftraege[iter.second.objectId];
+        redprintf("BotPlaner::applySolutionForPlane(): Did not find job %s in flight plan!", Helper::getJobName(auftrag).c_str());
+    }
+
     return true;
 }
 
 BotPlaner::SolutionList BotPlaner::planFlights(const std::vector<int> &planeIdsInput, bool bUseImprovedAlgo, int extraBufferTime) {
-#ifdef PRINT_OVERALL
     auto t_begin = std::chrono::steady_clock::now();
-#endif
+
+    if (mDistanceFactor > 0) {
+        hprintf("BotPlaner::planFlights(): Using mDistanceFactor = %ld", mDistanceFactor);
+    }
+    if (mPassengerFactor > 0) {
+        hprintf("BotPlaner::planFlights(): Using mPassengerFactor = %ld", mPassengerFactor);
+    }
+    if (mUhrigBonus > 0) {
+        hprintf("BotPlaner::planFlights(): Using mUhrigBonus = %ld", mUhrigBonus);
+    }
+    if (mConstBonus > 0) {
+        hprintf("BotPlaner::planFlights(): Using mConstBonus = %ld", mConstBonus);
+    }
+
 #ifdef PRINT_DETAIL
     hprintf("BotPlaner::planFlights(): Current time: %d", Sim.GetHour());
 #endif
-
     mScheduleFromTime = {Sim.Date, Sim.GetHour() + extraBufferTime};
 
     /* find valid plane IDs */
@@ -459,7 +485,9 @@ BotPlaner::SolutionList BotPlaner::planFlights(const std::vector<int> &planeIdsI
     /* start algo */
     bool improved = false;
     if (bUseImprovedAlgo) {
-        improved = algo2();
+        auto t_current = std::chrono::steady_clock::now();
+        auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(t_current - t_begin).count();
+        improved = algo2(timeBudgetMS - diff);
     } else {
         improved = algo1();
     }
@@ -515,41 +543,47 @@ bool BotPlaner::applySolution(PLAYER &qPlayer, const SolutionList &solutions) {
     for (const auto &solution : solutions) {
         int planeId = solution.planeId;
         auto time = solution.scheduleFromTime;
-        GameMechanic::killFlightPlanFrom(qPlayer, planeId, time.getDate(), time.getHour());
+        if (!GameMechanic::killFlightPlanFrom(qPlayer, planeId, time.getDate(), time.getHour())) {
+            return false;
+        }
     }
 
     /* apply solution */
-    int totalGain = 0;
-    int totalDiff = 0;
+    Helper::ScheduleInfo overallInfo;
+    SLONG totalDiff = 0;
     for (const auto &solution : solutions) {
         int planeId = solution.planeId;
 
-        SLONG oldGain = Helper::calculateScheduleGain(qPlayer, planeId);
+        auto oldInfo = Helper::calculateScheduleInfo(qPlayer, planeId);
         applySolutionForPlane(qPlayer, planeId, solution);
 
-        SLONG newGain = Helper::calculateScheduleGain(qPlayer, planeId);
-        SLONG diff = newGain - oldGain;
-        totalGain += newGain;
+        auto newInfo = Helper::calculateScheduleInfo(qPlayer, planeId);
+        overallInfo += newInfo;
+        SLONG diff = newInfo.gain - oldInfo.gain;
         totalDiff += diff;
 
 #ifdef PRINT_DETAIL
         Helper::checkPlaneSchedule(qPlayer, planeId, false);
         if (diff > 0) {
-            hprintf("%s: Improved gain: %d => %d (+%d)", (LPCTSTR)qPlayer.Planes[planeId].Name, oldGain, newGain, diff);
+            hprintf("%s: Improved gain: %d => %d (+%d)", (LPCTSTR)qPlayer.Planes[planeId].Name, oldInfo.gain, newInfo.gain, diff);
         } else {
-            hprintf("%s: Gain did not improve: %d => %d (%d)", (LPCTSTR)qPlayer.Planes[planeId].Name, oldGain, newGain, diff);
+            hprintf("%s: Gain did not improve: %d => %d (%d)", (LPCTSTR)qPlayer.Planes[planeId].Name, oldInfo.gain, newInfo.gain, diff);
         }
 #endif
     }
 
-#ifdef PRINT_OVERALL
+#ifdef PRINT_DETAIL
     if (totalDiff > 0) {
-        hprintf("Total gain improved: %s $ (+%s $)", Insert1000erDots(totalGain).c_str(), Insert1000erDots(totalDiff).c_str());
+        hprintf("Total gain improved: %s $ (+%s $)", Insert1000erDots(overallInfo.gain).c_str(), Insert1000erDots(totalDiff).c_str());
     } else if (totalDiff == 0) {
-        hprintf("Total gain did not change: %s $", Insert1000erDots(totalGain).c_str());
+        hprintf("Total gain did not change: %s $", Insert1000erDots(overallInfo.gain).c_str());
     } else {
-        hprintf("Total gain got worse: %s $ (%s $)", Insert1000erDots(totalGain).c_str(), Insert1000erDots(totalDiff).c_str());
+        hprintf("Total gain got worse: %s $ (%s $)", Insert1000erDots(overallInfo.gain).c_str(), Insert1000erDots(totalDiff).c_str());
     }
+#endif
+
+#ifdef PRINT_OVERALL
+    overallInfo.printDetails();
 #endif
 
     return true;

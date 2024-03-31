@@ -4,6 +4,8 @@
 #include "compat_album.h"
 #include "defines.h"
 
+void DebugBreak();
+
 //--------------------------------------------------------------------------------------------
 // Aus Debug.cpp
 //--------------------------------------------------------------------------------------------
@@ -21,6 +23,7 @@ void HercPrintfGreen(const char *Format, ...);
 //--------------------------------------------------------------------------------------------
 
 SLONG ReadLine(BUFFER_V<UBYTE> &Buffer, SLONG BufferStart, char *Line, SLONG LineLength);
+CString KorrigiereUmlaute(CString &OriginalText);
 __int64 StringToInt64(const CString &String);
 CString FullFilename(const CString &Filename, const CString &PathString);
 CString Insert1000erDots(SLONG Value);
@@ -30,5 +33,7 @@ CString Insert1000erDots(SLONG Value);
 //--------------------------------------------------------------------------------------------
 SLONG CalculateFlightKerosin(SLONG VonCity, SLONG NachCity, SLONG Verbrauch, SLONG Geschwindigkeit);
 SLONG CalculateFlightCostNoTank(SLONG VonCity, SLONG NachCity, SLONG Verbrauch, SLONG Geschwindigkeit);
+
+bool GlobalUse(SLONG FeatureId);
 
 #endif // COMPAT_MISC_H_

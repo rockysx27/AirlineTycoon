@@ -10,6 +10,8 @@
 #include <filesystem>
 #include <locale>
 
+void DebugBreak() { redprintf("DebugBreak() called!"); }
+
 //--------------------------------------------------------------------------------------------
 // Aus Debug.cpp
 //--------------------------------------------------------------------------------------------
@@ -527,6 +529,19 @@ void PLAYER::UpdateFrachtauftragsUsage() {
             }
         }
     }
+}
+
+//--------------------------------------------------------------------------------------------
+// Unterstützen die Roboter im aktuellen die Level ein bestimmtes Feature?:
+//--------------------------------------------------------------------------------------------
+bool GlobalUse(SLONG FeatureId) {
+    switch (FeatureId) {
+    case USE_TRAVELHOLDING:
+        return (Sim.Difficulty != DIFF_ADDON06);
+    default:
+        TeakLibW_Exception(FNL, ExcNever);
+    }
+    return false;
 }
 
 //--------------------------------------------------------------------------------------------
@@ -1234,7 +1249,7 @@ SLONG CITIES::GetRandomUsedIndex(TEAKRAND *pRand) {
         }
     }
 
-    redprintf("DebugBreak() called");
+    DebugBreak();
     return (0);
 }
 
@@ -1302,6 +1317,6 @@ SLONG CITIES::GetRandomUsedIndex(SLONG AreaCode, TEAKRAND *pRand) {
         }
     }
 
-    redprintf("DebugBreak() called");
+    DebugBreak();
     return (0);
 }

@@ -564,6 +564,7 @@ inline bool operator!=(const CPoint &lhs, const CPoint &rhs) { return !(lhs == r
 #define ACTION_EXPANDAIRPORT 609
 #define ACTION_CALL_INTER_HANDY 610
 #define ACTION_STARTDAY_LAPTOP 611
+#define ACTION_VISITADS 612
 
 // Die Arten von Beratern:
 #define BERATERTYP_GIRL 0 // Die Sekretärin
@@ -948,7 +949,7 @@ inline bool operator!=(const CPoint &lhs, const CPoint &rhs) { return !(lhs == r
 #define ROBOT_USE_MORE_PLANES 66       // Kauft aggressiver neue Flugzeuge (PT)
 #define ROBOT_USE_MORE_PLANES_2 67     // Kauft aggressiver neue Flugzeuge (SA)
 #define ROBOT_USE_MUCH_FRACHT_BONUS 68 // Nimmt fast jeden Frachtauftrag (PT)
-#define ROBOT_USE_END_STRIKE_RAND 69   // Strike kann zufällig beendet werden (Cheat)
+#define ROBOT_USE_MISC_CHEATS 69       // Streik kann zufällig beendet werden / Virus entfernt / Kooperation mit anderen Robots
 #define ROBOT_USE_ALT_KREDIT 70        // Alternative Kredit-Strategie (FL)
 #define ROBOT_USE_EAGER_SELLSHARES 71  // Verkauft schon früher Aktien (FL)
 #define ROBOT_USE_BARELY_REPAIR 72     // Repariert Flugzeuge nur auf 70% (HA)
@@ -956,6 +957,7 @@ inline bool operator!=(const CPoint &lhs, const CPoint &rhs) { return !(lhs == r
 #define ROBOT_USE_UPGRADE_TECH 74      // Kauft Tech-Upgrade bei gebrauchten Flugzeugen (FL)
 #define ROBOT_USE_BUY_MORE_ABROAD 75   // Kauft mehr Niederlassungen (SA)
 #define ROBOT_ALWAYS_BUY_GATES 76      // Bietet immer auf Gates (SA)
+#define ROBOT_UHRIG_FLIGHTS_AUTO 77    // Aufträge von Uhrig (Mission DIFF_ADDON09) werden gefaked
 
 // Die Netzwerk-Medien
 #define NET_MEDIUM_UNKNOWN 0

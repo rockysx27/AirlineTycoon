@@ -6,6 +6,7 @@
 #include "GameMechanic.h"
 
 #include <array>
+#include <chrono>
 #include <iostream>
 
 // #define PRINT_DETAIL 1
@@ -14,7 +15,7 @@
 int kNumToAdd = 99;
 int kNumToRemove = 3;
 int kTempStart = 1000;
-int kTempStep = 100;
+int kTempStep = 0;
 extern const int kScheduleForNextDays;
 
 inline int pathLength(const Graph &g, int start) {
@@ -544,7 +545,7 @@ int BotPlaner::algo2RunForPlaneRemove(int planeIdx, int numToRemove) {
     std::cout << "qPlaneState.numNodes " << planeState.numNodes << std::endl;
     algo2GenSolutionsFromGraph(planeIdx);
     GameMechanic::killFlightPlanFrom(qPlayer, planeState.planeId, mScheduleFromTime.getDate(), mScheduleFromTime.getHour());
-    applySolutionForPlane(planeState.planeId, planeState.currentSolution);
+    applySolutionForPlane(qPlayer, planeState.planeId, planeState.currentSolution);
     Helper::checkPlaneSchedule(qPlayer, qPlanes[planeState.planeId], false);
 #endif
 
@@ -609,7 +610,7 @@ int BotPlaner::algo2RunForPlaneAdd(int planeIdx, int numToAdd, int choice) {
                 std::cout << "MakeRoom success!" << std::endl;
                 algo2GenSolutionsFromGraph(planeIdx);
                 GameMechanic::killFlightPlanFrom(qPlayer, planeState.planeId, mScheduleFromTime.getDate(), mScheduleFromTime.getHour());
-                applySolutionForPlane(planeState.planeId, planeState.currentSolution);
+                applySolutionForPlane(qPlayer, planeState.planeId, planeState.currentSolution);
                 Helper::checkPlaneSchedule(qPlayer, qPlanes[planeState.planeId], false);
             }
 #endif
@@ -647,7 +648,7 @@ int BotPlaner::algo2RunForPlaneAdd(int planeIdx, int numToAdd, int choice) {
 #ifdef PRINT_OVERALL
             algo2GenSolutionsFromGraph(planeIdx);
             GameMechanic::killFlightPlanFrom(qPlayer, planeState.planeId, mScheduleFromTime.getDate(), mScheduleFromTime.getHour());
-            applySolutionForPlane(planeState.planeId, planeState.currentSolution);
+            applySolutionForPlane(qPlayer, planeState.planeId, planeState.currentSolution);
             Helper::checkPlaneSchedule(qPlayer, qPlanes[planeState.planeId], false);
 #endif
         }
@@ -656,7 +657,10 @@ int BotPlaner::algo2RunForPlaneAdd(int planeIdx, int numToAdd, int choice) {
     return nScheduled;
 }
 
-bool BotPlaner::algo2() {
+bool BotPlaner::algo2(int64_t timeBudget) {
+    timeBudget = 1000 * std::max((int64_t)1, timeBudget);
+    auto t_begin = std::chrono::steady_clock::now();
+
     for (auto &g : mGraphs) {
         for (int n = 0; n < g.nPlanes; n++) {
             g.nodeState[n].startTime = mPlaneStates[n].availTime;
@@ -703,46 +707,44 @@ bool BotPlaner::algo2() {
         int iterGain = allPlaneGain();
         if (!SA_accept(iterGain, temperature, getRandInt(1, 100))) {
             /* roll back */
-#ifdef PRINT_OVERALL
-            std::cout << "Gains is too low (" << diff << "), rolling back" << std::endl;
-#endif
             for (int planeIdx = 0; planeIdx < mPlaneStates.size(); planeIdx++) {
                 killPath(planeIdx);
             }
             for (int planeIdx = 0; planeIdx < mPlaneStates.size(); planeIdx++) {
                 restorePath(planeIdx, currentBestPath[planeIdx]);
             }
-#ifdef PRINT_OVERALL
-            std::cout << "Gains is too low, rolled back" << std::endl;
-            algo2GenSolutionsFromGraph(planeIdx);
-            GameMechanic::killFlightPlanFrom(qPlayer, planeState.planeId, mScheduleFromTime.getDate(), mScheduleFromTime.getHour());
-            applySolutionForPlane(planeState.planeId, planeState.currentSolution);
-            Helper::checkPlaneSchedule(qPlayer, qPlanes[planeState.planeId], false);
-#endif
-            continue;
-        }
-
-        // if (iterGain > currentBestGain) {
-        currentBestGain = iterGain;
-        for (int planeIdx = 0; planeIdx < mPlaneStates.size(); planeIdx++) {
-            savePath(planeIdx, currentBestPath[planeIdx]);
-        }
-        // std::cout << temperature << ", " << currentBestGain << std::endl;
-        //}
-
-        if (iterGain > overallBestGain) {
-            int test = 0;
-            overallBestGain = iterGain;
+        } else {
+            /* save current best solution */
+            currentBestGain = iterGain;
             for (int planeIdx = 0; planeIdx < mPlaneStates.size(); planeIdx++) {
-                savePath(planeIdx, overallBestPath[planeIdx]);
-                test += mPlaneStates[planeIdx].currentPremium - mPlaneStates[planeIdx].currentCost;
+                savePath(planeIdx, currentBestPath[planeIdx]);
             }
-            assert(test == overallBestGain);
+
+            if (iterGain > overallBestGain) {
+                int test = 0;
+                overallBestGain = iterGain;
+                for (int planeIdx = 0; planeIdx < mPlaneStates.size(); planeIdx++) {
+                    savePath(planeIdx, overallBestPath[planeIdx]);
+                    test += mPlaneStates[planeIdx].currentPremium - mPlaneStates[planeIdx].currentCost;
+                }
+                assert(test == overallBestGain);
+            }
         }
 
-        temperature -= kTempStep;
+        /* adjust temperature based on amount of time left */
+        if (temperature == 1) {
+            break;
+        }
+        auto t_end = std::chrono::steady_clock::now();
+        auto delta = std::chrono::duration_cast<std::chrono::microseconds>(t_end - t_begin).count();
+        int newTemperature = (kTempStep == 0) ? kTempStart - (kTempStart * delta / timeBudget) : temperature - kTempStep;
+        temperature = std::min(temperature - 1, newTemperature);
+        if (temperature < 1) {
+            temperature = 1; /* ensure final greedy run */
+        }
+
 #ifdef PRINT_OVERALL
-        hprintf("Scheduled %d jobs and improved gain in total by %d", nTotalScheduled, totalGain);
+        hprintf("%f ms left, temp now %d. Current gain = %d (overall = %d)", (timeBudget - delta) / 1000.0, temperature, currentBestGain, overallBestGain);
 #endif
     }
 

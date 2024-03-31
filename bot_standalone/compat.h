@@ -298,6 +298,7 @@ class PLAYER {
   public:
     SLONG PlayerNum{}; // Seine Nummer
     BOOL IsOut;        // Ist der Spieler aus dem Spiel?
+    CString AirlineX;  // Name der Fluglinie; ohne Leerstellen am Ende
     UBYTE Owner{};     // Spieler=0, Computergegner=1, Netzwerkgegner=2
 
     CPlanes Planes;       // Flugzeuge, die der Spieler besitzt
@@ -323,6 +324,10 @@ class PLAYERS {
         for (SLONG c = 0; c < AnzPlayers; c++) {
             Players[c].PlayerNum = c;
         }
+        Players[0].AirlineX = "Sunshine Airways";
+        Players[1].AirlineX = "Falcon Lines";
+        Players[2].AirlineX = "Phoenix Travel";
+        Players[3].AirlineX = "Honey Airlines";
     }
     BOOL IsPlaneNameInUse(const CString &PlaneName);
 };

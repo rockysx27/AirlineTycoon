@@ -345,14 +345,15 @@ bool BotPlaner::applySolutionForPlane(PLAYER &qPlayer, int planeId, const BotPla
         return false;
     }
 
+    std::unordered_map<int, JobScheduled> jobHash;
     for (auto &iter : solution.jobs) {
         if (!qPlayer.Auftraege.IsInAlbum(iter.objectId)) {
             redprintf("BotPlaner::applySolutionForPlane(): Skipping invalid job: %d", iter.objectId);
             continue;
         }
+        jobHash[iter.objectId] = iter;
         const auto &auftrag = qPlayer.Auftraege[iter.objectId];
         const auto startTime = iter.start;
-        const auto endTime = iter.end - kDurationExtra;
 
         /* plan taken jobs */
         if (!iter.bIsFreight) {
@@ -364,40 +365,44 @@ bool BotPlaner::applySolutionForPlane(PLAYER &qPlayer, int planeId, const BotPla
         } else {
             // TODO
         }
+    }
 
-        /* check flight time */
-        bool found = false;
-        const auto &qFlightPlan = qPlanes[planeId].Flugplan.Flug;
-        for (SLONG d = 0; d < qFlightPlan.AnzEntries(); d++) {
-            const auto &flug = qFlightPlan[d];
-            if (flug.ObjectType != 2) {
-                continue;
-            }
-            if (flug.ObjectId != iter.objectId) {
-                continue;
-            }
-
-            found = true;
-
-            if (PlaneTime(flug.Startdate, flug.Startzeit) != startTime) {
-                redprintf("BotPlaner::applySolutionForPlane(): Plane %s, schedule entry %ld: GameMechanic scheduled job (%s) at different start time (%s %d "
-                          "instead of "
-                          "%s %d)!",
-                          (LPCTSTR)qPlanes[planeId].Name, d, Helper::getJobName(auftrag).c_str(), (LPCTSTR)Helper::getWeekday(flug.Startdate), flug.Startzeit,
-                          (LPCTSTR)Helper::getWeekday(startTime.getDate()), startTime.getHour());
-            }
-            if (PlaneTime(flug.Landedate, flug.Landezeit) != endTime) {
-                redprintf(
-                    "BotPlaner::applySolutionForPlane(): Plane %s, schedule entry %ld: GameMechanic scheduled job (%s) with different landing time (%s %d "
-                    "instead of %s %d)!",
-                    (LPCTSTR)qPlanes[planeId].Name, d, Helper::getJobName(auftrag).c_str(), (LPCTSTR)Helper::getWeekday(flug.Landedate), flug.Landezeit,
-                    (LPCTSTR)Helper::getWeekday(endTime.getDate()), endTime.getHour());
-            }
+    /* check flight time */
+    const auto &qFlightPlan = qPlanes[planeId].Flugplan.Flug;
+    for (SLONG d = 0; d < qFlightPlan.AnzEntries(); d++) {
+        const auto &flug = qFlightPlan[d];
+        if (flug.ObjectType != 2) {
+            continue; /* TODO: freight */
         }
-        if (!found) {
-            redprintf("BotPlaner::applySolutionForPlane(): Did not find job %s in flight plan!", Helper::getJobName(auftrag).c_str());
+        if (jobHash.find(flug.ObjectId) == jobHash.end()) {
+            continue;
+        }
+
+        auto iter = jobHash[flug.ObjectId];
+        jobHash.erase(flug.ObjectId);
+        const auto &auftrag = qPlayer.Auftraege[iter.objectId];
+        const auto startTime = iter.start;
+        const auto endTime = iter.end - kDurationExtra;
+
+        if (PlaneTime(flug.Startdate, flug.Startzeit) != startTime) {
+            redprintf("BotPlaner::applySolutionForPlane(): Plane %s, schedule entry %ld: GameMechanic scheduled job (%s) at different start time (%s %d "
+                      "instead of "
+                      "%s %d)!",
+                      (LPCTSTR)qPlanes[planeId].Name, d, Helper::getJobName(auftrag).c_str(), (LPCTSTR)Helper::getWeekday(flug.Startdate), flug.Startzeit,
+                      (LPCTSTR)Helper::getWeekday(startTime.getDate()), startTime.getHour());
+        }
+        if (PlaneTime(flug.Landedate, flug.Landezeit) != endTime) {
+            redprintf("BotPlaner::applySolutionForPlane(): Plane %s, schedule entry %ld: GameMechanic scheduled job (%s) with different landing time (%s %d "
+                      "instead of %s %d)!",
+                      (LPCTSTR)qPlanes[planeId].Name, d, Helper::getJobName(auftrag).c_str(), (LPCTSTR)Helper::getWeekday(flug.Landedate), flug.Landezeit,
+                      (LPCTSTR)Helper::getWeekday(endTime.getDate()), endTime.getHour());
         }
     }
+    for (const auto &iter : jobHash) {
+        const auto &auftrag = qPlayer.Auftraege[iter.second.objectId];
+        redprintf("BotPlaner::applySolutionForPlane(): Did not find job %s in flight plan!", Helper::getJobName(auftrag).c_str());
+    }
+
     return true;
 }
 

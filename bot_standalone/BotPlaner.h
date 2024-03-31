@@ -137,8 +137,9 @@ class BotPlaner {
   public:
     enum class JobOwner { Planned, PlannedFreight, Backlog, BacklogFreight, TravelAgency, LastMinute, Freight, International, InternationalFreight };
     struct JobScheduled {
+        JobScheduled() = default;
         JobScheduled(int idx, PlaneTime a, PlaneTime b) : jobIdx(idx), start(a), end(b) {}
-        int jobIdx{};
+        int jobIdx{-1};
         int objectId{-1};
         bool bIsFreight{false};
         PlaneTime start;
@@ -156,6 +157,12 @@ class BotPlaner {
 
     BotPlaner() = default;
     BotPlaner(PLAYER &player, const CPlanes &planes, JobOwner jobOwner, std::vector<int> intJobSource);
+
+    /* premium weighting factors */
+    void setDistanceFactor(SLONG val) { mDistanceFactor = val; }
+    void setPassengerFactor(SLONG val) { mPassengerFactor = val; }
+    void setUhrigBonus(SLONG val) { mUhrigBonus = val; }
+    void setConstBonus(SLONG val) { mConstBonus = val; }
 
     SolutionList planFlights(const std::vector<int> &planeIdsInput, bool bUseImprovedAlgo, int extraBufferTime);
     static bool applySolution(PLAYER &qPlayer, const SolutionList &solutions);
@@ -193,6 +200,7 @@ class BotPlaner {
         int sourceId{-1};
         CAuftrag auftrag;
         JobOwner owner;
+        SLONG score{};
         /* both algos: */
         int assignedtoPlaneIdx{-1};
     };
@@ -239,7 +247,7 @@ class BotPlaner {
     void algo2RemoveNode(Graph &g, int planeIdx, int currentNode);
     int algo2RunForPlaneRemove(int planeIdx, int numToRemove);
     int algo2RunForPlaneAdd(int planeIdx, int numToAdd, int choice);
-    bool algo2();
+    bool algo2(int64_t timeBudget);
 
     /* apply solution */
     bool takeJobs(PlaneState &planeState);
@@ -256,6 +264,12 @@ class BotPlaner {
     std::vector<int> mIntJobSource;
     const CPlanes &qPlanes;
     PlaneTime mScheduleFromTime;
+
+    /* premium weighting factors */
+    SLONG mDistanceFactor{0};
+    SLONG mPassengerFactor{0};
+    SLONG mUhrigBonus{0};
+    SLONG mConstBonus{0};
 
     /* state */
     std::vector<const CPlane *> mPlaneTypeToPlane;

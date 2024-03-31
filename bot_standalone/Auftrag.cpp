@@ -146,6 +146,7 @@ void CAuftrag::RandomCities(SLONG AreaType, SLONG HomeCity, TEAKRAND *pRandom) {
                 break;
             default:
                 hprintf("Auftrag.cpp: Default case should not be reached.");
+                DebugBreak();
             }
             break;
 
@@ -168,10 +169,12 @@ void CAuftrag::RandomCities(SLONG AreaType, SLONG HomeCity, TEAKRAND *pRandom) {
                 break;
             default:
                 hprintf("Auftrag.cpp: Default case should not be reached.");
+                DebugBreak();
             }
             break;
         default:
             hprintf("Auftrag.cpp: Default case should not be reached.");
+            DebugBreak();
         }
 
         TimeOut++;
@@ -449,6 +452,7 @@ too_large:
     Date = UWORD(Sim.Date + 1 + pRandom->Rand(3));
     BisDate = Date;
     InPlan = 0;
+    bUhrigFlight = TRUE;
 
     // Kopie dieser Formel auch bei Last-Minute
     Praemie = ((CalculateFlightCostNoTank(VonCity, NachCity, 8000, 700)) + 99) / 100 * 115;
@@ -550,6 +554,7 @@ too_large:
             break;
         default:
             hprintf("Auftrag.cpp: Default case should not be reached.");
+            DebugBreak();
         }
     } while (VonCity == NachCity || (AreaType == 4 && Cities.CalcDistance(VonCity, NachCity) > 10000000));
 
