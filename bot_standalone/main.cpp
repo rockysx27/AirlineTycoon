@@ -29,12 +29,17 @@ int64_t run(bool useImproved, int numPasses) {
 
     for (int i = 0; i < numPasses; i++) {
         // hprintf("******************** planning pass %d ********************", i);
-        auto source = BotPlaner::JobOwner::International;
+        auto source = BotPlaner::JobOwner::InternationalFreight;
         std::vector<int> cities;
         if (source == BotPlaner::JobOwner::TravelAgency) {
             ReisebueroAuftraege.FillForReisebuero();
         } else if (source == BotPlaner::JobOwner::International) {
             for (int cityNum = 0; cityNum < AuslandsAuftraege.size(); cityNum++) {
+                GameMechanic::refillFlightJobs(cityNum);
+                cities.push_back(cityNum);
+            }
+        } else if (source == BotPlaner::JobOwner::InternationalFreight) {
+            for (int cityNum = 0; cityNum < AuslandsFrachten.size(); cityNum++) {
                 GameMechanic::refillFlightJobs(cityNum);
                 cities.push_back(cityNum);
             }

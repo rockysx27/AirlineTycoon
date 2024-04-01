@@ -316,7 +316,7 @@ SLONG _checkPlaneSchedule(const PLAYER &qPlayer, const CPlane &qPlane, std::unor
     for (const auto &iter : freightTons) {
         auto &qAuftrag = qPlayer.Frachten[iter.first];
         if (iter.second > 0) {
-            printf("Helper::checkPlaneSchedule(): Note: There are still %d tons open for job %s", iter.second, getFreightName(qAuftrag).c_str());
+            hprintf("Helper::checkPlaneSchedule(): Note: There are still %d tons open for job %s", iter.second, getFreightName(qAuftrag).c_str());
         }
     }
 

@@ -204,7 +204,7 @@ class BotPlaner {
         JobOwner owner;
         SLONG score{};
         /* both algos: */
-        int assignedtoPlaneIdx{-1};
+        int numStillNeeded{-1};
     };
 
     struct JobSource {

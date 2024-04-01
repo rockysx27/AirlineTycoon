@@ -132,8 +132,9 @@ class Graph {
         }
     }
 
-    int nPlanes;
-    int nNodes;
+    int nPlanes{0};
+    int nNodes{0};
+    int planeTypePassengers{0};
     std::vector<Node> nodeInfo;
     std::vector<std::vector<Edge>> adjMatrix;
     std::vector<NodeState> nodeState;
@@ -190,23 +191,45 @@ class BotPlaner {
         int currentCost{0};
     };
 
-    struct FlightJob {
+    class FlightJob {
+      public:
         FlightJob(int i, int j, CAuftrag a, JobOwner o) : id(i), sourceId(j), auftrag(a), owner(o) { assert(i >= 0x1000000); }
-        bool wasTaken() const {
+        FlightJob(int i, int j, CFracht a, JobOwner o) : id(i), sourceId(j), fracht(a), owner(o) {
+            assert(i >= 0x1000000);
+            numStillNeeded = fracht.Tons;
+        }
+        inline bool wasTaken() const {
             return owner == JobOwner::Planned || owner == JobOwner::PlannedFreight || owner == JobOwner::Backlog || owner == JobOwner::BacklogFreight;
         }
-        bool isFreight() const {
+        inline bool isFreight() const {
             return owner == JobOwner::PlannedFreight || owner == JobOwner::Freight || owner == JobOwner::InternationalFreight ||
                    owner == JobOwner::BacklogFreight;
         }
+        inline int getStartCity() const { return isFreight() ? fracht.VonCity : auftrag.VonCity; }
+        inline int getDestCity() const { return isFreight() ? fracht.NachCity : auftrag.NachCity; }
+        inline int getDate() const { return isFreight() ? fracht.Date : auftrag.Date; }
+        inline int getBisDate() const { return isFreight() ? fracht.BisDate : auftrag.BisDate; }
+        inline int getPersonen() const { return isFreight() ? 0 : auftrag.Personen; }
+        inline int getTons() const { return isFreight() ? fracht.Tons : 0; }
+        inline bool isScheduled() const { return isFreight() ? (numStillNeeded < fracht.Tons) : (numStillNeeded == 0); }
+        inline void schedule(int passenger) {
+            if (isFreight()) {
+                numStillNeeded = std::max(0, numStillNeeded - passenger / 10);
+            } else {
+                numStillNeeded = 0;
+            }
+        }
+        inline void unschedule() { numStillNeeded = isFreight() ? fracht.Tons : 1; }
 
         int id{};
         int sourceId{-1};
-        CAuftrag auftrag;
         JobOwner owner;
         SLONG score{};
-        /* both algos: */
-        int assignedtoPlaneIdx{-1};
+
+      private:
+        CAuftrag auftrag;
+        CFracht fracht;
+        int numStillNeeded{1};
     };
 
     struct JobSource {

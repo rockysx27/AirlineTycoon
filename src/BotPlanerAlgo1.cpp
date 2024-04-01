@@ -218,7 +218,7 @@ bool BotPlaner::algo1() {
                 planeState.currentSolution.planeId = planeState.planeId;
                 planeState.currentSolution.scheduleFromTime = mScheduleFromTime;
 
-                jobState.assignedtoPlaneIdx = bestPlane;
+                jobState.numStillNeeded = bestPlane;
                 totalDelta += bestDelta;
 
 #ifdef PRINT_OVERALL

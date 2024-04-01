@@ -83,7 +83,7 @@ void BotPlaner::killPath(int planeIdx) {
         const auto &curInfo = g.nodeInfo[n];
         int nextNode = g.nodeState[n].nextNode;
 
-        mJobList[curInfo.jobIdx].assignedtoPlaneIdx = -1;
+        mJobList[curInfo.jobIdx].unschedule();
 
         g.nodeState[n].cameFrom = -1;
         g.nodeState[n].nextNode = -1;
@@ -334,9 +334,10 @@ void BotPlaner::algo2GenSolutionsFromGraph(int planeIdx) {
     int node = g.nodeState[planeIdx].nextNode;
     while (node != -1) {
         int jobIdx = g.nodeInfo[node].jobIdx;
-        assert(planeIdx == mJobList[jobIdx].assignedtoPlaneIdx);
+        assert(mJobList[jobIdx].isScheduled());
 
         qJobList.emplace_back(jobIdx, g.nodeState[node].startTime, g.nodeState[node].startTime + g.nodeInfo[node].duration);
+        qJobList.back().bIsFreight = mJobList[jobIdx].isFreight();
 
         node = g.nodeState[node].nextNode;
     }
@@ -353,7 +354,7 @@ bool BotPlaner::algo2CanInsert(const Graph &g, int currentNode, int nextNode) co
 #endif
 
     int jobIdx = nextInfo.jobIdx;
-    if (mJobList[jobIdx].assignedtoPlaneIdx != -1) {
+    if (mJobList[jobIdx].isScheduled()) {
         return false; /* job already assigned */
     }
 
@@ -437,8 +438,8 @@ void BotPlaner::algo2InsertNode(Graph &g, int planeIdx, int currentNode, int nex
     currentTime += nextInfo.duration;
 
     /* assign job */
-    assert(mJobList[nextInfo.jobIdx].assignedtoPlaneIdx == -1);
-    mJobList[nextInfo.jobIdx].assignedtoPlaneIdx = planeIdx;
+    assert(!mJobList[nextInfo.jobIdx].isScheduled());
+    mJobList[nextInfo.jobIdx].schedule(g.planeTypePassengers);
 
     /* did current already have a successor? This will now become the overnext node */
     int overnextNode = g.nodeState[currentNode].nextNode;
@@ -495,8 +496,8 @@ void BotPlaner::algo2RemoveNode(Graph &g, int planeIdx, int currentNode) {
     assert(g.adjMatrix[prevNode][currentNode].duration >= 0);
 
     /* unassign job */
-    assert(mJobList[curInfo.jobIdx].assignedtoPlaneIdx != -1);
-    mJobList[curInfo.jobIdx].assignedtoPlaneIdx = -1;
+    assert(mJobList[curInfo.jobIdx].isScheduled());
+    mJobList[curInfo.jobIdx].unschedule();
 
     qPlaneState.numNodes--;
     assert(qPlaneState.numNodes >= 0);
@@ -779,7 +780,7 @@ bool BotPlaner::algo2(int64_t timeBudget) {
 
         int numToAdd = kNumBestToAdd * mPlaneStates.size();
         for (int i = 0; i < mJobList.size() && (numToAdd > 0); i++) {
-            if (mJobList[i].assignedtoPlaneIdx != -1) {
+            if (mJobList[i].isScheduled()) {
                 continue;
             }
             if (algo2RunAddNodeToBestPlane(i)) {

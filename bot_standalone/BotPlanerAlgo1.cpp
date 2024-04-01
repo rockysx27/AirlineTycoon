@@ -219,11 +219,11 @@ bool BotPlaner::algo1() {
                 planeState.currentSolution.planeId = planeState.planeId;
                 planeState.currentSolution.scheduleFromTime = mScheduleFromTime;
 
-                jobState.assignedtoPlaneIdx = bestPlane;
+                const auto &qPlane = qPlanes[planeState.planeId];
+                jobState.schedule(qPlane.ptPassagiere);
                 totalDelta += bestDelta;
 
 #ifdef PRINT_OVERALL
-                const auto &qPlane = qPlanes[planeState.planeId];
                 std::cout << "Job assigned to plane " << qPlane.Name << " (best delta: " << bestDelta << ")" << std::endl;
             } else {
                 std::cout << "Job is not worth it (best delta: " << bestDelta << ")" << std::endl;

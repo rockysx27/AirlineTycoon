@@ -345,7 +345,7 @@ bool BotPlaner::takeJobs(Solution &currentSolution) {
     bool ok = true;
     for (auto &jobScheduled : currentSolution.jobs) {
         auto &job = mJobList[jobScheduled.jobIdx];
-        if (job.assignedtoPlaneIdx == -1) {
+        if (job.numStillNeeded == -1) {
             continue;
         }
 
@@ -550,7 +550,7 @@ BotPlaner::SolutionList BotPlaner::planFlights(const std::vector<int> &planeIdsI
     int nPreviouslyOwnedScheduled = 0;
     int nNewJobsScheduled = 0;
     for (const auto &job : mJobList) {
-        if (job.assignedtoPlaneIdx < 0) {
+        if (job.numStillNeeded < 0) {
             continue;
         }
         if (job.wasTaken()) {
