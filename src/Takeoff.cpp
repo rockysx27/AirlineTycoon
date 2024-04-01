@@ -2181,6 +2181,7 @@ void CTakeOffApp::LadeWeitereStandardTexte() {
     StandardTexte.AddText(TOKEN_STAT, 10015, "E::Sabotage jobsD::Sabotageauftr\xE4ge");
     StandardTexte.AddText(TOKEN_STAT, 10016, "E::Stock tradingD::Aktiengesch\xE4\x66te");
     StandardTexte.AddText(TOKEN_STAT, 10017, "E::Agency feesD::Agenturhonorare");
+    StandardTexte.AddText(TOKEN_STAT, 10018, "E::Mission ratingD::Missionsziel");
 
     StandardTexte.UpdateText(TOKEN_MONEY, 2021, "E::Kerosine for flight %sD::Kauf von Kerosin f\xFCr Flug %s");
     StandardTexte.AddText(TOKEN_MONEY, 2022, "E::Meals for passengers for flight %sD::Essen f\xFCr Passagiere f\xFCr Flug %s");

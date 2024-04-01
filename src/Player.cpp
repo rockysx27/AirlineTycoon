@@ -6474,7 +6474,7 @@ void PLAYER::UpdateStatistics() {
     // STAT_MISSIONSZIEL:
     switch (Sim.Difficulty) {
     case DIFF_TUTORIAL:
-        Statistiken[STAT_MISSIONSZIEL].SetAtPastDay(NumAuftraege * 100 / 5);
+        Statistiken[STAT_MISSIONSZIEL].SetAtPastDay(NumAuftraege * 100 / 10);
         break;
 
     case DIFF_FIRST:
@@ -6482,7 +6482,7 @@ void PLAYER::UpdateStatistics() {
         break;
 
     case DIFF_EASY:
-        Statistiken[STAT_MISSIONSZIEL].SetAtPastDay(NumPassengers * 100 / TARGET_GEWINN);
+        Statistiken[STAT_MISSIONSZIEL].SetAtPastDay(Gewinn * 100 / TARGET_GEWINN);
         break;
 
     case DIFF_NORMAL:
@@ -6497,28 +6497,12 @@ void PLAYER::UpdateStatistics() {
         Statistiken[STAT_MISSIONSZIEL].SetAtPastDay(GetAnzBits(RocketFlags) * 10);
         break;
 
-    case DIFF_ADDON01:
-        Statistiken[STAT_MISSIONSZIEL].SetAtPastDay(Credit);
-        break;
-
     case DIFF_ADDON02:
-        Statistiken[STAT_MISSIONSZIEL].SetAtPastDay(NumFracht);
-        break;
-
-    case DIFF_ADDON03:
-        Statistiken[STAT_MISSIONSZIEL].SetAtPastDay(NumFrachtFree);
-        break;
-
-    case DIFF_ADDON04:
-        Statistiken[STAT_MISSIONSZIEL].SetAtPastDay(NumMiles);
+        Statistiken[STAT_MISSIONSZIEL].SetAtPastDay(NumFracht * 100 / TARGET_FRACHT);
         break;
 
     case DIFF_ADDON05:
-        Statistiken[STAT_MISSIONSZIEL].SetAtPastDay(NumServicePoints);
-        break;
-
-    case DIFF_ADDON06:
-        Statistiken[STAT_MISSIONSZIEL].SetAtPastDay(GetMissionRating());
+        Statistiken[STAT_MISSIONSZIEL].SetAtPastDay(NumServicePoints * 100 / TARGET_SERVICE);
         break;
 
     case DIFF_ADDON07:
@@ -6526,16 +6510,51 @@ void PLAYER::UpdateStatistics() {
         break;
 
     case DIFF_ADDON08:
-        Statistiken[STAT_MISSIONSZIEL].SetAtPastDay(GetMissionRating());
+        Statistiken[STAT_MISSIONSZIEL].SetAtPastDay(Kurse[0] * 100 / TARGET_SHARES);
         break;
 
     case DIFF_ADDON09:
+        Statistiken[STAT_MISSIONSZIEL].SetAtPastDay(NumOrderFlights * 100 / TARGET_NUM_UHRIG);
         break;
 
     case DIFF_ADDON10:
+        Statistiken[STAT_MISSIONSZIEL].SetAtPastDay(GetAnzBits(RocketFlags) * 10);
         break;
+
+    case DIFF_ATFS01:
+        Statistiken[STAT_MISSIONSZIEL].SetAtPastDay(Money * 100 / BTARGET_KONTO);
+        break;
+
+    case DIFF_ATFS02:
+        Statistiken[STAT_MISSIONSZIEL].SetAtPastDay(GetMissionRating() * 20);
+        break;
+
+    case DIFF_ATFS03:
+        Statistiken[STAT_MISSIONSZIEL].SetAtPastDay(GetMissionRating() * 100 / BTARGET_PASSAVG);
+        break;
+
+    case DIFF_ATFS04:
+        Statistiken[STAT_MISSIONSZIEL].SetAtPastDay(DaysWithoutSabotage * 100 / BTARGET_DAYSSABO);
+        break;
+
+    case DIFF_ATFS05:
+        Statistiken[STAT_MISSIONSZIEL].SetAtPastDay(GetMissionRating() * 100 / 3);
+        break;
+
+    case DIFF_ATFS06:
+        Statistiken[STAT_MISSIONSZIEL].SetAtPastDay(DaysWithoutSabotage * 100 / BTARGET_DAYSSABO);
+        break;
+
+    case DIFF_ATFS07:
+        Statistiken[STAT_MISSIONSZIEL].SetAtPastDay(GetMissionRating() * 100 / 30);
+        break;
+
+    case DIFF_ATFS08:
+        Statistiken[STAT_MISSIONSZIEL].SetAtPastDay(GetMissionRating() * 20);
+        break;
+
     default:
-        // Freegame und ATFS-Missionen
+        Statistiken[STAT_MISSIONSZIEL].SetAtPastDay(GetMissionRating());
         break;
     }
 

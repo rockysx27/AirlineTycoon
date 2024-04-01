@@ -263,7 +263,16 @@ CStatistik::CStatistik(BOOL bHandy, ULONG PlayerNum) : CStdRaum(bHandy, PlayerNu
         _iArray[g][c].typOfItem = TYP_SINGLE_PERCENT;
         _iArray[g][c].textId = 8113;
         _iArray[g][c].beraterSkill = 50;
-        _iArray[g][c].define = STAT_BEKANNTHEIT;
+        _iArray[g][c++].define = STAT_BEKANNTHEIT;
+
+        _iArray[g][c].typOfItem = TYP_SINGLE_PERCENT;
+        if (Sim.Difficulty == DIFF_ADDON01 || Sim.Difficulty == DIFF_ADDON03 || Sim.Difficulty == DIFF_ADDON04 || Sim.Difficulty == DIFF_ADDON06 ||
+            Sim.Difficulty == DIFF_ATFS09 || Sim.Difficulty == DIFF_ATFS10) {
+            _iArray[g][c].typOfItem = TYP_VALUE;
+        }
+        _iArray[g][c].textId = 10018;
+        _iArray[g][c].beraterSkill = 0;
+        _iArray[g][c].define = STAT_MISSIONSZIEL;
 
         // Dritte Seite
         assert(c < STAT_MAX_ITEMS);
