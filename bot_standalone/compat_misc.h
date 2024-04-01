@@ -23,7 +23,7 @@ void HercPrintfGreen(const char *Format, ...);
 //--------------------------------------------------------------------------------------------
 
 SLONG ReadLine(BUFFER_V<UBYTE> &Buffer, SLONG BufferStart, char *Line, SLONG LineLength);
-CString KorrigiereUmlaute(CString &OriginalText);
+CString KorrigiereUmlaute(CString &Originaltext);
 __int64 StringToInt64(const CString &String);
 CString FullFilename(const CString &Filename, const CString &PathString);
 CString Insert1000erDots(SLONG Value);

@@ -16,6 +16,7 @@ extern const int kDurationExtra;
 extern const int kScheduleForNextDays;
 
 extern int kNumToAdd;
+extern int kNumBestToAdd;
 extern int kNumToRemove;
 extern int kTempStart;
 extern int kTempStep;
@@ -27,6 +28,7 @@ class PlaneTime {
 
     int getDate() const { return mDate; }
     int getHour() const { return mTime; }
+    int convertToHours() const { return 24 * mDate + mTime; }
 
     PlaneTime &operator+=(int delta) {
         mTime += delta;
@@ -48,6 +50,10 @@ class PlaneTime {
         PlaneTime t = *this;
         t -= delta;
         return t;
+    }
+    int operator-(const PlaneTime &time) const {
+        PlaneTime t = *this - time.convertToHours();
+        return t.convertToHours();
     }
     bool operator==(const PlaneTime &other) const { return (mDate == other.mDate && mTime == other.mTime); }
     bool operator!=(const PlaneTime &other) const { return (mDate != other.mDate || mTime != other.mTime); }
@@ -179,8 +185,6 @@ class BotPlaner {
         /* algo 1 only: */
         std::vector<int> bJobIdAssigned;
         /* algo 2 only: */
-        PlaneTime currentTime{};
-        int currentNode{-1};
         int numNodes{0};
         int currentPremium{0};
         int currentCost{0};
@@ -233,24 +237,27 @@ class BotPlaner {
         }
         return iterGain;
     }
+    void printForPlane(const char *txt, int planeIdx, bool printOnErrorOnly);
     void savePath(int planeIdx, std::vector<int> &path) const;
     void restorePath(int planeIdx, const std::vector<int> &path);
     void killPath(int planeIdx);
     void printNodeInfo(const Graph &g, int nodeIdx) const;
     bool algo2ShiftLeft(Graph &g, int nodeToShift, int shiftT, bool commit);
     bool algo2ShiftRight(Graph &g, int nodeToShift, int shiftT, bool commit);
-    bool algo2MakeRoom(Graph &g, int nodeToMoveLeft, int nodeToMoveRight);
+    int algo2MakeRoom(Graph &g, int nodeToMoveLeft, int nodeToMoveRight);
     void algo2GenSolutionsFromGraph(int planeIdx);
     void algo2ApplySolutionToGraph();
-    int algo2FindNext(const Graph &g, PlaneState &planeState, int choice) const;
-    void algo2InsertNode(Graph &g, int planeIdx, int nextNode);
+    bool algo2CanInsert(const Graph &g, int currentNode, int nextNode) const;
+    int algo2FindNext(const Graph &g, int currentNode, int choice) const;
+    void algo2InsertNode(Graph &g, int planeIdx, int currentNode, int nextNode);
     void algo2RemoveNode(Graph &g, int planeIdx, int currentNode);
     int algo2RunForPlaneRemove(int planeIdx, int numToRemove);
-    int algo2RunForPlaneAdd(int planeIdx, int numToAdd, int choice);
+    bool algo2RunForPlaneAdd(int planeIdx, int choice);
+    bool algo2RunAddNodeToBestPlane(int jobIdToInsert);
     bool algo2(int64_t timeBudget);
 
     /* apply solution */
-    bool takeJobs(PlaneState &planeState);
+    bool takeJobs(Solution &currentSolution);
     static bool applySolutionForPlane(PLAYER &qPlayer, int planeId, const BotPlaner::Solution &solution);
 
     /* randomness */

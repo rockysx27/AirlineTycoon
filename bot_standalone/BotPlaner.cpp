@@ -19,10 +19,49 @@ const int kScheduleForNextDays = 4;
 const int64_t timeBudgetMS = 100;
 static const bool kCanDropJobs = false;
 
-static bool canFlyThisJob(const CAuftrag &job, const CPlane &plane) { return (job.Personen <= plane.ptPassagiere && job.FitsInPlane(plane)); }
+inline bool canFlyThisJob(const CPlane &qPlane, int passengers, int distance, int duration) {
+    if (passengers > qPlane.ptPassagiere) {
+        return false;
+    }
+    if (distance > qPlane.ptReichweite * 1000) {
+        return false;
+    }
+    if (duration >= 24) {
+        return false;
+    }
+    return true;
+}
 
-static SLONG getPremiumEmptyFlight(const CPlane *qPlane, SLONG VonCity, SLONG NachCity) {
-    return (qPlane->ptPassagiere * Cities.CalcDistance(VonCity, NachCity) / 1000 / 40);
+inline std::pair<int, int> calcCostAndDuration(int startCity, int destCity, const CPlane &qPlane, bool emptyFlight, int *outDistance = nullptr) {
+    assert(startCity >= 0 && startCity < Cities.AnzEntries());
+    assert(destCity >= 0 && destCity < Cities.AnzEntries());
+    /* needs to match CITIES::CalcFlugdauer() */
+    SLONG distance = Cities.CalcDistance(startCity, destCity);
+    SLONG duration = (distance / qPlane.ptGeschwindigkeit + 999) / 1000 + 1 + 2 - 2;
+    if (duration < 2) {
+        duration = 2;
+    }
+
+    /* needs to match CalculateFlightKerosin() */
+    SLONG kerosene = distance / 1000            // weil Distanz in m übergeben wird
+                     * qPlane.ptVerbrauch / 160 // Liter pro Barrel
+                     / qPlane.ptGeschwindigkeit;
+
+    /* needs to match CalculateFlightCostNoTank() */
+    SLONG cost = kerosene * Sim.Kerosin;
+    if (cost < 1000) {
+        cost = 1000;
+    }
+
+    if (emptyFlight) {
+        cost -= (qPlane.ptPassagiere * distance / 1000 / 40);
+    }
+
+    if (outDistance) {
+        *outDistance = static_cast<int>(distance);
+    }
+
+    return {cost, duration};
 }
 
 BotPlaner::BotPlaner(PLAYER &player, const CPlanes &planes, JobOwner jobOwner, std::vector<int> intJobSource)
@@ -132,7 +171,7 @@ void BotPlaner::collectAllFlightJobs(const std::vector<int> &planeIds) {
                 continue;
             }
             const auto &job = source.jobs->at(i);
-            if (job.InPlan != 0 || job.Praemie < 0) {
+            if ((job.VonCity == job.NachCity) || (job.InPlan != 0) || (job.Praemie < 0)) {
                 continue;
             }
             if (job.Date <= Sim.Date + kScheduleForNextDays) {
@@ -230,45 +269,60 @@ std::vector<Graph> BotPlaner::prepareGraph() {
         /* nodes */
         for (int i = 0; i < g.nNodes; i++) {
             auto &qNodeInfo = g.nodeInfo[i];
+            if (i < nPlanes) {
+                continue;
+            }
 
-            if (i >= nPlanes && canFlyThisJob(mJobList[i - nPlanes].auftrag, *plane)) {
-                auto score = mJobList[i - nPlanes].score;
-                const auto &job = mJobList[i - nPlanes].auftrag;
-                const auto *plane = mPlaneTypeToPlane[pt];
+            const auto &job = mJobList[i - nPlanes].auftrag;
+            int startCity = Cities.find(job.VonCity);
+            int destCity = Cities.find(job.NachCity);
+
+            int cost = 0;
+            int duration = 0;
+            int distance = 0;
+            std::tie(cost, duration) = calcCostAndDuration(startCity, destCity, *plane, false, &distance);
+
+            if (canFlyThisJob(*plane, job.Personen, distance, duration)) {
                 qNodeInfo.jobIdx = i - nPlanes;
-                qNodeInfo.premium = score - CalculateFlightCostNoTank(job.VonCity, job.NachCity, plane->ptVerbrauch, plane->ptGeschwindigkeit);
-                qNodeInfo.duration = kDurationExtra + Cities.CalcFlugdauer(job.VonCity, job.NachCity, plane->ptGeschwindigkeit);
                 qNodeInfo.earliest = job.Date;
                 qNodeInfo.latest = job.BisDate;
+                qNodeInfo.premium = mJobList[i - nPlanes].score - cost;
+                qNodeInfo.duration = duration + kDurationExtra;
             }
         }
 
         /* edges */
         for (int i = 0; i < g.nNodes; i++) {
-            auto &qNodeInfo = g.nodeInfo[i];
+            if (i >= nPlanes && g.nodeInfo[i].jobIdx == -1) {
+                continue;
+            }
+
             std::vector<std::pair<int, int>> neighborList;
             neighborList.reserve(g.nNodes);
             for (int j = nPlanes; j < g.nNodes; j++) {
                 if (i == j) {
                     continue; /* self edge not allowed */
                 }
+                if (g.nodeInfo[j].jobIdx == -1) {
+                    continue;
+                }
 
                 int startCity = (i >= nPlanes) ? mJobList[i - nPlanes].auftrag.NachCity : mPlaneStates[i].startCity;
                 int destCity = mJobList[j - nPlanes].auftrag.VonCity;
                 startCity = Cities.find(startCity);
                 destCity = Cities.find(destCity);
-                assert(startCity >= 0 && startCity < Cities.AnzEntries());
-                assert(destCity >= 0 && destCity < Cities.AnzEntries());
                 if (startCity != destCity) {
-                    g.adjMatrix[i][j].cost = CalculateFlightCostNoTank(startCity, destCity, plane->ptVerbrauch, plane->ptGeschwindigkeit);
-                    g.adjMatrix[i][j].cost -= getPremiumEmptyFlight(plane, startCity, destCity);
-                    g.adjMatrix[i][j].duration = kDurationExtra + Cities.CalcFlugdauer(startCity, destCity, plane->ptGeschwindigkeit);
+                    std::tie(g.adjMatrix[i][j].cost, g.adjMatrix[i][j].duration) = calcCostAndDuration(startCity, destCity, *plane, true);
+                    g.adjMatrix[i][j].duration += kDurationExtra;
                 } else {
                     g.adjMatrix[i][j].cost = 0;
                     g.adjMatrix[i][j].duration = 0;
                 }
 
-                /* we skip some edges for the 'best' edges */
+                if (kNumToAdd == 0) {
+                    continue; /* we are not using the algo that utilizes bestNeighbors */
+                }
+
                 if (g.nodeInfo[j].premium <= 0) {
                     continue; /* job has no premium (after deducting flight cost) */
                 }
@@ -280,7 +334,7 @@ std::vector<Graph> BotPlaner::prepareGraph() {
 
             std::sort(neighborList.begin(), neighborList.end(), [](const std::pair<int, int> &a, const std::pair<int, int> &b) { return a.second > b.second; });
             for (const auto &n : neighborList) {
-                qNodeInfo.bestNeighbors.push_back(n.first);
+                g.nodeInfo[i].bestNeighbors.push_back(n.first);
             }
         }
 #ifdef PRINT_DETAIL
@@ -290,9 +344,9 @@ std::vector<Graph> BotPlaner::prepareGraph() {
     return graphs;
 }
 
-bool BotPlaner::takeJobs(PlaneState &planeState) {
+bool BotPlaner::takeJobs(Solution &currentSolution) {
     bool ok = true;
-    for (auto &jobScheduled : planeState.currentSolution.jobs) {
+    for (auto &jobScheduled : currentSolution.jobs) {
         auto &job = mJobList[jobScheduled.jobIdx];
         if (job.assignedtoPlaneIdx == -1) {
             continue;
@@ -357,7 +411,6 @@ bool BotPlaner::applySolutionForPlane(PLAYER &qPlayer, int planeId, const BotPla
         jobHash[iter.objectId] = iter;
         const auto &auftrag = qPlayer.Auftraege[iter.objectId];
         const auto startTime = iter.start;
-        const auto endTime = iter.end - kDurationExtra;
 
         /* plan taken jobs */
         if (!iter.bIsFreight) {
@@ -372,6 +425,7 @@ bool BotPlaner::applySolutionForPlane(PLAYER &qPlayer, int planeId, const BotPla
     }
 
     /* check flight time */
+    bool ok = true;
     const auto &qFlightPlan = qPlanes[planeId].Flugplan.Flug;
     for (SLONG d = 0; d < qFlightPlan.AnzEntries(); d++) {
         const auto &flug = qFlightPlan[d];
@@ -394,20 +448,23 @@ bool BotPlaner::applySolutionForPlane(PLAYER &qPlayer, int planeId, const BotPla
                       "%s %d)!",
                       (LPCTSTR)qPlanes[planeId].Name, d, Helper::getJobName(auftrag).c_str(), (LPCTSTR)Helper::getWeekday(flug.Startdate), flug.Startzeit,
                       (LPCTSTR)Helper::getWeekday(startTime.getDate()), startTime.getHour());
+            ok = false;
         }
         if (PlaneTime(flug.Landedate, flug.Landezeit) != endTime) {
             redprintf("BotPlaner::applySolutionForPlane(): Plane %s, schedule entry %ld: GameMechanic scheduled job (%s) with different landing time (%s %d "
                       "instead of %s %d)!",
                       (LPCTSTR)qPlanes[planeId].Name, d, Helper::getJobName(auftrag).c_str(), (LPCTSTR)Helper::getWeekday(flug.Landedate), flug.Landezeit,
                       (LPCTSTR)Helper::getWeekday(endTime.getDate()), endTime.getHour());
+            ok = false;
         }
     }
     for (const auto &iter : jobHash) {
         const auto &auftrag = qPlayer.Auftraege[iter.second.objectId];
         redprintf("BotPlaner::applySolutionForPlane(): Did not find job %s in flight plan!", Helper::getJobName(auftrag).c_str());
+        ok = false;
     }
 
-    return true;
+    return ok;
 }
 
 BotPlaner::SolutionList BotPlaner::planFlights(const std::vector<int> &planeIdsInput, bool bUseImprovedAlgo, int extraBufferTime) {
@@ -528,7 +585,7 @@ BotPlaner::SolutionList BotPlaner::planFlights(const std::vector<int> &planeIdsI
 
     /* now take all jobs */
     for (auto &planeState : mPlaneStates) {
-        takeJobs(planeState);
+        takeJobs(planeState.currentSolution);
     }
 
     SolutionList list;

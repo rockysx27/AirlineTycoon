@@ -61,6 +61,7 @@ static const int numAveraged = 5;
 int64_t benchmark(bool useImproved, int numPasses);
 
 int64_t benchmark(bool useImproved, int numPasses) {
+    std::cout << "kNumBestToAdd = " << kNumBestToAdd << std::endl;
     std::cout << "kNumToAdd = " << kNumToAdd << std::endl;
     std::cout << "kNumToRemove = " << kNumToRemove << std::endl;
     std::cout << "kTempStart = " << kTempStart << std::endl;
@@ -80,13 +81,13 @@ int64_t benchmark(bool useImproved, int numPasses) {
 
 int main(int argc, char *argv[]) {
 
-    int numPasses = 1;
+    int numPasses = 2;
     bool useImproved = false;
     if (argc > 1) {
         useImproved = atoi(argv[1]) > 0;
     }
     if (argc > 2) {
-        numPasses = atoi(argv[2]);
+        kNumBestToAdd = atoi(argv[2]);
     }
     if (argc > 3) {
         kNumToAdd = atoi(argv[3]);

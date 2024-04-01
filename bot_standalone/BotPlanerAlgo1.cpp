@@ -4,12 +4,13 @@
 #include "compat_global.h"
 #include "compat_misc.h"
 
+#include <chrono>
 #include <iostream>
 
 // #define PRINT_DETAIL 1
 // #define PRINT_OVERALL 1
 
-static const int kMaxTimesVisited = 40;
+static const int kMaxTimesVisited = 4;
 static const int kMinPremium = 1000;
 
 BotPlaner::Solution BotPlaner::algo1FindFlightPlan(Graph &g, int planeIdx, PlaneTime availTime, const std::vector<int> &eligibleJobIds) {

@@ -39,11 +39,11 @@ namespace Helper {
 CString getWeekday(UWORD date) { return StandardTexte.GetS(TOKEN_SCHED, 3010 + (date + Sim.StartWeekday) % 7); }
 
 void printJob(const CAuftrag &qAuftrag) {
-    CString strDate = (qAuftrag.Date == qAuftrag.BisDate) ? getWeekday(qAuftrag.Date) : getWeekday(qAuftrag.BisDate);
+    CString strDate = (qAuftrag.Date == qAuftrag.BisDate) ? getWeekday(qAuftrag.Date) : (bprintf("until %s", (LPCTSTR)getWeekday(qAuftrag.BisDate)));
     CString strDist(Einheiten[EINH_KM].bString(Cities.CalcDistance(qAuftrag.VonCity, qAuftrag.NachCity) / 1000));
     CString strPraemie(Insert1000erDots(qAuftrag.Praemie));
     CString strStrafe(Insert1000erDots(qAuftrag.Strafe));
-    hprintf("%s -> %s (%u) (%s, %s, P: %s $, S: %s $)", (LPCTSTR)Cities[qAuftrag.VonCity].Name, (LPCTSTR)Cities[qAuftrag.NachCity].Name, qAuftrag.Personen,
+    hprintf("%s -> %s (%u) (%s, %s, %s $ / %s $)", (LPCTSTR)Cities[qAuftrag.VonCity].Name, (LPCTSTR)Cities[qAuftrag.NachCity].Name, qAuftrag.Personen,
             (LPCTSTR)strDist, (LPCTSTR)strDate, (LPCTSTR)strPraemie, (LPCTSTR)strStrafe);
 }
 
@@ -54,11 +54,11 @@ void printRoute(const CRoute &qRoute) {
 }
 
 void printFreight(const CFracht &qAuftrag) {
-    CString strDate = (qAuftrag.Date == qAuftrag.BisDate) ? getWeekday(qAuftrag.Date) : getWeekday(qAuftrag.BisDate);
+    CString strDate = (qAuftrag.Date == qAuftrag.BisDate) ? getWeekday(qAuftrag.Date) : (bprintf("until %s", (LPCTSTR)getWeekday(qAuftrag.BisDate)));
     CString strDist(Einheiten[EINH_KM].bString(Cities.CalcDistance(qAuftrag.VonCity, qAuftrag.NachCity) / 1000));
     CString strPraemie(Insert1000erDots(qAuftrag.Praemie));
     CString strStrafe(Insert1000erDots(qAuftrag.Strafe));
-    hprintf("%s -> %s (%ld tons total, %ld left, %ld open) (%s, %s, P: %s $, S: %s $)", (LPCTSTR)Cities[qAuftrag.VonCity].Name,
+    hprintf("%s -> %s (%ld tons total, %ld left, %ld open) (%s, %s, %s $ / %s $)", (LPCTSTR)Cities[qAuftrag.VonCity].Name,
             (LPCTSTR)Cities[qAuftrag.NachCity].Name, qAuftrag.Tons, qAuftrag.TonsLeft, qAuftrag.TonsOpen, (LPCTSTR)strDist, (LPCTSTR)strDate,
             (LPCTSTR)strPraemie, (LPCTSTR)strStrafe);
 }
@@ -460,7 +460,6 @@ SLONG checkFlightJobs(const PLAYER &qPlayer, bool printOnErrorOnly) {
     }
     hprintf("Helper::checkFlightJobs(): %s: Found %ld problems for %ld planes.", (LPCTSTR)qPlayer.AirlineX, nIncorrect, nPlanes);
     overallInfo.printGain();
-    overallInfo.printDetails();
     return nIncorrect;
 }
 
