@@ -45,6 +45,7 @@ int64_t run(bool useImproved, int numPasses) {
             }
         }
 
+        hprintf("====================");
         BotPlaner planer(qPlayer, qPlayer.Planes, source, cities);
         auto solutions = planer.planFlights(planeIds, useImproved, 2);
         planer.applySolution(qPlayer, solutions);

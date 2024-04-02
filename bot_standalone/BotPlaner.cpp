@@ -652,6 +652,7 @@ bool BotPlaner::applySolution(PLAYER &qPlayer, const SolutionList &solutions) {
 #endif
 
 #ifdef PRINT_OVERALL
+    overallInfo.printGain();
     overallInfo.printDetails();
 #endif
 

@@ -82,6 +82,9 @@ class CAuftrag {
     SLONG Praemie{};     // Prämie bei Erfüllung
     SLONG Strafe{};      // Strafe bei Versagen
     BOOL bUhrigFlight{}; // Von Uhrig in Auftrag gegeben?
+    /* types */
+    SLONG jobType{-1};
+    SLONG jobSizeType{-1};
 
     CAuftrag() = default;
     CAuftrag(ULONG VonCity, ULONG NachCity, ULONG Personen, UWORD Date, SLONG Praemie, SLONG Strafe);

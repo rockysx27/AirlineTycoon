@@ -1,6 +1,8 @@
 #ifndef BOT_HELPER_H_
 #define BOT_HELPER_H_
 
+#include <array>
+#include <iostream>
 #include <optional>
 
 #include "compat.h"
@@ -115,6 +117,9 @@ struct ScheduleInfo {
     SLONG numPlanes{0};
     PlaneTime scheduleStart;
     PlaneTime scheduleEnd;
+    /* for job statistics */
+    std::array<SLONG, 5> jobTypes{};
+    std::array<SLONG, 6> jobSizeTypes{};
 
     DOUBLE getRatioFlights() { return 100.0 * hoursFlights / ((scheduleEnd - scheduleStart) * numPlanes); }
     DOUBLE getRatioAutoFlights() { return 100.0 * hoursAutoFlights / ((scheduleEnd - scheduleStart) * numPlanes); }
@@ -131,6 +136,13 @@ struct ScheduleInfo {
         numPlanes += delta.numPlanes;
         scheduleStart = std::min(scheduleStart, delta.scheduleStart);
         scheduleEnd = std::max(scheduleEnd, delta.scheduleEnd);
+        /* for job statistics */
+        for (SLONG i = 0; i < jobTypes.size(); i++) {
+            jobTypes[i] += delta.jobTypes[i];
+        }
+        for (SLONG i = 0; i < jobSizeTypes.size(); i++) {
+            jobSizeTypes[i] += delta.jobSizeTypes[i];
+        }
         return *this;
     }
 
@@ -145,6 +157,24 @@ struct ScheduleInfo {
             hprintf("Flying %ld passengers, %ld tons, %ld jobs and %ld miles.", passengers, tons, jobs, miles);
         }
         hprintf("%.1f %% of plane schedule are regular flights, %.1f %% are automatic flights.", getRatioFlights(), getRatioAutoFlights());
+
+        std::array<CString, 5> typeStr{"normal", "later", "highriskreward", "scam", "no fine"};
+        std::array<CString, 6> sizeStr{"VIP", "S", "M", "L", "XL", "XXL"};
+        printf("Flying job types: ");
+        for (SLONG i = 0; i < jobTypes.size(); i++) {
+            printf("%.0f %% %s", 100.0 * jobTypes[i] / jobs, (LPCTSTR)typeStr[i]);
+            if (i < jobTypes.size() - 1) {
+                printf(", ");
+            }
+        }
+        printf("\nJob sizes: ");
+        for (SLONG i = 0; i < jobSizeTypes.size(); i++) {
+            printf("%.0f %% %s", 100.0 * jobSizeTypes[i] / jobs, (LPCTSTR)sizeStr[i]);
+            if (i < jobSizeTypes.size() - 1) {
+                printf(", ");
+            }
+        }
+        printf("\n");
     }
 };
 ScheduleInfo calculateScheduleInfo(const PLAYER &qPlayer, SLONG planeId);

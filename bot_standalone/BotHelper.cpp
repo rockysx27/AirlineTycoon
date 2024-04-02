@@ -444,7 +444,13 @@ ScheduleInfo calculateScheduleInfo(const PLAYER &qPlayer, SLONG planeId) {
         }
 
         if (qFPE.ObjectType == 2) {
-            if (qPlayer.Auftraege[qFPE.ObjectId].bUhrigFlight != 0) {
+            const auto &job = qPlayer.Auftraege[qFPE.ObjectId];
+            assert(job.jobType >= 0 && job.jobType < info.jobTypes.size());
+            assert(job.jobSizeType >= 0 && job.jobSizeType < info.jobSizeTypes.size());
+            info.jobTypes[job.jobType]++;
+            info.jobSizeTypes[job.jobSizeType]++;
+
+            if (job.bUhrigFlight != 0) {
                 info.uhrigFlights += 1;
             }
         }
