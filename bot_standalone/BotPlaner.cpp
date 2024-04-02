@@ -1,6 +1,5 @@
 #include "BotPlaner.h"
 
-#include "BotHelper.h"
 #include "compat_global.h"
 #include "compat_misc.h"
 #include "GameMechanic.h"

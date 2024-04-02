@@ -1886,8 +1886,8 @@ void GameFrame::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) {
                 if (!qPlayer.HasItem(ITEM_DISKETTE)) {
                     qPlayer.BuyItem(ITEM_DISKETTE);
                 }
-                qPlayer.History.HistoricMoney += 1000000000;
-                qPlayer.Money += 1000000000;
+                qPlayer.History.HistoricMoney += 10000000;
+                qPlayer.Money += 10000000;
                 Sim.Players.Players[Sim.localPlayer].ArabTrust = 6;
                 CheatBerater += 100;
                 CheatSound();

@@ -29,7 +29,7 @@ int64_t run(bool useImproved, int numPasses) {
 
     for (int i = 0; i < numPasses; i++) {
         // hprintf("******************** planning pass %d ********************", i);
-        auto source = BotPlaner::JobOwner::InternationalFreight;
+        auto source = BotPlaner::JobOwner::International;
         std::vector<int> cities;
         if (source == BotPlaner::JobOwner::TravelAgency) {
             ReisebueroAuftraege.FillForReisebuero();

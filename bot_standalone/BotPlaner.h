@@ -1,6 +1,7 @@
 #ifndef BOT_PLANER_H_
 #define BOT_PLANER_H_
 
+#include "BotHelper.h"
 #include "compat.h"
 
 #include <cassert>
@@ -20,76 +21,6 @@ extern int kNumBestToAdd;
 extern int kNumToRemove;
 extern int kTempStart;
 extern int kTempStep;
-
-class PlaneTime {
-  public:
-    PlaneTime() = default;
-    PlaneTime(int date, int time) : mDate(date), mTime(time) { normalize(); }
-
-    int getDate() const { return mDate; }
-    int getHour() const { return mTime; }
-    int convertToHours() const { return 24 * mDate + mTime; }
-
-    PlaneTime &operator+=(int delta) {
-        mTime += delta;
-        normalize();
-        return *this;
-    }
-
-    PlaneTime &operator-=(int delta) {
-        mTime -= delta;
-        normalize();
-        return *this;
-    }
-    PlaneTime operator+(int delta) const {
-        PlaneTime t = *this;
-        t += delta;
-        return t;
-    }
-    PlaneTime operator-(int delta) const {
-        PlaneTime t = *this;
-        t -= delta;
-        return t;
-    }
-    int operator-(const PlaneTime &time) const {
-        PlaneTime t = *this - time.convertToHours();
-        return t.convertToHours();
-    }
-    bool operator==(const PlaneTime &other) const { return (mDate == other.mDate && mTime == other.mTime); }
-    bool operator!=(const PlaneTime &other) const { return (mDate != other.mDate || mTime != other.mTime); }
-    bool operator>(const PlaneTime &other) const {
-        if (mDate == other.mDate) {
-            return (mTime > other.mTime);
-        }
-        return (mDate > other.mDate);
-    }
-    bool operator>=(const PlaneTime &other) const {
-        if (mDate == other.mDate) {
-            return (mTime >= other.mTime);
-        }
-        return (mDate > other.mDate);
-    }
-    bool operator<(const PlaneTime &other) const { return other > *this; }
-    bool operator<=(const PlaneTime &other) const { return other >= *this; }
-    void setDate(int date) {
-        mDate = date;
-        mTime = 0;
-    }
-
-  private:
-    void normalize() {
-        while (mTime >= 24) {
-            mTime -= 24;
-            mDate++;
-        }
-        while (mTime < 0) {
-            mTime += 24;
-            mDate--;
-        }
-    }
-    int mDate{0};
-    int mTime{0};
-};
 
 class Graph {
   public:
@@ -193,8 +124,8 @@ class BotPlaner {
 
     class FlightJob {
       public:
-        FlightJob(int i, int j, CAuftrag a, JobOwner o) : id(i), sourceId(j), auftrag(a), owner(o) { assert(i >= 0x1000000); }
-        FlightJob(int i, int j, CFracht a, JobOwner o) : id(i), sourceId(j), fracht(a), owner(o) {
+        FlightJob(int i, int j, CAuftrag a, JobOwner o) : id(i), sourceId(j), owner(o), auftrag(a) { assert(i >= 0x1000000); }
+        FlightJob(int i, int j, CFracht a, JobOwner o) : id(i), sourceId(j), owner(o), fracht(a) {
             assert(i >= 0x1000000);
             numStillNeeded = fracht.Tons;
         }

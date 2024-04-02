@@ -1,13 +1,85 @@
+#ifndef BOT_HELPER_H_
+#define BOT_HELPER_H_
+
 #include <optional>
 
 #include "compat.h"
 #include "compat_misc.h"
 
-class PlaneTime;
+class PlaneTime {
+  public:
+    PlaneTime() = default;
+    PlaneTime(int date, int time) : mDate(date), mTime(time) { normalize(); }
+
+    int getDate() const { return mDate; }
+    int getHour() const { return mTime; }
+    int convertToHours() const { return 24 * mDate + mTime; }
+
+    PlaneTime &operator+=(int delta) {
+        mTime += delta;
+        normalize();
+        return *this;
+    }
+
+    PlaneTime &operator-=(int delta) {
+        mTime -= delta;
+        normalize();
+        return *this;
+    }
+    PlaneTime operator+(int delta) const {
+        PlaneTime t = *this;
+        t += delta;
+        return t;
+    }
+    PlaneTime operator-(int delta) const {
+        PlaneTime t = *this;
+        t -= delta;
+        return t;
+    }
+    int operator-(const PlaneTime &time) const {
+        PlaneTime t = *this - time.convertToHours();
+        return t.convertToHours();
+    }
+    bool operator==(const PlaneTime &other) const { return (mDate == other.mDate && mTime == other.mTime); }
+    bool operator!=(const PlaneTime &other) const { return (mDate != other.mDate || mTime != other.mTime); }
+    bool operator>(const PlaneTime &other) const {
+        if (mDate == other.mDate) {
+            return (mTime > other.mTime);
+        }
+        return (mDate > other.mDate);
+    }
+    bool operator>=(const PlaneTime &other) const {
+        if (mDate == other.mDate) {
+            return (mTime >= other.mTime);
+        }
+        return (mDate > other.mDate);
+    }
+    bool operator<(const PlaneTime &other) const { return other > *this; }
+    bool operator<=(const PlaneTime &other) const { return other >= *this; }
+    void setDate(int date) {
+        mDate = date;
+        mTime = 0;
+    }
+
+  private:
+    void normalize() {
+        while (mTime >= 24) {
+            mTime -= 24;
+            mDate++;
+        }
+        while (mTime < 0) {
+            mTime += 24;
+            mDate--;
+        }
+    }
+    int mDate{0};
+    int mTime{0};
+};
 
 namespace Helper {
 
 CString getWeekday(UWORD date);
+CString getWeekday(const PlaneTime &time);
 
 void printJob(const CAuftrag &qAuftrag);
 void printRoute(const CRoute &qRoute);
@@ -41,8 +113,11 @@ struct ScheduleInfo {
     SLONG hoursFlights{0};
     SLONG hoursAutoFlights{0};
     SLONG numPlanes{0};
-    DOUBLE getRatioFlights() { return 100.0 * hoursFlights / (24 * 7 * numPlanes); }
-    DOUBLE getRatioAutoFlights() { return 100.0 * hoursAutoFlights / (24 * 7 * numPlanes); }
+    PlaneTime scheduleStart;
+    PlaneTime scheduleEnd;
+
+    DOUBLE getRatioFlights() { return 100.0 * hoursFlights / ((scheduleEnd - scheduleStart) * numPlanes); }
+    DOUBLE getRatioAutoFlights() { return 100.0 * hoursAutoFlights / ((scheduleEnd - scheduleStart) * numPlanes); }
 
     ScheduleInfo &operator+=(ScheduleInfo delta) {
         jobs += delta.jobs;
@@ -54,10 +129,15 @@ struct ScheduleInfo {
         hoursFlights += delta.hoursFlights;
         hoursAutoFlights += delta.hoursAutoFlights;
         numPlanes += delta.numPlanes;
+        scheduleStart = std::min(scheduleStart, delta.scheduleStart);
+        scheduleEnd = std::max(scheduleEnd, delta.scheduleEnd);
         return *this;
     }
 
-    void printGain() { hprintf("Schedule gain with %ld planes is %s $.", numPlanes, Insert1000erDots(gain).c_str()); }
+    void printGain() {
+        hprintf("Schedule (%s %d - %s %d) with %ld planes gains %s $.", (LPCTSTR)getWeekday(scheduleStart), scheduleStart.getHour(),
+                (LPCTSTR)getWeekday(scheduleEnd), scheduleEnd.getHour(), numPlanes, Insert1000erDots(gain).c_str());
+    }
     void printDetails() {
         if (uhrigFlights > 0) {
             hprintf("Flying %ld passengers, %ld tons, %ld jobs (%ld from Uhrig) and %ld miles.", passengers, tons, jobs, uhrigFlights, miles);
@@ -76,3 +156,5 @@ bool checkRoomOpen(SLONG roomId);
 const char *getItemName(SLONG item);
 
 } // namespace Helper
+
+#endif // BOT_HELPER_H_

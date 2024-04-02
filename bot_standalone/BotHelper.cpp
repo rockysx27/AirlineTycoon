@@ -37,6 +37,7 @@ static void resetColor() { std::cout << "\e[m"; }
 namespace Helper {
 
 CString getWeekday(UWORD date) { return StandardTexte.GetS(TOKEN_SCHED, 3010 + (date + Sim.StartWeekday) % 7); }
+CString getWeekday(const PlaneTime &time) { return StandardTexte.GetS(TOKEN_SCHED, 3010 + (time.getDate() + Sim.StartWeekday) % 7); }
 
 void printJob(const CAuftrag &qAuftrag) {
     CString strDate = (qAuftrag.Date == qAuftrag.BisDate) ? getWeekday(qAuftrag.Date) : (bprintf("until %s", (LPCTSTR)getWeekday(qAuftrag.BisDate)));
@@ -400,19 +401,26 @@ ScheduleInfo calculateScheduleInfo(const PLAYER &qPlayer, SLONG planeId) {
     ScheduleInfo info;
     info.numPlanes = 1;
 
+    bool first = true;
     auto &qPlane = qPlayer.Planes[planeId];
     auto &qFlightPlan = qPlane.Flugplan.Flug;
     std::unordered_map<SLONG, bool> jobs; /* to only count freight jobs once */
-    for (SLONG c = qFlightPlan.AnzEntries() - 1; c >= 0; c--) {
+    for (SLONG c = 0; c < qFlightPlan.AnzEntries(); c++) {
         const auto &qFPE = qFlightPlan[c];
         if (qFPE.ObjectType <= 0) {
             continue;
         }
 
+        if (first) {
+            first = false;
+            info.scheduleStart = {qFPE.Startdate, qFPE.Startzeit};
+        }
+        info.scheduleEnd = {qFPE.Landedate, qFPE.Landezeit + 1};
+
         if (qFPE.ObjectType != 3) {
-            info.hoursFlights += Cities.CalcFlugdauer(qFPE.VonCity, qFPE.NachCity, qPlane.ptGeschwindigkeit);
+            info.hoursFlights += 24 * (qFPE.Landedate - qFPE.Startdate) + (qFPE.Landezeit + 1 - qFPE.Startzeit);
         } else {
-            info.hoursAutoFlights += Cities.CalcFlugdauer(qFPE.VonCity, qFPE.NachCity, qPlane.ptGeschwindigkeit);
+            info.hoursAutoFlights += 24 * (qFPE.Landedate - qFPE.Startdate) + (qFPE.Landezeit + 1 - qFPE.Startzeit);
         }
 
         info.miles += Cities.CalcDistance(qFPE.VonCity, qFPE.NachCity) / 1609;
