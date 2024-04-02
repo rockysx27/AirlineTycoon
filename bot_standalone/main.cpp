@@ -6,20 +6,66 @@
 
 #include <iostream>
 
+static const int numAveraged = 5;
+
+void findBestPlaneTypes();
 int64_t run(bool useImproved, int numPasses);
+int64_t _run(bool useImproved, int numPasses, const std::vector<int> &planeIds);
+int64_t benchmark(bool useImproved, int numPasses);
+
+void findBestPlaneTypes() {
+    std::vector<int> bestPlaneTypes;
+    for (int i = 0; i < 10; i++) {
+        int64_t bestGain = 0;
+        int bestType = -1;
+        for (int newType = 100; newType <= 126; newType++) {
+            Init();
+            if (!PlaneTypes.IsInAlbum(newType + 0x10000000)) {
+                continue;
+            }
+            std::cout << "Checking plane type " << PlaneTypes[newType + 0x10000000].Name << std::endl;
+
+            auto &qPlayer = Sim.Players.Players[0];
+
+            std::vector<int> planeIds;
+            for (const auto &type : bestPlaneTypes) {
+                planeIds.push_back(qPlayer.BuyPlane(type, nullptr));
+            }
+            planeIds.push_back(qPlayer.BuyPlane(newType, nullptr));
+
+            auto gain = _run(true, 1, planeIds);
+            if (gain > bestGain) {
+                bestGain = gain;
+                bestType = newType;
+            }
+        }
+
+        if (-1 == bestType) {
+            break;
+        }
+        std::cout << "Best next plane type is " << PlaneTypes[bestType + 0x10000000].Name << std::endl;
+        bestPlaneTypes.push_back(bestType);
+    }
+
+    for (const auto &i : bestPlaneTypes) {
+        std::cout << "Final plane list: " << PlaneTypes[i + 0x10000000].Name << std::endl;
+    }
+}
 
 int64_t run(bool useImproved, int numPasses) {
     Init();
-
     auto &qPlayer = Sim.Players.Players[0];
-
     std::vector<int> planeIds;
     for (int i = 0; i < 10; i++) {
         planeIds.push_back(qPlayer.BuyPlane(106, nullptr));
         planeIds.push_back(qPlayer.BuyPlane(111, nullptr));
         planeIds.push_back(qPlayer.BuyPlane(111, nullptr));
     }
+    return _run(useImproved, numPasses, planeIds);
+}
 
+int64_t _run(bool useImproved, int numPasses, const std::vector<int> &planeIds) {
+    auto &qPlayer = Sim.Players.Players[0];
     for (auto &plane : qPlayer.Planes) {
         plane.Flugplan.StartCity = plane.Ort = Sim.HomeAirportId;
         plane.Flugplan.UpdateNextFlight();
@@ -28,7 +74,6 @@ int64_t run(bool useImproved, int numPasses) {
     }
 
     for (int i = 0; i < numPasses; i++) {
-        // hprintf("******************** planning pass %d ********************", i);
         auto source = BotPlaner::JobOwner::International;
         std::vector<int> cities;
         if (source == BotPlaner::JobOwner::TravelAgency) {
@@ -45,7 +90,7 @@ int64_t run(bool useImproved, int numPasses) {
             }
         }
 
-        hprintf("====================");
+        // std::cout << "====================" << std::endl;
         BotPlaner planer(qPlayer, qPlayer.Planes, source, cities);
         auto solutions = planer.planFlights(planeIds, useImproved, 2);
         planer.applySolution(qPlayer, solutions);
@@ -61,10 +106,6 @@ int64_t run(bool useImproved, int numPasses) {
     }
     return totalGain;
 }
-
-static const int numAveraged = 5;
-
-int64_t benchmark(bool useImproved, int numPasses);
 
 int64_t benchmark(bool useImproved, int numPasses) {
     std::cout << "kNumBestToAdd = " << kNumBestToAdd << std::endl;
@@ -108,7 +149,8 @@ int main(int argc, char *argv[]) {
         kTempStep = atoi(argv[6]);
     }
 
-    benchmark(useImproved, numPasses);
+    findBestPlaneTypes();
+    // benchmark(useImproved, numPasses);
 
     redprintf("END");
 
