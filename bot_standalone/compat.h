@@ -72,16 +72,16 @@ class CPlaneTypes : public ALBUM_V<CPlaneType> {
 
 class CAuftrag {
   public:
-    ULONG VonCity{};     // bezeichnet eine Stadt
-    ULONG NachCity{};    // bezeichnet eine Stadt
-    ULONG Personen{};    // So viele müssen in die Maschine passen
-    UWORD Date{};        // Vertragsbeginn
-    UWORD BisDate{};     // Vertragsende
-    SBYTE InPlan{};      // 0=Nix, -1=Durchgeführt, 1=1x im Plan
-    SBYTE Okay{};        // 0=Nix, -1=Durchgeführt, 1=1x im Plan
-    SLONG Praemie{};     // Prämie bei Erfüllung
-    SLONG Strafe{};      // Strafe bei Versagen
-    BOOL bUhrigFlight{}; // Von Uhrig in Auftrag gegeben?
+    ULONG VonCity{0xDEADBEEF};  // bezeichnet eine Stadt
+    ULONG NachCity{0xDEADBEEF}; // bezeichnet eine Stadt
+    ULONG Personen{};           // So viele müssen in die Maschine passen
+    UWORD Date{};               // Vertragsbeginn
+    UWORD BisDate{};            // Vertragsende
+    SBYTE InPlan{};             // 0=Nix, -1=Durchgeführt, 1=1x im Plan
+    SBYTE Okay{};               // 0=Nix, -1=Durchgeführt, 1=1x im Plan
+    SLONG Praemie{};            // Prämie bei Erfüllung
+    SLONG Strafe{};             // Strafe bei Versagen
+    BOOL bUhrigFlight{};        // Von Uhrig in Auftrag gegeben?
     /* types */
     SLONG jobType{-1};
     SLONG jobSizeType{-1};

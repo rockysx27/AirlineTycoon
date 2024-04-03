@@ -903,7 +903,7 @@ void CAuftraege::FillForAusland(SLONG CityNum) {
 // Fügt einen neuen Auftrag ein:
 //--------------------------------------------------------------------------------------------
 void CAuftraege::RefillForAusland(SLONG CityNum, SLONG Minimum) {
-    SLONG Anz = min(AnzEntries(), AuslandsRefill[CityNum]);
+    SLONG Anz = AnzEntries();
 
     CalcPlayerMaximums();
 

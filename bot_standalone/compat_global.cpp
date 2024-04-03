@@ -57,8 +57,10 @@ SLONG timeWerbOpen = 12 * 60000;
 
 const RES StandardTexte{};
 
-void Init() {
+void Init(SLONG date) {
     Sim = {};
+
+    Sim.Date = date;
 
     PlaneTypes = {};
     Cities = {};

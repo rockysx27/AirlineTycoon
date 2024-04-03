@@ -558,7 +558,7 @@ too_large:
 //
 //--------------------------------------------------------------------------------------------
 void CFrachten::RefillForAusland(SLONG CityNum, SLONG Minimum) {
-    SLONG Anz = min(AnzEntries(), AuslandsFRefill[CityNum]);
+    SLONG Anz = AnzEntries();
 
     CalcPlayerMaximums();
 

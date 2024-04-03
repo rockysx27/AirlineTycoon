@@ -186,14 +186,14 @@ bool GameMechanic::killFlightPlanFrom(PLAYER &qPlayer, SLONG planeId, SLONG date
     return true;
 }
 
-bool GameMechanic::refillFlightJobs(SLONG cityNum) {
+bool GameMechanic::refillFlightJobs(SLONG cityNum, SLONG minimum) {
     if (cityNum < 0 || cityNum >= AuslandsAuftraege.size()) {
         redprintf("GameMechanic::refillFlightJobs: Invalid cityNum (%ld).", cityNum);
         return false;
     }
 
-    AuslandsAuftraege[cityNum].RefillForAusland(cityNum);
-    AuslandsFrachten[cityNum].RefillForAusland(cityNum);
+    AuslandsAuftraege[cityNum].RefillForAusland(cityNum, minimum);
+    AuslandsFrachten[cityNum].RefillForAusland(cityNum, minimum);
 
     return true;
 }
@@ -266,8 +266,8 @@ bool GameMechanic::_planFlightJob(PLAYER &qPlayer, SLONG planeID, SLONG objectID
     fpe.Startzeit = time;
 
     if (objectType == 1) {
-        //fpe.Ticketpreis = qPlayer.RentRouten.RentRouten[Routen(objectID)].Ticketpreis;
-        //fpe.TicketpreisFC = qPlayer.RentRouten.RentRouten[Routen(objectID)].TicketpreisFC;
+        // fpe.Ticketpreis = qPlayer.RentRouten.RentRouten[Routen(objectID)].Ticketpreis;
+        // fpe.TicketpreisFC = qPlayer.RentRouten.RentRouten[Routen(objectID)].TicketpreisFC;
     }
 
     fpe.FlightChanged();

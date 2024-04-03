@@ -13,12 +13,12 @@ extern const char ExcCreateWindow[]; // Fenster konnte nicht erzeugt werden
 //--------------------------------------------------------------------------------------------
 // Einfache globale Variablen:
 //--------------------------------------------------------------------------------------------
-extern const char TabSeparator[];   // Zum Import der Excel-Tabellen
+extern const char TabSeparator[]; // Zum Import der Excel-Tabellen
 
 //--------------------------------------------------------------------------------------------
 // Die Pfade der einzelnen Dateigruppen:
 //--------------------------------------------------------------------------------------------
-extern CString ExcelPath;    // Hier sind die csv-Tabellen
+extern CString ExcelPath; // Hier sind die csv-Tabellen
 
 //--------------------------------------------------------------------------------------------
 // Die Simulationswelt mit ihren Parameter (Zeit, Spieler, Schwierigkeit, ..)
@@ -37,9 +37,9 @@ extern BUFFER_V<CEinheit> Einheiten;
 //--------------------------------------------------------------------------------------------
 // Das Inventar und die Zettel vom schwarzen Brett:
 //--------------------------------------------------------------------------------------------
-extern CAuftraege LastMinuteAuftraege;           // Die hängen gerade aus
-extern CAuftraege ReisebueroAuftraege;           // Die hängen gerade aus
-extern CFrachten gFrachten;                      // Die Frachtaufträge
+extern CAuftraege LastMinuteAuftraege;            // Die hängen gerade aus
+extern CAuftraege ReisebueroAuftraege;            // Die hängen gerade aus
+extern CFrachten gFrachten;                       // Die Frachtaufträge
 extern std::vector<CAuftraege> AuslandsAuftraege; // Aus dem Ausland
 extern std::vector<SLONG> AuslandsRefill;         // Aus dem Ausland
 extern std::vector<CFrachten> AuslandsFrachten;   // Aus dem Ausland
@@ -61,6 +61,6 @@ extern SLONG timeWerbOpen;
 
 extern const RES StandardTexte;
 
-void Init();
+void Init(SLONG date);
 
 #endif // GLOBAL_H_

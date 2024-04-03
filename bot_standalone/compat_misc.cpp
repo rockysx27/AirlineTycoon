@@ -625,10 +625,16 @@ void CPlaneTypes::ReInit(const CString &TabFilename) {
 }
 
 CPlane::CPlane(const CString &Name, ULONG TypeId, UBYTE Zustand, SLONG Baujahr) {
+
     CPlane::Name = Name;
     CPlane::TypeId = TypeId;
+    CPlane::Ort = Sim.HomeAirportId;
+    CPlane::Problem = 0;
 
     if (TypeId != -1) {
+        CPlane::MaxPassagiere = PlaneTypes[TypeId].Passagiere * 6 / 8;
+        CPlane::MaxPassagiereFC = PlaneTypes[TypeId].Passagiere * 1 / 8;
+
         CPlaneType &qPlaneType = PlaneTypes[TypeId];
         ptReichweite = qPlaneType.Reichweite;
         ptGeschwindigkeit = qPlaneType.Geschwindigkeit;

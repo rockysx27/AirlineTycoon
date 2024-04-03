@@ -780,7 +780,7 @@ bool BotPlaner::algo2(int64_t timeBudget) {
 
         int numToAdd = kNumBestToAdd * mPlaneStates.size();
         for (int i = 0; i < mJobList.size() && (numToAdd > 0); i++) {
-            if (mJobList[i].isScheduled()) {
+            if (mJobList[i].isScheduled() || (getRandInt(0, 1) != 0)) {
                 continue;
             }
             if (algo2RunAddNodeToBestPlane(i)) {
@@ -789,7 +789,8 @@ bool BotPlaner::algo2(int64_t timeBudget) {
         }
 
         int iterGain = allPlaneGain();
-        if (!SA_accept(iterGain, temperature, getRandInt(1, 100))) {
+        int diff = iterGain - currentBestGain;
+        if (!SA_accept(diff, temperature, getRandInt(1, 100))) {
             /* roll back */
             for (int planeIdx = 0; planeIdx < mPlaneStates.size(); planeIdx++) {
                 killPath(planeIdx);

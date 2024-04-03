@@ -19,7 +19,10 @@ void findBestPlaneTypes() {
         int64_t bestGain = 0;
         int bestType = -1;
         for (int newType = 100; newType <= 126; newType++) {
-            Init();
+            TEAKRAND rand;
+            rand.SRandTime();
+            Init(rand.Rand(30, 100));
+
             if (!PlaneTypes.IsInAlbum(newType + 0x10000000)) {
                 continue;
             }
@@ -53,7 +56,7 @@ void findBestPlaneTypes() {
 }
 
 int64_t run(bool useImproved, int numPasses) {
-    Init();
+    Init(50);
     auto &qPlayer = Sim.Players.Players[0];
     std::vector<int> planeIds;
     for (int i = 0; i < 10; i++) {
@@ -80,13 +83,17 @@ int64_t _run(bool useImproved, int numPasses, const std::vector<int> &planeIds) 
             ReisebueroAuftraege.FillForReisebuero();
         } else if (source == BotPlaner::JobOwner::International) {
             for (int cityNum = 0; cityNum < AuslandsAuftraege.size(); cityNum++) {
-                GameMechanic::refillFlightJobs(cityNum);
-                cities.push_back(cityNum);
+                if (Cities.IsInAlbum(cityNum)) {
+                    GameMechanic::refillFlightJobs(cityNum);
+                    cities.push_back(cityNum);
+                }
             }
         } else if (source == BotPlaner::JobOwner::InternationalFreight) {
             for (int cityNum = 0; cityNum < AuslandsFrachten.size(); cityNum++) {
-                GameMechanic::refillFlightJobs(cityNum);
-                cities.push_back(cityNum);
+                if (Cities.IsInAlbum(cityNum)) {
+                    GameMechanic::refillFlightJobs(cityNum);
+                    cities.push_back(cityNum);
+                }
             }
         }
 
@@ -149,8 +156,8 @@ int main(int argc, char *argv[]) {
         kTempStep = atoi(argv[6]);
     }
 
-    findBestPlaneTypes();
-    // benchmark(useImproved, numPasses);
+    // findBestPlaneTypes();
+    benchmark(useImproved, numPasses);
 
     redprintf("END");
 
