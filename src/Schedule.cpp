@@ -643,6 +643,8 @@ void CFlugplanEintrag::BookFlight(CPlane *Plane, SLONG PlayerNum) {
             qPlayer.Statistiken[STAT_PASSAGIERE_HOME].AddAtPastDay(Passagiere);
             qPlayer.Statistiken[STAT_PASSAGIERE_HOME].AddAtPastDay(PassagiereFC);
         }
+    } else if (ObjectType == 4) {
+        qPlayer.Statistiken[STAT_FLUEGE].AddAtPastDay(1);
     }
 
     if (ObjectType == 1 || ObjectType == 2) {
@@ -663,10 +665,12 @@ void CFlugplanEintrag::BookFlight(CPlane *Plane, SLONG PlayerNum) {
 
     if (ObjectType == 4) {
         if (qPlayer.Frachten[ObjectId].TonsLeft > 0) {
-            qPlayer.NumFracht += min(qPlayer.Frachten[ObjectId].TonsLeft, Plane->ptPassagiere / 10);
+            SLONG tons = min(qPlayer.Frachten[ObjectId].TonsLeft, Plane->ptPassagiere / 10);
+            qPlayer.Statistiken[STAT_TONS].AddAtPastDay(tons);
+            qPlayer.NumFracht += tons;
 
             if (qPlayer.Frachten[ObjectId].Praemie == 0) {
-                qPlayer.NumFrachtFree += min(qPlayer.Frachten[ObjectId].TonsLeft, Plane->ptPassagiere / 10);
+                qPlayer.NumFrachtFree += tons;
             }
 
             qPlayer.Frachten[ObjectId].TonsLeft -= Plane->ptPassagiere / 10;

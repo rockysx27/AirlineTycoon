@@ -344,6 +344,11 @@ CStatistik::CStatistik(BOOL bHandy, ULONG PlayerNum) : CStdRaum(bHandy, PlayerNu
         _iArray[g][c++].define = STAT_ZUFR_PASSAGIERE;
 
         _iArray[g][c].typOfItem = TYP_VALUE;
+        _iArray[g][c].textId = 10019;
+        _iArray[g][c].beraterSkillInfo = 70;
+        _iArray[g][c++].define = STAT_TONS;
+
+        _iArray[g][c].typOfItem = TYP_VALUE;
         _iArray[g][c].textId = 8111;
         _iArray[g][c].beraterSkillInfo = 20;
         _iArray[g][c++].define = STAT_MITARBEITER;
