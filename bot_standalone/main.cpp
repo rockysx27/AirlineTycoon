@@ -9,9 +9,9 @@
 static const int numAveraged = 5;
 
 void findBestPlaneTypes();
-int64_t run(bool useImproved, int numPasses);
-int64_t _run(bool useImproved, int numPasses, const std::vector<int> &planeIds);
-int64_t benchmark(bool useImproved, int numPasses);
+int64_t run(int numPasses, int freightMode);
+int64_t _run(int numPasses, int freightMode, const std::vector<int> &planeIds);
+int64_t benchmark(int numPasses, int freightMode);
 
 void findBestPlaneTypes() {
     std::vector<int> bestPlaneTypes;
@@ -36,7 +36,7 @@ void findBestPlaneTypes() {
             }
             planeIds.push_back(qPlayer.BuyPlane(newType, nullptr));
 
-            auto gain = _run(true, 1, planeIds);
+            auto gain = _run(1, 0, planeIds);
             if (gain > bestGain) {
                 bestGain = gain;
                 bestType = newType;
@@ -55,7 +55,7 @@ void findBestPlaneTypes() {
     }
 }
 
-int64_t run(bool useImproved, int numPasses) {
+int64_t run(int numPasses, int freightMode) {
     Init(50);
     auto &qPlayer = Sim.Players.Players[0];
     std::vector<int> planeIds;
@@ -64,10 +64,10 @@ int64_t run(bool useImproved, int numPasses) {
         planeIds.push_back(qPlayer.BuyPlane(111, nullptr));
         planeIds.push_back(qPlayer.BuyPlane(111, nullptr));
     }
-    return _run(useImproved, numPasses, planeIds);
+    return _run(numPasses, freightMode, planeIds);
 }
 
-int64_t _run(bool useImproved, int numPasses, const std::vector<int> &planeIds) {
+int64_t _run(int numPasses, int freightMode, const std::vector<int> &planeIds) {
     auto &qPlayer = Sim.Players.Players[0];
     for (auto &plane : qPlayer.Planes) {
         plane.Flugplan.StartCity = plane.Ort = Sim.HomeAirportId;
@@ -76,8 +76,10 @@ int64_t _run(bool useImproved, int numPasses, const std::vector<int> &planeIds) 
         plane.CheckFlugplaene(qPlayer.PlayerNum);
     }
 
-    for (int i = 0; i < numPasses; i++) {
-        auto source = BotPlaner::JobOwner::International;
+    for (currentPass = 0; currentPass < numPasses; currentPass++) {
+        std::cout << "********** " << currentPass << " **********" << std::endl;
+        auto source = (freightMode > 0) ? BotPlaner::JobOwner::InternationalFreight : BotPlaner::JobOwner::International;
+
         std::vector<int> cities;
         if (source == BotPlaner::JobOwner::TravelAgency) {
             ReisebueroAuftraege.FillForReisebuero();
@@ -99,9 +101,9 @@ int64_t _run(bool useImproved, int numPasses, const std::vector<int> &planeIds) 
 
         // std::cout << "====================" << std::endl;
         BotPlaner planer(qPlayer, qPlayer.Planes, source, cities);
-        auto solutions = planer.planFlights(planeIds, useImproved, 2);
+        auto solutions = planer.planFlights(planeIds, 2);
         planer.applySolution(qPlayer, solutions);
-        int nIncorrect = Helper::checkFlightJobs(qPlayer, true);
+        int nIncorrect = Helper::checkFlightJobs(qPlayer, false, false);
         if (nIncorrect > 0) {
             break;
         }
@@ -114,7 +116,7 @@ int64_t _run(bool useImproved, int numPasses, const std::vector<int> &planeIds) 
     return totalGain;
 }
 
-int64_t benchmark(bool useImproved, int numPasses) {
+int64_t benchmark(int numPasses, int freightMode) {
     std::cout << "kNumBestToAdd = " << kNumBestToAdd << std::endl;
     std::cout << "kNumToAdd = " << kNumToAdd << std::endl;
     std::cout << "kNumToRemove = " << kNumToRemove << std::endl;
@@ -123,7 +125,7 @@ int64_t benchmark(bool useImproved, int numPasses) {
 
     std::vector<int64_t> r;
     for (int i = 0; i < numAveraged; i++) {
-        r.push_back(run(useImproved, numPasses));
+        r.push_back(run(numPasses, freightMode));
     }
     int64_t mean = std::accumulate(r.begin(), r.end(), 0) / numAveraged;
     int64_t stddev = std::accumulate(r.begin(), r.end(), 0LL, [mean](int64_t acc, int64_t val) { return acc + (val - mean) * (val - mean); });
@@ -135,29 +137,32 @@ int64_t benchmark(bool useImproved, int numPasses) {
 
 int main(int argc, char *argv[]) {
 
-    int numPasses = 2;
-    bool useImproved = false;
+    int numPasses = 1;
+    int freightMode = 0;
     if (argc > 1) {
-        useImproved = atoi(argv[1]) > 0;
+        numPasses = atoi(argv[1]);
     }
     if (argc > 2) {
-        kNumBestToAdd = atoi(argv[2]);
+        freightMode = atoi(argv[2]) > 0;
     }
     if (argc > 3) {
-        kNumToAdd = atoi(argv[3]);
+        kNumBestToAdd = atoi(argv[3]);
     }
     if (argc > 4) {
-        kNumToRemove = atoi(argv[4]);
+        kNumToAdd = atoi(argv[4]);
     }
     if (argc > 5) {
-        kTempStart = atoi(argv[5]);
+        kNumToRemove = atoi(argv[5]);
+    }
+    if (argc > 6) {
+        kTempStart = atoi(argv[6]);
     }
     if (argc > 6) {
         kTempStep = atoi(argv[6]);
     }
 
     // findBestPlaneTypes();
-    benchmark(useImproved, numPasses);
+    benchmark(numPasses, freightMode);
 
     redprintf("END");
 

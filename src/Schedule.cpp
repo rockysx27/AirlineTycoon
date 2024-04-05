@@ -3,6 +3,7 @@
 //============================================================================================
 #include "StdAfx.h"
 #include "AtNet.h"
+#include "BotHelper.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -44,6 +45,8 @@ CFlugplanEintrag::CFlugplanEintrag(BOOL ObjectType, ULONG ObjectId) {
     CFlugplanEintrag::Landezeit = 0;
     CFlugplanEintrag::ObjectType = ObjectType;
     CFlugplanEintrag::ObjectId = ObjectId;
+    CFlugplanEintrag::FlightBooked = FALSE;
+    CFlugplanEintrag::ScheduledByGM = FALSE;
 }
 
 //--------------------------------------------------------------------------------------------
@@ -60,7 +63,7 @@ TEAKFILE &operator<<(TEAKFILE &File, const CFlugplanEintrag &Eintrag) {
         if (Eintrag.ObjectType != 0) {
             File << Eintrag.Okay << Eintrag.HoursBefore << Eintrag.Passagiere << Eintrag.PassagiereFC << Eintrag.PArrived << Eintrag.Gate << Eintrag.VonCity
                  << Eintrag.GateWarning << Eintrag.NachCity << Eintrag.Startzeit << Eintrag.Landezeit << Eintrag.Startdate << Eintrag.Landedate
-                 << Eintrag.ObjectId << Eintrag.Ticketpreis << Eintrag.TicketpreisFC;
+                 << Eintrag.ObjectId << Eintrag.Ticketpreis << Eintrag.TicketpreisFC << Eintrag.FlightBooked << Eintrag.ScheduledByGM;
         }
     }
 
@@ -81,7 +84,7 @@ TEAKFILE &operator>>(TEAKFILE &File, CFlugplanEintrag &Eintrag) {
         if (Eintrag.ObjectType != 0) {
             File >> Eintrag.Okay >> Eintrag.HoursBefore >> Eintrag.Passagiere >> Eintrag.PassagiereFC >> Eintrag.PArrived >> Eintrag.Gate >> Eintrag.VonCity >>
                 Eintrag.GateWarning >> Eintrag.NachCity >> Eintrag.Startzeit >> Eintrag.Landezeit >> Eintrag.Startdate >> Eintrag.Landedate >>
-                Eintrag.ObjectId >> Eintrag.Ticketpreis >> Eintrag.TicketpreisFC;
+                Eintrag.ObjectId >> Eintrag.Ticketpreis >> Eintrag.TicketpreisFC >> Eintrag.FlightBooked >> Eintrag.ScheduledByGM;
         } else {
             Eintrag.Okay = 0;
             Eintrag.Gate = -1;
@@ -90,6 +93,8 @@ TEAKFILE &operator>>(TEAKFILE &File, CFlugplanEintrag &Eintrag) {
             Eintrag.Landezeit = 0;
             Eintrag.ObjectType = 0;
             Eintrag.ObjectId = -1;
+            Eintrag.FlightBooked = FALSE;
+            Eintrag.ScheduledByGM = FALSE;
         }
     }
 
@@ -580,6 +585,20 @@ void CFlugplanEintrag::CalcPassengers(SLONG PlayerNum, CPlane &qPlane) {
 // Flug wird gestartet, die Kosten und Einnahmen werden verbucht:
 //--------------------------------------------------------------------------------------------
 void CFlugplanEintrag::BookFlight(CPlane *Plane, SLONG PlayerNum) {
+    PLAYER &qPlayer = Sim.Players.Players[PlayerNum];
+
+    if (!ScheduledByGM) {
+        redprintf("Schedule.cpp: %s: Flight not scheduled via GameMechanic on %s:", (LPCTSTR)qPlayer.AirlineX, (LPCTSTR)Plane->Name);
+        Helper::printFPE(*this);
+    }
+    if (FlightBooked) {
+        redprintf("Schedule.cpp: %s: Tried to book flight twice on %s:", (LPCTSTR)qPlayer.AirlineX, (LPCTSTR)Plane->Name);
+        Helper::printFPE(*this);
+    }
+    hprintf("Schedule.cpp: %s: Booking flight on %s:", (LPCTSTR)qPlayer.AirlineX, (LPCTSTR)Plane->Name);
+    Helper::printFPE(*this);
+    FlightBooked = TRUE;
+
     __int64 Saldo = 0;
     SLONG Einnahmen = 0;
     SLONG Kerosin = 0;
@@ -590,7 +609,6 @@ void CFlugplanEintrag::BookFlight(CPlane *Plane, SLONG PlayerNum) {
     SLONG AusgabenKerosinOhneTank = 0;
     SLONG AusgabenEssen = 0;
     CString CityString;
-    PLAYER &qPlayer = Sim.Players.Players[PlayerNum];
 
     // Hat angebliche Asynchronitäten berichtet, obwohl der Flugplan gleich war!
     // NetGenericAsync (90000+ObjectId+Sim.Date*100+PlayerNum*1000, Startzeit);
@@ -807,9 +825,6 @@ void CFlugplanEintrag::BookFlight(CPlane *Plane, SLONG PlayerNum) {
     }
     // Bei Aufträgen, die Prämie verbuchen; Aufträge als erledigt markieren
     else if (ObjectType == 2) {
-        Hdu.HercPrintf("Player %li flies %li Passengers from %s to %s\n", PlayerNum, qPlayer.Auftraege[ObjectId].Personen,
-                       (LPCTSTR)Cities[qPlayer.Auftraege[ObjectId].VonCity].Name, (LPCTSTR)Cities[qPlayer.Auftraege[ObjectId].NachCity].Name);
-
         if (Okay == 0 || Okay == 1) {
             qPlayer.Auftraege[ObjectId].InPlan = -1; // Auftrag erledigt
         } else {

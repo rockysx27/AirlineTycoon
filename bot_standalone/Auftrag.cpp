@@ -317,13 +317,13 @@ too_large:
         jobType = 0;
     }
     // Typ B = Hoffmann, Gewinn möglich
-    else if (Type >= 50 && Type < 60) {
+    else if (Type >= 50 && Type < 65) {
         Date = UWORD(Sim.Date);
         BisDate = UWORD(Sim.Date + 4 + pRandom->Rand(3));
         jobType = 1;
     }
     // Typ C = Zeit knapp, viel Gewinn, viel Strafe
-    else if (Type >= 70 && Type < 80) {
+    else if (Type >= 65 && Type < 80) {
         Praemie *= 2;
         Strafe = Praemie * 2;
         BisDate = Date = UWORD(Sim.Date + 1);
@@ -416,12 +416,12 @@ too_large:
         jobType = 0;
     }
     // Typ B = Hoffmann, Gewinn möglich, keine Strafe
-    else if (Type >= 50 && Type < 60) {
+    else if (Type >= 50 && Type < 65) {
         BisDate = UWORD(Sim.Date + 6);
         jobType = 1;
     }
     // Typ C = Zeit knapp, viel Gewinn, viel Strafe
-    else if (Type >= 70 && Type < 95) {
+    else if (Type >= 65 && Type < 95) {
         Praemie *= 2;
         Strafe = Praemie * 2;
         BisDate = UWORD(Sim.Date + 1);
@@ -497,13 +497,13 @@ too_large:
         jobType = 0;
     }
     // Typ B = Hoffmann, Gewinn möglich
-    else if (Type >= 50 && Type < 60) {
+    else if (Type >= 50 && Type < 65) {
         Date = UWORD(Sim.Date);
         BisDate = UWORD(Sim.Date + 4 + pRandom->Rand(3));
         jobType = 1;
     }
     // Typ C = Zeit knapp, viel Gewinn, viel Strafe
-    else if (Type >= 70 && Type < 80) {
+    else if (Type >= 65 && Type < 80) {
         Praemie *= 2;
         Strafe = Praemie * 2;
         BisDate = Date = UWORD(Sim.Date + 1);

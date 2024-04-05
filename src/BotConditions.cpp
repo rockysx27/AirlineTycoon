@@ -177,9 +177,6 @@ bool Bot::canWeCallInternational() {
     if (!qPlayer.RobotUse(ROBOT_USE_ABROAD)) {
         return false;
     }
-    if (qPlayer.RobotUse(ROBOT_USE_MUCH_FRACHT) && Sim.GetHour() <= 9) {
-        return false;
-    }
 
     if (qPlayer.TelephoneDown != 0) {
         return false;
@@ -415,7 +412,7 @@ Bot::Prio Bot::condCheckTravelAgency() {
         return Prio::None; /* might be too late to reach office */
     }
     if (HowToPlan::None != res) {
-        return Prio::Higher;
+        return qPlayer.RobotUse(ROBOT_USE_MUCH_FRACHT) ? Prio::High : Prio::Higher;
     }
 
     if (mItemAntiVirus == 0) {
@@ -428,7 +425,7 @@ Bot::Prio Bot::condCheckFreight() {
     if (!hoursPassed(ACTION_CHECKAGENT3, 2)) {
         return Prio::None;
     }
-    if (!qPlayer.RobotUse(ROBOT_USE_FRACHT) || true) { // TODO
+    if (!qPlayer.RobotUse(ROBOT_USE_FRACHT)) {
         return Prio::None;
     }
 
@@ -444,7 +441,7 @@ Bot::Prio Bot::condCheckFreight() {
         return Prio::None; /* might be too late to reach office */
     }
     if (HowToPlan::None != res) {
-        return Prio::Medium;
+        return qPlayer.RobotUse(ROBOT_USE_MUCH_FRACHT) ? Prio::Higher : Prio::High;
     }
 
     return Prio::None;

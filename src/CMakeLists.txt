@@ -64,8 +64,7 @@ add_executable (AT
     BotActions.cpp
     BotHelper.cpp
     BotPlaner.cpp
-    BotPlanerAlgo1.cpp
-    BotPlanerAlgo2.cpp
+    BotPlanerAlgo.cpp
     Brick.cpp
     Checkup.cpp
     ColorFx.cpp
@@ -155,9 +154,8 @@ elseif (CMAKE_BUILD_TYPE STREQUAL "Release")
 endif()
 
 # always optimize bot heuristics (take very long otherwise)
-set_source_files_properties(BotPlaner.cpp PROPERTIES COMPILE_FLAGS "-O3 -DNEDBUG")
-set_source_files_properties(BotPlanerAlgo1.cpp PROPERTIES COMPILE_FLAGS "-O3 -DNEDBUG")
-set_source_files_properties(BotPlanerAlgo2.cpp PROPERTIES COMPILE_FLAGS "-O3 -DNEDBUG")
+#set_source_files_properties(BotPlaner.cpp PROPERTIES COMPILE_FLAGS "-O3 -DNEDBUG")
+#set_source_files_properties(BotPlanerAlgo.cpp PROPERTIES COMPILE_FLAGS "-O3 -DNEDBUG")
 
 
 if(NOT ${CMAKE_VERSION} VERSION_LESS "3.16.0")

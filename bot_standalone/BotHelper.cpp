@@ -4,6 +4,7 @@
 #include "compat_global.h"
 
 #include <iostream>
+#include <sstream>
 #include <unordered_map>
 
 // Öffnungszeiten:
@@ -136,24 +137,24 @@ std::pair<PlaneTime, int> getPlaneAvailableTimeLoc(const CPlane &qPlane, std::op
     return res;
 }
 
-SLONG checkPlaneSchedule(const PLAYER &qPlayer, SLONG planeId, bool printOnErrorOnly) {
+SLONG checkPlaneSchedule(const PLAYER &qPlayer, SLONG planeId, bool alwaysPrint) {
     if (qPlayer.Planes.IsInAlbum(planeId) == 0) {
         return 0;
     }
     auto &qPlane = qPlayer.Planes[planeId];
     std::unordered_map<SLONG, CString> assignedJobs;
-    std::unordered_map<SLONG, SLONG> freightTons;
-    return _checkPlaneSchedule(qPlayer, qPlane, assignedJobs, freightTons, printOnErrorOnly);
+    std::unordered_map<SLONG, FreightInfo> freightTons;
+    return _checkPlaneSchedule(qPlayer, qPlane, assignedJobs, freightTons, alwaysPrint);
 }
 
-SLONG checkPlaneSchedule(const PLAYER &qPlayer, const CPlane &qPlane, bool printOnErrorOnly) {
+SLONG checkPlaneSchedule(const PLAYER &qPlayer, const CPlane &qPlane, bool alwaysPrint) {
     std::unordered_map<SLONG, CString> assignedJobs;
-    std::unordered_map<SLONG, SLONG> freightTons;
-    return _checkPlaneSchedule(qPlayer, qPlane, assignedJobs, freightTons, printOnErrorOnly);
+    std::unordered_map<SLONG, FreightInfo> freightTons;
+    return _checkPlaneSchedule(qPlayer, qPlane, assignedJobs, freightTons, alwaysPrint);
 }
 
 SLONG _checkPlaneSchedule(const PLAYER &qPlayer, const CPlane &qPlane, std::unordered_map<SLONG, CString> &assignedJobs,
-                          std::unordered_map<SLONG, SLONG> freightTons, bool printOnErrorOnly) {
+                          std::unordered_map<SLONG, FreightInfo> &freightTons, bool alwaysPrint) {
     SLONG nIncorrect = 0;
     auto nIncorredOld = nIncorrect;
 
@@ -167,8 +168,8 @@ SLONG _checkPlaneSchedule(const PLAYER &qPlayer, const CPlane &qPlane, std::unor
         auto id = qFPE.ObjectId;
 
         /* check duration */
-        PlaneTime time{qFPE.Startdate, qFPE.Startzeit};
-        time += Cities.CalcFlugdauer(qFPE.VonCity, qFPE.NachCity, qPlane.ptGeschwindigkeit);
+        PlaneTime startTime{qFPE.Startdate, qFPE.Startzeit};
+        auto time = startTime + Cities.CalcFlugdauer(qFPE.VonCity, qFPE.NachCity, qPlane.ptGeschwindigkeit);
         if ((qFPE.Landedate != time.getDate()) || (qFPE.Landezeit != time.getHour())) {
             redprintf("Helper::checkPlaneSchedule(): CFlugplanEintrag has invalid landing time: %s %ld, should be %s %ld", (LPCTSTR)getWeekday(qFPE.Landedate),
                       qFPE.Landezeit, (LPCTSTR)getWeekday(time.getDate()), time.getHour());
@@ -276,11 +277,16 @@ SLONG _checkPlaneSchedule(const PLAYER &qPlayer, const CPlane &qPlane, std::unor
         if (qFPE.ObjectType == 4) {
             auto &qAuftrag = qPlayer.Frachten[id];
 
-            if (assignedJobs.find(id) == assignedJobs.end()) {
-                assignedJobs[id] = qPlane.Name;
-                freightTons[id] = qAuftrag.Tons;
+            if (!qFPE.FlightBooked) {
+                if (freightTons.find(id) == freightTons.end()) {
+                    freightTons[id].tonsOpen = qAuftrag.TonsLeft;
+                }
+                SLONG tons = qPlane.ptPassagiere / 10;
+                freightTons[id].planeNames.push_back(qPlane.Name);
+                freightTons[id].tonsPerPlane.push_back(tons);
+                freightTons[id].tonsOpen -= tons;
+                freightTons[id].smallestDecrement = std::min(freightTons[id].smallestDecrement, tons);
             }
-            freightTons[id] -= qPlane.ptPassagiere / 10;
 
             if (qFPE.VonCity != qAuftrag.VonCity || qFPE.NachCity != qAuftrag.NachCity) {
                 nIncorrect++;
@@ -314,14 +320,7 @@ SLONG _checkPlaneSchedule(const PLAYER &qPlayer, const CPlane &qPlane, std::unor
         }
     }
 
-    for (const auto &iter : freightTons) {
-        auto &qAuftrag = qPlayer.Frachten[iter.first];
-        if (iter.second > 0) {
-            hprintf("Helper::checkPlaneSchedule(): Note: There are still %d tons open for job %s", iter.second, getFreightName(qAuftrag).c_str());
-        }
-    }
-
-    if ((nIncorrect > nIncorredOld) || !printOnErrorOnly) {
+    if ((nIncorrect > nIncorredOld) || alwaysPrint) {
         printFlightJobs(qPlayer, qPlane);
     }
     return nIncorrect;
@@ -425,12 +424,32 @@ ScheduleInfo calculateScheduleInfo(const PLAYER &qPlayer, SLONG planeId) {
 
         info.miles += Cities.CalcDistance(qFPE.VonCity, qFPE.NachCity) / 1609;
 
-        if (qFPE.ObjectType == 2 || qFPE.ObjectType == 4) {
+        if (qFPE.ObjectType == 4) {
+            /* give premium only once */
             if (jobs.find(qFPE.ObjectId) == jobs.end()) {
-                /* give premium only once */
                 jobs[qFPE.ObjectId] = true;
-                info.jobs += 1;
+
                 info.gain += qFlightPlan[c].GetEinnahmen(qPlayer.PlayerNum, qPlane);
+                info.freightJobs += 1;
+
+                const auto &job = qPlayer.Frachten[qFPE.ObjectId];
+                assert(job.jobType >= 0 && job.jobType < info.jobTypes.size());
+                assert(job.jobSizeType >= 0 && job.jobSizeType < info.jobSizeTypes.size());
+                info.jobTypes[job.jobType]++;
+                info.jobSizeTypes[job.jobSizeType]++;
+            }
+        } else if (qFPE.ObjectType == 2) {
+            info.gain += qFlightPlan[c].GetEinnahmen(qPlayer.PlayerNum, qPlane);
+            info.jobs += 1;
+
+            const auto &job = qPlayer.Auftraege[qFPE.ObjectId];
+            assert(job.jobType >= 0 && job.jobType < info.jobTypes.size());
+            assert(job.jobSizeType >= 0 && job.jobSizeType < info.jobSizeTypes.size());
+            info.jobTypes[job.jobType]++;
+            info.jobSizeTypes[job.jobSizeType]++;
+
+            if (job.bUhrigFlight != 0) {
+                info.uhrigFlights += 1;
             }
         } else {
             info.gain += qFlightPlan[c].GetEinnahmen(qPlayer.PlayerNum, qPlane);
@@ -442,38 +461,52 @@ ScheduleInfo calculateScheduleInfo(const PLAYER &qPlayer, SLONG planeId) {
         } else if (qFPE.ObjectType == 4) {
             info.tons += qPlane.ptPassagiere / 10;
         }
-
-        if (qFPE.ObjectType == 2) {
-            const auto &job = qPlayer.Auftraege[qFPE.ObjectId];
-            assert(job.jobType >= 0 && job.jobType < info.jobTypes.size());
-            assert(job.jobSizeType >= 0 && job.jobSizeType < info.jobSizeTypes.size());
-            info.jobTypes[job.jobType]++;
-            info.jobSizeTypes[job.jobSizeType]++;
-
-            if (job.bUhrigFlight != 0) {
-                info.uhrigFlights += 1;
-            }
-        }
     }
     return info;
 }
 
-SLONG checkFlightJobs(const PLAYER &qPlayer, bool printOnErrorOnly) {
+SLONG checkFlightJobs(const PLAYER &qPlayer, bool alwaysPrint, bool verboseInfo) {
     SLONG nIncorrect = 0;
     SLONG nPlanes = 0;
     std::unordered_map<SLONG, CString> assignedJobs;
-    std::unordered_map<SLONG, SLONG> freightTons;
+    std::unordered_map<SLONG, FreightInfo> freightTons;
     Helper::ScheduleInfo overallInfo;
     for (SLONG c = 0; c < qPlayer.Planes.AnzEntries(); c++) {
         if (qPlayer.Planes.IsInAlbum(c) == 0) {
             continue;
         }
-        nIncorrect += _checkPlaneSchedule(qPlayer, qPlayer.Planes[c], assignedJobs, freightTons, printOnErrorOnly);
+        nIncorrect += _checkPlaneSchedule(qPlayer, qPlayer.Planes[c], assignedJobs, freightTons, alwaysPrint);
         overallInfo += calculateScheduleInfo(qPlayer, c);
         nPlanes++;
     }
+
+    /* check whether all freight jobs are fully scheduled */
+    for (const auto &iter : freightTons) {
+        const auto &qAuftrag = qPlayer.Frachten[iter.first];
+        const auto &info = iter.second;
+        std::stringstream ss;
+        for (SLONG i = 0; i < info.planeNames.size(); i++) {
+            ss << info.tonsPerPlane[i] << "t on " << info.planeNames[i].c_str();
+            if (i < info.planeNames.size() - 1) {
+
+                ss << ", ";
+            }
+        }
+        if (info.tonsOpen > 0) {
+            redprintf("Helper::checkPlaneSchedule(): There are still %d tons open for job %s (%s)", info.tonsOpen, getFreightName(qAuftrag).c_str(),
+                      ss.str().c_str());
+        }
+        if ((-info.tonsOpen) >= info.smallestDecrement) {
+            redprintf("Helper::checkPlaneSchedule(): At least one instance of job %s (%s) can be removed (overscheduled: %ld, smallest: %ld)",
+                      getFreightName(qAuftrag).c_str(), ss.str().c_str(), (-info.tonsOpen), info.smallestDecrement);
+        }
+    }
+
     hprintf("Helper::checkFlightJobs(): %s: Found %ld problems for %ld planes.", (LPCTSTR)qPlayer.AirlineX, nIncorrect, nPlanes);
     overallInfo.printGain();
+    if (verboseInfo) {
+        overallInfo.printDetails();
+    }
     return nIncorrect;
 }
 
@@ -481,7 +514,7 @@ void printAllSchedules(bool infoOnly) {
     for (SLONG d = 0; d < 4; d++) {
         const auto &qPlayer = Sim.Players.Players[d];
         hprintf("========== %s ==========", (LPCTSTR)qPlayer.AirlineX);
-        checkFlightJobs(qPlayer, infoOnly);
+        checkFlightJobs(qPlayer, !infoOnly, !infoOnly);
         hprintf("==============================");
     }
 }

@@ -1739,6 +1739,7 @@ void PLAYER::NewDay() {
 
             Planes -= i;
             UpdateAuftragsUsage();
+            UpdateFrachtauftragsUsage();
             MapWorkers(0);
         }
 
@@ -2246,39 +2247,35 @@ void PLAYER::UpdateAuftragsUsage() {
     }
 
     for (c = 0; c < Planes.AnzEntries(); c++) {
-        if (Planes.IsInAlbum(c) != 0) {
-            CFlugplan *Plan = &Planes[c].Flugplan;
+        if (Planes.IsInAlbum(c) == 0) {
+            continue;
+        }
 
-            for (d = Planes[c].Flugplan.Flug.AnzEntries() - 1; d >= 0; d--) {
-                // Nur bei Aufträgen von menschlichen Spielern
-                if (Plan->Flug[d].ObjectType == 2 && (Owner == 0 || Owner == 2 || !RobotUse(ROBOT_USE_NO_CHECK_FLIGHT))) // ex: Nur Owner==0
-                {
-                    // if ((PlaneTypes[Planes[c].TypeId].Passagiere>=SLONG(Auftraege[Plan->Flug[d].ObjectId].Personen) &&
-                    // Plan->Flug[d].Startdate<=Auftraege[Plan->Flug[d].ObjectId].BisDate) ||
-                    if ((Planes[c].ptPassagiere >= SLONG(Auftraege[Plan->Flug[d].ObjectId].Personen) &&
-                         Plan->Flug[d].Startdate <= Auftraege[Plan->Flug[d].ObjectId].BisDate) ||
-                        Plan->Flug[d].Startdate > Sim.Date || (Plan->Flug[d].Startdate == Sim.Date && Plan->Flug[d].Startzeit > Sim.GetHour())) {
-                        if (Auftraege[Plan->Flug[d].ObjectId].InPlan == 0) {
-                            Auftraege[Plan->Flug[d].ObjectId].InPlan = 1;
-                            Plan->Flug[d].Okay = 0; // Alles klar
-                        }
-                    }
+        CFlugplan *Plan = &Planes[c].Flugplan;
+        for (d = Planes[c].Flugplan.Flug.AnzEntries() - 1; d >= 0; d--) {
+            CFlugplanEintrag &qFPE = Plan->Flug[d];
+            if (qFPE.ObjectType != 2) {
+                continue;
+            }
 
-                    // if (PlaneTypes[Planes[c].TypeId].Passagiere<SLONG(Auftraege[Plan->Flug[d].ObjectId].Personen))
-                    if (Planes[c].ptPassagiere < SLONG(Auftraege[Plan->Flug[d].ObjectId].Personen)) {
-                        Auftraege[Plan->Flug[d].ObjectId].Okay = 0;
-                        Plan->Flug[d].Okay = 3; // Passagierzahl!
-                    }
+            auto &job = Auftraege[qFPE.ObjectId];
+            if (job.InPlan != 0) {
+                continue;
+            }
 
-                    if (Plan->Flug[d].Startdate < Auftraege[Plan->Flug[d].ObjectId].Date ||
-                        Plan->Flug[d].Startdate > Auftraege[Plan->Flug[d].ObjectId].BisDate) {
-                        Auftraege[Plan->Flug[d].ObjectId].Okay = 0;
-                        Plan->Flug[d].Okay = 1; // Falscher Tag!
-                    }
+            qFPE.Okay = 0; // Alles klar
+            job.InPlan = 1;
+
+            // Nur bei Aufträgen von menschlichen Spielern
+            if (Owner == 0 || Owner == 2 || !RobotUse(ROBOT_USE_NO_CHECK_FLIGHT)) { // ex: Nur Owner==0
+                if (Planes[c].ptPassagiere < SLONG(job.Personen)) {
+                    job.Okay = 0;
+                    qFPE.Okay = 3; // Passagierzahl!
                 }
-                // Frachtaufträge werden hier nicht behandelt
-                else if (Plan->Flug[d].ObjectType != 4) {
-                    Plan->Flug[d].Okay = 0; // Alles klar
+
+                if (qFPE.Startdate < job.Date || qFPE.Startdate > job.BisDate) {
+                    job.Okay = 0;
+                    qFPE.Okay = 1; // Falscher Tag!
                 }
             }
         }
@@ -2291,11 +2288,6 @@ void PLAYER::UpdateAuftragsUsage() {
 void PLAYER::UpdateFrachtauftragsUsage() {
     SLONG c = 0;
     SLONG d = 0;
-
-    // Nur bei Aufträgen von menschlichen Spielern
-    if (Owner == 1 && RobotUse(ROBOT_USE_NO_CHECK_FFLIGHT)) {
-        return;
-    }
 
     // TonsOpen bei allen Frachtaufträge resetten:
     for (c = Frachten.AnzEntries() - 1; c >= 0; c--) {
@@ -2311,57 +2303,64 @@ void PLAYER::UpdateFrachtauftragsUsage() {
 
     // TonsOpen bei allen Frachtaufträge neu berechnen:
     for (c = 0; c < Planes.AnzEntries(); c++) {
-        if (Planes.IsInAlbum(c) != 0) {
-            CFlugplan *Plan = &Planes[c].Flugplan;
+        if (Planes.IsInAlbum(c) == 0) {
+            continue;
+        }
 
-            for (d = 0; d < Planes[c].Flugplan.Flug.AnzEntries(); d++) {
-                CFlugplanEintrag &qFPE = Plan->Flug[d];
+        CFlugplan *Plan = &Planes[c].Flugplan;
+        for (d = Planes[c].Flugplan.Flug.AnzEntries() - 1; d >= 0; d--) {
+            CFlugplanEintrag &qFPE = Plan->Flug[d];
+            if (qFPE.ObjectType != 4) {
+                continue;
+            }
 
-                if (qFPE.ObjectType == 4) {
-                    if (qFPE.Startdate < Frachten[qFPE.ObjectId].Date || qFPE.Startdate > Frachten[qFPE.ObjectId].BisDate) {
-                        Frachten[qFPE.ObjectId].Okay = 0;
-                        Frachten[qFPE.ObjectId].InPlan = 1; // New
-                        qFPE.Okay = 1;                      // Falscher Tag!
-                    } else if (qFPE.Startdate <= Frachten[qFPE.ObjectId].BisDate || qFPE.Startdate > Sim.Date ||
-                               (qFPE.Startdate == Sim.Date && qFPE.Startzeit > Sim.GetHour())) {
-                        CFracht &qFracht = Frachten[qFPE.ObjectId];
+            auto &job = Frachten[qFPE.ObjectId];
+            if (job.InPlan != 0) {
+                continue;
+            }
 
-                        // Ist dieser Frachtflug überhaupt noch zu erledigen?
-                        if (qFracht.TonsLeft != 0) {
-                            // Wir misbrauchen bei Frachtflügen das Passagierfeld um zu speichern, wieviel Fracht hier mitfliegt
-                            qFPE.Passagiere = Planes[c].ptPassagiere / 10;
+            // Nur bei Aufträgen von menschlichen Spielern
+            if (Owner == 0 || Owner == 2 || !RobotUse(ROBOT_USE_NO_CHECK_FFLIGHT)) { // ex: Nur Owner==0
+                if (qFPE.Startdate < job.Date || qFPE.Startdate > job.BisDate) {
+                    job.Okay = 0;
+                    qFPE.Okay = 1;  // Falscher Tag!
+                    job.InPlan = 1; // New
+                    continue;
+                }
+            }
 
-                            // Flug nur beachten, wenn er noch nicht gestartet ist:
-                            // Heute ist Tag 5 15:00
-                            // Flug ging an Tag 4 16:00 los. Tag < 5
-                            // Flug 2 geht an Tag 5 18:00 los
+            // Ist dieser Frachtflug überhaupt noch zu erledigen?
+            if (job.TonsLeft != 0) {
+                // Wir misbrauchen bei Frachtflügen das Passagierfeld um zu speichern, wieviel Fracht hier mitfliegt
+                qFPE.Passagiere = Planes[c].ptPassagiere / 10;
 
-                            BOOL ignoreFlight = 0;
-                            if (qFPE.Startdate < Sim.Date) {
-                                ignoreFlight = 1;
-                            } // (qFPE.Startzeit==Sim.GetHour() && (Sim.GetHour()<30 || Planes[c].Ort!=-5)))
-                            if (qFPE.Startdate == Sim.Date && qFPE.Startzeit < Sim.GetHour()) {
-                                ignoreFlight = 1;
-                            }
+                // Flug nur beachten, wenn er noch nicht gestartet ist:
+                // Heute ist Tag 5 15:00
+                // Flug ging an Tag 4 16:00 los. Tag < 5
+                // Flug 2 geht an Tag 5 18:00 los
 
-                            if (!static_cast<bool>(ignoreFlight)) {
-                                qFracht.TonsOpen -= Planes[c].ptPassagiere / 10;
-                            }
+                BOOL ignoreFlight = 0;
+                if (qFPE.Startdate < Sim.Date) {
+                    ignoreFlight = 1;
+                } // (qFPE.Startzeit==Sim.GetHour() && (Sim.GetHour()<30 || Planes[c].Ort!=-5)))
+                if (qFPE.Startdate == Sim.Date && qFPE.Startzeit < Sim.GetHour()) {
+                    ignoreFlight = 1;
+                }
 
-                            if (qFracht.TonsOpen <= 0) {
-                                qFPE.Passagiere -= UWORD(-qFracht.TonsOpen);
+                if (!ignoreFlight) {
+                    job.TonsOpen -= Planes[c].ptPassagiere / 10;
+                }
 
-                                qFracht.TonsOpen = 0;
-                                qFracht.InPlan = 1;
-                                qFPE.Okay = 0; // Alles klar
-                            }
+                if (job.TonsOpen <= 0) {
+                    qFPE.Passagiere -= UWORD(-job.TonsOpen);
+                    job.TonsOpen = 0;
+                    job.InPlan = 1; // New
+                    qFPE.Okay = 0;  // Alles klar
+                }
 
-                            // Bei Frachten warnen, wenn die Frachtmenge auf 0 schrumpft:
-                            if (qFPE.Passagiere == 0) {
-                                qFPE.GateWarning = TRUE;
-                            }
-                        }
-                    }
+                // Bei Frachten warnen, wenn die Frachtmenge auf 0 schrumpft:
+                if (qFPE.Passagiere == 0) {
+                    qFPE.GateWarning = TRUE;
                 }
             }
         }
@@ -4167,10 +4166,6 @@ void PLAYER::RobotExecuteAction() {
                                                 GameMechanic::takeInternationalFlightJob(*this, n, e, ObjectId);
 
                                                 NumOrderFlightsToday2++;
-                                                if (Auftraege.IsInAlbum(ObjectId) == 0) {
-                                                    hprintvar(__LINE__);
-                                                    Auftraege[ObjectId];
-                                                }
 
                                                 GameMechanic::planFlightJob(*this, c, ObjectId, Sim.Date + VonZeit / 24, VonZeit % 24);
                                                 DelayFlightsIfNecessary();
@@ -4209,11 +4204,6 @@ void PLAYER::RobotExecuteAction() {
                                             GameMechanic::takeInternationalFlightJob(*this, n, e, ObjectId);
 
                                             NumOrderFlightsToday2++;
-
-                                            if (Auftraege.IsInAlbum(ObjectId) == 0) {
-                                                hprintvar(__LINE__);
-                                                Auftraege[ObjectId];
-                                            }
 
                                             GameMechanic::planFlightJob(*this, c, ObjectId, Sim.Date + VonZeit / 24, VonZeit % 24);
                                             DelayFlightsIfNecessary();
@@ -4269,24 +4259,21 @@ void PLAYER::RobotExecuteAction() {
                                                 SLONG Cost = ((CalculateFlightCost(qFracht.VonCity, qFracht.NachCity, 8000, 700, -1)) + 99) / 100 * 100;
 
                                                 // Multiplikator, weil wir mehrere Flüge durchführen müssen:
-                                                Cost = Cost * 2 * (qFracht.Tons / (Planes[c].ptPassagiere / 10) + 1);
+                                                int trips = (qFracht.Tons / (Planes[c].ptPassagiere / 10) + 1);
+                                                Cost = Cost * 2 * trips;
 
-                                                if ((Cost <= qFracht.Praemie * 8 / 10 + Bewertungsbonus) ||
-                                                    (RobotUse(ROBOT_USE_FREE_FRACHT) && qFracht.Praemie == 0)) {
+                                                if ((trips < 4) && ((Cost <= qFracht.Praemie * 8 / 10 + Bewertungsbonus) ||
+                                                                    (RobotUse(ROBOT_USE_FREE_FRACHT) && qFracht.Praemie == 0))) {
                                                     SLONG ObjectId = -1;
                                                     GameMechanic::takeInternationalFreightJob(*this, n, e, ObjectId);
 
-                                                    while (qFracht.TonsOpen > 0) {
-                                                        if (Frachten.IsInAlbum(ObjectId) == 0) {
-                                                            hprintvar(__LINE__);
-                                                            Frachten[ObjectId];
+                                                    while (Frachten[ObjectId].TonsOpen > 0) {
+                                                        if (!GameMechanic::planFreightJob(*this, c, ObjectId, Sim.Date + VonZeit / 24, VonZeit % 24)) {
+                                                            break;
                                                         }
-
-                                                        GameMechanic::planFreightJob(*this, c, ObjectId, Sim.Date + VonZeit / 24, VonZeit % 24);
                                                         DelayFlightsIfNecessary();
 
                                                         Sim.Players.CheckFlighplans();
-                                                        qFracht.TonsOpen -= Planes[c].ptPassagiere / 10;
                                                     }
 
                                                     break;
@@ -4324,25 +4311,24 @@ void PLAYER::RobotExecuteAction() {
                                                 SLONG Cost = ((CalculateFlightCost(qFracht.VonCity, qFracht.NachCity, 8000, 700, -1)) + 99) / 100 * 100;
 
                                                 // Multiplikator, weil wir mehrere Flüge durchführen müssen:
-                                                Cost = Cost * (qFracht.Tons / (Planes[c].ptPassagiere / 10) + 1);
+                                                int trips = (qFracht.Tons / (Planes[c].ptPassagiere / 10) + 1);
+                                                Cost = Cost * trips;
 
                                                 // Anflug:
                                                 Cost += ((CalculateFlightCost(VonCity, qFracht.VonCity, 8000, 700, -1)) + 99) / 100 * 100;
 
-                                                if ((Cost <= qFracht.Praemie + Bewertungsbonus) || (RobotUse(ROBOT_USE_FREE_FRACHT) && qFracht.Praemie == 0)) {
+                                                if ((trips < 4) && ((Cost <= qFracht.Praemie + Bewertungsbonus) ||
+                                                                    (RobotUse(ROBOT_USE_FREE_FRACHT) && qFracht.Praemie == 0))) {
                                                     SLONG ObjectId = -1;
                                                     GameMechanic::takeInternationalFreightJob(*this, n, e, ObjectId);
 
-                                                    while (qFracht.TonsOpen > 0) {
-                                                        if (Frachten.IsInAlbum(ObjectId) == 0) {
-                                                            hprintvar(__LINE__);
-                                                            Frachten[ObjectId];
+                                                    while (Frachten[ObjectId].TonsOpen > 0) {
+                                                        if (!GameMechanic::planFreightJob(*this, c, ObjectId, Sim.Date + VonZeit / 24, VonZeit % 24)) {
+                                                            break;
                                                         }
-                                                        GameMechanic::planFreightJob(*this, c, ObjectId, Sim.Date + VonZeit / 24, VonZeit % 24);
                                                         DelayFlightsIfNecessary();
 
                                                         Sim.Players.CheckFlighplans();
-                                                        qFracht.TonsOpen -= Planes[c].ptPassagiere / 10;
                                                     }
                                                 }
                                             }
@@ -5007,11 +4993,6 @@ void PLAYER::RobotExecuteAction() {
                                             SLONG ObjectId = -1;
                                             GameMechanic::takeLastMinuteJob(*this, e, ObjectId);
 
-                                            if (Auftraege.IsInAlbum(ObjectId) == 0) {
-                                                hprintvar(__LINE__);
-                                                Auftraege[ObjectId];
-                                            }
-
                                             GameMechanic::planFlightJob(*this, c, ObjectId, Sim.Date + VonZeit / 24, VonZeit % 24);
                                             DelayFlightsIfNecessary();
                                         }
@@ -5080,11 +5061,6 @@ void PLAYER::RobotExecuteAction() {
 
                                                 NumOrderFlightsToday2++;
 
-                                                if (Auftraege.IsInAlbum(ObjectId) == 0) {
-                                                    hprintvar(__LINE__);
-                                                    Auftraege[ObjectId];
-                                                }
-
                                                 GameMechanic::planFlightJob(*this, c, ObjectId, Sim.Date + VonZeit / 24, VonZeit % 24);
                                                 DelayFlightsIfNecessary();
                                                 break;
@@ -5126,11 +5102,6 @@ void PLAYER::RobotExecuteAction() {
                                             GameMechanic::takeFlightJob(*this, e, ObjectId);
 
                                             NumOrderFlightsToday2++;
-
-                                            if (Auftraege.IsInAlbum(ObjectId) == 0) {
-                                                hprintvar(__LINE__);
-                                                Auftraege[ObjectId];
-                                            }
 
                                             GameMechanic::planFlightJob(*this, c, ObjectId, Sim.Date + VonZeit / 24, VonZeit % 24);
                                             DelayFlightsIfNecessary();
@@ -5198,25 +5169,23 @@ void PLAYER::RobotExecuteAction() {
                                         SLONG Cost = ((CalculateFlightCost(qFracht.VonCity, qFracht.NachCity, 8000, 700, -1)) + 99) / 100 * 100;
 
                                         // Multiplikator, weil wir mehrere Flüge durchführen müssen:
-                                        Cost = Cost * 2 * (qFracht.Tons / (Planes[c].ptPassagiere / 10) + 1);
+                                        int trips = (qFracht.Tons / (Planes[c].ptPassagiere / 10) + 1);
+                                        Cost = Cost * 2 * trips;
                                         // Cost = Cost*2 * (qFracht.Tons / (PlaneTypes[Planes[c].TypeId].Passagiere/10) + 1);
 
-                                        if ((Cost <= qFracht.Praemie * 8 / 10 + Bewertungsbonus) || (RobotUse(ROBOT_USE_FREE_FRACHT) && qFracht.Praemie == 0)) {
+                                        if ((trips < 4) && ((Cost <= qFracht.Praemie * 8 / 10 + Bewertungsbonus) ||
+                                                            (RobotUse(ROBOT_USE_FREE_FRACHT) && qFracht.Praemie == 0))) {
 
                                             SLONG ObjectId = -1;
                                             GameMechanic::takeFreightJob(*this, e, ObjectId);
 
-                                            while (qFracht.TonsOpen > 0) {
-                                                if (Frachten.IsInAlbum(ObjectId) == 0) {
-                                                    hprintvar(__LINE__);
-                                                    Frachten[ObjectId];
+                                            while (Frachten[ObjectId].TonsOpen > 0) {
+                                                if (!GameMechanic::planFreightJob(*this, c, ObjectId, Sim.Date + VonZeit / 24, VonZeit % 24)) {
+                                                    break;
                                                 }
-
-                                                GameMechanic::planFreightJob(*this, c, ObjectId, Sim.Date + VonZeit / 24, VonZeit % 24);
                                                 DelayFlightsIfNecessary();
 
                                                 Sim.Players.CheckFlighplans();
-                                                qFracht.TonsOpen -= Planes[c].ptPassagiere / 10;
                                             }
 
                                             break;
@@ -5254,27 +5223,25 @@ void PLAYER::RobotExecuteAction() {
                                         SLONG Cost = ((CalculateFlightCost(qFracht.VonCity, qFracht.NachCity, 8000, 700, -1)) + 99) / 100 * 100;
 
                                         // Multiplikator, weil wir mehrere Flüge durchführen müssen:
-                                        Cost = Cost * (qFracht.Tons / (Planes[c].ptPassagiere / 10) + 1);
+                                        int trips = (qFracht.Tons / (Planes[c].ptPassagiere / 10) + 1);
+                                        Cost = Cost * trips;
 
                                         // Anflug:
                                         Cost += ((CalculateFlightCost(VonCity, qFracht.VonCity, 8000, 700, -1)) + 99) / 100 * 100;
 
-                                        if ((Cost <= qFracht.Praemie + Bewertungsbonus) || (RobotUse(ROBOT_USE_FREE_FRACHT) && qFracht.Praemie == 0)) {
+                                        if ((trips < 4) &&
+                                            ((Cost <= qFracht.Praemie + Bewertungsbonus) || (RobotUse(ROBOT_USE_FREE_FRACHT) && qFracht.Praemie == 0))) {
 
                                             SLONG ObjectId = -1;
                                             GameMechanic::takeFreightJob(*this, e, ObjectId);
 
-                                            while (qFracht.TonsOpen > 0) {
-                                                if (Frachten.IsInAlbum(ObjectId) == 0) {
-                                                    hprintvar(__LINE__);
-                                                    Frachten[ObjectId];
+                                            while (Frachten[ObjectId].TonsOpen > 0) {
+                                                if (!GameMechanic::planFreightJob(*this, c, ObjectId, Sim.Date + VonZeit / 24, VonZeit % 24)) {
+                                                    break;
                                                 }
-
-                                                GameMechanic::planFreightJob(*this, c, ObjectId, Sim.Date + VonZeit / 24, VonZeit % 24);
                                                 DelayFlightsIfNecessary();
 
                                                 Sim.Players.CheckFlighplans();
-                                                qFracht.TonsOpen -= Planes[c].ptPassagiere / 10;
                                             }
                                         }
                                     }
@@ -7357,6 +7324,7 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
                        "-XXXXXXXXX";
         break;
     case ROBOT_USE_FRACHT:
+        /* SuperBot: Respects this flag */
         pFeatureDesc = "------"
                        "X"
                        "-XXXXXXXXX"
@@ -7517,18 +7485,21 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
                        "----------";
         break;
     case ROBOT_USE_MUCH_FRACHT:
+        /* SuperBot: Respects this flag */
         pFeatureDesc = "------"
                        "."
                        "-X--------"
                        "----------";
         break;
     case ROBOT_USE_FREE_FRACHT:
+        /* SuperBot: Respects this flag */
         pFeatureDesc = "------"
                        "."
                        "--X-------"
                        "----------";
         break;
     case ROBOT_USE_RUN_FRACHT:
+        /* SuperBot: Ignores this flag */
         pFeatureDesc = "------"
                        "."
                        "--X-------"

@@ -44,7 +44,7 @@ void BotPlaner::printForPlane(const char *txt, int planeIdx, bool printOnErrorOn
 #ifdef PRINT_DETAIL
     hprintf("=== %s ===", txt);
     auto &planeState = mPlaneStates[planeIdx];
-    algo2GenSolutionsFromGraph(planeIdx);
+    genSolutionsFromGraph(planeIdx);
     takeJobs(planeState.currentSolution);
     GameMechanic::killFlightPlanFrom(qPlayer, planeState.planeId, mScheduleFromTime.getDate(), mScheduleFromTime.getHour());
     bool ok = applySolutionForPlane(qPlayer, planeState.planeId, planeState.currentSolution);
@@ -68,7 +68,7 @@ void BotPlaner::restorePath(int planeIdx, const std::vector<int> &path) {
     auto &g = mGraphs[planeState.planeTypeId];
     int whereToInsert = planeIdx;
     for (int n : path) {
-        algo2InsertNode(g, planeIdx, whereToInsert, n);
+        insertNode(g, planeIdx, whereToInsert, n);
         whereToInsert = n;
     }
 }
@@ -83,7 +83,7 @@ void BotPlaner::killPath(int planeIdx) {
         const auto &curInfo = g.nodeInfo[n];
         int nextNode = g.nodeState[n].nextNode;
 
-        mJobList[curInfo.jobIdx].unschedule();
+        mJobList[curInfo.jobIdx].unschedule(g.planeTypePassengers);
 
         g.nodeState[n].cameFrom = -1;
         g.nodeState[n].nextNode = -1;
@@ -109,19 +109,17 @@ void BotPlaner::printNodeInfo(const Graph &g, int nodeIdx) const {
                 qPlaneState.availTime.getHour());
     } else {
         const auto &qJob = mJobList[curInfo.jobIdx];
-        if (qJob.assignedtoPlaneIdx != -1) {
-            auto &qPlaneState = mPlaneStates[qJob.assignedtoPlaneIdx];
-            const auto &qPlane = qPlanes[qPlaneState.planeId];
-            hprintf("Node %d is job %s scheduled for plane %s (starting %s %d)", nodeIdx, Helper::getJobName(qJob.auftrag).c_str(), (LPCTSTR)qPlane.Name,
-                    (LPCTSTR)Helper::getWeekday(curState.startTime.getDate()), curState.startTime.getHour());
+        if (qJob.isScheduled()) {
+            hprintf("Node %d is job %s (scheduled, starting %s %d)", nodeIdx, qJob.getName().c_str(), (LPCTSTR)Helper::getWeekday(curState.startTime.getDate()),
+                    curState.startTime.getHour());
         } else {
-            hprintf("Node %d is job %s (unscheduled)", nodeIdx, Helper::getJobName(qJob.auftrag).c_str());
+            hprintf("Node %d is job %s (unscheduled)", nodeIdx, qJob.getName().c_str());
         }
     }
 #endif
 }
 
-bool BotPlaner::algo2ShiftLeft(Graph &g, int nodeToShift, int shiftT, bool commit) {
+bool BotPlaner::shiftLeft(Graph &g, int nodeToShift, int shiftT, bool commit) {
     if (shiftT <= 0) {
         return false;
     }
@@ -166,7 +164,7 @@ bool BotPlaner::algo2ShiftLeft(Graph &g, int nodeToShift, int shiftT, bool commi
     return true;
 }
 
-bool BotPlaner::algo2ShiftRight(Graph &g, int nodeToShift, int shiftT, bool commit) {
+bool BotPlaner::shiftRight(Graph &g, int nodeToShift, int shiftT, bool commit) {
     if (shiftT <= 0) {
         return false;
     }
@@ -213,7 +211,7 @@ bool BotPlaner::algo2ShiftRight(Graph &g, int nodeToShift, int shiftT, bool comm
     return true;
 }
 
-int BotPlaner::algo2MakeRoom(Graph &g, int nodeToMoveLeft, int nodeToMoveRight) {
+int BotPlaner::makeRoom(Graph &g, int nodeToMoveLeft, int nodeToMoveRight) {
     assert(nodeToMoveLeft >= 0);
     assert(nodeToMoveRight >= g.nPlanes || nodeToMoveRight == -1);
 
@@ -227,36 +225,36 @@ int BotPlaner::algo2MakeRoom(Graph &g, int nodeToMoveLeft, int nodeToMoveRight) 
     }
 #endif
 
-    int shiftLeft = 1;
-    int shiftRight = 1;
+    int sLeft = 1;
+    int sRight = 1;
     if (nodeToMoveLeft >= g.nPlanes) {
-        while (shiftLeft < 24 && algo2ShiftLeft(g, nodeToMoveLeft, shiftLeft, false)) {
-            shiftLeft++;
+        while (sLeft < 24 && shiftLeft(g, nodeToMoveLeft, sLeft, false)) {
+            sLeft++;
         }
     }
     if (nodeToMoveRight >= g.nPlanes) {
-        while (shiftRight < 24 && algo2ShiftRight(g, nodeToMoveRight, shiftRight, false)) {
-            shiftRight++;
+        while (sRight < 24 && shiftRight(g, nodeToMoveRight, sRight, false)) {
+            sRight++;
         }
     }
 
 #ifdef PRINT_DETAIL
     if (nodeToMoveLeft >= g.nPlanes && nodeToMoveRight >= g.nPlanes) {
-        const auto &prevJob = mJobList[g.nodeInfo[nodeToMoveLeft].jobIdx].auftrag;
-        const auto &job = mJobList[g.nodeInfo[nodeToMoveRight].jobIdx].auftrag;
-        std::cout << "Make room between " << Helper::getJobName(prevJob).c_str() << " and " << Helper::getJobName(job).c_str() << std::endl;
+        const auto &prevJob = mJobList[g.nodeInfo[nodeToMoveLeft].jobIdx];
+        const auto &job = mJobList[g.nodeInfo[nodeToMoveRight].jobIdx];
+        std::cout << "Make room between " << prevJob.getName().c_str() << " and " << job.getName().c_str() << std::endl;
     } else if (nodeToMoveLeft >= g.nPlanes) {
-        const auto &prevJob = mJobList[g.nodeInfo[nodeToMoveLeft].jobIdx].auftrag;
-        std::cout << "Make room after " << Helper::getJobName(prevJob).c_str() << std::endl;
+        const auto &prevJob = mJobList[g.nodeInfo[nodeToMoveLeft].jobIdx];
+        std::cout << "Make room after " << prevJob.getName().c_str() << std::endl;
     } else if (nodeToMoveRight >= g.nPlanes) {
-        const auto &job = mJobList[g.nodeInfo[nodeToMoveRight].jobIdx].auftrag;
-        std::cout << "Make room before " << Helper::getJobName(job).c_str() << std::endl;
+        const auto &job = mJobList[g.nodeInfo[nodeToMoveRight].jobIdx];
+        std::cout << "Make room before " << job.getName().c_str() << std::endl;
     }
-    std::cout << "Maximum shift: " << shiftLeft - 1 << ", " << shiftRight - 1 << std::endl;
+    std::cout << "Maximum shift: " << sLeft - 1 << ", " << sRight - 1 << std::endl;
 #endif
 
-    algo2ShiftLeft(g, nodeToMoveLeft, shiftLeft - 1, true);
-    algo2ShiftRight(g, nodeToMoveRight, shiftRight - 1, true);
+    shiftLeft(g, nodeToMoveLeft, sLeft - 1, true);
+    shiftRight(g, nodeToMoveRight, sRight - 1, true);
 
     if (nodeToMoveRight == -1) {
         return 99;
@@ -270,46 +268,62 @@ int BotPlaner::algo2MakeRoom(Graph &g, int nodeToMoveLeft, int nodeToMoveRight) 
     return gapTime;
 }
 
-void BotPlaner::algo2ApplySolutionToGraph() {
+void BotPlaner::applySolutionToGraph() {
     for (int p = 0; p < mPlaneStates.size(); p++) {
         auto &qPlaneState = mPlaneStates[p];
-        const auto &qPlane = qPlanes[qPlaneState.planeId];
         auto &g = mGraphs[qPlaneState.planeTypeId];
-        const auto &qFlightPlan = qPlane.Flugplan.Flug;
 
         int currentNode = p;
         int autoFlightDuration = -1;
+        const auto &qFlightPlan = qPlanes[qPlaneState.planeId].Flugplan.Flug;
         for (int d = 0; d < qFlightPlan.AnzEntries(); d++) {
             const auto &qFPE = qFlightPlan[d];
             if (qFPE.ObjectType <= 0) {
                 break;
             }
 
-            auto planeTime = PlaneTime{qFPE.Startdate, qFPE.Startzeit};
-            if (planeTime < qPlaneState.availTime) {
+            if (PlaneTime{qFPE.Startdate, qFPE.Startzeit} < mScheduleFromTime) {
                 continue;
             }
 
             if (qFPE.Okay != 0) {
-                redprintf("BotPlaner::algo2ApplySolutionToGraph(): Not scheduled correctly, skipping: %ld", qFPE.ObjectId);
+                redprintf("BotPlaner::applySolutionToGraph(): Not scheduled correctly, skipping: %ld", qFPE.ObjectId);
                 continue;
             }
 
-            if (qFPE.ObjectType == 2) {
-                auto it = mExistingJobsById.find(qFPE.ObjectId);
-                if (it == mExistingJobsById.end()) {
-                    redprintf("BotPlaner::algo2ApplySolutionToGraph(): Unknown job in flight plan: %ld", qFPE.ObjectId);
-                    continue;
+            if (qFPE.ObjectType == 2 || qFPE.ObjectType == 4) {
+                int nextNode = -1;
+                if (qFPE.ObjectType == 2) {
+                    auto it = mExistingJobsById.find(qFPE.ObjectId);
+                    if (it == mExistingJobsById.end()) {
+                        redprintf("BotPlaner::applySolutionToGraph(): Unknown job in flight plan: %ld", qFPE.ObjectId);
+                        continue;
+                    }
+                    int jobIdx = it->second;
+                    nextNode = g.getNode(jobIdx);
+                } else {
+                    auto it = mExistingFreightJobsById.find(qFPE.ObjectId);
+                    if (it == mExistingFreightJobsById.end()) {
+                        redprintf("BotPlaner::applySolutionToGraph(): Unknown freight job in flight plan: %ld", qFPE.ObjectId);
+                        continue;
+                    }
+                    int jobIdx = it->second;
+                    nextNode = g.getNode(jobIdx);
+                    while (g.nodeState[nextNode].cameFrom != -1 && g.nodeInfo[nextNode].jobIdx == jobIdx) {
+                        nextNode++;
+                    }
+                    if (g.nodeInfo[nextNode].jobIdx != jobIdx) {
+                        redprintf("BotPlaner::applySolutionToGraph(): Not enough node instances for freight job: %ld", qFPE.ObjectId);
+                        return;
+                    }
                 }
-
-                int nextNode = it->second + g.nPlanes;
 
                 /* check duration of any previous automatic flight */
                 if (autoFlightDuration != -1 && autoFlightDuration != g.adjMatrix[currentNode][nextNode].duration) {
-                    redprintf("BotPlaner::algo2ApplySolutionToGraph(): Duration of automatic flight does not match before FPE: %ld", qFPE.ObjectId);
+                    redprintf("BotPlaner::applySolutionToGraph(): Duration of automatic flight does not match before FPE: %ld", qFPE.ObjectId);
                 }
 
-                algo2InsertNode(g, p, currentNode, nextNode);
+                insertNode(g, p, currentNode, nextNode);
                 currentNode = nextNode;
 
                 autoFlightDuration = -1;
@@ -317,12 +331,12 @@ void BotPlaner::algo2ApplySolutionToGraph() {
                 assert(autoFlightDuration == -1);
                 autoFlightDuration = 24 * (qFPE.Landedate - qFPE.Startdate) + (qFPE.Landezeit - qFPE.Startzeit);
                 autoFlightDuration += kDurationExtra;
-            } /* TODO: Fracht */
+            }
         }
     }
 }
 
-void BotPlaner::algo2GenSolutionsFromGraph(int planeIdx) {
+void BotPlaner::genSolutionsFromGraph(int planeIdx) {
     auto &planeState = mPlaneStates[planeIdx];
     const auto &g = mGraphs[planeState.planeTypeId];
 
@@ -334,7 +348,7 @@ void BotPlaner::algo2GenSolutionsFromGraph(int planeIdx) {
     int node = g.nodeState[planeIdx].nextNode;
     while (node != -1) {
         int jobIdx = g.nodeInfo[node].jobIdx;
-        assert(mJobList[jobIdx].isScheduled());
+        assert(mJobList[jobIdx].isFullyScheduled());
 
         qJobList.emplace_back(jobIdx, g.nodeState[node].startTime, g.nodeState[node].startTime + g.nodeInfo[node].duration);
         qJobList.back().bIsFreight = mJobList[jobIdx].isFreight();
@@ -343,7 +357,7 @@ void BotPlaner::algo2GenSolutionsFromGraph(int planeIdx) {
     }
 }
 
-bool BotPlaner::algo2CanInsert(const Graph &g, int currentNode, int nextNode) const {
+bool BotPlaner::canInsert(const Graph &g, int currentNode, int nextNode) const {
     assert(nextNode >= g.nPlanes && nextNode < g.nNodes);
     const auto &nextInfo = g.nodeInfo[nextNode];
 
@@ -353,8 +367,12 @@ bool BotPlaner::algo2CanInsert(const Graph &g, int currentNode, int nextNode) co
     printNodeInfo(g, nextNode);
 #endif
 
+    if (g.adjMatrix[currentNode][nextNode].duration < 0) {
+        return false; /* no edge */
+    }
+
     int jobIdx = nextInfo.jobIdx;
-    if (mJobList[jobIdx].isScheduled()) {
+    if (mJobList[jobIdx].isFullyScheduled()) {
         return false; /* job already assigned */
     }
 
@@ -389,7 +407,7 @@ bool BotPlaner::algo2CanInsert(const Graph &g, int currentNode, int nextNode) co
     return true;
 }
 
-int BotPlaner::algo2FindNext(const Graph &g, int currentNode, int choice) const {
+int BotPlaner::findBestNeighbor(const Graph &g, int currentNode, int choice) const {
     const auto &curInfo = g.nodeInfo[currentNode];
 
     /* determine next node for plane */
@@ -397,7 +415,7 @@ int BotPlaner::algo2FindNext(const Graph &g, int currentNode, int choice) const 
     int outIdx = -1;
     for (; iter < curInfo.bestNeighbors.size(); iter++) {
         outIdx = (iter + choice) % curInfo.bestNeighbors.size();
-        if (algo2CanInsert(g, currentNode, curInfo.bestNeighbors[outIdx])) {
+        if (canInsert(g, currentNode, curInfo.bestNeighbors[outIdx])) {
             break;
         }
     }
@@ -412,10 +430,10 @@ int BotPlaner::algo2FindNext(const Graph &g, int currentNode, int choice) const 
     return curInfo.bestNeighbors[outIdx];
 }
 
-void BotPlaner::algo2InsertNode(Graph &g, int planeIdx, int currentNode, int nextNode) {
+void BotPlaner::insertNode(Graph &g, int planeIdx, int currentNode, int nextNode) {
     assert(nextNode >= g.nPlanes && nextNode < g.nNodes);
 
-    printForPlane("algo2InsertNode() enter", planeIdx, false);
+    printForPlane("insertNode() enter", planeIdx, false);
 
     auto &qPlaneState = mPlaneStates[planeIdx];
     const auto &nextInfo = g.nodeInfo[nextNode];
@@ -438,7 +456,7 @@ void BotPlaner::algo2InsertNode(Graph &g, int planeIdx, int currentNode, int nex
     currentTime += nextInfo.duration;
 
     /* assign job */
-    assert(!mJobList[nextInfo.jobIdx].isScheduled());
+    // assert(!mJobList[nextInfo.jobIdx].isFullyScheduled());
     mJobList[nextInfo.jobIdx].schedule(g.planeTypePassengers);
 
     /* did current already have a successor? This will now become the overnext node */
@@ -473,13 +491,13 @@ void BotPlaner::algo2InsertNode(Graph &g, int planeIdx, int currentNode, int nex
     qPlaneState.numNodes++;
     assert(pathLength(g, planeIdx) == qPlaneState.numNodes);
 
-    printForPlane("algo2InsertNode() leaving", planeIdx, true);
+    printForPlane("insertNode() leaving", planeIdx, true);
 }
 
-void BotPlaner::algo2RemoveNode(Graph &g, int planeIdx, int currentNode) {
+void BotPlaner::removeNode(Graph &g, int planeIdx, int currentNode) {
     assert(currentNode >= g.nPlanes && currentNode < g.nNodes);
 
-    printForPlane("algo2RemoveNode() enter", planeIdx, true);
+    printForPlane("removeNode() enter", planeIdx, true);
 
     auto &qPlaneState = mPlaneStates[planeIdx];
     const auto &curInfo = g.nodeInfo[currentNode];
@@ -497,7 +515,7 @@ void BotPlaner::algo2RemoveNode(Graph &g, int planeIdx, int currentNode) {
 
     /* unassign job */
     assert(mJobList[curInfo.jobIdx].isScheduled());
-    mJobList[curInfo.jobIdx].unschedule();
+    mJobList[curInfo.jobIdx].unschedule(g.planeTypePassengers);
 
     qPlaneState.numNodes--;
     assert(qPlaneState.numNodes >= 0);
@@ -537,23 +555,45 @@ void BotPlaner::algo2RemoveNode(Graph &g, int planeIdx, int currentNode) {
     }
 #endif
 
-    printForPlane("algo2RemoveNode() leaving", planeIdx, true);
+    printForPlane("removeNode() leaving", planeIdx, true);
 }
 
-int BotPlaner::algo2RunForPlaneRemove(int planeIdx, int numToRemove) {
+int BotPlaner::removeAllJobInstances(int jobIdx) {
+    /* remove all instances of jobs (freight jobs have multiple instances) */
+    int nRemoved = 0;
+    int nPlaneTypes = mPlaneTypeToPlane.size();
+    for (int pt = 0; pt < nPlaneTypes; pt++) {
+        Graph &g = mGraphs[pt];
+        int currentNode = g.getNode(jobIdx);
+        while (g.nodeInfo[currentNode].jobIdx == jobIdx && currentNode < g.nNodes) {
+            /* check if job node in this graph is scheduled */
+            if (g.nodeState[currentNode].cameFrom != -1) {
+                /* need to get planeIdx */
+                int planeIdx = currentNode;
+                while (g.nodeState[planeIdx].cameFrom != -1) {
+                    planeIdx = g.nodeState[planeIdx].cameFrom; /* trace back to first node */
+                }
+                assert(planeIdx >= 0 && planeIdx < g.nPlanes);
+
+                removeNode(g, planeIdx, currentNode);
+                nRemoved++;
+            }
+            currentNode++;
+        }
+    }
+    return nRemoved;
+}
+
+int BotPlaner::runRemoveWorst(int planeIdx, int numToRemove) {
     auto &planeState = mPlaneStates[planeIdx];
     auto &g = mGraphs[planeState.planeTypeId];
 
-#ifdef PRINT_OVERALL
-    std::cout << "****************************************" << std::endl;
-    std::cout << "Plane:  " << qPlanes[planeState.planeId].Name.c_str() << std::endl;
-    std::cout << "qPlaneState.numNodes " << planeState.numNodes << std::endl;
-#endif
-    printForPlane("algo2RunForPlaneRemove() enter", planeIdx, true);
+    printForPlane("runRemoveWorst() enter", planeIdx, true);
 
     /* remove some nodes */
     int nRemoved = 0;
     for (int pass = 0; pass < numToRemove; pass++) {
+        int worstJobIdx = -1;
         int worstNode = -1;
         int worstGain = INT_MAX;
 
@@ -563,10 +603,15 @@ int BotPlaner::algo2RunForPlaneRemove(int planeIdx, int numToRemove) {
             assert(g.adjMatrix[prevNode][currentNode].duration >= 0);
 
             int jobIdx = g.nodeInfo[currentNode].jobIdx;
-            if (!mJobList[jobIdx].wasTaken()) {
-                int gain = g.nodeInfo[currentNode].premium - g.adjMatrix[prevNode][currentNode].cost;
-                if (gain < worstGain) {
-                    worstGain = gain;
+            int gain = g.nodeInfo[currentNode].premium - g.adjMatrix[prevNode][currentNode].cost;
+            if (!mJobList[jobIdx].wasTaken() && (gain < worstGain)) {
+                worstGain = gain;
+
+                if (mJobList[jobIdx].isFreight()) {
+                    worstJobIdx = jobIdx;
+                    worstNode = -1;
+                } else {
+                    worstJobIdx = -1;
                     worstNode = currentNode;
                 }
             }
@@ -576,17 +621,49 @@ int BotPlaner::algo2RunForPlaneRemove(int planeIdx, int numToRemove) {
         }
 
         if (worstNode != -1) {
-            algo2RemoveNode(g, planeIdx, worstNode);
+            removeNode(g, planeIdx, worstNode);
             nRemoved++;
+        } else if (worstJobIdx != -1) {
+            nRemoved += removeAllJobInstances(worstJobIdx);
         }
     }
 
-    printForPlane("algo2RunForPlaneRemove() leaving", planeIdx, true);
+    printForPlane("runRemoveWorst() leaving", planeIdx, true);
     return nRemoved;
 }
 
-bool BotPlaner::algo2RunForPlaneAdd(int planeIdx, int choice) {
-    printForPlane("algo2RunForPlaneAdd() enter", planeIdx, true);
+int BotPlaner::runPruneFreightJobs() {
+    int nRemoved = 0;
+    for (int i = mPlaneIdxSortedBySize.size() - 1; i >= 0; i--) {
+        int planeIdx = mPlaneIdxSortedBySize[i];
+        auto &planeState = mPlaneStates[planeIdx];
+        auto &g = mGraphs[planeState.planeTypeId];
+
+        printForPlane("runPruneFreightJobs() enter", planeIdx, true);
+
+        /* remove superfluous instances of freight jobs */
+        int currentNode = g.nodeState[planeIdx].nextNode;
+        while (currentNode != -1) {
+            int jobIdx = g.nodeInfo[currentNode].jobIdx;
+            int next = g.nodeState[currentNode].nextNode;
+            if (!mJobList[jobIdx].isFreight()) {
+                currentNode = next;
+                continue;
+            }
+
+            if (mJobList[jobIdx].getOverscheduledTons() >= g.planeTypePassengers / 10) {
+                removeNode(g, planeIdx, currentNode);
+                nRemoved++;
+            }
+            currentNode = next;
+        }
+        printForPlane("runPruneFreightJobs() leaving", planeIdx, true);
+    }
+    return nRemoved;
+}
+
+bool BotPlaner::runAddBestNeighbor(int planeIdx, int choice) {
+    printForPlane("runAddBestNeighbor() enter", planeIdx, true);
 
     int bestScore = 0;
     int bestNode = -1;
@@ -608,7 +685,7 @@ bool BotPlaner::algo2RunForPlaneAdd(int planeIdx, int choice) {
             break;
         }
 
-        int gap = algo2MakeRoom(g, currentNode, g.nodeState[currentNode].nextNode);
+        int gap = makeRoom(g, currentNode, g.nodeState[currentNode].nextNode);
         if (gap == 0) {
             continue;
         }
@@ -624,7 +701,7 @@ bool BotPlaner::algo2RunForPlaneAdd(int planeIdx, int choice) {
             continue;
         }
 
-        int nodeToInsert = algo2FindNext(g, currentNode, choice);
+        int nodeToInsert = findBestNeighbor(g, currentNode, choice);
         if (nodeToInsert == -1) {
             continue;
         }
@@ -642,29 +719,43 @@ bool BotPlaner::algo2RunForPlaneAdd(int planeIdx, int choice) {
     }
 
     if (bestNode != -1) {
-        int gap = algo2MakeRoom(g, bestWhereToInsert, g.nodeState[bestWhereToInsert].nextNode);
+        int gap = makeRoom(g, bestWhereToInsert, g.nodeState[bestWhereToInsert].nextNode);
         assert(gap > 0);
-        algo2InsertNode(g, planeIdx, bestWhereToInsert, bestNode);
+        insertNode(g, planeIdx, bestWhereToInsert, bestNode);
 
-        printForPlane("algo2RunForPlaneAdd() leaving", planeIdx, true);
+        printForPlane("runAddBestNeighbor() leaving", planeIdx, true);
         return true;
     }
     return false;
 }
 
-bool BotPlaner::algo2RunAddNodeToBestPlane(int jobIdToInsert) {
+bool BotPlaner::runAddNodeToBestPlaneInner(int jobIdxToInsert) {
     int bestPlaneScore = 0;
     int bestPlaneIdx = -1;
     int bestWhereToInsert = 0;
+    int bestNode = 0;
+
     int randOffset = getRandInt(0, mPlaneStates.size() - 1);
     for (int i = 0; i < mPlaneStates.size(); i++) {
         int planeIdx = (randOffset + i) % mPlaneStates.size();
         auto &planeState = mPlaneStates[planeIdx];
         auto &g = mGraphs[planeState.planeTypeId];
 
-        printForPlane("algo2RunAddNodeToBestPlane() enter", planeIdx, true);
+        printForPlane("runAddNodeToBestPlaneInner() enter", planeIdx, true);
 
-        int nodeToInsert = jobIdToInsert + g.nPlanes;
+        /* find unscheduled node instance for given job */
+        int nodeToInsert = g.getNode(jobIdxToInsert);
+        if (nodeToInsert == -1) {
+            continue;
+        }
+        while (g.nodeState[nodeToInsert].cameFrom != -1 && g.nodeInfo[nodeToInsert].jobIdx == jobIdxToInsert) {
+            nodeToInsert++;
+        }
+        if (g.nodeInfo[nodeToInsert].jobIdx != jobIdxToInsert) {
+            redprintf("BotPlaner::runAddNodeToBestPlaneInner(): Not enough node instances for freight job: %ld", mJobList[jobIdxToInsert].getName().c_str());
+            continue;
+        }
+
         if (g.nodeInfo[nodeToInsert].premium <= 0) {
             continue;
         }
@@ -682,7 +773,7 @@ bool BotPlaner::algo2RunAddNodeToBestPlane(int jobIdToInsert) {
                 break;
             }
 
-            int gap = algo2MakeRoom(g, currentNode, g.nodeState[currentNode].nextNode);
+            int gap = makeRoom(g, currentNode, g.nodeState[currentNode].nextNode);
             if (gap == 0) {
                 continue;
             }
@@ -698,7 +789,7 @@ bool BotPlaner::algo2RunAddNodeToBestPlane(int jobIdToInsert) {
                 continue;
             }
 
-            if (!algo2CanInsert(g, currentNode, nodeToInsert)) {
+            if (!canInsert(g, currentNode, nodeToInsert)) {
                 continue;
             }
 
@@ -711,6 +802,7 @@ bool BotPlaner::algo2RunAddNodeToBestPlane(int jobIdToInsert) {
                 bestPlaneScore = score;
                 bestPlaneIdx = planeIdx;
                 bestWhereToInsert = currentNode;
+                bestNode = nodeToInsert;
             }
         }
     }
@@ -719,19 +811,33 @@ bool BotPlaner::algo2RunAddNodeToBestPlane(int jobIdToInsert) {
         auto &planeState = mPlaneStates[bestPlaneIdx];
         auto &g = mGraphs[planeState.planeTypeId];
 
-        int gap = algo2MakeRoom(g, bestWhereToInsert, g.nodeState[bestWhereToInsert].nextNode);
+        int gap = makeRoom(g, bestWhereToInsert, g.nodeState[bestWhereToInsert].nextNode);
         assert(gap > 0);
 
-        int nodeToInsert = jobIdToInsert + g.nPlanes;
-        algo2InsertNode(g, bestPlaneIdx, bestWhereToInsert, nodeToInsert);
+        insertNode(g, bestPlaneIdx, bestWhereToInsert, bestNode);
 
-        printForPlane("algo2RunAddNodeToBestPlane() leave", bestPlaneIdx, true);
+        printForPlane("runAddNodeToBestPlaneInner() leave", bestPlaneIdx, true);
         return true;
     }
     return false;
 }
 
-bool BotPlaner::algo2(int64_t timeBudget) {
+bool BotPlaner::runAddNodeToBestPlane(int jobIdxToInsert) {
+    const auto &job = mJobList[jobIdxToInsert];
+    while (!job.isFullyScheduled()) {
+        if (!runAddNodeToBestPlaneInner(jobIdxToInsert)) {
+            break;
+        }
+    }
+    if (job.isScheduled() && !job.isFullyScheduled()) {
+        assert(job.isFreight());
+        removeAllJobInstances(jobIdxToInsert);
+        return false;
+    }
+    return job.isScheduled();
+}
+
+bool BotPlaner::algo(int64_t timeBudget) {
     timeBudget = 1000 * std::max((int64_t)1, timeBudget);
     auto t_begin = std::chrono::steady_clock::now();
 
@@ -747,7 +853,7 @@ bool BotPlaner::algo2(int64_t timeBudget) {
     int oldGain = allPlaneGain();
     int overallBestGain = oldGain;
     std::vector<std::vector<int>> overallBestPath(mPlaneStates.size());
-    algo2ApplySolutionToGraph();
+    applySolutionToGraph();
     for (int planeIdx = 0; planeIdx < mPlaneStates.size(); planeIdx++) {
         savePath(planeIdx, overallBestPath[planeIdx]);
     }
@@ -762,14 +868,18 @@ bool BotPlaner::algo2(int64_t timeBudget) {
     /* main algo */
     int temperature = kTempStart;
     while (temperature > 0) {
+        for (int i = 0; i < mJobList.size(); i++) {
+            assert(mJobList[i].isFullyScheduled() || !mJobList[i].isScheduled());
+        }
+
         for (int planeIdx = 0; planeIdx < mPlaneStates.size(); planeIdx++) {
-            algo2RunForPlaneRemove(planeIdx, kNumToRemove);
+            runRemoveWorst(planeIdx, kNumToRemove);
         }
 
         for (int i = 0; i < kNumToAdd; i++) {
             int added = 0;
             for (int planeIdx = 0; planeIdx < mPlaneStates.size(); planeIdx++) {
-                if (algo2RunForPlaneAdd(planeIdx, getRandInt(0, 3))) {
+                if (runAddBestNeighbor(planeIdx, getRandInt(0, 3))) {
                     added++;
                 }
             }
@@ -780,12 +890,22 @@ bool BotPlaner::algo2(int64_t timeBudget) {
 
         int numToAdd = kNumBestToAdd * mPlaneStates.size();
         for (int i = 0; i < mJobList.size() && (numToAdd > 0); i++) {
-            if (mJobList[i].isScheduled() || (getRandInt(0, 1) != 0)) {
+            if (mJobList[i].isScheduled()) {
+                assert(mJobList[i].isFullyScheduled());
                 continue;
             }
-            if (algo2RunAddNodeToBestPlane(i)) {
+            if (getRandInt(0, 1) != 0) {
+                continue;
+            }
+            if (runAddNodeToBestPlane(i)) {
                 numToAdd--;
             }
+        }
+
+        runPruneFreightJobs();
+
+        for (int i = 0; i < mJobList.size(); i++) {
+            assert(mJobList[i].isFullyScheduled() || !mJobList[i].isScheduled());
         }
 
         int iterGain = allPlaneGain();
@@ -837,11 +957,13 @@ bool BotPlaner::algo2(int64_t timeBudget) {
     for (int planeIdx = 0; planeIdx < mPlaneStates.size(); planeIdx++) {
         killPath(planeIdx);
     }
+    for (int planeIdx = 0; planeIdx < mPlaneStates.size(); planeIdx++) {
+        restorePath(planeIdx, overallBestPath[planeIdx]);
+    }
 
     /* generate solution */
     for (int planeIdx = 0; planeIdx < mPlaneStates.size(); planeIdx++) {
-        restorePath(planeIdx, overallBestPath[planeIdx]);
-        algo2GenSolutionsFromGraph(planeIdx);
+        genSolutionsFromGraph(planeIdx);
     }
 
     return (overallBestGain > oldGain);

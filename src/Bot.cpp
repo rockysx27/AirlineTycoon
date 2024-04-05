@@ -538,11 +538,7 @@ void Bot::RobotExecuteAction() {
         // Frachtbüro:
     case ACTION_CHECKAGENT3:
         if (condCheckFreight() != Prio::None) {
-            gFrachten.Refill();
-
-            // TODO
-
-            gFrachten.Refill();
+            actionCheckFreightDepot();
         } else {
             redprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }

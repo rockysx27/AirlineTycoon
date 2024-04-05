@@ -3009,24 +3009,24 @@ void CPlaner::AutoPlan(SLONG mode) {
 
     if (mode == 0) {
         /* only check current plane */
-        Helper::checkFlightJobs(qPlayer, false);
+        Helper::checkFlightJobs(qPlayer, true, true);
         return;
     }
 
     if (mode == 1) {
         BotPlaner bot(qPlayer, qPlayer.Planes, BotPlaner::JobOwner::International, cities);
-        auto solutions = bot.planFlights(planeIds, true, kAvailTimeExtra);
+        auto solutions = bot.planFlights(planeIds, kAvailTimeExtra);
         bot.applySolution(qPlayer, solutions);
-        Helper::checkFlightJobs(qPlayer, false);
+        Helper::checkFlightJobs(qPlayer, true, true);
         return;
     }
 
     if (mode == 2) {
         BotPlaner bot(qPlayer, qPlayer.Planes, BotPlaner::JobOwner::International, cities);
         bot.setDistanceFactor(1);
-        auto solutions = bot.planFlights(planeIds, true, kAvailTimeExtra);
+        auto solutions = bot.planFlights(planeIds, kAvailTimeExtra);
         bot.applySolution(qPlayer, solutions);
-        Helper::checkFlightJobs(qPlayer, false);
+        Helper::checkFlightJobs(qPlayer, true, true);
         return;
     }
 }

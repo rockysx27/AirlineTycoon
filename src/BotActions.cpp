@@ -338,6 +338,15 @@ void Bot::actionCheckTravelAgency() {
     ReisebueroAuftraege.RefillForReisebuero();
 }
 
+void Bot::actionCheckFreightDepot() {
+    gFrachten.Refill();
+
+    BotPlaner planer(qPlayer, qPlayer.Planes, BotPlaner::JobOwner::Freight, {});
+    grabFlights(planer, false);
+
+    gFrachten.Refill();
+}
+
 void Bot::grabFlights(BotPlaner &planer, bool areWeInOffice) {
     auto res = canWePlanFlights();
     if (HowToPlan::None == res) {
@@ -365,7 +374,7 @@ void Bot::grabFlights(BotPlaner &planer, bool areWeInOffice) {
         planer.setUhrigBonus(1000 * 1000);
     }
 
-    mPlanerSolution = planer.planFlights(mPlanesForJobs, true, extraBufferTime);
+    mPlanerSolution = planer.planFlights(mPlanesForJobs, extraBufferTime);
     if (!mPlanerSolution.empty()) {
         requestPlanFlights(areWeInOffice);
     }
@@ -397,7 +406,7 @@ void Bot::planFlights() {
         redprintf("Bot::planFlights(): Solution does not apply! Need to re-plan.");
 
         BotPlaner planer(qPlayer, qPlayer.Planes, BotPlaner::JobOwner::Backlog, {});
-        mPlanerSolution = planer.planFlights(mPlanesForJobs, true, kAvailTimeExtra);
+        mPlanerSolution = planer.planFlights(mPlanesForJobs, kAvailTimeExtra);
         if (!mPlanerSolution.empty()) {
             BotPlaner::applySolution(qPlayer, mPlanerSolution);
         }
@@ -412,7 +421,7 @@ void Bot::planFlights() {
     } else {
         hprintf("Total gain got worse: %s $ (%s $)", Insert1000erDots(newGain).c_str(), Insert1000erDots(diff).c_str());
     }
-    Helper::checkFlightJobs(qPlayer, false);
+    Helper::checkFlightJobs(qPlayer, false, true);
 
     mPlanerSolution = {};
 
@@ -1545,9 +1554,10 @@ void Bot::planRoutes() {
             }
             hprintf("Bot::planRoutes(): Scheduled route %s %ld times for plane %s, starting at %s %ld", Helper::getRouteName(getRoute(qRoute)).c_str(),
                     numScheduled, (LPCTSTR)qPlane.Name, (LPCTSTR)Helper::getWeekday(availTime.getDate()), availTime.getHour());
-            Helper::checkPlaneSchedule(qPlayer, planeId, true);
+            Helper::checkPlaneSchedule(qPlayer, planeId, false);
         }
     }
+    Helper::checkFlightJobs(qPlayer, false, true);
 
     /* adjust ticket prices */
     for (auto &qRoute : mRoutes) {

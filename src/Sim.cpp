@@ -1935,6 +1935,7 @@ void SIM::DoTimeStep() {
                                 qPlane.Flugplan.UpdateNextStart();
                                 qPlane.CheckFlugplaene(c);
                                 Players.Players[c].UpdateAuftragsUsage();
+                                Players.Players[c].UpdateFrachtauftragsUsage();
                             }
                         }
                     }

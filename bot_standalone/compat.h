@@ -130,6 +130,9 @@ class CFracht {
     SBYTE Okay{};     // 0=Nix, -1=Durchgeführt, 1=1x im Plan
     SLONG Praemie{};  // Prämie bei Erfüllung
     SLONG Strafe{};   // Strafe bei Versagen
+    /* types */
+    SLONG jobType{-1};
+    SLONG jobSizeType{-1};
 
     CFracht() = default;
     CFracht(ULONG VonCity, ULONG NachCity, SLONG Tons, ULONG Personen, UWORD Date, SLONG Praemie, SLONG Strafe);

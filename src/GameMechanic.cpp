@@ -2085,14 +2085,14 @@ bool GameMechanic::killFlightPlanFrom(PLAYER &qPlayer, SLONG planeId, SLONG date
     return true;
 }
 
-bool GameMechanic::refillFlightJobs(SLONG cityNum) {
+bool GameMechanic::refillFlightJobs(SLONG cityNum, SLONG minimum) {
     if (cityNum < 0 || cityNum >= AuslandsAuftraege.size()) {
         redprintf("GameMechanic::refillFlightJobs: Invalid cityNum (%ld).", cityNum);
         return false;
     }
 
-    AuslandsAuftraege[cityNum].RefillForAusland(cityNum);
-    AuslandsFrachten[cityNum].RefillForAusland(cityNum);
+    AuslandsAuftraege[cityNum].RefillForAusland(cityNum, minimum);
+    AuslandsFrachten[cityNum].RefillForAusland(cityNum, minimum);
 
     return true;
 }
@@ -2170,11 +2170,12 @@ bool GameMechanic::_planFlightJob(PLAYER &qPlayer, SLONG planeID, SLONG objectID
     auto lastIdx = qPlane.Flugplan.Flug.AnzEntries() - 1;
     CFlugplanEintrag &fpe = qPlane.Flugplan.Flug[lastIdx];
 
+    fpe = {};
     fpe.ObjectType = objectType;
     fpe.ObjectId = objectID;
-    fpe.Okay = 0;
     fpe.Startdate = date;
     fpe.Startzeit = time;
+    fpe.ScheduledByGM = TRUE;
 
     if (objectType == 1) {
         fpe.Ticketpreis = qPlayer.RentRouten.RentRouten[Routen(objectID)].Ticketpreis;
@@ -2193,11 +2194,8 @@ bool GameMechanic::_planFlightJob(PLAYER &qPlayer, SLONG planeID, SLONG objectID
 
     qPlayer.NetUpdateFlightplan(planeID);
 
-    if (objectType == 2) {
-        qPlayer.UpdateAuftragsUsage();
-    } else if (objectType == 4) {
-        qPlayer.UpdateFrachtauftragsUsage();
-    }
+    qPlayer.UpdateAuftragsUsage();
+    qPlayer.UpdateFrachtauftragsUsage();
 
     return true;
 }
@@ -2841,6 +2839,7 @@ void GameMechanic::executeSabotageMode1() {
             }
             qPlane.CheckFlugplaene(qPlayer.ArabOpfer);
             qOpfer.UpdateAuftragsUsage();
+            qOpfer.UpdateFrachtauftragsUsage();
             qOpfer.Messages.AddMessage(BERATERTYP_GIRL, bprintf(StandardTexte.GetS(TOKEN_ADVICE, 2304), (LPCTSTR)qPlane.Name));
             PictureId = GetIdFromString("REIFEN");
         } break;

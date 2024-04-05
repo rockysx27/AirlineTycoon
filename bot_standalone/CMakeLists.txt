@@ -52,8 +52,7 @@ include_directories(${PROJECT_SOURCE_DIR})
 add_executable (AT_bot
     Auftrag.cpp
     BotHelper.cpp
-    BotPlanerAlgo1.cpp
-    BotPlanerAlgo2.cpp
+    BotPlanerAlgo.cpp
     BotPlaner.cpp
     compat_global.cpp
     compat_misc.cpp

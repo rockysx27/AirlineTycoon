@@ -2,6 +2,7 @@
 #define BOT_HELPER_H_
 
 #include <array>
+#include <climits>
 #include <iostream>
 #include <optional>
 
@@ -83,30 +84,16 @@ namespace Helper {
 CString getWeekday(UWORD date);
 CString getWeekday(const PlaneTime &time);
 
-void printJob(const CAuftrag &qAuftrag);
-void printRoute(const CRoute &qRoute);
-void printFreight(const CFracht &qAuftrag);
-
-std::string getRouteName(const CRoute &qRoute);
-std::string getJobName(const CAuftrag &qAuftrag);
-std::string getFreightName(const CFracht &qAuftrag);
-
-void printFPE(const CFlugplanEintrag &qFPE);
-
-const CFlugplanEintrag *getLastFlight(const CPlane &qPlane);
-const CFlugplanEintrag *getLastFlightNotAfter(const CPlane &qPlane, PlaneTime ignoreFrom);
-std::pair<PlaneTime, int> getPlaneAvailableTimeLoc(const CPlane &qPlane, std::optional<PlaneTime> ignoreFrom, std::optional<PlaneTime> earliest);
-
-SLONG checkPlaneSchedule(const PLAYER &qPlayer, SLONG planeId, bool printOnErrorOnly);
-SLONG checkPlaneSchedule(const PLAYER &qPlayer, const CPlane &qPlane, bool printOnErrorOnly);
-SLONG _checkPlaneSchedule(const PLAYER &qPlayer, const CPlane &qPlane, std::unordered_map<SLONG, CString> &assignedJobs,
-                          std::unordered_map<SLONG, SLONG> freightTons, bool printOnErrorOnly);
-SLONG checkFlightJobs(const PLAYER &qPlayer, bool printOnErrorOnly);
-void printFlightJobs(const PLAYER &qPlayer, SLONG planeId);
-void printFlightJobs(const PLAYER &qPlayer, const CPlane &qPlane);
+struct FreightInfo {
+    std::vector<CString> planeNames;
+    std::vector<SLONG> tonsPerPlane;
+    SLONG tonsOpen{0};
+    SLONG smallestDecrement{INT_MAX};
+};
 
 struct ScheduleInfo {
     SLONG jobs{0};
+    SLONG freightJobs{0};
     SLONG gain{0};
     SLONG passengers{0};
     SLONG tons{0};
@@ -115,8 +102,8 @@ struct ScheduleInfo {
     SLONG hoursFlights{0};
     SLONG hoursAutoFlights{0};
     SLONG numPlanes{0};
-    PlaneTime scheduleStart;
-    PlaneTime scheduleEnd;
+    PlaneTime scheduleStart{INT_MAX, 0};
+    PlaneTime scheduleEnd{0, 0};
     /* for job statistics */
     std::array<SLONG, 5> jobTypes{};
     std::array<SLONG, 6> jobSizeTypes{};
@@ -126,6 +113,7 @@ struct ScheduleInfo {
 
     ScheduleInfo &operator+=(ScheduleInfo delta) {
         jobs += delta.jobs;
+        freightJobs += delta.freightJobs;
         gain += delta.gain;
         passengers += delta.passengers;
         tons += delta.tons;
@@ -151,32 +139,60 @@ struct ScheduleInfo {
                 (LPCTSTR)getWeekday(scheduleEnd), scheduleEnd.getHour(), numPlanes, Insert1000erDots(gain).c_str());
     }
     void printDetails() {
+        hprintf("====================");
+        printGain();
+
         if (uhrigFlights > 0) {
-            hprintf("Flying %ld passengers, %ld tons, %ld jobs (%ld from Uhrig) and %ld miles.", passengers, tons, jobs, uhrigFlights, miles);
+            hprintf("Flying %ld jobs (%ld from Uhrig, %ld passengers), %ld freight jobs (%ld tons) and %ld miles.", jobs, uhrigFlights, passengers, freightJobs,
+                    tons, miles);
         } else {
-            hprintf("Flying %ld passengers, %ld tons, %ld jobs and %ld miles.", passengers, tons, jobs, miles);
+            hprintf("Flying %ld jobs (%ld passengers), %ld freight jobs (%ld tons) and %ld miles.", jobs, passengers, freightJobs, tons, miles);
         }
         hprintf("%.1f %% of plane schedule are regular flights, %.1f %% are automatic flights.", getRatioFlights(), getRatioAutoFlights());
 
         std::array<CString, 5> typeStr{"normal", "later", "highriskreward", "scam", "no fine"};
         std::array<CString, 6> sizeStr{"VIP", "S", "M", "L", "XL", "XXL"};
-        printf("Flying job types: ");
+        printf("Job types: ");
         for (SLONG i = 0; i < jobTypes.size(); i++) {
-            printf("%.0f %% %s", 100.0 * jobTypes[i] / jobs, (LPCTSTR)typeStr[i]);
+            printf("%.0f %% %s", 100.0 * jobTypes[i] / (jobs + freightJobs), (LPCTSTR)typeStr[i]);
             if (i < jobTypes.size() - 1) {
                 printf(", ");
             }
         }
         printf("\nJob sizes: ");
         for (SLONG i = 0; i < jobSizeTypes.size(); i++) {
-            printf("%.0f %% %s", 100.0 * jobSizeTypes[i] / jobs, (LPCTSTR)sizeStr[i]);
+            printf("%.0f %% %s", 100.0 * jobSizeTypes[i] / (jobs + freightJobs), (LPCTSTR)sizeStr[i]);
             if (i < jobSizeTypes.size() - 1) {
                 printf(", ");
             }
         }
         printf("\n");
+        hprintf("====================");
     }
 };
+
+void printJob(const CAuftrag &qAuftrag);
+void printRoute(const CRoute &qRoute);
+void printFreight(const CFracht &qAuftrag);
+
+std::string getRouteName(const CRoute &qRoute);
+std::string getJobName(const CAuftrag &qAuftrag);
+std::string getFreightName(const CFracht &qAuftrag);
+
+void printFPE(const CFlugplanEintrag &qFPE);
+
+const CFlugplanEintrag *getLastFlight(const CPlane &qPlane);
+const CFlugplanEintrag *getLastFlightNotAfter(const CPlane &qPlane, PlaneTime ignoreFrom);
+std::pair<PlaneTime, int> getPlaneAvailableTimeLoc(const CPlane &qPlane, std::optional<PlaneTime> ignoreFrom, std::optional<PlaneTime> earliest);
+
+SLONG checkPlaneSchedule(const PLAYER &qPlayer, SLONG planeId, bool alwaysPrint);
+SLONG checkPlaneSchedule(const PLAYER &qPlayer, const CPlane &qPlane, bool alwaysPrint);
+SLONG _checkPlaneSchedule(const PLAYER &qPlayer, const CPlane &qPlane, std::unordered_map<SLONG, CString> &assignedJobs,
+                          std::unordered_map<SLONG, FreightInfo> &freightTons, bool alwaysPrint);
+SLONG checkFlightJobs(const PLAYER &qPlayer, bool alwaysPrint, bool verboseInfo);
+void printFlightJobs(const PLAYER &qPlayer, SLONG planeId);
+void printFlightJobs(const PLAYER &qPlayer, const CPlane &qPlane);
+
 ScheduleInfo calculateScheduleInfo(const PLAYER &qPlayer, SLONG planeId);
 
 void printAllSchedules(bool infoOnly);

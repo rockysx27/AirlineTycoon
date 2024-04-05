@@ -1,6 +1,8 @@
 #ifndef BOT_PLANER_H_
 #define BOT_PLANER_H_
 
+#include "BotHelper.h"
+
 #include <cassert>
 #include <climits>
 #include <deque>
@@ -19,76 +21,6 @@ extern int kNumToRemove;
 extern int kTempStart;
 extern int kTempStep;
 
-class PlaneTime {
-  public:
-    PlaneTime() = default;
-    PlaneTime(int date, int time) : mDate(date), mTime(time) { normalize(); }
-
-    int getDate() const { return mDate; }
-    int getHour() const { return mTime; }
-    int convertToHours() const { return 24 * mDate + mTime; }
-
-    PlaneTime &operator+=(int delta) {
-        mTime += delta;
-        normalize();
-        return *this;
-    }
-
-    PlaneTime &operator-=(int delta) {
-        mTime -= delta;
-        normalize();
-        return *this;
-    }
-    PlaneTime operator+(int delta) const {
-        PlaneTime t = *this;
-        t += delta;
-        return t;
-    }
-    PlaneTime operator-(int delta) const {
-        PlaneTime t = *this;
-        t -= delta;
-        return t;
-    }
-    int operator-(const PlaneTime &time) const {
-        PlaneTime t = *this - time.convertToHours();
-        return t.convertToHours();
-    }
-    bool operator==(const PlaneTime &other) const { return (mDate == other.mDate && mTime == other.mTime); }
-    bool operator!=(const PlaneTime &other) const { return (mDate != other.mDate || mTime != other.mTime); }
-    bool operator>(const PlaneTime &other) const {
-        if (mDate == other.mDate) {
-            return (mTime > other.mTime);
-        }
-        return (mDate > other.mDate);
-    }
-    bool operator>=(const PlaneTime &other) const {
-        if (mDate == other.mDate) {
-            return (mTime >= other.mTime);
-        }
-        return (mDate > other.mDate);
-    }
-    bool operator<(const PlaneTime &other) const { return other > *this; }
-    bool operator<=(const PlaneTime &other) const { return other >= *this; }
-    void setDate(int date) {
-        mDate = date;
-        mTime = 0;
-    }
-
-  private:
-    void normalize() {
-        while (mTime >= 24) {
-            mTime -= 24;
-            mDate++;
-        }
-        while (mTime < 0) {
-            mTime += 24;
-            mDate--;
-        }
-    }
-    int mDate{0};
-    int mTime{0};
-};
-
 class Graph {
   public:
     struct Node {
@@ -106,19 +38,26 @@ class Graph {
     };
 
     struct NodeState {
-        /* both algos: */
         PlaneTime startTime{};
         int cameFrom{-1};
-        /* algo 1 only: */
-        PlaneTime availTime{};
-        bool visitedThisTour{false};
-        int numVisited{0};
-        int outIdx{0};
-        /* algo 2 only: */
         int nextNode{-1};
     };
 
-    Graph(int numPlanes, int numJobs) : nPlanes(numPlanes), nNodes(numPlanes + numJobs), nodeInfo(nNodes), adjMatrix(nNodes), nodeState(nNodes) {
+    Graph(int numPlanes, int ptPass) : nPlanes(numPlanes), nNodes(numPlanes), planeTypePassengers(ptPass) { resize(); }
+
+    int addNode(int jobId) {
+        if (mapJobIdToNode.find(jobId) == mapJobIdToNode.end()) {
+            mapJobIdToNode[jobId] = nNodes;
+        }
+        nNodes++;
+        resize();
+        return (nNodes - 1);
+    }
+
+    void resize() {
+        nodeInfo.resize(nNodes);
+        nodeState.resize(nNodes);
+        adjMatrix.resize(nNodes);
         for (int i = 0; i < nNodes; i++) {
             adjMatrix[i].resize(nNodes);
         }
@@ -130,11 +69,19 @@ class Graph {
         }
     }
 
-    int nPlanes;
-    int nNodes;
+    inline int getNode(int jobId) const {
+        auto it = mapJobIdToNode.find(jobId);
+        return (it != mapJobIdToNode.end()) ? it->second : -1;
+    }
+
+    int nPlanes{0};
+    int nNodes{0};
+    int planeTypePassengers{0};
     std::vector<Node> nodeInfo;
-    std::vector<std::vector<Edge>> adjMatrix;
     std::vector<NodeState> nodeState;
+    std::vector<std::vector<Edge>> adjMatrix;
+
+    std::unordered_map<int, int> mapJobIdToNode;
 };
 
 class BotPlaner {
@@ -168,7 +115,7 @@ class BotPlaner {
     void setUhrigBonus(SLONG val) { mUhrigBonus = val; }
     void setConstBonus(SLONG val) { mConstBonus = val; }
 
-    SolutionList planFlights(const std::vector<int> &planeIdsInput, bool bUseImprovedAlgo, int extraBufferTime);
+    SolutionList planFlights(const std::vector<int> &planeIdsInput, int extraBufferTime);
     static bool applySolution(PLAYER &qPlayer, const SolutionList &solutions);
 
   private:
@@ -177,34 +124,68 @@ class BotPlaner {
         int planeId{-1};
         int planeTypeId{-1};
         int startCity{-1};
-        /* both algos: */
         PlaneTime availTime{};
         Solution currentSolution{};
-        /* algo 1 only: */
-        std::vector<int> bJobIdAssigned;
-        /* algo 2 only: */
         int numNodes{0};
         int currentPremium{0};
         int currentCost{0};
     };
 
-    struct FlightJob {
-        FlightJob(int i, int j, CAuftrag a, JobOwner o) : id(i), sourceId(j), auftrag(a), owner(o) { assert(i >= 0x1000000); }
-        bool wasTaken() const {
+    class FlightJob {
+      public:
+        FlightJob(int i, int j, CAuftrag a, JobOwner o) : id(i), sourceId(j), owner(o), auftrag(a) { assert(i >= 0x1000000); }
+        FlightJob(int i, int j, CFracht a, JobOwner o) : id(i), sourceId(j), owner(o), fracht(a) {
+            assert(i >= 0x1000000);
+            numStillNeeded = fracht.Tons;
+        }
+        int getNumStillNeeded() { return numStillNeeded; }
+        void setNumStillNeeded(int val) { numStillNeeded = val; }
+        void addNumStillNeeded(int val) { numStillNeeded += val; }
+        inline bool wasTaken() const {
             return owner == JobOwner::Planned || owner == JobOwner::PlannedFreight || owner == JobOwner::Backlog || owner == JobOwner::BacklogFreight;
         }
-        bool isFreight() const {
+        inline bool isFreight() const {
             return owner == JobOwner::PlannedFreight || owner == JobOwner::Freight || owner == JobOwner::InternationalFreight ||
                    owner == JobOwner::BacklogFreight;
         }
+        inline int getStartCity() const { return isFreight() ? fracht.VonCity : auftrag.VonCity; }
+        inline int getDestCity() const { return isFreight() ? fracht.NachCity : auftrag.NachCity; }
+        inline int getDate() const { return isFreight() ? fracht.Date : auftrag.Date; }
+        inline int getBisDate() const { return isFreight() ? fracht.BisDate : auftrag.BisDate; }
+        inline int getPersonen() const { return isFreight() ? 0 : auftrag.Personen; }
+        inline int getTons() const { return isFreight() ? fracht.Tons : 0; }
+        inline int getOverscheduledTons() const { return (isFreight() && numStillNeeded < 0) ? (-numStillNeeded) : 0; }
+        inline bool isScheduled() const { return isFreight() ? (numStillNeeded < fracht.Tons) : (numStillNeeded == 0); }
+        inline bool isFullyScheduled() const { return (numStillNeeded <= 0); }
+        inline void schedule(int passenger) {
+            if (isFreight()) {
+                // assert(numStillNeeded > 0);
+                numStillNeeded -= passenger / 10;
+            } else {
+                assert(numStillNeeded == 1);
+                numStillNeeded = 0;
+            }
+        }
+        inline void unschedule(int passenger) {
+            if (isFreight()) {
+                numStillNeeded += passenger / 10;
+                assert(numStillNeeded <= fracht.Tons);
+            } else {
+                assert(numStillNeeded == 0);
+                numStillNeeded = 1;
+            }
+        }
+        std::string getName() const { return isFreight() ? Helper::getFreightName(fracht) : Helper::getJobName(auftrag); }
 
         int id{};
         int sourceId{-1};
-        CAuftrag auftrag;
         JobOwner owner;
         SLONG score{};
-        /* both algos: */
-        int numStillNeeded{-1};
+
+      private:
+        CAuftrag auftrag;
+        CFracht fracht;
+        int numStillNeeded{1};
     };
 
     struct JobSource {
@@ -216,18 +197,14 @@ class BotPlaner {
         JobOwner owner{JobOwner::Backlog};
     };
 
-    void printGraph(const std::vector<PlaneState> &planeStates, const std::vector<FlightJob> &list, const Graph &g);
+    void printGraph(const Graph &g);
 
     /* preparation */
     void findPlaneTypes();
     void collectAllFlightJobs(const std::vector<int> &planeIds);
     std::vector<Graph> prepareGraph();
 
-    /* algo 1 */
-    Solution algo1FindFlightPlan(Graph &g, int planeIdx, PlaneTime availTime, const std::vector<int> &eligibleJobIds);
-    bool algo1();
-
-    /* algo 2 */
+    /* in BotPlanerAlgo.cpp */
     inline int allPlaneGain() {
         int iterGain = 0;
         for (int planeIdx = 0; planeIdx < mPlaneStates.size(); planeIdx++) {
@@ -240,19 +217,22 @@ class BotPlaner {
     void restorePath(int planeIdx, const std::vector<int> &path);
     void killPath(int planeIdx);
     void printNodeInfo(const Graph &g, int nodeIdx) const;
-    bool algo2ShiftLeft(Graph &g, int nodeToShift, int shiftT, bool commit);
-    bool algo2ShiftRight(Graph &g, int nodeToShift, int shiftT, bool commit);
-    int algo2MakeRoom(Graph &g, int nodeToMoveLeft, int nodeToMoveRight);
-    void algo2GenSolutionsFromGraph(int planeIdx);
-    void algo2ApplySolutionToGraph();
-    bool algo2CanInsert(const Graph &g, int currentNode, int nextNode) const;
-    int algo2FindNext(const Graph &g, int currentNode, int choice) const;
-    void algo2InsertNode(Graph &g, int planeIdx, int currentNode, int nextNode);
-    void algo2RemoveNode(Graph &g, int planeIdx, int currentNode);
-    int algo2RunForPlaneRemove(int planeIdx, int numToRemove);
-    bool algo2RunForPlaneAdd(int planeIdx, int choice);
-    bool algo2RunAddNodeToBestPlane(int jobIdToInsert);
-    bool algo2(int64_t timeBudget);
+    bool shiftLeft(Graph &g, int nodeToShift, int shiftT, bool commit);
+    bool shiftRight(Graph &g, int nodeToShift, int shiftT, bool commit);
+    int makeRoom(Graph &g, int nodeToMoveLeft, int nodeToMoveRight);
+    void genSolutionsFromGraph(int planeIdx);
+    void applySolutionToGraph();
+    bool canInsert(const Graph &g, int currentNode, int nextNode) const;
+    int findBestNeighbor(const Graph &g, int currentNode, int choice) const;
+    void insertNode(Graph &g, int planeIdx, int currentNode, int nextNode);
+    void removeNode(Graph &g, int planeIdx, int currentNode);
+    int removeAllJobInstances(int jobIdx);
+    int runRemoveWorst(int planeIdx, int numToRemove);
+    int runPruneFreightJobs();
+    bool runAddBestNeighbor(int planeIdx, int choice);
+    bool runAddNodeToBestPlaneInner(int jobIdxToInsert);
+    bool runAddNodeToBestPlane(int jobIdxToInsert);
+    bool algo(int64_t timeBudget);
 
     /* apply solution */
     bool takeJobs(Solution &currentSolution);
@@ -280,7 +260,9 @@ class BotPlaner {
     std::vector<const CPlane *> mPlaneTypeToPlane;
     std::vector<FlightJob> mJobList;
     std::unordered_map<int, int> mExistingJobsById;
+    std::unordered_map<int, int> mExistingFreightJobsById;
     std::vector<PlaneState> mPlaneStates;
+    std::vector<int> mPlaneIdxSortedBySize;
     std::vector<Graph> mGraphs;
 
     /* randomness source */

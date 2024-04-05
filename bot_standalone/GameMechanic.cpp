@@ -259,11 +259,12 @@ bool GameMechanic::_planFlightJob(PLAYER &qPlayer, SLONG planeID, SLONG objectID
     auto lastIdx = qPlane.Flugplan.Flug.AnzEntries() - 1;
     CFlugplanEintrag &fpe = qPlane.Flugplan.Flug[lastIdx];
 
+    fpe = {};
     fpe.ObjectType = objectType;
     fpe.ObjectId = objectID;
-    fpe.Okay = 0;
     fpe.Startdate = date;
     fpe.Startzeit = time;
+    fpe.ScheduledByGM = TRUE;
 
     if (objectType == 1) {
         // fpe.Ticketpreis = qPlayer.RentRouten.RentRouten[Routen(objectID)].Ticketpreis;
@@ -280,11 +281,8 @@ bool GameMechanic::_planFlightJob(PLAYER &qPlayer, SLONG planeID, SLONG objectID
     qPlane.Flugplan.UpdateNextStart();
     qPlane.CheckFlugplaene(qPlayer.PlayerNum);
 
-    if (objectType == 2) {
-        qPlayer.UpdateAuftragsUsage();
-    } else if (objectType == 4) {
-        qPlayer.UpdateFrachtauftragsUsage();
-    }
+    qPlayer.UpdateAuftragsUsage();
+    qPlayer.UpdateFrachtauftragsUsage();
 
     return true;
 }

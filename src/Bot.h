@@ -160,6 +160,7 @@ class Bot {
     void actionCallInternational(bool areWeInOffice);
     void actionCheckLastMinute();
     void actionCheckTravelAgency();
+    void actionCheckFreightDepot();
     void grabFlights(BotPlaner &planer, bool areWeInOffice);
     void requestPlanFlights(bool areWeInOffice);
     void planFlights();
