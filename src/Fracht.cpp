@@ -730,7 +730,7 @@ BOOL CFracht::FitsInPlane(const CPlane &Plane) const {
 //--------------------------------------------------------------------------------------------
 TEAKFILE &operator<<(TEAKFILE &File, const CFracht &Fracht) {
     File << Fracht.VonCity << Fracht.NachCity << Fracht.Tons << Fracht.TonsLeft << Fracht.TonsOpen << Fracht.Date << Fracht.InPlan << Fracht.Okay
-         << Fracht.Praemie << Fracht.Strafe << Fracht.BisDate;
+         << Fracht.Praemie << Fracht.Strafe << Fracht.BisDate << Fracht.jobType << Fracht.jobSizeType;
     return (File);
 }
 
@@ -739,7 +739,7 @@ TEAKFILE &operator<<(TEAKFILE &File, const CFracht &Fracht) {
 //--------------------------------------------------------------------------------------------
 TEAKFILE &operator>>(TEAKFILE &File, CFracht &Fracht) {
     File >> Fracht.VonCity >> Fracht.NachCity >> Fracht.Tons >> Fracht.TonsLeft >> Fracht.TonsOpen >> Fracht.Date >> Fracht.InPlan >> Fracht.Okay >>
-        Fracht.Praemie >> Fracht.Strafe >> Fracht.BisDate;
+        Fracht.Praemie >> Fracht.Strafe >> Fracht.BisDate >> Fracht.jobType >> Fracht.jobSizeType;
     return (File);
 }
 

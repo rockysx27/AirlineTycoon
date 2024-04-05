@@ -758,7 +758,7 @@ BOOL CAuftrag::FitsInPlane(const CPlane &Plane) const {
 //--------------------------------------------------------------------------------------------
 TEAKFILE &operator<<(TEAKFILE &File, const CAuftrag &Auftrag) {
     File << Auftrag.VonCity << Auftrag.NachCity << Auftrag.Personen << Auftrag.Date << Auftrag.InPlan << Auftrag.Okay << Auftrag.Praemie << Auftrag.Strafe
-         << Auftrag.BisDate;
+         << Auftrag.BisDate << Auftrag.jobType << Auftrag.jobSizeType;
 
     if (SaveVersionSub >= 100) {
         File << Auftrag.bUhrigFlight;
@@ -772,7 +772,7 @@ TEAKFILE &operator<<(TEAKFILE &File, const CAuftrag &Auftrag) {
 //--------------------------------------------------------------------------------------------
 TEAKFILE &operator>>(TEAKFILE &File, CAuftrag &Auftrag) {
     File >> Auftrag.VonCity >> Auftrag.NachCity >> Auftrag.Personen >> Auftrag.Date >> Auftrag.InPlan >> Auftrag.Okay >> Auftrag.Praemie >> Auftrag.Strafe >>
-        Auftrag.BisDate;
+        Auftrag.BisDate >> Auftrag.jobType >> Auftrag.jobSizeType;
 
     if (SaveVersionSub >= 100) {
         File >> Auftrag.bUhrigFlight;
