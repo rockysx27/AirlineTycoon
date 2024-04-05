@@ -303,6 +303,11 @@ CStatistik::CStatistik(BOOL bHandy, ULONG PlayerNum) : CStdRaum(bHandy, PlayerNu
         _iArray[g][c++].define = STAT_LMAUFTRAEGE;
 
         _iArray[g][c].typOfItem = TYP_VALUE;
+        _iArray[g][c].textId = 10020;
+        _iArray[g][c].beraterSkillInfo = 1;
+        _iArray[g][c++].define = STAT_FRACHTEN;
+
+        _iArray[g][c].typOfItem = TYP_VALUE;
         _iArray[g][c].textId = 8201;
         _iArray[g][c].beraterSkillInfo = 30;
         _iArray[g][c++].define = STAT_FLUGZEUGE;

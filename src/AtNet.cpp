@@ -1932,11 +1932,13 @@ void PumpNetwork() {
                 SLONG localPlayer = 0;
                 SLONG auftrag = 0;
                 SLONG lm = 0;
+                SLONG fracht = 0;
 
-                Message >> localPlayer >> auftrag >> lm;
+                Message >> localPlayer >> auftrag >> lm >> fracht;
 
                 Sim.Players.Players[localPlayer].Statistiken[STAT_AUFTRAEGE].SetAtPastDay(auftrag);
                 Sim.Players.Players[localPlayer].Statistiken[STAT_LMAUFTRAEGE].SetAtPastDay(lm);
+                Sim.Players.Players[localPlayer].Statistiken[STAT_FRACHTEN].SetAtPastDay(fracht);
             } break;
 
                 //--------------------------------------------------------------------------------------------

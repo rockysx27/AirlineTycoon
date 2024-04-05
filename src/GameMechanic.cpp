@@ -1811,7 +1811,8 @@ bool GameMechanic::takeFlightJob(PLAYER &qPlayer, SLONG jobId, SLONG &outObjectI
     qAuftrag.Praemie = -1000;
 
     SIM::SendSimpleMessage(ATNET_SYNCNUMFLUEGE, 0, Sim.localPlayer, static_cast<SLONG>(qPlayer.Statistiken[STAT_AUFTRAEGE].GetAtPastDay(0)),
-                           static_cast<SLONG>(qPlayer.Statistiken[STAT_LMAUFTRAEGE].GetAtPastDay(0)));
+                           static_cast<SLONG>(qPlayer.Statistiken[STAT_LMAUFTRAEGE].GetAtPastDay(0)),
+                           static_cast<SLONG>(qPlayer.Statistiken[STAT_FRACHTEN].GetAtPastDay(0)));
     qPlayer.NetUpdateTook(2, jobId);
 
     return true;
@@ -1842,7 +1843,8 @@ bool GameMechanic::takeLastMinuteJob(PLAYER &qPlayer, SLONG jobId, SLONG &outObj
     qAuftrag.Praemie = -1000;
 
     SIM::SendSimpleMessage(ATNET_SYNCNUMFLUEGE, 0, Sim.localPlayer, static_cast<SLONG>(qPlayer.Statistiken[STAT_AUFTRAEGE].GetAtPastDay(0)),
-                           static_cast<SLONG>(qPlayer.Statistiken[STAT_LMAUFTRAEGE].GetAtPastDay(0)));
+                           static_cast<SLONG>(qPlayer.Statistiken[STAT_LMAUFTRAEGE].GetAtPastDay(0)),
+                           static_cast<SLONG>(qPlayer.Statistiken[STAT_FRACHTEN].GetAtPastDay(0)));
     qPlayer.NetUpdateTook(1, jobId);
 
     return true;
@@ -1871,6 +1873,9 @@ bool GameMechanic::takeFreightJob(PLAYER &qPlayer, SLONG jobId, SLONG &outObject
 
     qAuftrag.Praemie = -1000;
 
+    SIM::SendSimpleMessage(ATNET_SYNCNUMFLUEGE, 0, Sim.localPlayer, static_cast<SLONG>(qPlayer.Statistiken[STAT_AUFTRAEGE].GetAtPastDay(0)),
+                           static_cast<SLONG>(qPlayer.Statistiken[STAT_LMAUFTRAEGE].GetAtPastDay(0)),
+                           static_cast<SLONG>(qPlayer.Statistiken[STAT_FRACHTEN].GetAtPastDay(0)));
     qPlayer.NetUpdateTook(3, jobId);
 
     return true;
@@ -1961,7 +1966,7 @@ bool GameMechanic::takeInternationalFreightJob(PLAYER &qPlayer, SLONG cityId, SL
 
     outObjectId = (qPlayer.Frachten += qFracht);
     qPlayer.NetUpdateFreightOrder(qFracht);
-    qPlayer.Statistiken[STAT_AUFTRAEGE].AddAtPastDay(1);
+    qPlayer.Statistiken[STAT_FRACHTEN].AddAtPastDay(1);
 
     qFracht.Praemie = -1000;
     qPlayer.NetUpdateTook(5, jobId, cityId);
