@@ -1792,6 +1792,7 @@ class CBilanz {
     // Seite 1 Hauptgeschäft, Einnahmen
     __int64 Tickets{};
     __int64 Auftraege{};
+    __int64 FrachtAuftraege{};
     // Ausgaben
     __int64 KerosinVorrat{};
     __int64 KerosinFlug{};

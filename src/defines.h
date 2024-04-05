@@ -773,7 +773,7 @@ inline bool operator!=(const CPoint &lhs, const CPoint &rhs) { return !(lhs == r
 #define STATION_ALL 1023  // Die gesammte Rakete
 
 // Die Statistik-Daten:
-#define STAT_ANZ 52 // Die Anzahl der überwachten Eigenschaften
+#define STAT_ANZ 53 // Die Anzahl der überwachten Eigenschaften
 #define STAT_KONTO 0
 #define STAT_KREDIT 1
 #define STAT_FLUGZEUGE 2
@@ -831,9 +831,10 @@ inline bool operator!=(const CPoint &lhs, const CPoint &rhs) { return !(lhs == r
 
 #define STAT_FRACHTEN 50 // Gesammtanzahl der angenommen (nicht geflogenen!) Frachtaufträge
 #define STAT_TONS 51     // Gesammtanzahl der transportieren Tonnen
+#define STAT_E_FRACHT 52 // Einnahmen durch Frachtaufträge
 
 #define STAT_MAX_GROUPS 3 // Anzahl der Gruppen
-#define STAT_MAX_ITEMS 30 // Anzahl der Einträge je Gruppe
+#define STAT_MAX_ITEMS 31 // Anzahl der Einträge je Gruppe
 
 // Eröffnungen für die Dialoge:
 #define DIALOG_WERBUNG 1

@@ -360,8 +360,8 @@ void PLAYER::ChangeMoney(__int64 Money, SLONG Reason, const CString &Par1, char 
         break;
     case 2066:
         /* D::Prämie für Frachtauftrag %s */
-        Statistiken[STAT_E_AUFTRAEGE].AddAtPastDay(Money);
-        Bilanz.Auftraege += Money;
+        Statistiken[STAT_E_FRACHT].AddAtPastDay(Money);
+        Bilanz.FrachtAuftraege += Money;
         break;
     case 2070:
         /* D::Löhne & Gehälter */

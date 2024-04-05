@@ -75,6 +75,11 @@ CStatistik::CStatistik(BOOL bHandy, ULONG PlayerNum) : CStdRaum(bHandy, PlayerNu
         _iArray[g][c++].define = STAT_E_AUFTRAEGE;
 
         _iArray[g][c].typOfItem = TYP_CURRENCY;
+        _iArray[g][c].textId = 10020;
+        _iArray[g][c].beraterSkillInfo = 1;
+        _iArray[g][c++].define = STAT_E_FRACHT;
+
+        _iArray[g][c].typOfItem = TYP_CURRENCY;
         _iArray[g][c].textId = 10001;
         _iArray[g][c].beraterSkill = 40;
         _iArray[g][c++].define = STAT_E_ZINS;

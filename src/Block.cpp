@@ -1841,8 +1841,9 @@ void BLOCK::ZeigeTagesBilanz(XY ClientArea, const PLAYER & /*player*/, const CBi
         std::vector<std::pair<SLONG, __int64>> tmp = {{3601, ref.GetHaben()}, {3602, ref.GetSoll()}};
         PrintList(ClientArea, tmp, 1);
     } else if (page == 1) {
-        std::vector<std::pair<SLONG, __int64>> tmp = {{3403, ref.Tickets}, {3404, ref.Auftraege},       {10000, ref.KerosinFlug}, {10001, ref.KerosinVorrat},
-                                                      {10002, ref.Essen},  {3505, ref.Vertragsstrafen}, {3506, ref.Wartung},      {10003, ref.FlugzeugUmbau}};
+        std::vector<std::pair<SLONG, __int64>> tmp = {{3403, ref.Tickets},         {3404, ref.Auftraege},      {10006, ref.FrachtAuftraege},
+                                                      {10000, ref.KerosinFlug},    {10001, ref.KerosinVorrat}, {10002, ref.Essen},
+                                                      {3505, ref.Vertragsstrafen}, {3506, ref.Wartung},        {10003, ref.FlugzeugUmbau}};
         PrintList(ClientArea, tmp, 1);
     } else if (page == 2) {
         if (Sim.Players.Players[PlayerNum].HasBerater(berater) < 30) {

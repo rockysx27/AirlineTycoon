@@ -2183,6 +2183,7 @@ void CTakeOffApp::LadeWeitereStandardTexte() {
     StandardTexte.AddText(TOKEN_STAT, 10017, "E::Agency feesD::Agenturhonorare");
     StandardTexte.AddText(TOKEN_STAT, 10018, "E::Mission ratingD::Missionsziel");
     StandardTexte.AddText(TOKEN_STAT, 10019, "E::Tons freightD::Tonnen Fracht");
+    StandardTexte.AddText(TOKEN_STAT, 10020, "E::Freight ordersD::Frachtauftr\xE4ge");
 
     StandardTexte.UpdateText(TOKEN_MONEY, 2021, "E::Kerosine for flight %sD::Kauf von Kerosin f\xFCr Flug %s");
     StandardTexte.AddText(TOKEN_MONEY, 2022, "E::Meals for passengers for flight %sD::Essen f\xFCr Passagiere f\xFCr Flug %s");
@@ -2230,6 +2231,7 @@ void CTakeOffApp::LadeWeitereStandardTexte() {
     StandardTexte.AddText(TOKEN_EXPERT, 10003, "E::Plane rework\r\ncargo/passengersD::Flugzeugumr\xFCstung\r\nFracht/Passagiere");
     StandardTexte.AddText(TOKEN_EXPERT, 10004, "E::Current loansD::Aktuelle Kredite");
     StandardTexte.AddText(TOKEN_EXPERT, 10005, "E::Loan repaymentD::Kredittilgung");
+    StandardTexte.AddText(TOKEN_EXPERT, 10006, "E::Freight ordersD::Frachtauftr\xE4ge");
     StandardTexte.UpdateText(TOKEN_EXPERT, 3501, "E::Loan interestD::Kreditzinsen");
     StandardTexte.AddText(TOKEN_EXPERT, 10006, "E::Wealth taxD::Verm\xF6genssteuer");
     StandardTexte.AddText(TOKEN_EXPERT, 10007, "E::Theft (hacking)D::Diebstahl (Hacking)");
