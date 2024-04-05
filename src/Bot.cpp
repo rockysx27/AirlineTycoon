@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-const SLONG kMoneyEmergencyFund = 100000;
+const bool kAlwaysReplan = true;
 const SLONG kSwitchToRoutesNumPlanesMin = 2;
 const SLONG kSwitchToRoutesNumPlanesMax = 4;
 const SLONG kSmallestAdCampaign = 4;
@@ -19,6 +19,7 @@ const SLONG kPlaneMinimumZustand = 90;
 const SLONG kStockEmissionMode = 2;
 const bool kReduceDividend = false;
 
+const SLONG kMoneyEmergencyFund = 100000;
 const SLONG kMoneyReserveRepairs = 0;
 const SLONG kMoneyReservePlaneUpgrades = 2500 * 1000;
 const SLONG kMoneyReserveBuyTanks = 200 * 1000;
@@ -458,6 +459,10 @@ void Bot::RobotExecuteAction() {
         hprintf("Bot.cpp: Leaving RobotExecuteAction() (too late)\n");
         forceReplanning();
         return;
+    }
+
+    if (kAlwaysReplan) {
+        forceReplanning();
     }
 
     /* handy references to player data (rw) */

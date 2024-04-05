@@ -16,7 +16,7 @@ class PLAYER;
 
 typedef long long __int64;
 
-extern const SLONG kMoneyEmergencyFund;
+extern const bool kAlwaysReplan;
 extern const SLONG kSwitchToRoutesNumPlanesMin;
 extern const SLONG kSwitchToRoutesNumPlanesMax;
 extern const SLONG kSmallestAdCampaign;
@@ -33,6 +33,7 @@ extern const SLONG kPlaneMinimumZustand;
 extern const SLONG kStockEmissionMode;
 extern const bool kReduceDividend;
 
+extern const SLONG kMoneyEmergencyFund;
 extern const SLONG kMoneyReserveRepairs;
 extern const SLONG kMoneyReservePlaneUpgrades;
 extern const SLONG kMoneyReserveBuyTanks;
