@@ -417,8 +417,10 @@ ScheduleInfo calculateScheduleInfo(const PLAYER &qPlayer, SLONG planeId) {
 
         if (qFPE.ObjectType != 3) {
             info.hoursFlights += 24 * (qFPE.Landedate - qFPE.Startdate) + (qFPE.Landezeit + 1 - qFPE.Startzeit);
+            info.keroseneFlights = CalculateFlightKerosin(qFPE.VonCity, qFPE.NachCity, qPlane.ptVerbrauch, qPlane.ptGeschwindigkeit);
         } else {
             info.hoursAutoFlights += 24 * (qFPE.Landedate - qFPE.Startdate) + (qFPE.Landezeit + 1 - qFPE.Startzeit);
+            info.keroseneAutoFlights = CalculateFlightKerosin(qFPE.VonCity, qFPE.NachCity, qPlane.ptVerbrauch, qPlane.ptGeschwindigkeit);
         }
 
         info.miles += Cities.CalcDistance(qFPE.VonCity, qFPE.NachCity) / 1609;

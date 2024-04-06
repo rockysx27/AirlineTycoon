@@ -101,6 +101,8 @@ struct ScheduleInfo {
     SLONG uhrigFlights{0};
     SLONG hoursFlights{0};
     SLONG hoursAutoFlights{0};
+    SLONG keroseneFlights{0};
+    SLONG keroseneAutoFlights{0};
     SLONG numPlanes{0};
     PlaneTime scheduleStart{INT_MAX, 0};
     PlaneTime scheduleEnd{0, 0};
@@ -108,8 +110,9 @@ struct ScheduleInfo {
     std::array<SLONG, 5> jobTypes{};
     std::array<SLONG, 6> jobSizeTypes{};
 
-    DOUBLE getRatioFlights() { return 100.0 * hoursFlights / ((scheduleEnd - scheduleStart) * numPlanes); }
-    DOUBLE getRatioAutoFlights() { return 100.0 * hoursAutoFlights / ((scheduleEnd - scheduleStart) * numPlanes); }
+    DOUBLE getRatioFlights() const { return 100.0 * hoursFlights / ((scheduleEnd - scheduleStart) * numPlanes); }
+    DOUBLE getRatioAutoFlights() const { return 100.0 * hoursAutoFlights / ((scheduleEnd - scheduleStart) * numPlanes); }
+    DOUBLE getKeroseneRatio() const { return 100.0 * keroseneFlights / (keroseneFlights + keroseneAutoFlights); }
 
     ScheduleInfo &operator+=(ScheduleInfo delta) {
         jobs += delta.jobs;
@@ -121,6 +124,8 @@ struct ScheduleInfo {
         uhrigFlights += delta.uhrigFlights;
         hoursFlights += delta.hoursFlights;
         hoursAutoFlights += delta.hoursAutoFlights;
+        keroseneFlights += delta.keroseneFlights;
+        keroseneAutoFlights += delta.keroseneAutoFlights;
         numPlanes += delta.numPlanes;
         scheduleStart = std::min(scheduleStart, delta.scheduleStart);
         scheduleEnd = std::max(scheduleEnd, delta.scheduleEnd);
@@ -148,7 +153,8 @@ struct ScheduleInfo {
         } else {
             hprintf("Flying %ld jobs (%ld passengers), %ld freight jobs (%ld tons) and %ld miles.", jobs, passengers, freightJobs, tons, miles);
         }
-        hprintf("%.1f %% of plane schedule are regular flights, %.1f %% are automatic flights.", getRatioFlights(), getRatioAutoFlights());
+        hprintf("%.1f %% of plane schedule are regular flights, %.1f %% are automatic flights (%.1f %% useful kerosene).", getRatioFlights(),
+                getRatioAutoFlights(), getKeroseneRatio());
 
         std::array<CString, 5> typeStr{"normal", "later", "highriskreward", "scam", "no fine"};
         std::array<CString, 6> sizeStr{"VIP", "S", "M", "L", "XL", "XXL"};
@@ -198,6 +204,8 @@ ScheduleInfo calculateScheduleInfo(const PLAYER &qPlayer, SLONG planeId);
 void printAllSchedules(bool infoOnly);
 
 bool checkRoomOpen(SLONG roomId);
+SLONG getRoomFromAction(SLONG PlayerNum, SLONG actionId);
+SLONG getWalkDistance(int playerNum, SLONG roomId);
 
 const char *getItemName(SLONG item);
 
