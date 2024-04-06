@@ -514,6 +514,118 @@ bool checkRoomOpen(SLONG roomId) {
     return true;
 }
 
+SLONG getRoomFromAction(SLONG PlayerNum, SLONG actionId) {
+    switch (actionId) {
+    case ACTION_WAIT:
+        return -1;
+    case ACTION_RAISEMONEY:
+        [[fallthrough]];
+    case ACTION_DROPMONEY:
+        [[fallthrough]];
+    case ACTION_VISITBANK:
+        [[fallthrough]];
+    case ACTION_EMITSHARES:
+        [[fallthrough]];
+    case ACTION_SET_DIVIDEND:
+        [[fallthrough]];
+    case ACTION_BUYSHARES:
+        [[fallthrough]];
+    case ACTION_SELLSHARES:
+        return ROOM_BANK;
+    case ACTION_CHECKAGENT1:
+        return ROOM_LAST_MINUTE;
+    case ACTION_CHECKAGENT2:
+        return ROOM_REISEBUERO;
+    case ACTION_CHECKAGENT3:
+        return ROOM_FRACHT;
+    case ACTION_STARTDAY:
+        [[fallthrough]];
+    case ACTION_BUERO:
+        [[fallthrough]];
+    case ACTION_UPGRADE_PLANES:
+        [[fallthrough]];
+    case ACTION_CALL_INTERNATIONAL:
+        return UBYTE(PlayerNum * 10 + 10);
+    case ACTION_PERSONAL:
+        return UBYTE(PlayerNum * 10 + 11);
+    case ACTION_VISITARAB:
+        [[fallthrough]];
+    case ACTION_BUY_KEROSIN:
+        [[fallthrough]];
+    case ACTION_BUY_KEROSIN_TANKS:
+        return ROOM_ARAB_AIR;
+    case ACTION_VISITKIOSK:
+        return ROOM_KIOSK;
+    case ACTION_VISITMECH:
+        return ROOM_WERKSTATT;
+    case ACTION_VISITMUSEUM:
+        return ROOM_MUSEUM;
+    case ACTION_VISITDUTYFREE:
+        return ROOM_SHOP1;
+    case ACTION_VISITAUFSICHT:
+        [[fallthrough]];
+    case ACTION_EXPANDAIRPORT:
+        return ROOM_AUFSICHT;
+    case ACTION_VISITNASA:
+        return ROOM_NASA;
+    case ACTION_VISITTELESCOPE:
+        if (Sim.Difficulty == DIFF_FINAL) {
+            return ROOM_INSEL;
+        } else if (Sim.Difficulty == DIFF_ADDON10) {
+            return ROOM_WELTALL;
+        } else {
+            return ROOM_RUSHMORE;
+        }
+    case ACTION_VISITMAKLER:
+        return ROOM_MAKLER;
+    case ACTION_VISITRICK:
+        return ROOM_RICKS;
+    case ACTION_VISITROUTEBOX:
+        [[fallthrough]];
+    case ACTION_VISITROUTEBOX2:
+        return ROOM_ROUTEBOX;
+    case ACTION_VISITSECURITY:
+        return ROOM_SECURITY;
+    case ACTION_VISITDESIGNER:
+        return ROOM_DESIGNER;
+    case ACTION_VISITSECURITY2:
+        return ROOM_SECURITY;
+    case ACTION_SABOTAGE:
+        return ROOM_SABOTAGE;
+    case ACTION_BUYUSEDPLANE:
+        return ROOM_MUSEUM;
+    case ACTION_BUYNEWPLANE:
+        return ROOM_MAKLER;
+    case ACTION_WERBUNG:
+        [[fallthrough]];
+    case ACTION_WERBUNG_ROUTES:
+        [[fallthrough]];
+    case ACTION_VISITADS:
+        return ROOM_WERBUNG;
+    case ACTION_CALL_INTER_HANDY:
+        [[fallthrough]];
+    case ACTION_STARTDAY_LAPTOP:
+        return 0; /* no need to walk anywhere */
+    default:
+        DebugBreak();
+    }
+    return -1;
+}
+
+SLONG getWalkDistance(int playerNum, SLONG roomId) {
+    auto primaryTarget = Airport.GetRandomTypedRune(RUNE_2SHOP, roomId);
+    PERSON &qPerson = Sim.Persons[Sim.Persons.GetPlayerIndex(playerNum)];
+
+    SLONG speedCount = abs(qPerson.Position.x - primaryTarget.x);
+    speedCount += abs(qPerson.Position.y - primaryTarget.y);
+
+    if (abs(qPerson.Position.y - primaryTarget.y) > 4600) {
+        speedCount -= 4600;
+    }
+    speedCount = max(1, speedCount);
+    return speedCount;
+}
+
 const char *getItemName(SLONG item) {
     switch (item) {
     case ITEM_LAPTOP:

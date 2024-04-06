@@ -4,6 +4,7 @@
 #include "StdAfx.h"
 #include "AtNet.h"
 #include "Bot.h"
+#include "BotHelper.h"
 
 #define forall(c, object) for ((c) = 0; (c) < SLONG((object).AnzEntries()); (c)++)
 
@@ -3166,125 +3167,12 @@ void PLAYER::RobotPump() {
         LastActionId = RobotActions[0].ActionId;
 
         BOOL rc = 0;
-        switch (RobotActions[0].ActionId) {
-        case ACTION_WAIT:
-            break;
-        case ACTION_RAISEMONEY:
-            [[fallthrough]];
-        case ACTION_DROPMONEY:
-            [[fallthrough]];
-        case ACTION_VISITBANK:
-            [[fallthrough]];
-        case ACTION_EMITSHARES:
-            [[fallthrough]];
-        case ACTION_SET_DIVIDEND:
-            [[fallthrough]];
-        case ACTION_BUYSHARES:
-            [[fallthrough]];
-        case ACTION_SELLSHARES:
-            rc = WalkToRoom(ROOM_BANK);
-            break;
-        case ACTION_CHECKAGENT1:
-            rc = WalkToRoom(ROOM_LAST_MINUTE);
-            break;
-        case ACTION_CHECKAGENT2:
-            rc = WalkToRoom(ROOM_REISEBUERO);
-            break;
-        case ACTION_CHECKAGENT3:
-            rc = WalkToRoom(ROOM_FRACHT);
-            break;
-        case ACTION_STARTDAY:
-            [[fallthrough]];
-        case ACTION_BUERO:
-            [[fallthrough]];
-        case ACTION_UPGRADE_PLANES:
-            [[fallthrough]];
-        case ACTION_CALL_INTERNATIONAL:
-            rc = WalkToRoom(UBYTE(PlayerNum * 10 + 10));
-            break;
-        case ACTION_PERSONAL:
-            rc = WalkToRoom(UBYTE(PlayerNum * 10 + 11));
-            break;
-        case ACTION_VISITARAB:
-            [[fallthrough]];
-        case ACTION_BUY_KEROSIN:
-            [[fallthrough]];
-        case ACTION_BUY_KEROSIN_TANKS:
-            rc = WalkToRoom(ROOM_ARAB_AIR);
-            break;
-        case ACTION_VISITKIOSK:
-            rc = WalkToRoom(ROOM_KIOSK);
-            break;
-        case ACTION_VISITMECH:
-            rc = WalkToRoom(ROOM_WERKSTATT);
-            break;
-        case ACTION_VISITMUSEUM:
-            rc = WalkToRoom(ROOM_MUSEUM);
-            break;
-        case ACTION_VISITDUTYFREE:
-            rc = WalkToRoom(ROOM_SHOP1);
-            break;
-        case ACTION_VISITAUFSICHT:
-            [[fallthrough]];
-        case ACTION_EXPANDAIRPORT:
-            rc = WalkToRoom(ROOM_AUFSICHT);
-            break;
-        case ACTION_VISITNASA:
-            rc = WalkToRoom(ROOM_NASA);
-            break;
-        case ACTION_VISITTELESCOPE:
-            if (Sim.Difficulty == DIFF_FINAL) {
-                rc = WalkToRoom(ROOM_INSEL);
-            } else if (Sim.Difficulty == DIFF_ADDON10) {
-                rc = WalkToRoom(ROOM_WELTALL);
-            } else {
-                rc = WalkToRoom(ROOM_RUSHMORE);
-            }
-            break;
-        case ACTION_VISITMAKLER:
-            rc = WalkToRoom(ROOM_MAKLER);
-            break;
-        case ACTION_VISITRICK:
-            rc = WalkToRoom(ROOM_RICKS);
-            break;
-        case ACTION_VISITROUTEBOX:
-            [[fallthrough]];
-        case ACTION_VISITROUTEBOX2:
-            rc = WalkToRoom(ROOM_ROUTEBOX);
-            break;
-        case ACTION_VISITSECURITY:
-            rc = WalkToRoom(ROOM_SECURITY);
-            break;
-        case ACTION_VISITDESIGNER:
-            rc = WalkToRoom(ROOM_DESIGNER);
-            break;
-        case ACTION_VISITSECURITY2:
-            rc = WalkToRoom(ROOM_SECURITY);
-            break;
-        case ACTION_SABOTAGE:
-            rc = WalkToRoom(ROOM_SABOTAGE);
-            break;
-        case ACTION_BUYUSEDPLANE:
-            rc = WalkToRoom(ROOM_MUSEUM);
-            break;
-        case ACTION_BUYNEWPLANE:
-            rc = WalkToRoom(ROOM_MAKLER);
-            break;
-        case ACTION_WERBUNG:
-            [[fallthrough]];
-        case ACTION_WERBUNG_ROUTES:
-            [[fallthrough]];
-        case ACTION_VISITADS:
-            rc = WalkToRoom(ROOM_WERBUNG);
-            break;
-        case ACTION_CALL_INTER_HANDY:
-            [[fallthrough]];
-        case ACTION_STARTDAY_LAPTOP:
+        auto roomId = Helper::getRoomFromAction(PlayerNum, RobotActions[0].ActionId);
+        if (roomId == 0) {
             rc = TRUE;
             SpeedCount = 1;
-            break;
-        default:
-            DebugBreak();
+        } else if (roomId != -1) {
+            rc = WalkToRoom(roomId);
         }
 
         SpeedCount = std::max(1, SpeedCount / WalkSpeed);

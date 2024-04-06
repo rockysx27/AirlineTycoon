@@ -363,8 +363,14 @@ void Bot::RobotPlan() {
     qRobotActions[1].ActionId = ACTION_NONE;
     qRobotActions[2].ActionId = ACTION_NONE;
 
-    /* populate prio list */
-    std::vector<std::pair<SLONG, Prio>> prioList;
+    /* populate prio list. Will be sorted by priority (1st order) and then by score (2nd order)-
+     * score depends on walking distance. */
+    struct PrioListItem {
+        SLONG actionId{-1};
+        Prio prio{Prio::None};
+        SLONG secondaryScore{0};
+    };
+    std::vector<PrioListItem> prioList;
     for (auto &action : actions) {
         if (!Helper::checkRoomOpen(action)) {
             continue;
@@ -373,63 +379,41 @@ void Bot::RobotPlan() {
         if (prio == Prio::None) {
             continue;
         }
-        prioList.emplace_back(action, prio);
+
+        SLONG p = qPlayer.PlayerNum;
+        SLONG room = Helper::getRoomFromAction(p, action);
+        SLONG score = qPlayer.PlayerWalkRandom.Rand(0, 100);
+        if (prio >= Prio::Medium && room > 0 && (Sim.Time > 540000)) {
+            /* factor in walking distance for more important actions */
+            score += Helper::getWalkDistance(p, room);
+        }
+
+        prioList.emplace_back(PrioListItem{action, prio, score});
+    }
+
+    if (prioList.size() < 2) {
+        prioList.emplace_back(PrioListItem{ACTION_CHECKAGENT2, Prio::Medium, 10000});
     }
     if (prioList.size() < 2) {
-        prioList.emplace_back(ACTION_CHECKAGENT2, Prio::Medium);
-    }
-    if (prioList.size() < 2) {
-        prioList.emplace_back(ACTION_CHECKAGENT1, Prio::Medium);
+        prioList.emplace_back(PrioListItem{ACTION_CHECKAGENT1, Prio::Medium, 10000});
     }
 
     /* sort by priority */
-    std::sort(prioList.begin(), prioList.end(), [](const std::pair<SLONG, Prio> &a, const std::pair<SLONG, Prio> &b) { return a.second > b.second; });
-    /* for (const auto &i : prioList) {
-        hprintf("Bot.cpp: %s: %s", getRobotActionName(i.first), getPrioName(i.second));
-    }*/
+    std::sort(prioList.begin(), prioList.end(), [](const PrioListItem &a, const PrioListItem &b) {
+        if (a.prio == b.prio) {
+            return (a.secondaryScore < b.secondaryScore);
+        }
+        return (a.prio > b.prio);
+    });
 
-    /* randomized tie-breaking */
-    SLONG startIdx = 0;
-    SLONG endIdx = 0;
-    std::vector<SLONG> tieBreak;
-    Prio prioAction1 = Prio::None;
-    Prio prioAction2 = Prio::None;
-    if (prioList[0].second != prioList[1].second) {
-        prioAction1 = prioList[0].second;
-        qRobotActions[1].ActionId = prioList[0].first;
-        qRobotActions[1].Running = (prioAction1 >= Prio::Medium);
-
-        startIdx++;
-        endIdx++;
-    }
-    while (prioList[startIdx].second == prioList[endIdx].second && endIdx < prioList.size()) {
-        endIdx++;
-    }
-    endIdx--;
-
-    /* assign actions */
-    if (qRobotActions[1].ActionId == ACTION_NONE && endIdx >= startIdx) {
-        auto idx = qPlayer.PlayerWalkRandom.Rand(startIdx, endIdx);
-        prioAction1 = prioList[idx].second;
-        qRobotActions[1].ActionId = prioList[idx].first;
-        qRobotActions[1].Running = (prioAction1 >= Prio::Medium);
-
-        std::swap(prioList[idx], prioList[endIdx]);
-        endIdx--;
-    }
-    if (qRobotActions[2].ActionId == ACTION_NONE && endIdx >= startIdx) {
-        auto idx = qPlayer.PlayerWalkRandom.Rand(startIdx, endIdx);
-        prioAction2 = prioList[idx].second;
-        qRobotActions[2].ActionId = prioList[idx].first;
-        qRobotActions[2].Running = (prioAction2 >= Prio::Medium);
-
-        std::swap(prioList[idx], prioList[endIdx]);
-        endIdx--;
-    }
+    qRobotActions[1].ActionId = prioList[0].actionId;
+    qRobotActions[1].Running = (prioList[0].prio >= Prio::Medium);
+    qRobotActions[2].ActionId = prioList[1].actionId;
+    qRobotActions[2].Running = (prioList[1].prio >= Prio::Medium);
 
     hprintf("Bot::RobotPlan(): Action 0: %s", getRobotActionName(qRobotActions[0].ActionId));
-    greenprintf("Bot::RobotPlan(): Action 1: %s with prio %s", getRobotActionName(qRobotActions[1].ActionId), getPrioName(prioAction1));
-    greenprintf("Bot::RobotPlan(): Action 2: %s with prio %s", getRobotActionName(qRobotActions[2].ActionId), getPrioName(prioAction2));
+    greenprintf("Bot::RobotPlan(): Action 1: %s with prio %s", getRobotActionName(qRobotActions[1].ActionId), getPrioName(prioList[0].prio));
+    greenprintf("Bot::RobotPlan(): Action 2: %s with prio %s", getRobotActionName(qRobotActions[2].ActionId), getPrioName(prioList[1].prio));
 
     if (qRobotActions[1].ActionId == ACTION_NONE) {
         redprintf("Did not plan action for slot #1");
@@ -450,7 +434,7 @@ void Bot::RobotExecuteAction() {
     }
 
     /* refuse to work outside working hours (game sometimes calls this too early) */
-    if (Sim.GetHour() < 9 || (Sim.Time == 540000)) { /* check if it is precisely 09:00 or earlier */
+    if (Sim.Time <= 540000) { /* check if it is precisely 09:00 or earlier */
         hprintf("Bot.cpp: Leaving RobotExecuteAction() (too early)\n");
         forceReplanning();
         return;
@@ -1147,7 +1131,7 @@ TEAKFILE &operator>>(TEAKFILE &File, Bot &bot) {
 
         File >> size;
         for (SLONG j = 0; j < size; j++) {
-            int jobId;
+            SLONG jobId;
             PlaneTime start;
             PlaneTime end;
             File >> jobId;
