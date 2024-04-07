@@ -25,7 +25,8 @@ class Graph {
   public:
     struct Node {
         int jobIdx{-1};
-        int premium{0};
+        int score{0};
+        float scoreRatio{0};
         int duration{0};
         int earliest{0};
         int latest{INT_MAX};
@@ -109,11 +110,12 @@ class BotPlaner {
     BotPlaner() = default;
     BotPlaner(PLAYER &player, const CPlanes &planes, JobOwner jobOwner, std::vector<int> intJobSource);
 
-    /* premium weighting factors */
-    void setDistanceFactor(SLONG val) { mDistanceFactor = val; }
-    void setPassengerFactor(SLONG val) { mPassengerFactor = val; }
-    void setUhrigBonus(SLONG val) { mUhrigBonus = val; }
-    void setConstBonus(SLONG val) { mConstBonus = val; }
+    /* score weighting factors */
+    void setDistanceFactor(int val) { mDistanceFactor = val; }
+    void setPassengerFactor(int val) { mPassengerFactor = val; }
+    void setUhrigBonus(int val) { mUhrigBonus = val; }
+    void setConstBonus(int val) { mConstBonus = val; }
+    void setMinimumScoreRatio(float val) { mMinScoreRatio = val; }
 
     SolutionList planFlights(const std::vector<int> &planeIdsInput, int extraBufferTime);
     static bool applySolution(PLAYER &qPlayer, const SolutionList &solutions);
@@ -152,6 +154,7 @@ class BotPlaner {
         inline int getDestCity() const { return isFreight() ? fracht.NachCity : auftrag.NachCity; }
         inline int getDate() const { return isFreight() ? fracht.Date : auftrag.Date; }
         inline int getBisDate() const { return isFreight() ? fracht.BisDate : auftrag.BisDate; }
+        inline int getPremium() const { return isFreight() ? fracht.Praemie : auftrag.Praemie; }
         inline int getPersonen() const { return isFreight() ? 0 : auftrag.Personen; }
         inline int getTons() const { return isFreight() ? fracht.Tons : 0; }
         inline int getOverscheduledTons() const { return (isFreight() && numStillNeeded < 0) ? (-numStillNeeded) : 0; }
@@ -180,7 +183,8 @@ class BotPlaner {
         int id{};
         int sourceId{-1};
         JobOwner owner;
-        SLONG score{};
+        int score{0};
+        float scoreRatio{0};
 
       private:
         CAuftrag auftrag;
@@ -250,11 +254,12 @@ class BotPlaner {
     const CPlanes &qPlanes;
     PlaneTime mScheduleFromTime;
 
-    /* premium weighting factors */
-    SLONG mDistanceFactor{0};
-    SLONG mPassengerFactor{0};
-    SLONG mUhrigBonus{0};
-    SLONG mConstBonus{0};
+    /* score weighting factors */
+    int mDistanceFactor{0};
+    int mPassengerFactor{0};
+    int mUhrigBonus{0};
+    int mConstBonus{0};
+    float mMinScoreRatio{1.0f};
 
     /* state */
     std::vector<const CPlane *> mPlaneTypeToPlane;

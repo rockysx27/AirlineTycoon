@@ -363,6 +363,8 @@ void Bot::grabFlights(BotPlaner &planer, bool areWeInOffice) {
         hprintf("Bot::grabFlights(): Extra time planned for walking to office: %d", extraBufferTime);
     }
 
+    planer.setMinimumScoreRatio(kSchedulingMinScoreRatio);
+
     /* configure weighting for special missions */
     if (Sim.Difficulty == DIFF_TUTORIAL) {
         planer.setConstBonus(100 * 1000); /* need to schedule 10 jobs ASAP, so premium does not really matter */

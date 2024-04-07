@@ -107,7 +107,7 @@ void BotPlaner::printGraph(const Graph &g) {
             std::cout << "label=\"" << (LPCTSTR)Cities[job.getStartCity()].Kuerzel << " => " << (LPCTSTR)Cities[job.getDestCity()].Kuerzel << "\\n";
             // std::cout << "(" << job.Personen  << ", " << CalcDistance(job.VonCity, job.NachCity);
             // std::cout << ", P: " << job.Praemie << " $, F: " << job.Strafe << " $)\\n";
-            std::cout << "earning " << curInfo.premium << " $, " << curInfo.duration << " hours\\n";
+            std::cout << "earning " << curInfo.score << " $, " << curInfo.duration << " hours\\n";
             std::cout << "earliest: " << Helper::getWeekday(curInfo.earliest) << ", latest " << Helper::getWeekday(curInfo.latest) << "\\n";
             std::cout << "\"";
         } else {
@@ -178,11 +178,14 @@ void BotPlaner::collectAllFlightJobs(const std::vector<int> &planeIds) {
             }
             if (job.Date <= Sim.Date + kScheduleForNextDays) {
                 mJobList.emplace_back(source.jobs->GetIdFromIndex(i), source.sourceId, job, source.owner);
-                mJobList.back().score = job.Praemie;
-                mJobList.back().score += mDistanceFactor * Cities.CalcDistance(job.VonCity, job.NachCity);
-                mJobList.back().score += mPassengerFactor * job.Personen;
-                mJobList.back().score += mUhrigBonus * job.bUhrigFlight;
-                mJobList.back().score += mConstBonus;
+                int score = job.Praemie;
+                score += mDistanceFactor * Cities.CalcDistance(job.VonCity, job.NachCity);
+                score += mPassengerFactor * job.Personen;
+                score += mUhrigBonus * job.bUhrigFlight;
+                score += mConstBonus;
+
+                mJobList.back().score = score;
+                mJobList.back().scoreRatio = 1.0f * score / CalculateFlightCost(job.VonCity, job.NachCity, 8000, 700, -1);
             }
         }
         /* job source B: Freight */
@@ -196,9 +199,12 @@ void BotPlaner::collectAllFlightJobs(const std::vector<int> &planeIds) {
             }
             if (job.Date <= Sim.Date + kScheduleForNextDays) {
                 mJobList.emplace_back(source.freight->GetIdFromIndex(i), source.sourceId, job, source.owner);
-                mJobList.back().score = job.Praemie;
-                mJobList.back().score += mDistanceFactor * Cities.CalcDistance(job.VonCity, job.NachCity);
-                mJobList.back().score += mConstBonus;
+                int score = job.Praemie;
+                score += mDistanceFactor * Cities.CalcDistance(job.VonCity, job.NachCity);
+                score += mConstBonus;
+
+                mJobList.back().score = score;
+                mJobList.back().scoreRatio = 1.0f * score / CalculateFlightCost(job.VonCity, job.NachCity, 8000, 700, -1);
             }
         }
     }
@@ -216,6 +222,7 @@ void BotPlaner::collectAllFlightJobs(const std::vector<int> &planeIds) {
                 const auto &job = qPlayer.Auftraege[qFPE.ObjectId];
                 mJobList.emplace_back(qFPE.ObjectId, -1, job, JobOwner::Planned);
                 mJobList.back().score = job.Praemie;
+                mJobList.back().scoreRatio = 1.0f * job.Praemie / CalculateFlightCost(job.VonCity, job.NachCity, 8000, 700, -1);
             } else if (qFPE.ObjectType == 4) {
                 if (jobs.find(qFPE.ObjectId) == jobs.end()) {
                     jobs[qFPE.ObjectId] = mJobList.size();
@@ -223,6 +230,7 @@ void BotPlaner::collectAllFlightJobs(const std::vector<int> &planeIds) {
                     const auto &job = qPlayer.Frachten[qFPE.ObjectId];
                     mJobList.emplace_back(qFPE.ObjectId, -1, job, JobOwner::PlannedFreight);
                     mJobList.back().score = job.Praemie;
+                    mJobList.back().scoreRatio = 1.0f * job.Praemie / CalculateFlightCost(job.VonCity, job.NachCity, 8000, 700, -1);
                     mJobList.back().setNumStillNeeded(qFPE.Passagiere);
                 } else {
                     mJobList[jobs[qFPE.ObjectId]].addNumStillNeeded(qFPE.Passagiere);
@@ -236,7 +244,7 @@ void BotPlaner::collectAllFlightJobs(const std::vector<int> &planeIds) {
         if (a.wasTaken() != b.wasTaken()) {
             return a.wasTaken();
         }
-        return a.score > b.score;
+        return a.scoreRatio > b.scoreRatio;
     });
 
     for (int i = 0; i < mJobList.size(); i++) {
@@ -308,7 +316,8 @@ std::vector<Graph> BotPlaner::prepareGraph() {
                     qNodeInfo.jobIdx = jobIdx;
                     qNodeInfo.earliest = job.getDate();
                     qNodeInfo.latest = job.getBisDate();
-                    qNodeInfo.premium = job.score - cost;
+                    qNodeInfo.score = job.score - cost;
+                    qNodeInfo.scoreRatio = 1.0f * job.score / cost;
                     qNodeInfo.duration = duration + kDurationExtra;
                 }
             }
@@ -340,13 +349,13 @@ std::vector<Graph> BotPlaner::prepareGraph() {
                     continue; /* we are not using the algo that utilizes bestNeighbors */
                 }
 
-                if (g.nodeInfo[j].premium <= 0) {
-                    continue; /* job has no premium (after deducting flight cost) */
+                if (!destJob.wasTaken() && g.nodeInfo[j].scoreRatio < mMinScoreRatio) {
+                    continue; /* job has no score (after deducting flight cost) */
                 }
                 if (g.nodeInfo[i].earliest > g.nodeInfo[j].latest) {
                     continue; /* not possible because date constraints */
                 }
-                neighborList.emplace_back(j, g.nodeInfo[j].premium - g.adjMatrix[i][j].cost);
+                neighborList.emplace_back(j, g.nodeInfo[j].score - g.adjMatrix[i][j].cost);
             }
 
             std::sort(neighborList.begin(), neighborList.end(), [](const std::pair<int, int> &a, const std::pair<int, int> &b) { return a.second > b.second; });
@@ -391,7 +400,7 @@ bool BotPlaner::takeJobs(Solution &currentSolution) {
                 GameMechanic::takeInternationalFreightJob(qPlayer, job.sourceId, job.id, outAuftragsId);
                 break;
             default:
-                redprintf("BotPlaner::takeJobs(): Unknown job source: %ld", job.owner);
+                redprintf("BotPlaner::takeJobs(): Unknown job source: %d", job.owner);
                 return false;
             }
 
@@ -434,7 +443,7 @@ bool BotPlaner::applySolutionForPlane(PLAYER &qPlayer, int planeId, const BotPla
             const auto &auftrag = qPlayer.Auftraege[iter.objectId];
             if (!GameMechanic::planFlightJob(qPlayer, planeId, iter.objectId, startTime.getDate(), startTime.getHour())) {
                 redprintf("BotPlaner::applySolutionForPlane(): GameMechanic::planFlightJob returned error!");
-                redprintf("Tried to schedule %s at %s %ld", Helper::getJobName(auftrag).c_str(), Helper::getWeekday(startTime.getDate()).c_str(),
+                redprintf("Tried to schedule %s at %s %d", Helper::getJobName(auftrag).c_str(), Helper::getWeekday(startTime.getDate()).c_str(),
                           startTime.getHour());
             }
         } else {
@@ -446,7 +455,7 @@ bool BotPlaner::applySolutionForPlane(PLAYER &qPlayer, int planeId, const BotPla
             const auto &auftrag = qPlayer.Frachten[iter.objectId];
             if (!GameMechanic::planFreightJob(qPlayer, planeId, iter.objectId, startTime.getDate(), startTime.getHour())) {
                 redprintf("BotPlaner::applySolutionForPlane(): GameMechanic::planFreightJob returned error!");
-                redprintf("Tried to schedule %s at %s %ld", Helper::getFreightName(auftrag).c_str(), Helper::getWeekday(startTime.getDate()).c_str(),
+                redprintf("Tried to schedule %s at %s %d", Helper::getFreightName(auftrag).c_str(), Helper::getWeekday(startTime.getDate()).c_str(),
                           startTime.getHour());
             }
         }
@@ -460,7 +469,7 @@ bool BotPlaner::applySolutionForPlane(PLAYER &qPlayer, int planeId, const BotPla
     /* check flight time */
     bool ok = true;
     const auto &qFlightPlan = qPlanes[planeId].Flugplan.Flug;
-    for (SLONG d = 0; d < qFlightPlan.AnzEntries(); d++) {
+    for (int d = 0; d < qFlightPlan.AnzEntries(); d++) {
         const auto &qFPE = qFlightPlan[d];
         if (PlaneTime{qFPE.Startdate, qFPE.Startzeit} < solution.scheduleFromTime) {
             continue;
@@ -476,7 +485,7 @@ bool BotPlaner::applySolutionForPlane(PLAYER &qPlayer, int planeId, const BotPla
                 continue;
             }
             if (freightHash[qFPE.ObjectId].empty()) {
-                redprintf("BotPlaner::applySolutionForPlane(): Plane %s, schedule entry %ld: Too many instances of freight job scheduled",
+                redprintf("BotPlaner::applySolutionForPlane(): Plane %s, schedule entry %d: Too many instances of freight job scheduled",
                           (LPCTSTR)qPlanes[planeId].Name, d);
                 continue;
             }
@@ -495,14 +504,14 @@ bool BotPlaner::applySolutionForPlane(PLAYER &qPlayer, int planeId, const BotPla
         const auto endTime = iter.end - kDurationExtra;
 
         if (PlaneTime(qFPE.Startdate, qFPE.Startzeit) != startTime) {
-            redprintf("BotPlaner::applySolutionForPlane(): Plane %s, schedule entry %ld: GameMechanic scheduled job (%s) at different start time (%s %d "
+            redprintf("BotPlaner::applySolutionForPlane(): Plane %s, schedule entry %d: GameMechanic scheduled job (%s) at different start time (%s %d "
                       "instead of %s %d)!",
                       (LPCTSTR)qPlanes[planeId].Name, d, strJob.c_str(), (LPCTSTR)Helper::getWeekday(qFPE.Startdate), qFPE.Startzeit,
                       (LPCTSTR)Helper::getWeekday(startTime.getDate()), startTime.getHour());
             ok = false;
         }
         if (PlaneTime(qFPE.Landedate, qFPE.Landezeit) != endTime) {
-            redprintf("BotPlaner::applySolutionForPlane(): Plane %s, schedule entry %ld: GameMechanic scheduled job (%s) with different landing time (%s %d "
+            redprintf("BotPlaner::applySolutionForPlane(): Plane %s, schedule entry %d: GameMechanic scheduled job (%s) with different landing time (%s %d "
                       "instead of %s %d)!",
                       (LPCTSTR)qPlanes[planeId].Name, d, strJob.c_str(), (LPCTSTR)Helper::getWeekday(qFPE.Landedate), qFPE.Landezeit,
                       (LPCTSTR)Helper::getWeekday(endTime.getDate()), endTime.getHour());
@@ -519,7 +528,7 @@ bool BotPlaner::applySolutionForPlane(PLAYER &qPlayer, int planeId, const BotPla
     for (const auto &iter : freightHash) {
         if (!iter.second.empty()) {
             const auto strJob = Helper::getFreightName(qPlayer.Frachten[iter.second.front().objectId]);
-            redprintf("BotPlaner::applySolutionForPlane(): Not enough instances of freight job %s in flight plan (%ld missing)!", strJob.c_str(),
+            redprintf("BotPlaner::applySolutionForPlane(): Not enough instances of freight job %s in flight plan (%d missing)!", strJob.c_str(),
                       iter.second.size());
             ok = false;
         }
@@ -532,16 +541,16 @@ BotPlaner::SolutionList BotPlaner::planFlights(const std::vector<int> &planeIdsI
     auto t_begin = std::chrono::steady_clock::now();
 
     if (mDistanceFactor > 0) {
-        hprintf("BotPlaner::planFlights(): Using mDistanceFactor = %ld", mDistanceFactor);
+        hprintf("BotPlaner::planFlights(): Using mDistanceFactor = %d", mDistanceFactor);
     }
     if (mPassengerFactor > 0) {
-        hprintf("BotPlaner::planFlights(): Using mPassengerFactor = %ld", mPassengerFactor);
+        hprintf("BotPlaner::planFlights(): Using mPassengerFactor = %d", mPassengerFactor);
     }
     if (mUhrigBonus > 0) {
-        hprintf("BotPlaner::planFlights(): Using mUhrigBonus = %ld", mUhrigBonus);
+        hprintf("BotPlaner::planFlights(): Using mUhrigBonus = %d", mUhrigBonus);
     }
     if (mConstBonus > 0) {
-        hprintf("BotPlaner::planFlights(): Using mConstBonus = %ld", mConstBonus);
+        hprintf("BotPlaner::planFlights(): Using mConstBonus = %d", mConstBonus);
     }
 
 #ifdef PRINT_DETAIL
@@ -587,7 +596,7 @@ BotPlaner::SolutionList BotPlaner::planFlights(const std::vector<int> &planeIdsI
         assert(planeState.startCity >= 0 && planeState.startCity < Cities.AnzEntries());
 #ifdef PRINT_DETAIL
         Helper::checkPlaneSchedule(qPlayer, i, false);
-        hprintf("BotPlaner::planFlights(): After %s %ld: Plane %s is in %s @ %s %d", (LPCTSTR)Helper::getWeekday(mScheduleFromTime.getDate()),
+        hprintf("BotPlaner::planFlights(): After %s %d: Plane %s is in %s @ %s %d", (LPCTSTR)Helper::getWeekday(mScheduleFromTime.getDate()),
                 mScheduleFromTime.getHour(), (LPCTSTR)qPlanes[i].Name, (LPCTSTR)Cities[planeState.startCity].Kuerzel,
                 (LPCTSTR)Helper::getWeekday(planeState.availTime.getDate()), planeState.availTime.getHour());
 #endif
