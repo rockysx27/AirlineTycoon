@@ -7332,7 +7332,9 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
         break;
     case ROBOT_USE_WERBUNG:
         /* SuperBot: Respects this flag */
-        // TODO: Check dashes in evolution missions
+        if (IsSuperBot()) {
+            return true;
+        }
         pFeatureDesc = "---XXX"
                        "!"
                        "XXXXXXXXXX"
@@ -7458,7 +7460,9 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
         break;
     case ROBOT_USE_ROUTEBOX:
         /* SuperBot: Respects this flag */
-        // TODO: Check dashes in evolution missions
+        if (IsSuperBot()) {
+            return true;
+        }
         pFeatureDesc = "-XXXXX"
                        "X"
                        "XXXXXXXXXX"
@@ -7486,6 +7490,9 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
         break;
     case ROBOT_USE_MUCH_FRACHT:
         /* SuperBot: Respects this flag */
+        if (IsSuperBot() && Sim.Difficulty == DIFF_ADDON03) {
+            return true;
+        }
         pFeatureDesc = "------"
                        "."
                        "-X--------"
@@ -7551,7 +7558,7 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
                        "XXXXXXXXXX";
         break;
     case ROBOT_USE_GROSSESKONTO:
-        /* SuperBot: Ignores this flag */
+        /* SuperBot: Respects this flag */
         pFeatureDesc = "------"
                        "."
                        "----------"
@@ -7593,21 +7600,21 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
                        "XXX-----XX";
         break;
     case ROBOT_USE_MAX4PLANES:
-        /* SuperBot: Respects this flag */
+        /* SuperBot: Ignores this flag */
         pFeatureDesc = "------"
                        "."
                        "----------"
                        "--X-X--X--";
         break;
     case ROBOT_USE_MAX5PLANES:
-        /* SuperBot: Respects this flag */
+        /* SuperBot: Ignores this flag */
         pFeatureDesc = "------"
                        "."
                        "----------"
                        "---X-X----";
         break;
     case ROBOT_USE_MAX10PLANES:
-        /* SuperBot: Respects this flag */
+        /* SuperBot: Ignores this flag */
         pFeatureDesc = "------"
                        "."
                        "----------"
@@ -7635,12 +7642,14 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
                        "--X-------";
         break;
     case ROBOT_USE_EXTREME_SABOTAGE:
+        /* SuperBot: Ignores this flag */
         pFeatureDesc = "------"
                        "."
                        "----------"
                        "---X-X----";
         break;
     case ROBOT_USE_SECURTY_OFFICE:
+        /* SuperBot: Respects this flag */
         pFeatureDesc = "------"
                        "?"
                        "----------"
@@ -7648,6 +7657,9 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
         break;
     case ROBOT_USE_MAKLER:
         /* SuperBot: Respects this flag */
+        if (IsSuperBot()) {
+            return true;
+        }
         pFeatureDesc = "XXXXXX"
                        "!"
                        "XXXXXXXXXX"
@@ -7655,6 +7667,9 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
         break;
     case ROBOT_USE_PETROLAIR:
         /* SuperBot: Respects this flag */
+        if (IsSuperBot()) {
+            return true;
+        }
         pFeatureDesc = "XXXXXX"
                        "!"
                        "XXXXXXXXXX"
@@ -7678,87 +7693,62 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
                        "--------XX";
         break;
     case ROBOT_USE_DESIGNER:
+        /* SuperBot: Respects this flag */
         pFeatureDesc = "------"
                        "?"
                        "----------"
                        "---XX-XX--";
         break;
     case ROBOT_USE_DESIGNER_BUY:
+        /* SuperBot: Respects this flag */
         pFeatureDesc = "------"
                        "."
                        "----------"
                        "----X--X--";
         break;
+
     case ROBOT_USE_BONUS:
         /* SuperBot: Cheat not used */
         if (IsSuperBot()) {
             return false;
         }
-        pFeatureDesc = "XXXXXX"
-                       "X"
-                       "XXXXXXXXXX"
-                       "XXXXXXXXXX";
-        break;
+        return true;
     case ROBOT_USE_ROUTE_BONUS:
         /* SuperBot: Cheat not used */
         if (IsSuperBot()) {
             return false;
         }
-        pFeatureDesc = "XXXXXX"
-                       "X"
-                       "XXXXXXXXXX"
-                       "XXXXXXXXXX";
-        break;
+        return true;
     case ROBOT_USE_FAKE_PERSONAL:
         /* SuperBot: Cheat not used */
         if (IsSuperBot()) {
             return false;
         }
-        pFeatureDesc = "XXXXXX"
-                       "X"
-                       "XXXXXXXXXX"
-                       "XXXXXXXXXX";
-        break;
+        return true;
     case ROBOT_USE_NO_FINE:
         /* SuperBot: Cheat not used */
         if (IsSuperBot()) {
             return false;
         }
-        pFeatureDesc = "XXXXXX"
-                       "X"
-                       "XXXXXXXXXX"
-                       "XXXXXXXXXX";
-        break;
+        return true;
     case ROBOT_USE_NO_CHECK_FLIGHT:
         /* SuperBot: Cheat not used */
         if (IsSuperBot()) {
             return false;
         }
-        pFeatureDesc = "XXXXXX"
-                       "X"
-                       "XXXXXXXXXX"
-                       "XXXXXXXXXX";
-        break;
+        return true;
     case ROBOT_USE_NO_CHECK_FFLIGHT:
         /* SuperBot: Cheat not used */
         if (IsSuperBot()) {
             return false;
         }
-        pFeatureDesc = "XXXXXX"
-                       "X"
-                       "XXXXXXXXXX"
-                       "XXXXXXXXXX";
-        break;
+        return true;
     case ROBOT_USE_MISC_CHEATS:
         /* SuperBot: Cheat not used */
         if (IsSuperBot()) {
             return false;
         }
-        pFeatureDesc = "XXXXXX"
-                       "X"
-                       "XXXXXXXXXX"
-                       "XXXXXXXXXX";
-        break;
+        return true;
     case ROBOT_UHRIG_FLIGHTS_AUTO:
         /* SuperBot: Cheat not used */
         if (IsSuperBot()) {

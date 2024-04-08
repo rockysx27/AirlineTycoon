@@ -207,16 +207,23 @@ void Bot::switchToFinalTarget() {
 
     auto availableMoney = howMuchMoneyCanWeGet(true);
     auto cash = qPlayer.Money - kMoneyEmergencyFund;
-    if (requiredMoney < availableMoney || forceSwitch) {
+    if ((availableMoney > requiredMoney) || forceSwitch) {
         mRunToFinalObjective = FinalPhase::TargetRun;
         mMoneyForFinalObjective = requiredMoney;
         hprintf("Bot::switchToFinalTarget(): Switching to final target run. Need %s $, got %s $ (+ %s $).", (LPCTSTR)Insert1000erDots64(requiredMoney),
                 (LPCTSTR)Insert1000erDots64(cash), (LPCTSTR)Insert1000erDots64(availableMoney - cash));
-    } else if (requiredMoney < LLONG_MAX) {
-        hprintf("Bot::switchToFinalTarget(): Cannot switch to final target run. Need %s $, got %s $ (+ %s $).", (LPCTSTR)Insert1000erDots64(requiredMoney),
+    } else if (1.0 * availableMoney / requiredMoney >= 0.8) {
+        mRunToFinalObjective = FinalPhase::SaveMoney;
+        mMoneyForFinalObjective = requiredMoney;
+        hprintf("Bot::switchToFinalTarget(): Switching to money saving phase. Need %s $, got %s $ (+ %s $).", (LPCTSTR)Insert1000erDots64(requiredMoney),
                 (LPCTSTR)Insert1000erDots64(cash), (LPCTSTR)Insert1000erDots64(availableMoney - cash));
-    } else {
-        hprintf("Bot::switchToFinalTarget(): Cannot switch to final target run, target not in reach.");
+    } else if (mRunToFinalObjective == FinalPhase::No) {
+        if (requiredMoney < LLONG_MAX) {
+            hprintf("Bot::switchToFinalTarget(): Cannot switch to final target run. Need %s $, got %s $ (+ %s $).", (LPCTSTR)Insert1000erDots64(requiredMoney),
+                    (LPCTSTR)Insert1000erDots64(cash), (LPCTSTR)Insert1000erDots64(availableMoney - cash));
+        } else {
+            hprintf("Bot::switchToFinalTarget(): Cannot switch to final target run, target not in reach.");
+        }
     }
 }
 
@@ -366,14 +373,24 @@ void Bot::grabFlights(BotPlaner &planer, bool areWeInOffice) {
     planer.setMinimumScoreRatio(kSchedulingMinScoreRatio);
 
     /* configure weighting for special missions */
-    if (Sim.Difficulty == DIFF_TUTORIAL) {
+    switch (Sim.Difficulty) {
+    case DIFF_TUTORIAL:
         planer.setConstBonus(1000 * 1000); /* need to schedule 10 jobs ASAP, so premium does not really matter */
-    } else if (Sim.Difficulty == DIFF_FIRST) {
+        break;
+    case DIFF_FIRST:
         planer.setPassengerFactor(10 * 1000); /* need to fly as many passengers as possible */
-    } else if (Sim.Difficulty == DIFF_ADDON04) {
+        break;
+    case DIFF_ADDON03:
+        planer.setFreeFreightBonus(5000 * 1000);
+        break;
+    case DIFF_ADDON04:
         // planer.setDistanceFactor(1); TODO
-    } else if (Sim.Difficulty == DIFF_ADDON09) {
+        break;
+    case DIFF_ADDON09:
         planer.setUhrigBonus(1000 * 1000);
+        break;
+    default:
+        break;
     }
 
     mPlanerSolution = planer.planFlights(mPlanesForJobs, extraBufferTime);

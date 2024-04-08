@@ -492,15 +492,6 @@ Bot::Prio Bot::condBuyNewPlane(__int64 &moneyAvailable) {
     if (!qPlayer.RobotUse(ROBOT_USE_MAKLER)) {
         return Prio::None;
     }
-    if (qPlayer.RobotUse(ROBOT_USE_MAX4PLANES) && numPlanes() >= 4) {
-        return Prio::None;
-    }
-    if (qPlayer.RobotUse(ROBOT_USE_MAX5PLANES) && numPlanes() >= 5) {
-        return Prio::None;
-    }
-    if (qPlayer.RobotUse(ROBOT_USE_MAX10PLANES) && numPlanes() >= 10) {
-        return Prio::None;
-    }
     if (mRunToFinalObjective > FinalPhase::No) {
         return Prio::None;
     }
@@ -749,9 +740,10 @@ Bot::Prio Bot::condVisitNasa(__int64 &moneyAvailable) {
         return Prio::None;
     }
 
-    auto nRocketParts = sizeof(RocketPrices) / sizeof(RocketPrices[0]);
+    const auto &qPrices = (Sim.Difficulty == DIFF_FINAL) ? RocketPrices : StationPrices;
+    auto nRocketParts = sizeof(qPrices) / sizeof(qPrices[0]);
     for (SLONG i = 0; i < nRocketParts; i++) {
-        if ((qPlayer.RocketFlags & (1 << i)) == 0 && moneyAvailable >= RocketPrices[i]) {
+        if ((qPlayer.RocketFlags & (1 << i)) == 0 && moneyAvailable >= qPrices[i]) {
             return Prio::High;
         }
     }
@@ -965,7 +957,7 @@ Bot::Prio Bot::condVisitDesigner(__int64 &moneyAvailable) {
     if (!hoursPassed(ACTION_VISITDESIGNER, 24)) {
         return Prio::None;
     }
-    if (!qPlayer.RobotUse(ROBOT_USE_DESIGNER)) {
+    if (!qPlayer.RobotUse(ROBOT_USE_DESIGNER) || !qPlayer.RobotUse(ROBOT_USE_DESIGNER_BUY)) {
         return Prio::None;
     }
     return Prio::None;

@@ -307,6 +307,11 @@ void Bot::RobotInit() {
             mItemAntiVirus = -1; /* item not available */
         }
 
+        if (qPlayer.RobotUse(ROBOT_USE_GROSSESKONTO)) {
+            /* imediately start saving money */
+            mRunToFinalObjective = FinalPhase::SaveMoney;
+        }
+
         mFirstRun = false;
     }
 

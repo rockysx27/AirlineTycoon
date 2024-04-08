@@ -202,6 +202,9 @@ void BotPlaner::collectAllFlightJobs(const std::vector<int> &planeIds) {
                 int score = job.Praemie;
                 score += mDistanceFactor * Cities.CalcDistance(job.VonCity, job.NachCity);
                 score += mConstBonus;
+                if (job.Praemie == 0) {
+                    score += mFreeFreightBonus;
+                }
 
                 mJobList.back().score = score;
                 mJobList.back().scoreRatio = 1.0f * score / CalculateFlightCost(job.VonCity, job.NachCity, 8000, 700, -1);
