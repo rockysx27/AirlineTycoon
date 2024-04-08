@@ -755,8 +755,8 @@ bool BotPlaner::runAddNodeToBestPlaneInner(int jobIdxToInsert) {
             continue;
         }
 
-        if (!job.wasTaken() && g.nodeInfo[nodeToInsert].scoreRatio < mMinScoreRatio) {
-            continue;
+        if (!job.wasTaken() && g.nodeInfo[nodeToInsert].scoreRatio < mMinScoreRatio && job.getBisDate() > Sim.Date) {
+            continue; /* job was not taken yet and does not have required minimum score */
         }
 
         /* iterate over nodes and make room */

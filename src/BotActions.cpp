@@ -367,9 +367,9 @@ void Bot::grabFlights(BotPlaner &planer, bool areWeInOffice) {
 
     /* configure weighting for special missions */
     if (Sim.Difficulty == DIFF_TUTORIAL) {
-        planer.setConstBonus(100 * 1000); /* need to schedule 10 jobs ASAP, so premium does not really matter */
+        planer.setConstBonus(1000 * 1000); /* need to schedule 10 jobs ASAP, so premium does not really matter */
     } else if (Sim.Difficulty == DIFF_FIRST) {
-        planer.setPassengerFactor(100); /* need to fly as many passengers as possible */
+        planer.setPassengerFactor(10 * 1000); /* need to fly as many passengers as possible */
     } else if (Sim.Difficulty == DIFF_ADDON04) {
         // planer.setDistanceFactor(1); TODO
     } else if (Sim.Difficulty == DIFF_ADDON09) {
