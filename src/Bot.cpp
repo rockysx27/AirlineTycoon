@@ -55,7 +55,7 @@ static const char *getPrioName(Bot::Prio prio) {
     return "INVALID";
 }
 
-std::vector<SLONG> Bot::findBestAvailablePlaneType() const {
+std::vector<SLONG> Bot::findBestAvailablePlaneType(bool forRoutes) const {
     CDataTable planeTable;
     planeTable.FillWithPlaneTypes();
     std::vector<std::pair<SLONG, __int64>> scores;
@@ -70,7 +70,9 @@ std::vector<SLONG> Bot::findBestAvailablePlaneType() const {
         }
 
         __int64 score = planeType.Passagiere * planeType.Passagiere;
-        score *= planeType.Reichweite;
+        if (!forRoutes) {
+            score *= planeType.Reichweite;
+        }
         score /= planeType.Verbrauch;
         scores.emplace_back(i, score);
     }
@@ -120,34 +122,51 @@ bool Bot::checkPlaneAvailable(SLONG planeId, bool printIfAvailable) const {
 bool Bot::checkPlaneLists() {
     bool foundProblem = false;
     std::unordered_map<SLONG, SLONG> uniquePlaneIds;
+    auto &qPlanes = qPlayer.Planes;
     for (const auto &i : mPlanesForJobs) {
         if (uniquePlaneIds.find(i) != uniquePlaneIds.end()) {
             redprintf("Bot::checkPlaneLists(): Plane with ID = %ld appears in multiple lists: 1 and %ld.", i, uniquePlaneIds[i]);
             foundProblem = true;
+            continue;
         }
         uniquePlaneIds[i] = 1;
+        hprintf("Bot::checkPlaneLists(): Jobs: Plane %s (%s) gains %s $", (LPCTSTR)qPlanes[i].Name, (LPCTSTR)qPlanes[i].ptName,
+                (LPCTSTR)Insert1000erDots64(qPlanes[i].GetSaldo()));
     }
+
     for (const auto &i : mPlanesForRoutes) {
         if (uniquePlaneIds.find(i) != uniquePlaneIds.end()) {
             redprintf("Bot::checkPlaneLists(): Plane with ID = %ld appears in multiple lists: 2 and %ld.", i, uniquePlaneIds[i]);
             foundProblem = true;
+            continue;
         }
         uniquePlaneIds[i] = 2;
+        hprintf("Bot::checkPlaneLists(): Routes: Plane %s (%s) gains %s $", (LPCTSTR)qPlanes[i].Name, (LPCTSTR)qPlanes[i].ptName,
+                (LPCTSTR)Insert1000erDots64(qPlanes[i].GetSaldo()));
     }
+
     for (const auto &i : mPlanesForJobsUnassigned) {
         if (uniquePlaneIds.find(i) != uniquePlaneIds.end()) {
             redprintf("Bot::checkPlaneLists(): Plane with ID = %ld appears in multiple lists: 3 and %ld.", i, uniquePlaneIds[i]);
             foundProblem = true;
+            continue;
         }
         uniquePlaneIds[i] = 3;
+        hprintf("Bot::checkPlaneLists(): Jobs unassigned: Plane %s gains (%s) %s $", (LPCTSTR)qPlanes[i].Name, (LPCTSTR)qPlanes[i].ptName,
+                (LPCTSTR)Insert1000erDots64(qPlanes[i].GetSaldo()));
     }
+
     for (const auto &i : mPlanesForRoutesUnassigned) {
         if (uniquePlaneIds.find(i) != uniquePlaneIds.end()) {
             redprintf("Bot::checkPlaneLists(): Plane with ID = %ld appears in multiple lists: 4 and %ld.", i, uniquePlaneIds[i]);
             foundProblem = true;
+            continue;
         }
         uniquePlaneIds[i] = 4;
+        hprintf("Bot::checkPlaneLists(): Routes unassigned: Plane %s (%s) gains %s $", (LPCTSTR)qPlanes[i].Name, (LPCTSTR)qPlanes[i].ptName,
+                (LPCTSTR)Insert1000erDots64(qPlanes[i].GetSaldo()));
     }
+
     for (SLONG i = 0; i < qPlayer.Planes.AnzEntries(); i++) {
         SLONG id = qPlayer.Planes.GetIdFromIndex(i);
         if (qPlayer.Planes.IsInAlbum(i) && uniquePlaneIds.find(id) == uniquePlaneIds.end()) {
@@ -743,7 +762,7 @@ void Bot::RobotExecuteAction() {
 
     case ACTION_VISITMAKLER:
         if (condVisitMakler() != Prio::None) {
-            mBestPlaneTypeId = findBestAvailablePlaneType()[0];
+            mBestPlaneTypeId = findBestAvailablePlaneType(false)[0];
 
             if (mItemAntiStrike == 0) {
                 if (GameMechanic::PickUpItemResult::PickedUp == GameMechanic::pickUpItem(qPlayer, ITEM_BH)) {
@@ -828,7 +847,7 @@ void Bot::RobotExecuteAction() {
 
     case ACTION_VISITROUTEBOX:
         if (condVisitRouteBoxPlanning() != Prio::None) {
-            std::tie(mWantToRentRouteId, mBuyPlaneForRouteId) = actionFindBestRoute();
+            actionFindBestRoute();
         } else {
             redprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
@@ -837,8 +856,7 @@ void Bot::RobotExecuteAction() {
 
     case ACTION_VISITROUTEBOX2:
         if (condVisitRouteBoxRenting(moneyAvailable) != Prio::None) {
-            actionRentRoute(mWantToRentRouteId, mBuyPlaneForRouteId);
-            mWantToRentRouteId = -1;
+            actionRentRoute();
         } else {
             redprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }

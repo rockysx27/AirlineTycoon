@@ -180,8 +180,8 @@ class Bot {
     void actionVisitMech();
     void actionVisitDutyFree(__int64 moneyAvailable);
     void actionVisitBoss();
-    std::pair<SLONG, SLONG> actionFindBestRoute() const;
-    void actionRentRoute(SLONG routeA, SLONG planeTypeId);
+    void actionFindBestRoute();
+    void actionRentRoute();
     void actionBuyAdsForRoutes(__int64 moneyAvailable);
     void actionBuyAds(__int64 moneyAvailable);
 
@@ -207,7 +207,7 @@ class Bot {
         }
         return planes;
     }
-    std::vector<SLONG> findBestAvailablePlaneType() const;
+    std::vector<SLONG> findBestAvailablePlaneType(bool forRoutes) const;
     SLONG calcCurrentGainFromJobs() const;
     bool checkPlaneLists();
     bool findPlanesNotAvailableForService(std::vector<SLONG> &listAvailable, std::deque<SLONG> &listUnassigned);
@@ -239,6 +239,7 @@ class Bot {
     /* strategy state */
     SLONG mBestPlaneTypeId{-1};
     SLONG mBuyPlaneForRouteId{-1};
+    SLONG mUsePlaneForRouteId{-1};
     SLONG mWantToRentRouteId{-1};
     bool mFirstRun{true};
     bool mDayStarted{false};

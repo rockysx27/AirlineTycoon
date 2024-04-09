@@ -504,9 +504,10 @@ SLONG checkFlightJobs(const PLAYER &qPlayer, bool alwaysPrint, bool verboseInfo)
     }
 
     hprintf("Helper::checkFlightJobs(): %s: Found %ld problems for %ld planes.", (LPCTSTR)qPlayer.AirlineX, nIncorrect, nPlanes);
-    overallInfo.printGain();
     if (verboseInfo) {
         overallInfo.printDetails();
+    } else {
+        overallInfo.printGain();
     }
     return nIncorrect;
 }

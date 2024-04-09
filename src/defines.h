@@ -177,15 +177,15 @@ inline bool operator!=(const CPoint &lhs, const CPoint &rhs) { return !(lhs == r
 #define DIFF_FREEGAMEMAP 7
 
 #define DIFF_ADDON 10   // Keine Mission, sondern nur ein Vergleichsmarker
-#define DIFF_ADDON01 11 // Fracht: x Tonnen
-#define DIFF_ADDON02 12 // Sanierung einer bankrotten Fluglinie
+#define DIFF_ADDON01 11 // Sanierung einer bankrotten Fluglinie
+#define DIFF_ADDON02 12 // Fracht: x Tonnen
 #define DIFF_ADDON03 13 // Fracht: Hilfsflüge x Tonnen
 #define DIFF_ADDON04 14 // Flugkilometer
-#define DIFF_ADDON05 15 // Kein Reisebüro
-#define DIFF_ADDON06 16 // Alles modernisieren
-#define DIFF_ADDON07 17 // Aktienkurs
-#define DIFF_ADDON08 18 // Viele Aufträge
-#define DIFF_ADDON09 19 // Service & Luxus
+#define DIFF_ADDON05 15 // Service & Luxus
+#define DIFF_ADDON06 16 // Kein Reisebüro
+#define DIFF_ADDON07 17 // Alles reparieren
+#define DIFF_ADDON08 18 // Aktienkurs
+#define DIFF_ADDON09 19 // Viele Aufträge von Uhrig
 #define DIFF_ADDON10 20 // Weltraumstation
 
 #define DIFF_ATFS 40   // Keine Mission, sondern nur ein Vergleichsmarker
