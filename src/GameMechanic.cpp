@@ -2899,7 +2899,7 @@ void GameMechanic::executeSabotageMode1() {
             if (qLocalPlayer.GetRoom() == ROOM_SABOTAGE) {
                 (qLocalPlayer.LocationWin)->StartDialog(TALKER_SABOTAGE, MEDIUM_AIR, 2000);
                 bgWarp = FALSE;
-                if (CheatTestGame == 0) {
+                if (CheatTestGame == 0 && CheatAutoSkip == 0) {
                     qLocalPlayer.GameSpeed = 0;
                 }
             } else {
@@ -2908,7 +2908,7 @@ void GameMechanic::executeSabotageMode1() {
                 gUniversalFx.Play(DSBPLAY_NOSTOP, Sim.Options.OptionEffekte * 100 / 7);
 
                 bgWarp = FALSE;
-                if (CheatTestGame == 0) {
+                if (CheatTestGame == 0 && CheatAutoSkip == 0) {
                     qLocalPlayer.GameSpeed = 0;
                 }
 
@@ -2933,7 +2933,7 @@ void GameMechanic::executeSabotageMode1() {
                     qOpfer.Messages.AddMessage(BERATERTYP_GIRL, StandardTexte.GetS(TOKEN_ADVICE, 2308));
 
                     bgWarp = FALSE;
-                    if (CheatTestGame == 0) {
+                    if (CheatTestGame == 0 && CheatAutoSkip == 0) {
                         qLocalPlayer.GameSpeed = 0;
                     }
                 } else if (Sim.CallItADay == 0) {

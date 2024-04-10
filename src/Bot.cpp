@@ -7,7 +7,7 @@
 #include <algorithm>
 
 const bool kAlwaysReplan = true;
-const float kSchedulingMinScoreRatio = 14.0f;
+float kSchedulingMinScoreRatio = 14.0f;
 const SLONG kSwitchToRoutesNumPlanesMin = 2;
 const SLONG kSwitchToRoutesNumPlanesMax = 4;
 const SLONG kSmallestAdCampaign = 4;
@@ -282,9 +282,13 @@ Bot::Bot(PLAYER &player) : qPlayer(player) {}
 
 void Bot::RobotInit() {
     auto balance = qPlayer.BilanzWoche.Hole();
-    greenprintf("Bot.cpp: Enter RobotInit(): Current day: %d, money: %s $ (op saldo %s = %s %s)", Sim.Date, Insert1000erDots64(qPlayer.Money).c_str(),
-                Insert1000erDots64(balance.GetOpSaldo()).c_str(), Insert1000erDots64(balance.GetOpGewinn()).c_str(),
-                Insert1000erDots64(balance.GetOpVerlust()).c_str());
+    if (bQuick) {
+        greenprintf("BotStatistics: %d, %lld, %lld, %lld, %lld", Sim.Date, qPlayer.Money, balance.GetOpSaldo(), balance.GetOpGewinn(), balance.GetOpVerlust());
+    } else {
+        greenprintf("Bot.cpp: Enter RobotInit(): Current day: %d, money: %s $ (op saldo %s = %s %s)", Sim.Date, Insert1000erDots64(qPlayer.Money).c_str(),
+                    Insert1000erDots64(balance.GetOpSaldo()).c_str(), Insert1000erDots64(balance.GetOpGewinn()).c_str(),
+                    Insert1000erDots64(balance.GetOpVerlust()).c_str());
+    }
 
     /* print inventory */
     printf("Inventory: ");

@@ -237,6 +237,7 @@ void NewGamePopup::Konstruktor(BOOL /*bHandy*/, SLONG /*PlayerNum*/) {
             Sim.Players.Players[c].IsOut = 0;
         }
 
+        Sim.Difficulty = DIFF_FREEGAME;
         Sim.Gamestate = UBYTE((Sim.Gamestate & (~GAMESTATE_WORKING)) | GAMESTATE_DONE);
 
         Routen.ReInit("routen.csv", true);
@@ -720,7 +721,7 @@ void NewGamePopup::RefreshKlackerField() {
 }
 
 //--------------------------------------------------------------------------------------------
-//Überprüft ob die Namen von Spielern & Fluggesellschaften eindeutig sind:
+// Überprüft ob die Namen von Spielern & Fluggesellschaften eindeutig sind:
 //--------------------------------------------------------------------------------------------
 void NewGamePopup::CheckNames() {
     SLONG c = 0;
@@ -896,7 +897,7 @@ void NewGamePopup::OnPaint() {
                 RoomBm.BlitFromT(KlackerTafel.Cursors[BlinkState % 8], (CursorX + 6) * 16 + 128, (CursorY + 2) * 22 + (CursorY / 2 + 1) * 22 + 63);
             }
         } else if (PageNum == 17) {
-            RoomBm.BlitFromT(KlackerTafel.Cursors[BlinkState % 8], (CursorX)*16 + 128, 2 * 22 + 63);
+            RoomBm.BlitFromT(KlackerTafel.Cursors[BlinkState % 8], (CursorX) * 16 + 128, 2 * 22 + 63);
         }
 
         // Cursorposition auswerten:

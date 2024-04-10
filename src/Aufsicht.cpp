@@ -748,7 +748,10 @@ void CAufsicht::OnPaint() {
 
     CStdRaum::PumpToolTips();
 
-    if (CheatAutoSkip == 1 && (Sim.Date % 100) != 0) {
+    if (bQuick == 1 && Sim.Date == 99) {
+        exit(0);
+    }
+    if (CheatAutoSkip == 1 && (Sim.Date % 100) != 99) {
         OnRButtonDown(0, CPoint());
         qPlayer.CallItADay = TRUE;
     }

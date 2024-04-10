@@ -17,7 +17,7 @@ class PLAYER;
 typedef long long __int64;
 
 extern const bool kAlwaysReplan;
-extern const float kSchedulingMinScoreRatio;
+extern float kSchedulingMinScoreRatio;
 extern const SLONG kSwitchToRoutesNumPlanesMin;
 extern const SLONG kSwitchToRoutesNumPlanesMax;
 extern const SLONG kSmallestAdCampaign;

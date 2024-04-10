@@ -8,6 +8,7 @@
 #include "ArabAir.h"
 #include "Aufsicht.h"
 #include "Bank.h"
+#include "Bot.h"
 #include "Buero.h"
 #include "Checkup.h"
 #include "Credits.h"
@@ -269,9 +270,15 @@ BOOL CTakeOffApp::InitInstance(int argc, char *argv[]) {
             return (FALSE);
         }
 
+        if (stricmp(Argument, "/quick") == 0) {
+            bQuick = TRUE;
+            CheatAutoSkip = 1;
+            i++;
+            if (i < argc) {
+                kSchedulingMinScoreRatio = atoi(argv[i]);
+            }
+        }
         // if (stricmp (Argument, "/e")==0) gLanguage = LANGUAGE_E;
-        // if (stricmp (Argument, "/quick")==0) bQuick = TRUE;
-        // if (stricmp (Argument, "/fast")==0) bQuick = TRUE;
         // if (stricmp (Argument, "/d")==0) gLanguage = LANGUAGE_D;
         // if (stricmp (Argument, "/f")==0) gLanguage = LANGUAGE_F;
         // if (stricmp (Argument, "/test")==0) bTest = TRUE;

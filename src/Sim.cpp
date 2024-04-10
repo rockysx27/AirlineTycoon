@@ -1455,7 +1455,7 @@ void SIM::DoTimeStep() {
                         }
 
                         bgWarp = FALSE;
-                        if (CheatTestGame == 0) {
+                        if (CheatTestGame == 0 && CheatAutoSkip == 0) {
                             qPlayer.GameSpeed = 0;
                         }
                     }
@@ -1481,7 +1481,7 @@ void SIM::DoTimeStep() {
                             bgWarp = FALSE;
                             qPlayer.StrikeNotified = TRUE;
                             qPlayer.StrikeEndType = 0;
-                            if (CheatTestGame == 0) {
+                            if (CheatTestGame == 0 && CheatAutoSkip == 0) {
                                 qPlayer.GameSpeed = 0;
                             }
                         }
@@ -1634,7 +1634,7 @@ void SIM::DoTimeStep() {
                                                 qPlayer.Messages.AddMessage(BERATERTYP_GIRL, StandardTexte.GetS(TOKEN_ADVICE, 2308));
 
                                                 bgWarp = FALSE;
-                                                if (CheatTestGame == 0) {
+                                                if (CheatTestGame == 0 && CheatAutoSkip == 0) {
                                                     qLocalPlayer.GameSpeed = 0;
                                                 }
                                             } else if (CallItADay == 0) {
@@ -2208,7 +2208,7 @@ void SIM::NewDay() {
 
     KeyHints[1] = 0;
 
-    if ((CheatTestGame != 0) && Players.Players[localPlayer].Money < 0) {
+    if ((CheatTestGame != 0 || CheatAutoSkip != 0) && Players.Players[localPlayer].Money < 0) {
         Players.Players[localPlayer].Money = 1000000;
         // log: hprintf ("Event: localPlayer gets Money-Boost for testing reasons");
     }
