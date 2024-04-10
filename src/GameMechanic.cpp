@@ -159,6 +159,11 @@ GameMechanic::CheckSabotage GameMechanic::checkPrerequisitesForSaboteurJob(PLAYE
     }
 
     auto victimID = qPlayer.ArabOpferSelection;
+    if (victimID < 0 || victimID >= 4) {
+        redprintf("GameMechanic::checkPrerequisitesForSaboteurJob: Invalid victim id (%ld).", victimID);
+        return {CheckSabotageResult::DeniedInvalidParam, 0};
+    }
+
     if (type == 0) {
         if (number < 1 || number >= 6) {
             redprintf("GameMechanic::checkPrerequisitesForSaboteurJob: Invalid job number (%ld).", number);

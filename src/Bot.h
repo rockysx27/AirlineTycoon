@@ -33,6 +33,7 @@ extern const SLONG kMinimumEmployeeSkill;
 extern const SLONG kPlaneMinimumZustand;
 extern const SLONG kStockEmissionMode;
 extern const bool kReduceDividend;
+extern const SLONG kMaxSabotageHints;
 
 extern const SLONG kMoneyEmergencyFund;
 extern const SLONG kMoneyReserveRepairs;
@@ -171,6 +172,7 @@ class Bot {
     std::pair<SLONG, SLONG> kerosineQualiOptimization(__int64 moneyAvailable, DOUBLE targetFillRatio) const;
     void actionBuyKerosine(__int64 moneyAvailable);
     void actionBuyKerosineTank(__int64 moneyAvailable);
+    void actionSabotage(__int64 moneyAvailable);
     SLONG calcBuyShares(__int64 moneyAvailable, DOUBLE kurs) const;
     SLONG calcSellShares(__int64 moneyToGet, DOUBLE kurs) const;
     SLONG calcNumOfFreeShares(SLONG playerId) const;

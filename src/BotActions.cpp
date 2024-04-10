@@ -54,14 +54,14 @@ void Bot::determineNemesis() {
     mNemesis = -1;
     mNemesisScore = 0;
     for (SLONG p = 0; p < 4; p++) {
-        if (p == qPlayer.PlayerNum) {
+        auto &qTarget = Sim.Players.Players[p];
+        if (p == qPlayer.PlayerNum || qTarget.IsOut != 0) {
             continue;
         }
-        auto &qPlayer = Sim.Players.Players[p];
 
         __int64 score = 0;
         if (Sim.Difficulty == DIFF_FREEGAME) {
-            score = qPlayer.BilanzWoche.Hole().GetOpSaldo();
+            score = qTarget.BilanzWoche.Hole().GetOpSaldo();
         } else {
             /* for missions */
             if (Sim.Difficulty == DIFF_FINAL || Sim.Difficulty == DIFF_ADDON10) {
@@ -69,12 +69,12 @@ void Bot::determineNemesis() {
                 const auto &qPrices = (Sim.Difficulty == DIFF_FINAL) ? RocketPrices : StationPrices;
                 auto nParts = sizeof(qPrices) / sizeof(qPrices[0]);
                 for (SLONG i = 0; i < nParts; i++) {
-                    if ((qPlayer.RocketFlags & (1 << i)) != 0) {
+                    if ((qTarget.RocketFlags & (1 << i)) != 0) {
                         score += qPrices[i];
                     }
                 }
             } else {
-                score = qPlayer.GetMissionRating();
+                score = qTarget.GetMissionRating();
             }
         }
         if (score > mNemesisScore) {
@@ -891,6 +891,36 @@ void Bot::actionBuyKerosineTank(__int64 moneyAvailable) {
             break;
         }
     }
+}
+
+void Bot::actionSabotage(__int64 moneyAvailable) {
+    if (mItemAntiVirus == 1) {
+        if (GameMechanic::useItem(qPlayer, ITEM_SPINNE)) {
+            hprintf("Bot::actionSabotage(): Used item tarantula");
+            mItemAntiVirus = 2;
+        }
+    }
+    if (mItemAntiVirus == 2) {
+        if (GameMechanic::PickUpItemResult::PickedUp == GameMechanic::pickUpItem(qPlayer, ITEM_DART)) {
+            hprintf("Bot::actionSabotage(): Picked up item dart");
+            mItemAntiVirus = 3;
+        }
+    }
+
+    if (!qPlayer.RobotUse(ROBOT_USE_SABOTAGE) || mNemesis == -1) {
+        return;
+    }
+    GameMechanic::setSaboteurTarget(qPlayer, mNemesis);
+
+    if (SabotagePrice2[1 - 1] <= moneyAvailable) {
+        auto res = GameMechanic::checkPrerequisitesForSaboteurJob(qPlayer, 1, 1).result;
+        if (res == GameMechanic::CheckSabotageResult::Ok) {
+            GameMechanic::activateSaboteurJob(qPlayer);
+            hprintf("Bot::actionSabotage(): Sabotaging nemesis %s using pills", (LPCTSTR)Sim.Players.Players[mNemesis].AirlineX);
+        }
+    }
+
+    moneyAvailable = getMoneyAvailable();
 }
 
 SLONG Bot::calcBuyShares(__int64 moneyAvailable, DOUBLE kurs) const { return static_cast<SLONG>(std::floor((moneyAvailable - 100) / (1.1 * kurs))); }

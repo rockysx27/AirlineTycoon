@@ -19,6 +19,7 @@ const SLONG kMinimumEmployeeSkill = 70;
 const SLONG kPlaneMinimumZustand = 90;
 const SLONG kStockEmissionMode = 2;
 const bool kReduceDividend = false;
+const SLONG kMaxSabotageHints = 90;
 
 const SLONG kMoneyEmergencyFund = 100000;
 const SLONG kMoneyReserveRepairs = 0;
@@ -626,20 +627,7 @@ void Bot::RobotExecuteAction() {
 
     case ACTION_SABOTAGE:
         if (condSabotage(moneyAvailable) != Prio::None) {
-            if (mItemAntiVirus == 1) {
-                if (GameMechanic::useItem(qPlayer, ITEM_SPINNE)) {
-                    hprintf("Bot::RobotExecuteAction(): Used item tarantula");
-                    mItemAntiVirus = 2;
-                }
-            }
-            if (mItemAntiVirus == 2) {
-                if (GameMechanic::PickUpItemResult::PickedUp == GameMechanic::pickUpItem(qPlayer, ITEM_DART)) {
-                    hprintf("Bot::RobotExecuteAction(): Picked up item dart");
-                    mItemAntiVirus = 3;
-                }
-            }
-
-            moneyAvailable = getMoneyAvailable();
+            actionSabotage(moneyAvailable);
         } else {
             redprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }

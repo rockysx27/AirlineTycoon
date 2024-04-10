@@ -7322,6 +7322,9 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
     case ROBOT_USE_SABOTAGE:
         /* Note: Also disallows visiting ArabAir */
         /* SuperBot: Respects this flag (only for sabotage) */
+        if (IsSuperBot()) {
+            return false;
+        }
         pFeatureDesc = "-XXXXX"
                        "X"
                        "XXXXXXXXXX"

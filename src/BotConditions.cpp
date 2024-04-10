@@ -591,14 +591,19 @@ Bot::Prio Bot::condBuyKerosineTank(__int64 &moneyAvailable) {
 
 Bot::Prio Bot::condSabotage(__int64 &moneyAvailable) {
     moneyAvailable = getMoneyAvailable();
-    if (!hoursPassed(ACTION_SABOTAGE, 4)) {
+    if (!hoursPassed(ACTION_SABOTAGE, 24)) {
         return Prio::None;
     }
-    if (qPlayer.ArabTrust > 0 && (mItemAntiVirus == 1 || mItemAntiVirus == 2)) {
+    if (qPlayer.ArabTrust == 0) {
+        return Prio::None;
+    }
+    if (qPlayer.RobotUse(ROBOT_USE_SABOTAGE) && qPlayer.ArabHints < kMaxSabotageHints) {
+        if (mNemesis != -1) {
+            return Prio::Low;
+        }
+    }
+    if (mItemAntiVirus == 1 || mItemAntiVirus == 2) {
         return Prio::Low; /* collect darts */
-    }
-    if (!qPlayer.RobotUse(ROBOT_USE_SABOTAGE)) {
-        return Prio::None;
     }
     return Prio::None;
 }
