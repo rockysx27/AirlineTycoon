@@ -122,6 +122,7 @@ class Bot {
     Prio condCheckFreight();
     Prio condUpgradePlanes();
     Prio condBuyNewPlane(__int64 &moneyAvailable);
+    Prio condBuyUsedPlane(__int64 &moneyAvailable);
     Prio condVisitHR();
     Prio condBuyKerosine(__int64 &moneyAvailable);
     Prio condBuyKerosineTank(__int64 &moneyAvailable);
@@ -140,7 +141,6 @@ class Bot {
     Prio condVisitMakler();
     Prio condVisitArab();
     Prio condVisitRick();
-    Prio condBuyUsedPlane(__int64 &moneyAvailable);
     Prio condVisitDutyFree(__int64 &moneyAvailable);
     Prio condVisitBoss(__int64 &moneyAvailable);
     Prio condExpandAirport(__int64 &moneyAvailable);
@@ -168,6 +168,7 @@ class Bot {
     void planFlights();
     void actionUpgradePlanes();
     void actionBuyNewPlane(__int64 moneyAvailable);
+    void actionBuyUsedPlane(__int64 moneyAvailable);
     void actionVisitHR();
     std::pair<SLONG, SLONG> kerosineQualiOptimization(__int64 moneyAvailable, DOUBLE targetFillRatio) const;
     void actionBuyKerosine(__int64 moneyAvailable);
@@ -210,6 +211,7 @@ class Bot {
         return planes;
     }
     std::vector<SLONG> findBestAvailablePlaneType(bool forRoutes) const;
+    SLONG findBestAvailableUsedPlane() const;
     SLONG calcCurrentGainFromJobs() const;
     bool checkPlaneLists();
     bool findPlanesNotAvailableForService(std::vector<SLONG> &listAvailable, std::deque<SLONG> &listUnassigned);
@@ -239,7 +241,9 @@ class Bot {
     std::deque<SLONG> mPlanesForRoutesUnassigned;
 
     /* strategy state */
+    bool mLongTermStrategy{true};
     SLONG mBestPlaneTypeId{-1};
+    SLONG mBestUsedPlaneIdx{-1};
     SLONG mBuyPlaneForRouteId{-1};
     SLONG mUsePlaneForRouteId{-1};
     SLONG mWantToRentRouteId{-1};

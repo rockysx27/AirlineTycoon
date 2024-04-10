@@ -273,6 +273,10 @@ void Bot::actionStartDayLaptop(__int64 moneyAvailable) {
             }
         }
     }
+    if (mDoRoutes && !mLongTermStrategy) {
+        mLongTermStrategy = true;
+        hprintf("Bot::actionStartDay(): Switching to longterm strategy.");
+    }
 
     /* logic deciding when to switch to final target run */
     determineNemesis();
@@ -588,7 +592,7 @@ void Bot::actionBuyNewPlane(__int64 /*moneyAvailable*/) {
     }
     for (auto i : GameMechanic::buyPlane(qPlayer, bestPlaneTypeId, 1)) {
         assert(i >= 0x1000000);
-        hprintf("Bot::actionBuyNewPlane(): Bought plane (%s) %s", (LPCTSTR)qPlayer.Planes[i].Name, (LPCTSTR)PlaneTypes[bestPlaneTypeId].Name);
+        hprintf("Bot::actionBuyNewPlane(): Bought plane %s (%s)", (LPCTSTR)qPlayer.Planes[i].Name, (LPCTSTR)PlaneTypes[bestPlaneTypeId].Name);
         if (mDoRoutes) {
             mPlanesForRoutesUnassigned.push_back(i);
             requestPlanRoutes(false);
@@ -600,6 +604,30 @@ void Bot::actionBuyNewPlane(__int64 /*moneyAvailable*/) {
                 mPlanesForJobsUnassigned.push_back(i);
             }
         }
+    }
+}
+
+void Bot::actionBuyUsedPlane(__int64 /*moneyAvailable*/) {
+    if (mBestUsedPlaneIdx < 0) {
+        mBestUsedPlaneIdx = findBestAvailableUsedPlane();
+        return;
+    }
+
+    if (qPlayer.xPiloten < Sim.UsedPlanes[mBestUsedPlaneIdx].AnzPiloten || qPlayer.xBegleiter < Sim.UsedPlanes[mBestUsedPlaneIdx].AnzBegleiter) {
+        redprintf("Bot::actionBuyUsedPlane(): Not enough crew for selected plane!");
+        return;
+    }
+    SLONG planeId = GameMechanic::buyUsedPlane(qPlayer, mBestUsedPlaneIdx);
+    assert(planeId >= 0x1000000);
+
+    auto typeId = qPlayer.Planes[planeId].TypeId;
+    hprintf("Bot::actionBuyUsedPlane(): Bought used plane %s (%s)", (LPCTSTR)qPlayer.Planes[planeId].Name, (LPCTSTR)PlaneTypes[typeId].Name);
+
+    if (checkPlaneAvailable(planeId, true)) {
+        mPlanesForJobs.push_back(planeId);
+        grabNewFlights();
+    } else {
+        mPlanesForJobsUnassigned.push_back(planeId);
     }
 }
 
@@ -618,7 +646,7 @@ void Bot::actionVisitHR() {
     }
 
     /* advisors */
-    std::vector<int> wantedAdvisors = {BERATERTYP_FITNESS, BERATERTYP_SICHERHEIT, BERATERTYP_KEROSIN, BERATERTYP_GELD};
+    std::vector<int> wantedAdvisors = {BERATERTYP_FITNESS, BERATERTYP_SICHERHEIT, BERATERTYP_KEROSIN, BERATERTYP_GELD, BERATERTYP_FLUGZEUG};
     for (auto advisorType : wantedAdvisors) {
         SLONG bestCandidateId = -1;
         SLONG bestCandidateSkill = 0;
@@ -663,12 +691,21 @@ void Bot::actionVisitHR() {
     SLONG stewardessTarget = 0;
     SLONG numPilotsHired = 0;
     SLONG numStewardessHired = 0;
-    SLONG bestPlaneTypeId = mDoRoutes ? mBuyPlaneForRouteId : mBestPlaneTypeId;
-    if (bestPlaneTypeId >= 0) {
-        const auto &bestPlaneType = PlaneTypes[bestPlaneTypeId];
-        pilotsTarget = bestPlaneType.AnzPiloten;
-        stewardessTarget = bestPlaneType.AnzBegleiter;
+    if (mLongTermStrategy) {
+        SLONG bestPlaneTypeId = mDoRoutes ? mBuyPlaneForRouteId : mBestPlaneTypeId;
+        if (bestPlaneTypeId >= 0) {
+            const auto &bestPlaneType = PlaneTypes[bestPlaneTypeId];
+            pilotsTarget = bestPlaneType.AnzPiloten;
+            stewardessTarget = bestPlaneType.AnzBegleiter;
+        }
+    } else {
+        if (mBestUsedPlaneIdx != -1) {
+            const auto &bestPlane = Sim.UsedPlanes[mBestUsedPlaneIdx];
+            pilotsTarget = bestPlane.AnzPiloten;
+            stewardessTarget = bestPlane.AnzBegleiter;
+        }
     }
+
     for (SLONG c = 0; c < Workers.Workers.AnzEntries(); c++) {
         const auto &qWorker = Workers.Workers[c];
         if (qWorker.Employer != WORKER_JOBLESS) {
@@ -1211,7 +1248,7 @@ void Bot::actionVisitBoss() {
 
 void Bot::actionFindBestRoute() {
     auto isBuyable = GameMechanic::getBuyableRoutes(qPlayer);
-    auto bestPlanes = findBestAvailablePlaneType(true);
+    auto bestPlanes = findBestAvailablePlaneType(true); // TODO: Technically not possible to check plane types here
 
     mWantToRentRouteId = -1;
     mBuyPlaneForRouteId = -1;

@@ -260,10 +260,10 @@ Bot::Prio Bot::condAll(SLONG actionId) {
         return condVisitDesigner(moneyAvailable);
     case ACTION_VISITSECURITY2:
         return condSabotageSecurity();
-    case ACTION_BUYUSEDPLANE:
-        return condBuyUsedPlane(moneyAvailable);
     case ACTION_BUYNEWPLANE:
         return condBuyNewPlane(moneyAvailable);
+    case ACTION_BUYUSEDPLANE:
+        return condBuyUsedPlane(moneyAvailable);
     case ACTION_WERBUNG:
         return condBuyAds(moneyAvailable);
     case ACTION_SABOTAGE:
@@ -492,6 +492,9 @@ Bot::Prio Bot::condBuyNewPlane(__int64 &moneyAvailable) {
     if (!qPlayer.RobotUse(ROBOT_USE_MAKLER)) {
         return Prio::None;
     }
+    if (!mLongTermStrategy) {
+        return Prio::None; /* we will only buy used planes */
+    }
     if (mRunToFinalObjective > FinalPhase::No) {
         return Prio::None;
     }
@@ -516,6 +519,37 @@ Bot::Prio Bot::condBuyNewPlane(__int64 &moneyAvailable) {
         return Prio::None; /* not enough crew */
     }
     if (moneyAvailable >= PlaneTypes[bestPlaneTypeId].Preis) {
+        return Prio::High; /* buy the plane (e.g. for a new route) before spending it on something else */
+    }
+
+    return Prio::None;
+}
+
+Bot::Prio Bot::condBuyUsedPlane(__int64 &moneyAvailable) {
+    moneyAvailable = getMoneyAvailable();
+    if (!hoursPassed(ACTION_BUYUSEDPLANE, 24)) {
+        return Prio::None;
+    }
+    if (mLongTermStrategy) {
+        return Prio::None; /* we will only buy new planes */
+    }
+    if (mRunToFinalObjective > FinalPhase::No) {
+        return Prio::None;
+    }
+    if (HowToPlan::None == canWePlanFlights()) {
+        return Prio::None;
+    }
+    if (!haveDiscount()) {
+        return Prio::None; /* wait until we have some discount */
+    }
+
+    if (mBestUsedPlaneIdx < 0) {
+        return Prio::High; /* need to check what planes are available */
+    }
+    if ((qPlayer.xPiloten < Sim.UsedPlanes[mBestUsedPlaneIdx].AnzPiloten) || (qPlayer.xBegleiter < Sim.UsedPlanes[mBestUsedPlaneIdx].AnzBegleiter)) {
+        return Prio::None; /* not enough crew */
+    }
+    if (moneyAvailable >= Sim.UsedPlanes[mBestUsedPlaneIdx].CalculatePrice()) {
         return Prio::High; /* buy the plane (e.g. for a new route) before spending it on something else */
     }
 
@@ -768,7 +802,7 @@ Bot::Prio Bot::condVisitMakler() {
     if (!hoursPassed(ACTION_VISITMAKLER, 4)) {
         return Prio::None;
     }
-    if (mBestPlaneTypeId == -1) {
+    if (mBestPlaneTypeId == -1 && mLongTermStrategy) {
         return Prio::Low;
     }
     if (mItemAntiStrike == 0) {
@@ -797,11 +831,6 @@ Bot::Prio Bot::condVisitRick() {
         return Prio::Low; /* give horse shoe */
     }
     return condVisitMisc();
-}
-
-Bot::Prio Bot::condBuyUsedPlane(__int64 &moneyAvailable) {
-    moneyAvailable = getMoneyAvailable();
-    return Prio::None;
 }
 
 Bot::Prio Bot::condVisitDutyFree(__int64 &moneyAvailable) {

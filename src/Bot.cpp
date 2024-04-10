@@ -90,6 +90,34 @@ std::vector<SLONG> Bot::findBestAvailablePlaneType(bool forRoutes) const {
     return bestList;
 }
 
+SLONG Bot::findBestAvailableUsedPlane() const {
+    SLONG bestIdx = -1;
+    DOUBLE bestScore = 0;
+    for (SLONG c = 0; c < 3; c++) {
+        const auto &qPlane = Sim.UsedPlanes[0x1000000 + c];
+        if (qPlane.Name.GetLength() <= 0) {
+            continue;
+        }
+        DOUBLE score = 1.0 * 1e9 * qPlane.ptPassagiere * qPlane.ptPassagiere;
+        score /= qPlane.ptVerbrauch;
+        score /= (2015 - qPlane.Baujahr);
+
+        if (qPlayer.HasBerater(BERATERTYP_FLUGZEUG) > 0) {
+            SLONG improvementNeeded = std::max(0, 80 - qPlane.WorstZustand);
+            SLONG repairCost = improvementNeeded * (qPlane.ptPreis / 110);
+            score /= repairCost;
+        }
+
+        hprintf("Bot::findBestAvailableUsedPlane(): Used plane %s has score %.2f", (LPCTSTR)qPlane.Name, (LPCTSTR)PlaneTypes[qPlane.TypeId].Name, score);
+
+        if (score > bestScore) {
+            bestScore = score;
+            bestIdx = c;
+        }
+    }
+    return bestIdx;
+}
+
 SLONG Bot::calcCurrentGainFromJobs() const {
     SLONG gain = 0;
     for (auto planeId : mPlanesForJobs) {
@@ -331,6 +359,12 @@ void Bot::RobotInit() {
             mItemAntiVirus = -1; /* item not available */
         }
 
+        /* is this a mission that is usually very fast? */
+        if (Sim.Difficulty <= DIFF_EASY) {
+            // TODO
+            // mLongTermStrategy = false;
+        }
+
         if (qPlayer.RobotUse(ROBOT_USE_GROSSESKONTO)) {
             /* imediately start saving money */
             mRunToFinalObjective = FinalPhase::SaveMoney;
@@ -347,6 +381,7 @@ void Bot::RobotInit() {
     mNumActionsToday = 0;
 
     /* strategy state */
+    mBestUsedPlaneIdx = -1;
     mNemesis = -1;
     mNemesisScore = 0;
     mDayStarted = false;
@@ -383,9 +418,9 @@ void Bot::RobotPlan() {
     SLONG actions[] = {ACTION_STARTDAY, ACTION_STARTDAY_LAPTOP,
                        /* repeated actions */
                        ACTION_BUERO, ACTION_CALL_INTERNATIONAL, ACTION_CALL_INTER_HANDY, ACTION_CHECKAGENT1, ACTION_CHECKAGENT2, ACTION_CHECKAGENT3,
-                       ACTION_UPGRADE_PLANES, ACTION_BUYNEWPLANE, ACTION_PERSONAL, ACTION_BUY_KEROSIN, ACTION_BUY_KEROSIN_TANKS, ACTION_SABOTAGE,
-                       ACTION_SET_DIVIDEND, ACTION_RAISEMONEY, ACTION_DROPMONEY, ACTION_EMITSHARES, ACTION_SELLSHARES, ACTION_BUYSHARES, ACTION_VISITMECH,
-                       ACTION_VISITNASA, ACTION_VISITTELESCOPE, ACTION_VISITMAKLER, ACTION_VISITARAB, ACTION_VISITRICK, ACTION_VISITKIOSK, ACTION_BUYUSEDPLANE,
+                       ACTION_UPGRADE_PLANES, ACTION_BUYNEWPLANE, ACTION_BUYUSEDPLANE, ACTION_PERSONAL, ACTION_BUY_KEROSIN, ACTION_BUY_KEROSIN_TANKS,
+                       ACTION_SABOTAGE, ACTION_SET_DIVIDEND, ACTION_RAISEMONEY, ACTION_DROPMONEY, ACTION_EMITSHARES, ACTION_SELLSHARES, ACTION_BUYSHARES,
+                       ACTION_VISITMECH, ACTION_VISITNASA, ACTION_VISITTELESCOPE, ACTION_VISITMAKLER, ACTION_VISITARAB, ACTION_VISITRICK, ACTION_VISITKIOSK,
                        ACTION_VISITDUTYFREE, ACTION_VISITAUFSICHT, ACTION_EXPANDAIRPORT, ACTION_VISITROUTEBOX, ACTION_VISITROUTEBOX2, ACTION_VISITSECURITY,
                        ACTION_VISITSECURITY2, ACTION_VISITDESIGNER, ACTION_WERBUNG_ROUTES, ACTION_WERBUNG, ACTION_VISITADS};
 
@@ -597,6 +632,14 @@ void Bot::RobotExecuteAction() {
         qWorkCountdown = 20 * 5;
         break;
 
+    case ACTION_BUYUSEDPLANE:
+        if (condBuyUsedPlane(moneyAvailable) != Prio::None) {
+            actionBuyUsedPlane(moneyAvailable);
+        } else {
+            redprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+        }
+        break;
+
     case ACTION_PERSONAL:
         if (condVisitHR() != Prio::None) {
             actionVisitHR();
@@ -800,15 +843,6 @@ void Bot::RobotExecuteAction() {
         qWorkCountdown = 20 * 5;
         break;
 
-    case ACTION_BUYUSEDPLANE:
-        // TODO
-        if (condBuyUsedPlane(moneyAvailable) != Prio::None) {
-            moneyAvailable = getMoneyAvailable();
-        } else {
-            redprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
-        }
-        break;
-
     case ACTION_VISITDUTYFREE:
         if (condVisitDutyFree(moneyAvailable) != Prio::None) {
             actionVisitDutyFree(moneyAvailable);
@@ -972,7 +1006,8 @@ TEAKFILE &operator<<(TEAKFILE &File, const Bot &bot) {
         File << i;
     }
 
-    File << bot.mBestPlaneTypeId << bot.mBuyPlaneForRouteId;
+    File << bot.mLongTermStrategy;
+    File << bot.mBestPlaneTypeId << bot.mBestUsedPlaneIdx << bot.mBuyPlaneForRouteId << bot.mUsePlaneForRouteId;
     File << bot.mWantToRentRouteId;
     File << bot.mFirstRun << bot.mDayStarted << bot.mDoRoutes;
     File << static_cast<SLONG>(bot.mRunToFinalObjective) << bot.mMoneyForFinalObjective;
@@ -1088,7 +1123,8 @@ TEAKFILE &operator>>(TEAKFILE &File, Bot &bot) {
     }
 
     SLONG runToFinalObjective = 0;
-    File >> bot.mBestPlaneTypeId >> bot.mBuyPlaneForRouteId;
+    File >> bot.mLongTermStrategy;
+    File >> bot.mBestPlaneTypeId >> bot.mBestUsedPlaneIdx >> bot.mBuyPlaneForRouteId >> bot.mUsePlaneForRouteId;
     File >> bot.mWantToRentRouteId;
     File >> bot.mFirstRun >> bot.mDayStarted >> bot.mDoRoutes;
     File >> runToFinalObjective >> bot.mMoneyForFinalObjective;

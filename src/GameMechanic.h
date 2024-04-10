@@ -58,7 +58,7 @@ class GameMechanic {
     static std::vector<SLONG> buyPlane(PLAYER &qPlayer, SLONG planeType, SLONG amount);
 
     /* Museum */
-    static bool buyUsedPlane(PLAYER &qPlayer, SLONG planeID);
+    static SLONG buyUsedPlane(PLAYER &qPlayer, SLONG planeID);
     static bool sellPlane(PLAYER &qPlayer, SLONG planeID);
 
     /* Designer */

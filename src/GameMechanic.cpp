@@ -564,14 +564,14 @@ std::vector<SLONG> GameMechanic::buyPlane(PLAYER &qPlayer, SLONG planeType, SLON
     return planeIds;
 }
 
-bool GameMechanic::buyUsedPlane(PLAYER &qPlayer, SLONG planeID) {
+SLONG GameMechanic::buyUsedPlane(PLAYER &qPlayer, SLONG planeID) {
     if (!Sim.UsedPlanes.IsInAlbum(planeID)) {
         redprintf("GameMechanic::buyUsedPlane: Invalid plane index (%ld).", planeID);
-        return false;
+        return -1;
     }
 
     if (qPlayer.Money - Sim.UsedPlanes[planeID].CalculatePrice() < DEBT_LIMIT) {
-        return false;
+        return -1;
     }
 
     if (qPlayer.Planes.GetNumFree() == 0) {
@@ -579,7 +579,7 @@ bool GameMechanic::buyUsedPlane(PLAYER &qPlayer, SLONG planeID) {
     }
     Sim.UsedPlanes[planeID].WorstZustand = UBYTE(Sim.UsedPlanes[planeID].Zustand - 20);
     Sim.UsedPlanes[planeID].GlobeAngle = 0;
-    qPlayer.Planes += Sim.UsedPlanes[planeID];
+    SLONG playerPlaneIdx = (qPlayer.Planes += Sim.UsedPlanes[planeID]);
 
     SLONG cost = Sim.UsedPlanes[planeID].CalculatePrice();
     qPlayer.ChangeMoney(-cost, 2010, Sim.UsedPlanes[planeID].Name);
@@ -607,7 +607,7 @@ bool GameMechanic::buyUsedPlane(PLAYER &qPlayer, SLONG planeID) {
         }
     }
 
-    return true;
+    return playerPlaneIdx;
 }
 
 bool GameMechanic::sellPlane(PLAYER &qPlayer, SLONG planeID) {

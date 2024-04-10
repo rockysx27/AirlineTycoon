@@ -4185,7 +4185,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                 break;
 
             case 600:
-                if (GameMechanic::buyUsedPlane(qPlayer, 0x1000000 + DialogPar1)) {
+                if (GameMechanic::buyUsedPlane(qPlayer, 0x1000000 + DialogPar1) != -1) {
                     StopDialog();
                 } else {
                     MakeSayWindow(0, TOKEN_MUSEUM, 6000, pFontPartner);
