@@ -562,21 +562,24 @@ int BotPlaner::removeAllJobInstances(int jobIdx) {
     int nPlaneTypes = mPlaneTypeToPlane.size();
     for (int pt = 0; pt < nPlaneTypes; pt++) {
         Graph &g = mGraphs[pt];
-        int currentNode = g.getNode(jobIdx);
-        while (g.nodeInfo[currentNode].jobIdx == jobIdx && currentNode < g.nNodes) {
+        int jobNode = g.getNode(jobIdx);
+        if (jobNode < g.nPlanes) {
+            continue;
+        }
+        while (jobNode < g.nNodes && g.nodeInfo[jobNode].jobIdx == jobIdx) {
             /* check if job node in this graph is scheduled */
-            if (g.nodeState[currentNode].cameFrom != -1) {
+            if (g.nodeState[jobNode].cameFrom != -1) {
                 /* need to get planeIdx */
-                int planeIdx = currentNode;
+                int planeIdx = jobNode;
                 while (g.nodeState[planeIdx].cameFrom != -1) {
                     planeIdx = g.nodeState[planeIdx].cameFrom; /* trace back to first node */
                 }
                 assert(planeIdx >= 0 && planeIdx < g.nPlanes);
 
-                removeNode(g, planeIdx, currentNode);
+                removeNode(g, planeIdx, jobNode);
                 nRemoved++;
             }
-            currentNode++;
+            jobNode++;
         }
     }
     return nRemoved;
