@@ -31,6 +31,9 @@ extern const DOUBLE kMaxTicketPriceFactor;
 extern const SLONG kTargetEmployeeHappiness;
 extern const SLONG kMinimumEmployeeSkill;
 extern const SLONG kPlaneMinimumZustand;
+extern const SLONG kPlaneTargetZustand;
+extern const SLONG kUsedPlaneMinimumScore;
+extern const DOUBLE kMaxKerosinQualiZiel;
 extern const SLONG kStockEmissionMode;
 extern const bool kReduceDividend;
 extern const SLONG kMaxSabotageHints;
@@ -123,6 +126,7 @@ class Bot {
     Prio condUpgradePlanes();
     Prio condBuyNewPlane(__int64 &moneyAvailable);
     Prio condBuyUsedPlane(__int64 &moneyAvailable);
+    Prio condVisitMuseum();
     Prio condVisitHR();
     Prio condBuyKerosine(__int64 &moneyAvailable);
     Prio condBuyKerosineTank(__int64 &moneyAvailable);

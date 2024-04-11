@@ -273,6 +273,11 @@ BOOL CTakeOffApp::InitInstance(int argc, char *argv[]) {
         if (stricmp(Argument, "/quick") == 0) {
             bQuick = TRUE;
             CheatAutoSkip = 1;
+        }
+        if (stricmp(Argument, "/testbot") == 0) {
+            bQuick = TRUE;
+            bAutoQuitOnDay = 99;
+            CheatAutoSkip = 1;
             i++;
             if (i < argc) {
                 kSchedulingMinScoreRatio = atoi(argv[i]);
@@ -1110,7 +1115,7 @@ void CTakeOffApp::GameLoop(void * /*unused*/) {
                         break;
                     case 5:
                         Multiplier = 600;
-                        if (CheatAutoSkip == 1) {
+                        if (CheatAutoSkip != 0) {
                             Multiplier *= 10;
                         }
                         break;

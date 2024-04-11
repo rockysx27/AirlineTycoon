@@ -17,6 +17,9 @@ const DOUBLE kMaxTicketPriceFactor = 3.0;
 const SLONG kTargetEmployeeHappiness = 90;
 const SLONG kMinimumEmployeeSkill = 70;
 const SLONG kPlaneMinimumZustand = 90;
+const SLONG kPlaneTargetZustand = 100;
+const SLONG kUsedPlaneMinimumScore = 40;
+const DOUBLE kMaxKerosinQualiZiel = 1.3;
 const SLONG kStockEmissionMode = 2;
 const bool kReduceDividend = false;
 const SLONG kMaxSabotageHints = 90;
@@ -32,7 +35,7 @@ const SLONG kMoneyReserveBuyNemesisShares = 6000 * 1000;
 const SLONG kMoneyReserveBossOffice = 10 * 1000;
 const SLONG kMoneyReserveExpandAirport = 1000 * 1000;
 
-static const char *getPrioName(Bot::Prio prio) {
+inline const char *getPrioName(Bot::Prio prio) {
     switch (prio) {
     case Bot::Prio::Top:
         return "Top";
@@ -92,7 +95,7 @@ std::vector<SLONG> Bot::findBestAvailablePlaneType(bool forRoutes) const {
 
 SLONG Bot::findBestAvailableUsedPlane() const {
     SLONG bestIdx = -1;
-    DOUBLE bestScore = 0;
+    DOUBLE bestScore = kUsedPlaneMinimumScore;
     for (SLONG c = 0; c < 3; c++) {
         const auto &qPlane = Sim.UsedPlanes[0x1000000 + c];
         if (qPlane.Name.GetLength() <= 0) {
@@ -102,13 +105,18 @@ SLONG Bot::findBestAvailableUsedPlane() const {
         score /= qPlane.ptVerbrauch;
         score /= (2015 - qPlane.Baujahr);
 
+        auto worstZustand = qPlane.Zustand - 20;
+        SLONG improvementNeeded = std::max(0, 80 - worstZustand);
+        SLONG repairCost = improvementNeeded * (qPlane.ptPreis / 110);
         if (qPlayer.HasBerater(BERATERTYP_FLUGZEUG) > 0) {
-            SLONG improvementNeeded = std::max(0, 80 - qPlane.WorstZustand);
-            SLONG repairCost = improvementNeeded * (qPlane.ptPreis / 110);
             score /= repairCost;
         }
 
-        hprintf("Bot::findBestAvailableUsedPlane(): Used plane %s has score %.2f", (LPCTSTR)qPlane.Name, (LPCTSTR)PlaneTypes[qPlane.TypeId].Name, score);
+        hprintf("Bot::findBestAvailableUsedPlane(): Used plane %s has score %.2f", Helper::getPlaneName(qPlane).c_str(), score);
+        hprintf("\t\tPassengers = %ld, fuel = %ld, year = %d", qPlane.ptPassagiere, qPlane.ptVerbrauch, qPlane.Baujahr);
+        if (qPlayer.HasBerater(BERATERTYP_FLUGZEUG) > 0) {
+            hprintf("\t\tWorstZustand = %u, cost = %d", worstZustand, repairCost);
+        }
 
         if (score > bestScore) {
             bestScore = score;
@@ -129,21 +137,21 @@ SLONG Bot::calcCurrentGainFromJobs() const {
 bool Bot::checkPlaneAvailable(SLONG planeId, bool printIfAvailable) const {
     const auto &qPlane = qPlayer.Planes[planeId];
     if (qPlane.AnzBegleiter < qPlane.ptAnzBegleiter) {
-        redprintf("Bot::checkPlaneAvailable: Plane %s does not have enough crew members (%ld, need %ld).", (LPCTSTR)qPlane.Name, qPlane.AnzBegleiter,
-                  qPlane.ptAnzBegleiter);
+        redprintf("Bot::checkPlaneAvailable: Plane %s does not have enough crew members (%ld, need %ld).", Helper::getPlaneName(qPlane).c_str(),
+                  qPlane.AnzBegleiter, qPlane.ptAnzBegleiter);
         return false;
     }
     if (qPlane.AnzPiloten < qPlane.ptAnzPiloten) {
-        redprintf("Bot::checkPlaneAvailable: Plane %s does not have enough pilots (%ld, need %ld).", (LPCTSTR)qPlane.Name, qPlane.AnzPiloten,
+        redprintf("Bot::checkPlaneAvailable: Plane %s does not have enough pilots (%ld, need %ld).", Helper::getPlaneName(qPlane).c_str(), qPlane.AnzPiloten,
                   qPlane.ptAnzPiloten);
         return false;
     }
     if (qPlane.Problem != 0) {
-        redprintf("Bot::checkPlaneAvailable: Plane %s has a problem for the next %ld hours", (LPCTSTR)qPlane.Name, qPlane.Problem);
+        redprintf("Bot::checkPlaneAvailable: Plane %s has a problem for the next %ld hours", Helper::getPlaneName(qPlane).c_str(), qPlane.Problem);
         return false;
     }
     if (printIfAvailable) {
-        hprintf("Bot::checkPlaneAvailable: Plane %s is available for service.", (LPCTSTR)qPlane.Name);
+        hprintf("Bot::checkPlaneAvailable: Plane %s is available for service.", Helper::getPlaneName(qPlane).c_str());
     }
     return true;
 }
@@ -159,7 +167,7 @@ bool Bot::checkPlaneLists() {
             continue;
         }
         uniquePlaneIds[i] = 1;
-        hprintf("Bot::checkPlaneLists(): Jobs: Plane %s (%s) gains %s $", (LPCTSTR)qPlanes[i].Name, (LPCTSTR)qPlanes[i].ptName,
+        hprintf("Bot::checkPlaneLists(): Jobs: Plane %s gains %s $", Helper::getPlaneName(qPlanes[i]).c_str(),
                 (LPCTSTR)Insert1000erDots64(qPlanes[i].GetSaldo()));
     }
 
@@ -170,7 +178,7 @@ bool Bot::checkPlaneLists() {
             continue;
         }
         uniquePlaneIds[i] = 2;
-        hprintf("Bot::checkPlaneLists(): Routes: Plane %s (%s) gains %s $", (LPCTSTR)qPlanes[i].Name, (LPCTSTR)qPlanes[i].ptName,
+        hprintf("Bot::checkPlaneLists(): Routes: Plane %s gains %s $", Helper::getPlaneName(qPlanes[i]).c_str(),
                 (LPCTSTR)Insert1000erDots64(qPlanes[i].GetSaldo()));
     }
 
@@ -181,7 +189,7 @@ bool Bot::checkPlaneLists() {
             continue;
         }
         uniquePlaneIds[i] = 3;
-        hprintf("Bot::checkPlaneLists(): Jobs unassigned: Plane %s gains (%s) %s $", (LPCTSTR)qPlanes[i].Name, (LPCTSTR)qPlanes[i].ptName,
+        hprintf("Bot::checkPlaneLists(): Jobs unassigned: Plane %s gains %s $", Helper::getPlaneName(qPlanes[i]).c_str(),
                 (LPCTSTR)Insert1000erDots64(qPlanes[i].GetSaldo()));
     }
 
@@ -192,7 +200,7 @@ bool Bot::checkPlaneLists() {
             continue;
         }
         uniquePlaneIds[i] = 4;
-        hprintf("Bot::checkPlaneLists(): Routes unassigned: Plane %s (%s) gains %s $", (LPCTSTR)qPlanes[i].Name, (LPCTSTR)qPlanes[i].ptName,
+        hprintf("Bot::checkPlaneLists(): Routes unassigned: Plane %s gains %s $", Helper::getPlaneName(qPlanes[i]).c_str(),
                 (LPCTSTR)Insert1000erDots64(qPlanes[i].GetSaldo()));
     }
 
@@ -200,7 +208,7 @@ bool Bot::checkPlaneLists() {
         SLONG id = qPlayer.Planes.GetIdFromIndex(i);
         if (qPlayer.Planes.IsInAlbum(i) && uniquePlaneIds.find(id) == uniquePlaneIds.end()) {
             const auto &qPlane = qPlayer.Planes[i];
-            redprintf("Bot::checkPlaneLists(): Found new plane: %s (%lx).", (LPCTSTR)qPlane.Name, id);
+            redprintf("Bot::checkPlaneLists(): Found new plane: %s (%lx).", Helper::getPlaneName(qPlane).c_str(), id);
             mPlanesForJobsUnassigned.push_back(id);
             foundProblem = true;
         }
@@ -232,16 +240,16 @@ bool Bot::findPlanesNotAvailableForService(std::vector<SLONG> &listAvailable, st
         }
 
         auto &qPlane = qPlayer.Planes[id];
-        hprintf("Bot::findPlanesNotAvailableForService(): Plane %s (%s): Zustand = %u, WorstZustand = %u", (LPCTSTR)qPlane.Name,
-                (LPCTSTR)PlaneTypes[qPlane.TypeId].Name, qPlane.Zustand, qPlane.WorstZustand);
+        hprintf("Bot::findPlanesNotAvailableForService(): Plane %s: Zustand = %u, WorstZustand = %u, Baujahr = %ld", Helper::getPlaneName(qPlane).c_str(),
+                qPlane.Zustand, qPlane.WorstZustand, qPlane.Baujahr);
 
         SLONG mode = 0; /* 0: keep plane in service */
         if (qPlane.Zustand <= kPlaneMinimumZustand) {
-            hprintf("Bot::findPlanesNotAvailableForService(): Plane %s not available for service: Needs repairs.", (LPCTSTR)qPlane.Name);
+            hprintf("Bot::findPlanesNotAvailableForService(): Plane %s not available for service: Needs repairs.", Helper::getPlaneName(qPlane).c_str());
             mode = 1; /* 1: phase plane out */
         }
         if (!checkPlaneAvailable(id, false)) {
-            redprintf("Bot::findPlanesNotAvailableForService(): Plane %s not available for service: No crew.", (LPCTSTR)qPlane.Name);
+            redprintf("Bot::findPlanesNotAvailableForService(): Plane %s not available for service: No crew.", Helper::getPlaneName(qPlane).c_str());
             mode = 2; /* 2: remove plane immediately from service */
         }
         if (mode > 0) {
@@ -279,17 +287,17 @@ bool Bot::findPlanesAvailableForService(std::deque<SLONG> &listUnassigned, std::
         }
 
         auto &qPlane = qPlayer.Planes[id];
-        hprintf("Bot::findPlanesNotAvailableForService(): Plane %s (%s): Zustand = %u, WorstZustand = %u", (LPCTSTR)qPlane.Name,
-                (LPCTSTR)PlaneTypes[qPlane.TypeId].Name, qPlane.Zustand, qPlane.WorstZustand);
+        hprintf("Bot::findPlanesAvailableForService(): Plane %s: Zustand = %u, WorstZustand = %u, Baujahr = %ld", Helper::getPlaneName(qPlane).c_str(),
+                qPlane.Zustand, qPlane.WorstZustand, qPlane.Baujahr);
 
-        if (qPlane.Zustand < 100 && (qPlane.Zustand < qPlane.WorstZustand + 20)) {
-            hprintf("Bot::findPlanesAvailableForService(): Plane %s still not available for service: Needs repairs.", (LPCTSTR)qPlane.Name);
+        if (qPlane.Zustand < 100 && (qPlane.Zustand < kPlaneTargetZustand)) {
+            hprintf("Bot::findPlanesAvailableForService(): Plane %s still not available for service: Needs repairs.", Helper::getPlaneName(qPlane).c_str());
             newUnassigned.push_back(id);
         } else if (!checkPlaneAvailable(id, false)) {
-            redprintf("Bot::findPlanesAvailableForService(): Plane %s still not available for service: No crew.", (LPCTSTR)qPlane.Name);
+            redprintf("Bot::findPlanesAvailableForService(): Plane %s still not available for service: No crew.", Helper::getPlaneName(qPlane).c_str());
             newUnassigned.push_back(id);
         } else {
-            hprintf("Bot::findPlanesAvailableForService(): Putting plane %s back into service.", (LPCTSTR)qPlane.Name);
+            hprintf("Bot::findPlanesAvailableForService(): Putting plane %s back into service.", Helper::getPlaneName(qPlane).c_str());
             listAvailable.push_back(id);
         }
     }
@@ -360,9 +368,11 @@ void Bot::RobotInit() {
         }
 
         /* is this a mission that is usually very fast? */
-        if (Sim.Difficulty <= DIFF_EASY) {
-            // TODO
-            // mLongTermStrategy = false;
+        if (Sim.Difficulty != DIFF_FREEGAME && Sim.Difficulty != DIFF_FREEGAMEMAP) {
+            if (Sim.Difficulty <= DIFF_EASY) {
+                // TODO
+                // mLongTermStrategy = false;
+            }
         }
 
         if (qPlayer.RobotUse(ROBOT_USE_GROSSESKONTO)) {
@@ -382,8 +392,6 @@ void Bot::RobotInit() {
 
     /* strategy state */
     mBestUsedPlaneIdx = -1;
-    mNemesis = -1;
-    mNemesisScore = 0;
     mDayStarted = false;
 
     /* status boss office */
@@ -398,7 +406,7 @@ void Bot::RobotInit() {
 }
 
 void Bot::RobotPlan() {
-    hprintf("Bot.cpp: Enter RobotPlan()");
+    // hprintf("Bot.cpp: Enter RobotPlan()");
 
     if (mFirstRun) {
         redprintf("Bot::RobotPlan(): Bot was not initialized!");
@@ -418,11 +426,12 @@ void Bot::RobotPlan() {
     SLONG actions[] = {ACTION_STARTDAY, ACTION_STARTDAY_LAPTOP,
                        /* repeated actions */
                        ACTION_BUERO, ACTION_CALL_INTERNATIONAL, ACTION_CALL_INTER_HANDY, ACTION_CHECKAGENT1, ACTION_CHECKAGENT2, ACTION_CHECKAGENT3,
-                       ACTION_UPGRADE_PLANES, ACTION_BUYNEWPLANE, ACTION_BUYUSEDPLANE, ACTION_PERSONAL, ACTION_BUY_KEROSIN, ACTION_BUY_KEROSIN_TANKS,
-                       ACTION_SABOTAGE, ACTION_SET_DIVIDEND, ACTION_RAISEMONEY, ACTION_DROPMONEY, ACTION_EMITSHARES, ACTION_SELLSHARES, ACTION_BUYSHARES,
-                       ACTION_VISITMECH, ACTION_VISITNASA, ACTION_VISITTELESCOPE, ACTION_VISITMAKLER, ACTION_VISITARAB, ACTION_VISITRICK, ACTION_VISITKIOSK,
-                       ACTION_VISITDUTYFREE, ACTION_VISITAUFSICHT, ACTION_EXPANDAIRPORT, ACTION_VISITROUTEBOX, ACTION_VISITROUTEBOX2, ACTION_VISITSECURITY,
-                       ACTION_VISITSECURITY2, ACTION_VISITDESIGNER, ACTION_WERBUNG_ROUTES, ACTION_WERBUNG, ACTION_VISITADS};
+                       ACTION_UPGRADE_PLANES, ACTION_BUYNEWPLANE, ACTION_BUYUSEDPLANE, ACTION_VISITMUSEUM, ACTION_PERSONAL, ACTION_BUY_KEROSIN,
+                       ACTION_BUY_KEROSIN_TANKS, ACTION_SABOTAGE, ACTION_SET_DIVIDEND, ACTION_RAISEMONEY, ACTION_DROPMONEY, ACTION_EMITSHARES,
+                       ACTION_SELLSHARES, ACTION_BUYSHARES, ACTION_VISITMECH, ACTION_VISITNASA, ACTION_VISITTELESCOPE, ACTION_VISITMAKLER, ACTION_VISITARAB,
+                       ACTION_VISITRICK, ACTION_VISITKIOSK, ACTION_VISITDUTYFREE, ACTION_VISITAUFSICHT, ACTION_EXPANDAIRPORT, ACTION_VISITROUTEBOX,
+                       ACTION_VISITROUTEBOX2, ACTION_VISITSECURITY, ACTION_VISITSECURITY2, ACTION_VISITDESIGNER, ACTION_WERBUNG_ROUTES, ACTION_WERBUNG,
+                       ACTION_VISITADS};
 
     if (qRobotActions[0].ActionId != ACTION_NONE || qRobotActions[1].ActionId != ACTION_NONE) {
         hprintf("Bot.cpp: Leaving RobotPlan() (actions already planned)\n");
@@ -479,9 +488,9 @@ void Bot::RobotPlan() {
     qRobotActions[2].ActionId = prioList[1].actionId;
     qRobotActions[2].Running = (prioList[1].prio >= Prio::Medium);
 
-    hprintf("Bot::RobotPlan(): Action 0: %s", getRobotActionName(qRobotActions[0].ActionId));
-    greenprintf("Bot::RobotPlan(): Action 1: %s with prio %s", getRobotActionName(qRobotActions[1].ActionId), getPrioName(prioList[0].prio));
-    greenprintf("Bot::RobotPlan(): Action 2: %s with prio %s", getRobotActionName(qRobotActions[2].ActionId), getPrioName(prioList[1].prio));
+    // hprintf("Bot::RobotPlan(): Action 0: %s", getRobotActionName(qRobotActions[0].ActionId));
+    // greenprintf("Bot::RobotPlan(): Action 1: %s with prio %s", getRobotActionName(qRobotActions[1].ActionId), getPrioName(prioList[0].prio));
+    // greenprintf("Bot::RobotPlan(): Action 2: %s with prio %s", getRobotActionName(qRobotActions[2].ActionId), getPrioName(prioList[1].prio));
 
     if (qRobotActions[1].ActionId == ACTION_NONE) {
         redprintf("Did not plan action for slot #1");
@@ -490,7 +499,7 @@ void Bot::RobotPlan() {
         redprintf("Did not plan action for slot #2");
     }
 
-    hprintf("Bot.cpp: Leaving RobotPlan()\n");
+    // hprintf("Bot.cpp: Leaving RobotPlan()\n");
 }
 
 void Bot::RobotExecuteAction() {
@@ -635,6 +644,14 @@ void Bot::RobotExecuteAction() {
     case ACTION_BUYUSEDPLANE:
         if (condBuyUsedPlane(moneyAvailable) != Prio::None) {
             actionBuyUsedPlane(moneyAvailable);
+        } else {
+            redprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+        }
+        break;
+
+    case ACTION_VISITMUSEUM:
+        if (condVisitMuseum() != Prio::None) {
+            mBestUsedPlaneIdx = findBestAvailableUsedPlane();
         } else {
             redprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
@@ -969,7 +986,8 @@ void Bot::RobotExecuteAction() {
         qWorkCountdown /= 2;
     }
 
-    hprintf("Bot.cpp: Leaving RobotExecuteAction()\n");
+    // hprintf("Bot.cpp: Leaving RobotExecuteAction()\n");
+    hprintf("");
 }
 
 TEAKFILE &operator<<(TEAKFILE &File, const PlaneTime &planeTime) {

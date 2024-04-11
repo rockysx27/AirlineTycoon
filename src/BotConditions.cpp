@@ -238,6 +238,8 @@ Bot::Prio Bot::condAll(SLONG actionId) {
         return condVisitMisc();
     case ACTION_VISITMECH:
         return condVisitMech();
+    case ACTION_VISITMUSEUM:
+        return condVisitMuseum();
     case ACTION_VISITDUTYFREE:
         return condVisitDutyFree(moneyAvailable);
     case ACTION_VISITAUFSICHT:
@@ -260,10 +262,10 @@ Bot::Prio Bot::condAll(SLONG actionId) {
         return condVisitDesigner(moneyAvailable);
     case ACTION_VISITSECURITY2:
         return condSabotageSecurity();
-    case ACTION_BUYNEWPLANE:
-        return condBuyNewPlane(moneyAvailable);
     case ACTION_BUYUSEDPLANE:
         return condBuyUsedPlane(moneyAvailable);
+    case ACTION_BUYNEWPLANE:
+        return condBuyNewPlane(moneyAvailable);
     case ACTION_WERBUNG:
         return condBuyAds(moneyAvailable);
     case ACTION_SABOTAGE:
@@ -527,7 +529,7 @@ Bot::Prio Bot::condBuyNewPlane(__int64 &moneyAvailable) {
 
 Bot::Prio Bot::condBuyUsedPlane(__int64 &moneyAvailable) {
     moneyAvailable = getMoneyAvailable();
-    if (!hoursPassed(ACTION_BUYUSEDPLANE, 24)) {
+    if (!hoursPassed(ACTION_BUYUSEDPLANE, 2)) {
         return Prio::None;
     }
     if (mLongTermStrategy) {
@@ -542,17 +544,38 @@ Bot::Prio Bot::condBuyUsedPlane(__int64 &moneyAvailable) {
     if (!haveDiscount()) {
         return Prio::None; /* wait until we have some discount */
     }
-
     if (mBestUsedPlaneIdx < 0) {
-        return Prio::High; /* need to check what planes are available */
+        return Prio::None; /* no plane selected (ACTION_VISITMUSEUM) */
     }
-    if ((qPlayer.xPiloten < Sim.UsedPlanes[mBestUsedPlaneIdx].AnzPiloten) || (qPlayer.xBegleiter < Sim.UsedPlanes[mBestUsedPlaneIdx].AnzBegleiter)) {
+    if ((qPlayer.xPiloten < Sim.UsedPlanes[mBestUsedPlaneIdx].ptAnzPiloten) || (qPlayer.xBegleiter < Sim.UsedPlanes[mBestUsedPlaneIdx].ptAnzBegleiter)) {
         return Prio::None; /* not enough crew */
     }
     if (moneyAvailable >= Sim.UsedPlanes[mBestUsedPlaneIdx].CalculatePrice()) {
         return Prio::High; /* buy the plane (e.g. for a new route) before spending it on something else */
     }
 
+    return Prio::None;
+}
+
+Bot::Prio Bot::condVisitMuseum() {
+    if (!hoursPassed(ACTION_VISITMUSEUM, 2)) {
+        return Prio::None;
+    }
+    if (mLongTermStrategy) {
+        return Prio::None; /* we will only buy new planes */
+    }
+    if (mRunToFinalObjective > FinalPhase::No) {
+        return Prio::None;
+    }
+    if (HowToPlan::None == canWePlanFlights()) {
+        return Prio::None;
+    }
+    if (!haveDiscount()) {
+        return Prio::None; /* wait until we have some discount */
+    }
+    if (mBestUsedPlaneIdx < 0) {
+        return Prio::High;
+    }
     return Prio::None;
 }
 

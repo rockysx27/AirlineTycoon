@@ -74,6 +74,13 @@ std::string getFreightName(const CFracht &qAuftrag) {
     return {bprintf("%s -> %s", (LPCTSTR)Cities[qAuftrag.VonCity].Name, (LPCTSTR)Cities[qAuftrag.NachCity].Name)};
 }
 
+std::string getPlaneName(const CPlane &qPlane, int mode) {
+    if (mode == 1) {
+        return {bprintf("%s (%s, Bj: %ld)", (LPCTSTR)qPlane.Name, (LPCTSTR)PlaneTypes[qPlane.TypeId].Name, qPlane.Baujahr)};
+    }
+    return {bprintf("%s (%s)", (LPCTSTR)qPlane.Name, (LPCTSTR)PlaneTypes[qPlane.TypeId].Name)};
+}
+
 void printFPE(const CFlugplanEintrag &qFPE) {
     CString strInfo = bprintf("%s -> %s (%s %ld -> %s %ld)", (LPCTSTR)Cities[qFPE.VonCity].Kuerzel, (LPCTSTR)Cities[qFPE.NachCity].Kuerzel,
                               (LPCTSTR)getWeekday(qFPE.Startdate), qFPE.Startzeit, (LPCTSTR)getWeekday(qFPE.Landedate), qFPE.Landezeit);
@@ -336,7 +343,7 @@ void printFlightJobs(const PLAYER &qPlayer, SLONG planeId) {
 void printFlightJobs(const PLAYER &qPlayer, const CPlane &qPlane) {
     auto &qFlightPlan = qPlane.Flugplan.Flug;
 
-    hprintf("Helper::printFlightJobs(): Schedule for plane %s:", (LPCTSTR)qPlane.Name);
+    hprintf("Helper::printFlightJobs(): Schedule for plane %s:", Helper::getPlaneName(qPlane).c_str());
 
     /* print job list */
     for (SLONG d = 0; d < qFlightPlan.AnzEntries(); d++) {
@@ -535,6 +542,8 @@ bool checkRoomOpen(SLONG roomId) {
     case ACTION_CHECKAGENT1:
         return (time <= timeLastClose - 60000 && Sim.Weekday != 5 && GlobalUse(USE_TRAVELHOLDING));
     case ACTION_BUYUSEDPLANE:
+        [[fallthrough]];
+    case ACTION_VISITMUSEUM:
         return (time >= timeMuseOpen && Sim.Weekday != 5 && Sim.Weekday != 6);
     case ACTION_CHECKAGENT2:
         return (time <= timeReisClose - 60000 && GlobalUse(USE_TRAVELHOLDING));

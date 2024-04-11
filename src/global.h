@@ -163,6 +163,7 @@ extern BOOL gDisablePauseKey;    // Pause-Key für Texteingabe abgeschaltet?
 extern BOOL bgJustDidLotsOfWork; // Gegen Sprünge nach Load/Save
 extern BOOL bLeaveGameLoop;      // Hauptschleife verlassen?
 extern BOOL bFirstClass;
+extern SLONG bAutoQuitOnDay;
 
 //--------------------------------------------------------------------------------------------
 // Das Spiel höchstpersönlich:

@@ -51,6 +51,7 @@ template <typename T> inline void eraseFirst(T &l, int val) {
 }
 
 void Bot::determineNemesis() {
+    auto nemesisOld = mNemesis;
     mNemesis = -1;
     mNemesisScore = 0;
     for (SLONG p = 0; p < 4; p++) {
@@ -83,8 +84,13 @@ void Bot::determineNemesis() {
         }
     }
     if (-1 != mNemesis) {
-        hprintf("Bot::determineNemesis(): Our nemesis now is %s with a score of %s", (LPCTSTR)Sim.Players.Players[mNemesis].AirlineX,
-                (LPCTSTR)Insert1000erDots64(mNemesisScore));
+        if (nemesisOld != mNemesis) {
+            hprintf("Bot::determineNemesis(): Our nemesis now is %s with a score of %s", (LPCTSTR)Sim.Players.Players[mNemesis].AirlineX,
+                    (LPCTSTR)Insert1000erDots64(mNemesisScore));
+        } else {
+            hprintf("Bot::determineNemesis(): Our nemesis is still %s with a score of %s", (LPCTSTR)Sim.Players.Players[mNemesis].AirlineX,
+                    (LPCTSTR)Insert1000erDots64(mNemesisScore));
+        }
     }
 }
 
@@ -512,7 +518,7 @@ void Bot::actionUpgradePlanes() {
                 if (qPlane.SitzeTarget < 2 && cost <= moneyAvailable && !onlySecurity) {
                     qPlane.SitzeTarget = 2;
                     mMoneyReservedForUpgrades += cost;
-                    hprintf("Bot::actionUpgradePlanes(): Upgrading seats in %s.", (LPCTSTR)qPlane.Name);
+                    hprintf("Bot::actionUpgradePlanes(): Upgrading seats in %s.", Helper::getPlaneName(qPlane).c_str());
                 }
                 break;
             case 1:
@@ -520,7 +526,7 @@ void Bot::actionUpgradePlanes() {
                 if (qPlane.TablettsTarget < 2 && cost <= moneyAvailable && !onlySecurity) {
                     qPlane.TablettsTarget = 2;
                     mMoneyReservedForUpgrades += cost;
-                    hprintf("Bot::actionUpgradePlanes(): Upgrading tabletts in %s.", (LPCTSTR)qPlane.Name);
+                    hprintf("Bot::actionUpgradePlanes(): Upgrading tabletts in %s.", Helper::getPlaneName(qPlane).c_str());
                 }
                 break;
             case 2:
@@ -528,7 +534,7 @@ void Bot::actionUpgradePlanes() {
                 if (qPlane.DecoTarget < 2 && cost <= moneyAvailable && !onlySecurity) {
                     qPlane.DecoTarget = 2;
                     mMoneyReservedForUpgrades += cost;
-                    hprintf("Bot::actionUpgradePlanes(): Upgrading deco in %s.", (LPCTSTR)qPlane.Name);
+                    hprintf("Bot::actionUpgradePlanes(): Upgrading deco in %s.", Helper::getPlaneName(qPlane).c_str());
                 }
                 break;
             case 3:
@@ -536,7 +542,7 @@ void Bot::actionUpgradePlanes() {
                 if (qPlane.ReifenTarget < 2 && cost <= moneyAvailable) {
                     qPlane.ReifenTarget = 2;
                     mMoneyReservedForUpgrades += cost;
-                    hprintf("Bot::actionUpgradePlanes(): Upgrading tires in %s.", (LPCTSTR)qPlane.Name);
+                    hprintf("Bot::actionUpgradePlanes(): Upgrading tires in %s.", Helper::getPlaneName(qPlane).c_str());
                 }
                 break;
             case 4:
@@ -544,7 +550,7 @@ void Bot::actionUpgradePlanes() {
                 if (qPlane.TriebwerkTarget < 2 && cost <= moneyAvailable) {
                     qPlane.TriebwerkTarget = 2;
                     mMoneyReservedForUpgrades += cost;
-                    hprintf("Bot::actionUpgradePlanes(): Upgrading engines in %s.", (LPCTSTR)qPlane.Name);
+                    hprintf("Bot::actionUpgradePlanes(): Upgrading engines in %s.", Helper::getPlaneName(qPlane).c_str());
                 }
                 break;
             case 5:
@@ -552,7 +558,7 @@ void Bot::actionUpgradePlanes() {
                 if (qPlane.SicherheitTarget < 2 && cost <= moneyAvailable) {
                     qPlane.SicherheitTarget = 2;
                     mMoneyReservedForUpgrades += cost;
-                    hprintf("Bot::actionUpgradePlanes(): Upgrading safety in %s.", (LPCTSTR)qPlane.Name);
+                    hprintf("Bot::actionUpgradePlanes(): Upgrading safety in %s.", Helper::getPlaneName(qPlane).c_str());
                 }
                 break;
             case 6:
@@ -560,7 +566,7 @@ void Bot::actionUpgradePlanes() {
                 if (qPlane.ElektronikTarget < 2 && cost <= moneyAvailable) {
                     qPlane.ElektronikTarget = 2;
                     mMoneyReservedForUpgrades += cost;
-                    hprintf("Bot::actionUpgradePlanes(): Upgrading electronics in %s.", (LPCTSTR)qPlane.Name);
+                    hprintf("Bot::actionUpgradePlanes(): Upgrading electronics in %s.", Helper::getPlaneName(qPlane).c_str());
                 }
                 break;
             default:
@@ -592,7 +598,7 @@ void Bot::actionBuyNewPlane(__int64 /*moneyAvailable*/) {
     }
     for (auto i : GameMechanic::buyPlane(qPlayer, bestPlaneTypeId, 1)) {
         assert(i >= 0x1000000);
-        hprintf("Bot::actionBuyNewPlane(): Bought plane %s (%s)", (LPCTSTR)qPlayer.Planes[i].Name, (LPCTSTR)PlaneTypes[bestPlaneTypeId].Name);
+        hprintf("Bot::actionBuyNewPlane(): Bought plane %s", Helper::getPlaneName(qPlayer.Planes[i]).c_str());
         if (mDoRoutes) {
             mPlanesForRoutesUnassigned.push_back(i);
             requestPlanRoutes(false);
@@ -609,26 +615,26 @@ void Bot::actionBuyNewPlane(__int64 /*moneyAvailable*/) {
 
 void Bot::actionBuyUsedPlane(__int64 /*moneyAvailable*/) {
     if (mBestUsedPlaneIdx < 0) {
-        mBestUsedPlaneIdx = findBestAvailableUsedPlane();
+        redprintf("Bot::actionBuyUsedPlane(): We have not yet checked which plane to buy!");
         return;
     }
 
-    if (qPlayer.xPiloten < Sim.UsedPlanes[mBestUsedPlaneIdx].AnzPiloten || qPlayer.xBegleiter < Sim.UsedPlanes[mBestUsedPlaneIdx].AnzBegleiter) {
+    if (qPlayer.xPiloten < Sim.UsedPlanes[mBestUsedPlaneIdx].ptAnzPiloten || qPlayer.xBegleiter < Sim.UsedPlanes[mBestUsedPlaneIdx].ptAnzBegleiter) {
         redprintf("Bot::actionBuyUsedPlane(): Not enough crew for selected plane!");
         return;
     }
     SLONG planeId = GameMechanic::buyUsedPlane(qPlayer, mBestUsedPlaneIdx);
     assert(planeId >= 0x1000000);
 
-    auto typeId = qPlayer.Planes[planeId].TypeId;
-    hprintf("Bot::actionBuyUsedPlane(): Bought used plane %s (%s)", (LPCTSTR)qPlayer.Planes[planeId].Name, (LPCTSTR)PlaneTypes[typeId].Name);
+    const auto &qPlane = qPlayer.Planes[planeId];
+    hprintf("Bot::actionBuyUsedPlane(): Bought used plane %s", Helper::getPlaneName(qPlane).c_str());
+    hprintf("Bot::actionBuyUsedPlane(): Passengers = %ld, fuel = %ld, year = %d", qPlane.ptPassagiere, qPlane.ptVerbrauch, qPlane.Baujahr);
+    SLONG improvementNeeded = std::max(0, 80 - qPlane.WorstZustand);
+    SLONG repairCost = improvementNeeded * (qPlane.ptPreis / 110);
+    hprintf("Bot::actionBuyUsedPlane(): WorstZustand = %u, cost = %d", qPlane.WorstZustand, repairCost);
 
-    if (checkPlaneAvailable(planeId, true)) {
-        mPlanesForJobs.push_back(planeId);
-        grabNewFlights();
-    } else {
-        mPlanesForJobsUnassigned.push_back(planeId);
-    }
+    /* we always repair used planes first */
+    mPlanesForJobsUnassigned.push_back(planeId);
 }
 
 void Bot::actionVisitHR() {
@@ -687,8 +693,8 @@ void Bot::actionVisitHR() {
     }
 
     /* crew */
-    SLONG pilotsTarget = 0;
-    SLONG stewardessTarget = 0;
+    SLONG pilotsTarget = 3;     /* sensible default */
+    SLONG stewardessTarget = 6; /* sensible default */
     SLONG numPilotsHired = 0;
     SLONG numStewardessHired = 0;
     if (mLongTermStrategy) {
@@ -701,8 +707,8 @@ void Bot::actionVisitHR() {
     } else {
         if (mBestUsedPlaneIdx != -1) {
             const auto &bestPlane = Sim.UsedPlanes[mBestUsedPlaneIdx];
-            pilotsTarget = bestPlane.AnzPiloten;
-            stewardessTarget = bestPlane.AnzBegleiter;
+            pilotsTarget = bestPlane.ptAnzPiloten;
+            stewardessTarget = bestPlane.ptAnzBegleiter;
         }
     }
 
@@ -789,6 +795,7 @@ std::pair<SLONG, SLONG> Bot::kerosineQualiOptimization(__int64 moneyAvailable, D
     } else if (qPlayer.HasBerater(BERATERTYP_KEROSIN) >= 70) {
         qualiZiel = 1.1;
     }
+    qualiZiel = std::min(qualiZiel, kMaxKerosinQualiZiel);
 
     DOUBLE qualiStart = qPlayer.KerosinQuali;
     DOUBLE amountGood = 0;
@@ -1103,7 +1110,7 @@ void Bot::actionVisitMech() {
         for (const auto &iter : planeList) {
             auto &qPlane = qPlanes[iter.first];
             SLONG cost = (qPlane.TargetZustand + 1 > (qPlane.WorstZustand + 20)) ? (qPlane.ptPreis / 110) : 0;
-            if (qPlane.TargetZustand < 100 && moneyAvailable >= cost) {
+            if (qPlane.TargetZustand < kPlaneTargetZustand && moneyAvailable >= cost) {
                 GameMechanic::setPlaneTargetZustand(qPlayer, iter.first, qPlane.TargetZustand + 1);
                 keepGoing = true;
                 mMoneyReservedForRepairs += cost;
@@ -1118,11 +1125,11 @@ void Bot::actionVisitMech() {
     for (const auto &iter : planeList) {
         auto &qPlane = qPlanes[iter.first];
         if (qPlane.TargetZustand > iter.second) {
-            hprintf("Bot::actionVisitMech(): Increasing repair target of plane %s: %ld => %ld (Zustand = %u, WorstZustand = %u)", (LPCTSTR)qPlane.Name,
-                    iter.second, qPlane.TargetZustand, qPlane.Zustand, qPlane.WorstZustand);
+            hprintf("Bot::actionVisitMech(): Increasing repair target of plane %s: %ld => %ld (Zustand = %u, WorstZustand = %u)",
+                    Helper::getPlaneName(qPlane, 1).c_str(), iter.second, qPlane.TargetZustand, qPlane.Zustand, qPlane.WorstZustand);
         } else if (qPlane.TargetZustand < iter.second) {
-            hprintf("Bot::actionVisitMech(): Lowering repair target of plane %s: %ld => %ld (Zustand = %u, WorstZustand = %u)", (LPCTSTR)qPlane.Name,
-                    iter.second, qPlane.TargetZustand, qPlane.Zustand, qPlane.WorstZustand);
+            hprintf("Bot::actionVisitMech(): Lowering repair target of plane %s: %ld => %ld (Zustand = %u, WorstZustand = %u)",
+                    Helper::getPlaneName(qPlane, 1).c_str(), iter.second, qPlane.TargetZustand, qPlane.Zustand, qPlane.WorstZustand);
         }
     }
     hprintf("Bot::actionVisitMech(): We are reserving %s $ for repairs, available money: %s $", (LPCTSTR)Insert1000erDots64(mMoneyReservedForRepairs),
@@ -1341,8 +1348,9 @@ void Bot::actionFindBestRoute() {
     // #ifdef PRINT_ROUTE_DETAILS
     for (const auto &i : bestRoutes) {
         if (i.planeId != -1) {
+            const auto &qPlane = qPlayer.Planes[i.planeId];
             hprintf("Bot::actionFindBestRoute(): Score of route %s (using existing plane %s, need %ld) is: %.2f",
-                    Helper::getRouteName(Routen[i.routeId]).c_str(), (LPCTSTR)qPlayer.Planes[i.planeId].Name, i.numPlanes, i.score);
+                    Helper::getRouteName(Routen[i.routeId]).c_str(), Helper::getPlaneName(qPlane).c_str(), i.numPlanes, i.score);
         } else {
             hprintf("Bot::actionFindBestRoute(): Score of route %s (using plane type %s, need %ld) is: %.2f", Helper::getRouteName(Routen[i.routeId]).c_str(),
                     (LPCTSTR)PlaneTypes[i.planeTypeId].Name, i.numPlanes, i.score);
@@ -1408,7 +1416,7 @@ void Bot::actionRentRoute() {
         const auto &qPlane = qPlayer.Planes[mUsePlaneForRouteId];
         mRoutes.emplace_back(routeA, routeB, qPlane.TypeId);
         hprintf("Bot::actionRentRoute(): Renting route %s (using plane type %s, using existing plane %s): ",
-                Helper::getRouteName(getRoute(mRoutes.back())).c_str(), (LPCTSTR)PlaneTypes[qPlane.TypeId].Name, (LPCTSTR)qPlane.Name);
+                Helper::getRouteName(getRoute(mRoutes.back())).c_str(), (LPCTSTR)PlaneTypes[qPlane.TypeId].Name, Helper::getPlaneName(qPlane).c_str());
 
         eraseFirst(mPlanesForJobs, mUsePlaneForRouteId);
         eraseFirst(mPlanesForJobsUnassigned, mUsePlaneForRouteId);
@@ -1513,7 +1521,7 @@ void Bot::checkLostRoutes() {
                 for (auto planeId : route.planeIds) {
                     mPlanesForRoutesUnassigned.push_back(planeId);
                     GameMechanic::killFlightPlan(qPlayer, planeId);
-                    hprintf("Bot::checkLostRoutes(): Plane %s does not have a route anymore.", (LPCTSTR)qPlayer.Planes[planeId].Name);
+                    hprintf("Bot::checkLostRoutes(): Plane %s does not have a route anymore.", Helper::getPlaneName(qPlayer.Planes[planeId]).c_str());
                 }
             }
         }
@@ -1634,8 +1642,7 @@ void Bot::planRoutes() {
             auto &qRoute = mRoutes[targetRouteIdx];
             qRoute.planeIds.push_back(planeId);
             mPlanesForRoutes.push_back(planeId);
-            hprintf("Bot::planRoutes(): Assigning plane %s (%s) to route %s", (LPCTSTR)qPlane.Name, (LPCTSTR)PlaneTypes[qPlane.TypeId].Name,
-                    Helper::getRouteName(getRoute(qRoute)).c_str());
+            hprintf("Bot::planRoutes(): Assigning plane %s to route %s", Helper::getPlaneName(qPlane).c_str(), Helper::getRouteName(getRoute(qRoute)).c_str());
         } else {
             mPlanesForRoutesUnassigned.push_back(planeId);
         }
@@ -1653,7 +1660,7 @@ void Bot::planRoutes() {
             const auto &qPlane = qPlayer.Planes[planeId];
 
 #ifdef PRINT_ROUTE_DETAILS
-            hprintf("Bot::planRoutes(): =================== Plane %s ===================", (LPCTSTR)qPlane.Name);
+            hprintf("Bot::planRoutes(): =================== Plane %s ===================", Helper::getPlaneName(qPlane).c_str());
             Helper::printFlightJobs(qPlayer, planeId);
 #endif
 
@@ -1666,7 +1673,7 @@ void Bot::planRoutes() {
             std::tie(availTime, availCity) = Helper::getPlaneAvailableTimeLoc(qPlane, {}, {});
             availCity = Cities.find(availCity);
 #ifdef PRINT_ROUTE_DETAILS
-            hprintf("Bot::planRoutes(): Plane %s is in %s @ %s %ld", (LPCTSTR)qPlane.Name, (LPCTSTR)Cities[availCity].Kuerzel,
+            hprintf("Bot::planRoutes(): Plane %s is in %s @ %s %ld", Helper::getPlaneName(qPlane).c_str(), (LPCTSTR)Cities[availCity].Kuerzel,
                     (LPCTSTR)Helper::getWeekday(availTime.getDate()), availTime.getHour());
 #endif
 
@@ -1674,8 +1681,8 @@ void Bot::planRoutes() {
             if (availCity != fromCity && availCity != toCity) {
                 SLONG autoFlightDuration = kDurationExtra + Cities.CalcFlugdauer(availCity, fromCity, qPlane.ptGeschwindigkeit);
                 availTime += autoFlightDuration;
-                hprintf("Bot::planRoutes(): Plane %s: Adding buffer of %ld hours for auto flight from %s to %s", (LPCTSTR)qPlane.Name, autoFlightDuration,
-                        (LPCTSTR)Cities[availCity].Kuerzel, (LPCTSTR)Cities[fromCity].Kuerzel);
+                hprintf("Bot::planRoutes(): Plane %s: Adding buffer of %ld hours for auto flight from %s to %s", Helper::getPlaneName(qPlane).c_str(),
+                        autoFlightDuration, (LPCTSTR)Cities[availCity].Kuerzel, (LPCTSTR)Cities[fromCity].Kuerzel);
             }
 
             if (availTime.getDate() >= Sim.Date + 5) {
@@ -1688,7 +1695,7 @@ void Bot::planRoutes() {
             // h = ceil_div(h, roundTripDuration) * roundTripDuration;
             // h += (3 * (timeSlot++)) % 24;
             // availTime = {h / 24, h % 24};
-            // hprintf("BotPlaner::planRoutes(): Plane %s: Setting availTime to %s %ld to meet timeSlot=%ld", (LPCTSTR)qPlane.Name,
+            // hprintf("BotPlaner::planRoutes(): Plane %s: Setting availTime to %s %ld to meet timeSlot=%ld", Helper::getPlaneName(qPlane).c_str(),
             //         (LPCTSTR)Helper::getWeekday(availTime.getDate()), availTime.getHour(), timeSlot - 1);
 
             // Helper::printFlightJobs(qPlayer, planeId);
@@ -1720,7 +1727,7 @@ void Bot::planRoutes() {
                 numScheduled++;
             }
             hprintf("Bot::planRoutes(): Scheduled route %s %ld times for plane %s, starting at %s %ld", Helper::getRouteName(getRoute(qRoute)).c_str(),
-                    numScheduled, (LPCTSTR)qPlane.Name, (LPCTSTR)Helper::getWeekday(availTime.getDate()), availTime.getHour());
+                    numScheduled, Helper::getPlaneName(qPlane).c_str(), (LPCTSTR)Helper::getWeekday(availTime.getDate()), availTime.getHour());
             Helper::checkPlaneSchedule(qPlayer, planeId, false);
         }
     }

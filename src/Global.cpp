@@ -160,6 +160,7 @@ BOOL gDisablePauseKey;            // Pause-Key für Texteingabe abgeschaltet?
 BOOL bgJustDidLotsOfWork = FALSE; // Gegen Sprünge nach Load/Save
 BOOL bLeaveGameLoop = FALSE;      // Hauptschleife verlassen?
 BOOL bFirstClass = FALSE;
+SLONG bAutoQuitOnDay = -1;
 
 //--------------------------------------------------------------------------------------------
 // Das Spiel höchstpersönlich:

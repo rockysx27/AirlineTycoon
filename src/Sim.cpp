@@ -2208,9 +2208,26 @@ void SIM::NewDay() {
 
     KeyHints[1] = 0;
 
-    if ((CheatTestGame != 0 || CheatAutoSkip != 0) && Players.Players[localPlayer].Money < 0) {
-        Players.Players[localPlayer].Money = 1000000;
+    auto &qPlayer = Players.Players[localPlayer];
+    if ((CheatTestGame != 0 || CheatAutoSkip != 0) && qPlayer.Money < 0) {
+        qPlayer.Money = 1000000;
         // log: hprintf ("Event: localPlayer gets Money-Boost for testing reasons");
+    }
+    if (CheatAutoSkip == 1) {
+        CheatAutoSkip = 2;
+        if (!qPlayer.HasItem(ITEM_LAPTOP)) {
+            qPlayer.BuyItem(ITEM_LAPTOP);
+            qPlayer.LaptopBattery = 60 * 24;
+            qPlayer.LaptopQuality = 4;
+        }
+        if (!qPlayer.HasItem(ITEM_TABLETTEN)) {
+            qPlayer.BuyItem(ITEM_TABLETTEN);
+        }
+        if (!qPlayer.HasItem(ITEM_DISKETTE)) {
+            qPlayer.BuyItem(ITEM_DISKETTE);
+        }
+        Sim.Players.Players[Sim.localPlayer].ArabTrust = 6;
+        CheatBerater += 100;
     }
 
     IsTutorial = FALSE;

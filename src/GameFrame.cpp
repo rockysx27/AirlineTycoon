@@ -1874,20 +1874,7 @@ void GameFrame::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) {
             TypeBuffer[28] == 'U' && TypeBuffer[29] == 'N') {
             if ((Sim.bAllowCheating != 0) || (Sim.bNetwork == 0)) {
                 Sim.bCheatedSession = 1;
-                CheatAutoSkip ^= 1;
-                if (!qPlayer.HasItem(ITEM_LAPTOP)) {
-                    qPlayer.BuyItem(ITEM_LAPTOP);
-                    qPlayer.LaptopBattery = 60 * 24;
-                    qPlayer.LaptopQuality = 4;
-                }
-                if (!qPlayer.HasItem(ITEM_TABLETTEN)) {
-                    qPlayer.BuyItem(ITEM_TABLETTEN);
-                }
-                if (!qPlayer.HasItem(ITEM_DISKETTE)) {
-                    qPlayer.BuyItem(ITEM_DISKETTE);
-                }
-                Sim.Players.Players[Sim.localPlayer].ArabTrust = 6;
-                CheatBerater += 100;
+                CheatAutoSkip = (CheatAutoSkip == 0) ? 1 : 0;
                 CheatSound();
 
                 SIM::SendChatBroadcast(bprintf(StandardTexte.GetS(TOKEN_MISC, 7014), (LPCTSTR)Sim.Players.Players[Sim.localPlayer].NameX));
