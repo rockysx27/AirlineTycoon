@@ -1,5 +1,3 @@
-
-
 #ifndef BOT_H_
 #define BOT_H_
 
@@ -17,7 +15,7 @@ class PLAYER;
 typedef long long __int64;
 
 extern const bool kAlwaysReplan;
-extern float kSchedulingMinScoreRatio;
+extern const float kSchedulingMinScoreRatio;
 extern const SLONG kSwitchToRoutesNumPlanesMin;
 extern const SLONG kSwitchToRoutesNumPlanesMax;
 extern const SLONG kSmallestAdCampaign;

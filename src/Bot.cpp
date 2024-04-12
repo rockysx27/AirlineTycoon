@@ -7,19 +7,19 @@
 #include <algorithm>
 
 const bool kAlwaysReplan = true;
-float kSchedulingMinScoreRatio = 14.0f;
+const float kSchedulingMinScoreRatio = 14.0f;
 const SLONG kSwitchToRoutesNumPlanesMin = 2;
 const SLONG kSwitchToRoutesNumPlanesMax = 4;
 const SLONG kSmallestAdCampaign = 4;
 const SLONG kMinimumImage = -4;
-const SLONG kMaximumPlaneUtilization = 90;
-const DOUBLE kMaxTicketPriceFactor = 3.0;
+const SLONG kMaximumPlaneUtilization = 70;
+const DOUBLE kMaxTicketPriceFactor = 3.2;
 const SLONG kTargetEmployeeHappiness = 90;
 const SLONG kMinimumEmployeeSkill = 70;
 const SLONG kPlaneMinimumZustand = 90;
 const SLONG kPlaneTargetZustand = 100;
 const SLONG kUsedPlaneMinimumScore = 40;
-const DOUBLE kMaxKerosinQualiZiel = 1.3;
+const DOUBLE kMaxKerosinQualiZiel = 1.2;
 const SLONG kStockEmissionMode = 2;
 const bool kReduceDividend = false;
 const SLONG kMaxSabotageHints = 90;
@@ -320,7 +320,12 @@ Bot::Bot(PLAYER &player) : qPlayer(player) {}
 void Bot::RobotInit() {
     auto balance = qPlayer.BilanzWoche.Hole();
     if (bQuick) {
-        greenprintf("BotStatistics: %d, %lld, %lld, %lld, %lld", Sim.Date, qPlayer.Money, balance.GetOpSaldo(), balance.GetOpGewinn(), balance.GetOpVerlust());
+        if (Sim.Date == 0) {
+            hprintf("BotStatistics: Tag, Geld, Saldo, Gewinn, Verlust, Auftraege, Fracht, Routen, Kerosin, Wartung");
+        }
+        hprintf("BotStatistics: %d, %lld, %lld, %lld, %lld, %lld, %lld, %lld, %lld, %lld", Sim.Date, qPlayer.Money, balance.GetOpSaldo(), balance.GetOpGewinn(),
+                balance.GetOpVerlust(), balance.Auftraege, balance.FrachtAuftraege, balance.Tickets, balance.KerosinFlug + balance.KerosinVorrat,
+                balance.Wartung);
     } else {
         greenprintf("Bot.cpp: Enter RobotInit(): Current day: %d, money: %s $ (op saldo %s = %s %s)", Sim.Date, Insert1000erDots64(qPlayer.Money).c_str(),
                     Insert1000erDots64(balance.GetOpSaldo()).c_str(), Insert1000erDots64(balance.GetOpGewinn()).c_str(),

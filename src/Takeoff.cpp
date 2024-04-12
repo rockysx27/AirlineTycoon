@@ -280,7 +280,6 @@ BOOL CTakeOffApp::InitInstance(int argc, char *argv[]) {
             CheatAutoSkip = 1;
             i++;
             if (i < argc) {
-                kSchedulingMinScoreRatio = atoi(argv[i]);
             }
         }
         // if (stricmp (Argument, "/e")==0) gLanguage = LANGUAGE_E;
@@ -1116,7 +1115,7 @@ void CTakeOffApp::GameLoop(void * /*unused*/) {
                     case 5:
                         Multiplier = 600;
                         if (CheatAutoSkip != 0) {
-                            Multiplier *= 10;
+                            Multiplier *= 100;
                         }
                         break;
                     default:
