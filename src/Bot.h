@@ -47,6 +47,9 @@ extern const SLONG kMoneyReserveBuyNemesisShares;
 extern const SLONG kMoneyReserveBossOffice;
 extern const SLONG kMoneyReserveExpandAirport;
 
+extern SLONG kPlaneScoreMode;
+extern SLONG kPlaneScoreForceBest;
+
 class Bot {
   public:
     Bot(PLAYER &player);

@@ -35,6 +35,9 @@ const SLONG kMoneyReserveBuyNemesisShares = 6000 * 1000;
 const SLONG kMoneyReserveBossOffice = 10 * 1000;
 const SLONG kMoneyReserveExpandAirport = 1000 * 1000;
 
+SLONG kPlaneScoreMode = 0;
+SLONG kPlaneScoreForceBest = -1;
+
 inline const char *getPrioName(Bot::Prio prio) {
     switch (prio) {
     case Bot::Prio::Top:
@@ -62,7 +65,7 @@ inline const char *getPrioName(Bot::Prio prio) {
 std::vector<SLONG> Bot::findBestAvailablePlaneType(bool forRoutes) const {
     CDataTable planeTable;
     planeTable.FillWithPlaneTypes();
-    std::vector<std::pair<SLONG, __int64>> scores;
+    std::vector<std::pair<SLONG, DOUBLE>> scores;
     for (const auto &i : planeTable.LineIndex) {
         if (!PlaneTypes.IsInAlbum(i)) {
             continue;
@@ -73,19 +76,36 @@ std::vector<SLONG> Bot::findBestAvailablePlaneType(bool forRoutes) const {
             continue;
         }
 
-        __int64 score = planeType.Passagiere * planeType.Passagiere;
-        if (!forRoutes) {
-            score *= planeType.Reichweite;
+        DOUBLE score = 0;
+        if (kPlaneScoreMode == 0) {
+            score = 1.0 * planeType.Passagiere * planeType.Passagiere;
+            if (forRoutes) {
+                score *= planeType.Reichweite;
+            }
+            score /= planeType.Verbrauch;
+        } else {
+            if (forRoutes) {
+                score = 1.0e7 * planeType.Passagiere * planeType.Geschwindigkeit * planeType.Reichweite;
+                score /= (planeType.Verbrauch * planeType.Verbrauch * planeType.Preis);
+            } else {
+                score = 1.0e12 * planeType.Reichweite;
+                score /= (planeType.Preis * planeType.Preis);
+            }
         }
-        score /= planeType.Verbrauch;
+
         scores.emplace_back(i, score);
     }
-    std::sort(scores.begin(), scores.end(), [](const std::pair<SLONG, __int64> &a, const std::pair<SLONG, __int64> &b) { return a.second > b.second; });
+    std::sort(scores.begin(), scores.end(), [](const std::pair<SLONG, DOUBLE> &a, const std::pair<SLONG, DOUBLE> &b) { return a.second > b.second; });
 
     std::vector<SLONG> bestList;
     bestList.reserve(scores.size());
+    if (kPlaneScoreForceBest != -1) {
+        SLONG bestType = kPlaneScoreForceBest + 0x10000000;
+        hprintf("Bot::findBestAvailablePlaneType(): Forcing best plane type to be %s", (LPCTSTR)PlaneTypes[bestType].Name);
+        bestList.push_back(bestType);
+    }
     for (const auto &i : scores) {
-        // hprintf("Bot::findBestAvailablePlaneType(): Plane type %s has score %lld", (LPCTSTR)PlaneTypes[i.first].Name, i.second);
+        hprintf("Bot::findBestAvailablePlaneType(): Plane type %s has score %.2e", (LPCTSTR)PlaneTypes[i.first].Name, i.second);
         bestList.push_back(i.first);
     }
 
