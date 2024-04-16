@@ -660,25 +660,24 @@ class CRentRouten {
 //--------------------------------------------------------------------------------------------
 class CFlugplanEintrag {
   public:
-    UBYTE Okay{};              // 0=Auftrag Okay 1=falscher Tag, 2=schon durchgeführt, 3=Passagiere passen nicht
-    UBYTE HoursBefore{};       // So viele Stunden vor dem Start wurde der Flug festgelegt
-    UWORD Passagiere{};        // Zahl der belegten Sitzplätze (Normal)
-    UWORD PassagiereFC{};      // Zahl der belegten Sitzplätze (in der ersten Klasse)
-    UWORD PArrived{};          // Zahl Passagiere, die schon im Flughafen sind
-    SLONG Gate{-1};            //-1 = kein Gate frei ==> Flugfeld; -2=externer Hafen
-    UBYTE GateWarning{FALSE};  // Warnung, daß ein anderer Flug zu dieser Zeit Probleme macht
-    ULONG VonCity{};           // bezeichnet eine Stadt
-    ULONG NachCity{};          // bezeichnet eine Stadt
-    SLONG Startzeit{};         // Zu diesem Zeitpunkt (0-24h) beginnt dieser Eintrag
-    SLONG Landezeit{};         // Zu diesem Zeitpunkt (0-24h) landet das Flugzeug
-    SLONG Startdate{};         // Referenz auf Sim.Date
-    SLONG Landedate{};         // Referenz auf Sim.Date
-    SLONG ObjectType{};        // 0=Nix 1=Route 2=Auftrag 3=Automatik 4=Fracht
-    SLONG ObjectId{-1};        // Bezeichnet Auftrag oder -1
-    SLONG Ticketpreis{};       // Ticketpreis für Routen
-    SLONG TicketpreisFC{};     // Ticketpreis für Routen (Erste Klasse)
-    BOOL FlightBooked{FALSE};  // Added: Ensure flight is only "booked" once
-    BOOL ScheduledByGM{FALSE}; // Added: Ensure flight is scheduled through GameMechanc
+    UBYTE Okay{};             // 0=Auftrag Okay 1=falscher Tag, 2=schon durchgeführt, 3=Passagiere passen nicht
+    UBYTE HoursBefore{};      // So viele Stunden vor dem Start wurde der Flug festgelegt
+    UWORD Passagiere{};       // Zahl der belegten Sitzplätze (Normal)
+    UWORD PassagiereFC{};     // Zahl der belegten Sitzplätze (in der ersten Klasse)
+    UWORD PArrived{};         // Zahl Passagiere, die schon im Flughafen sind
+    SLONG Gate{-1};           //-1 = kein Gate frei ==> Flugfeld; -2=externer Hafen
+    UBYTE GateWarning{FALSE}; // Warnung, daß ein anderer Flug zu dieser Zeit Probleme macht
+    ULONG VonCity{};          // bezeichnet eine Stadt
+    ULONG NachCity{};         // bezeichnet eine Stadt
+    SLONG Startzeit{};        // Zu diesem Zeitpunkt (0-24h) beginnt dieser Eintrag
+    SLONG Landezeit{};        // Zu diesem Zeitpunkt (0-24h) landet das Flugzeug
+    SLONG Startdate{};        // Referenz auf Sim.Date
+    SLONG Landedate{};        // Referenz auf Sim.Date
+    SLONG ObjectType{};       // 0=Nix 1=Route 2=Auftrag 3=Automatik 4=Fracht
+    SLONG ObjectId{-1};       // Bezeichnet Auftrag oder -1
+    SLONG Ticketpreis{};      // Ticketpreis für Routen
+    SLONG TicketpreisFC{};    // Ticketpreis für Routen (Erste Klasse)
+    BOOL FlightBooked{FALSE}; // Added: Ensure flight is only "booked" once
 
   public:
     CFlugplanEintrag() = default;

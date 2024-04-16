@@ -2107,6 +2107,10 @@ bool GameMechanic::planFlightJob(PLAYER &qPlayer, SLONG planeID, SLONG objectID,
         redprintf("GameMechanic::planFlightJob: Invalid job index (%ld).", objectID);
         return false;
     }
+    if (qPlayer.Auftraege[objectID].InPlan != 0) {
+        redprintf("GameMechanic::planFlightJob: Job was already planned (%ld).", objectID);
+        return false;
+    }
     if (objectID < 0x1000000) {
         objectID = qPlayer.Auftraege.GetIdFromIndex(objectID);
     }
@@ -2180,7 +2184,6 @@ bool GameMechanic::_planFlightJob(PLAYER &qPlayer, SLONG planeID, SLONG objectID
     fpe.ObjectId = objectID;
     fpe.Startdate = date;
     fpe.Startzeit = time;
-    fpe.ScheduledByGM = TRUE;
 
     if (objectType == 1) {
         fpe.Ticketpreis = qPlayer.RentRouten.RentRouten[Routen(objectID)].Ticketpreis;

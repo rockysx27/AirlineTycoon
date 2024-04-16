@@ -1874,138 +1874,135 @@ void PLAYER::UpdateAuftraege() {
 
     // Aufträge anschauen
     for (c = 0; c < Auftraege.AnzEntries(); c++) {
-        if (Auftraege.IsInAlbum(c) != 0) {
-            if (Auftraege[c].BisDate == Sim.Date - 1) {
-                if (Auftraege[c].InPlan != -1 && (Owner == 0 || Owner == 2 || !RobotUse(ROBOT_USE_NO_FINE))) { // ex: nur Owner==0
-                    if (!(Auftraege[c].InPlan == 1 && Auftraege[c].Okay == 1)) {
-                        if (Auftraege[c].Strafe > 0) {
-                            ChangeMoney(-Auftraege[c].Strafe, 2060,
-                                        (LPCTSTR)CString(
-                                            bprintf("%s-%s", (LPCTSTR)Cities[Auftraege[c].VonCity].Kuerzel, (LPCTSTR)Cities[Auftraege[c].NachCity].Kuerzel)));
+        if (Auftraege.IsInAlbum(c) == 0) {
+            continue;
+        }
+        if (Auftraege[c].BisDate == Sim.Date - 1) {
+            if (Auftraege[c].InPlan != -1 && (Owner == 0 || Owner == 2 || !RobotUse(ROBOT_USE_NO_FINE))) { // ex: nur Owner==0
+                if (!(Auftraege[c].InPlan == 1 && Auftraege[c].Okay == 1)) {
+                    if (Auftraege[c].Strafe > 0) {
+                        ChangeMoney(
+                            -Auftraege[c].Strafe, 2060,
+                            (LPCTSTR)CString(bprintf("%s-%s", (LPCTSTR)Cities[Auftraege[c].VonCity].Kuerzel, (LPCTSTR)Cities[Auftraege[c].NachCity].Kuerzel)));
 
-                            if (Owner == 0 && (IsOut == 0)) {
-                                Letters.AddLetter(TRUE, StandardTexte.GetS(TOKEN_LETTER, 1000),
-                                                  (LPCTSTR)CString(bprintf(StandardTexte.GetS(TOKEN_LETTER, 1001), (LPCTSTR)Cities[Auftraege[c].VonCity].Name,
-                                                                           (LPCTSTR)Cities[Auftraege[c].NachCity].Name, Auftraege[c].Strafe)),
-                                                  StandardTexte.GetS(TOKEN_LETTER, 1002), -1);
+                        if (Owner == 0 && (IsOut == 0)) {
+                            Letters.AddLetter(TRUE, StandardTexte.GetS(TOKEN_LETTER, 1000),
+                                              (LPCTSTR)CString(bprintf(StandardTexte.GetS(TOKEN_LETTER, 1001), (LPCTSTR)Cities[Auftraege[c].VonCity].Name,
+                                                                       (LPCTSTR)Cities[Auftraege[c].NachCity].Name, Auftraege[c].Strafe)),
+                                              StandardTexte.GetS(TOKEN_LETTER, 1002), -1);
+                        }
+                    } else {
+                        if (Owner == 0 && (IsOut == 0)) {
+                            Letters.AddLetter(TRUE, StandardTexte.GetS(TOKEN_LETTER, 1010),
+                                              (LPCTSTR)CString(bprintf(StandardTexte.GetS(TOKEN_LETTER, 1011), (LPCTSTR)Cities[Auftraege[c].VonCity].Name,
+                                                                       (LPCTSTR)Cities[Auftraege[c].NachCity].Name)),
+                                              StandardTexte.GetS(TOKEN_LETTER, 1012), -1);
+                        }
+                    }
+                }
+            }
+        } else if (Auftraege[c].BisDate == Sim.Date - 2) {
+            SLONG d = 0;
+            SLONG e = 0;
+            BOOL CantDelete = FALSE;
+
+            // Veralteten Auftrag aus Flugplan entfernen:
+            for (d = 0; d < Planes.AnzEntries(); d++) {
+                if (Planes.IsInAlbum(d) == 0) {
+                    continue;
+                }
+
+                CFlugplan &qPlan = Planes[d].Flugplan;
+                for (e = Planes[d].Flugplan.Flug.AnzEntries() - 1; e >= 0; e--) {
+                    auto &qFPE = qPlan.Flug[e];
+                    if (qFPE.ObjectType == 2 && Auftraege(qFPE.ObjectId) == ULONG(c)) {
+                        if (qFPE.Startdate > Sim.Date || (qFPE.Startdate == Sim.Date && qFPE.Startzeit > Sim.GetHour() + 2)) {
+                            // Löschen:
+                            qFPE = {};
+                            qPlan.UpdateNextFlight();
+                            qPlan.UpdateNextStart();
+                            Planes[d].CheckFlugplaene(PlayerNum);
+                            UpdateAuftragsUsage();
+                            if (DoRoutes == 0) {
+                                DelayFlightsIfNecessary();
                             }
                         } else {
-                            if (Owner == 0 && (IsOut == 0)) {
-                                Letters.AddLetter(TRUE, StandardTexte.GetS(TOKEN_LETTER, 1010),
-                                                  (LPCTSTR)CString(bprintf(StandardTexte.GetS(TOKEN_LETTER, 1011), (LPCTSTR)Cities[Auftraege[c].VonCity].Name,
-                                                                           (LPCTSTR)Cities[Auftraege[c].NachCity].Name)),
-                                                  StandardTexte.GetS(TOKEN_LETTER, 1012), -1);
-                            }
+                            CantDelete = TRUE;
                         }
                     }
                 }
-            } else if (Auftraege[c].BisDate == Sim.Date - 2) {
-                SLONG d = 0;
-                SLONG e = 0;
-                BOOL CantDelete = FALSE;
+            }
 
-                // Veralteten Auftrag aus Flugplan entfernen:
-                for (d = 0; d < Planes.AnzEntries(); d++) {
-                    if (Planes.IsInAlbum(d) != 0) {
-                        CFlugplan &qPlan = Planes[d].Flugplan;
-
-                        for (e = Planes[d].Flugplan.Flug.AnzEntries() - 1; e >= 0; e--) {
-                            if (qPlan.Flug[e].ObjectType == 2 && Auftraege(qPlan.Flug[e].ObjectId) == ULONG(c)) {
-                                if (qPlan.Flug[e].Startdate > Sim.Date || qPlan.Flug[e].Startzeit > 2) {
-                                    // Löschen:
-                                    if (e == 0) {
-                                        qPlan.StartCity = qPlan.Flug[e].NachCity;
-                                    }
-
-                                    qPlan.Flug[e].ObjectType = 0;
-                                    qPlan.UpdateNextFlight();
-                                    qPlan.UpdateNextStart();
-                                    Planes[d].CheckFlugplaene(PlayerNum);
-                                    UpdateAuftragsUsage();
-                                    if (DoRoutes == 0) {
-                                        DelayFlightsIfNecessary();
-                                    }
-                                } else {
-                                    CantDelete = TRUE;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                if (CantDelete == 0) {
-                    Auftraege -= c;
-                }
+            if (CantDelete == 0) {
+                Auftraege -= c;
             }
         }
     }
 
     // Das gleiche für Frachtaufträge:
     for (c = 0; c < Frachten.AnzEntries(); c++) {
-        if (Frachten.IsInAlbum(c) != 0) {
-            if (Frachten[c].BisDate == Sim.Date - 1) {
-                if (Frachten[c].InPlan != -1 && (Owner == 0 || Owner == 2 || !RobotUse(ROBOT_USE_NO_FINE))) { // ex: nur Owner==0
-                    if (!(Frachten[c].InPlan == 1 && Frachten[c].Okay == 1)) {
-                        if (Frachten[c].Strafe > 0) {
-                            ChangeMoney(-Frachten[c].Strafe, 2065,
-                                        (LPCTSTR)CString(
-                                            bprintf("%s-%s", (LPCTSTR)Cities[Frachten[c].VonCity].Kuerzel, (LPCTSTR)Cities[Frachten[c].NachCity].Kuerzel)));
+        if (Frachten.IsInAlbum(c) == 0) {
+            continue;
+        }
+        if (Frachten[c].BisDate == Sim.Date - 1) {
+            if (Frachten[c].InPlan != -1 && (Owner == 0 || Owner == 2 || !RobotUse(ROBOT_USE_NO_FINE))) { // ex: nur Owner==0
+                if (!(Frachten[c].InPlan == 1 && Frachten[c].Okay == 1)) {
+                    if (Frachten[c].Strafe > 0) {
+                        ChangeMoney(
+                            -Frachten[c].Strafe, 2065,
+                            (LPCTSTR)CString(bprintf("%s-%s", (LPCTSTR)Cities[Frachten[c].VonCity].Kuerzel, (LPCTSTR)Cities[Frachten[c].NachCity].Kuerzel)));
 
-                            if (Owner == 0 && (IsOut == 0)) {
-                                Letters.AddLetter(TRUE, StandardTexte.GetS(TOKEN_LETTER, 1005),
-                                                  (LPCTSTR)CString(bprintf(StandardTexte.GetS(TOKEN_LETTER, 1006), (LPCTSTR)Cities[Frachten[c].VonCity].Name,
-                                                                           (LPCTSTR)Cities[Frachten[c].NachCity].Name, Frachten[c].Strafe)),
-                                                  StandardTexte.GetS(TOKEN_LETTER, 1007), -1);
+                        if (Owner == 0 && (IsOut == 0)) {
+                            Letters.AddLetter(TRUE, StandardTexte.GetS(TOKEN_LETTER, 1005),
+                                              (LPCTSTR)CString(bprintf(StandardTexte.GetS(TOKEN_LETTER, 1006), (LPCTSTR)Cities[Frachten[c].VonCity].Name,
+                                                                       (LPCTSTR)Cities[Frachten[c].NachCity].Name, Frachten[c].Strafe)),
+                                              StandardTexte.GetS(TOKEN_LETTER, 1007), -1);
+                        }
+                    } else {
+                        if (Owner == 0 && (IsOut == 0)) {
+                            Letters.AddLetter(TRUE, StandardTexte.GetS(TOKEN_LETTER, 1015),
+                                              (LPCTSTR)CString(bprintf(StandardTexte.GetS(TOKEN_LETTER, 1016), (LPCTSTR)Cities[Frachten[c].VonCity].Name,
+                                                                       (LPCTSTR)Cities[Frachten[c].NachCity].Name)),
+                                              StandardTexte.GetS(TOKEN_LETTER, 1017), -1);
+                        }
+                    }
+                }
+            }
+        } else if (Frachten[c].BisDate <= Sim.Date - 2) {
+            SLONG d = 0;
+            SLONG e = 0;
+            BOOL CantDelete = FALSE;
+
+            // Veralteten Frachtauftrag aus Flugplan entfernen:
+            for (d = 0; d < Planes.AnzEntries(); d++) {
+                if (Planes.IsInAlbum(d) == 0) {
+                    continue;
+                }
+                CFlugplan &qPlan = Planes[d].Flugplan;
+
+            start_loop_again:
+                for (e = Planes[d].Flugplan.Flug.AnzEntries() - 1; e >= 0; e--) {
+                    auto &qFPE = qPlan.Flug[e];
+                    if (qFPE.ObjectType == 4 && Frachten(qFPE.ObjectId) == ULONG(c)) {
+                        if (qFPE.Startdate > Sim.Date || (qFPE.Startdate == Sim.Date && qFPE.Startzeit > Sim.GetHour() + 2)) {
+                            qFPE = {};
+                            qPlan.UpdateNextFlight();
+                            qPlan.UpdateNextStart();
+                            Planes[d].CheckFlugplaene(PlayerNum);
+                            UpdateFrachtauftragsUsage();
+                            if (DoRoutes == 0) {
+                                DelayFlightsIfNecessary();
                             }
+                            goto start_loop_again;
                         } else {
-                            if (Owner == 0 && (IsOut == 0)) {
-                                Letters.AddLetter(TRUE, StandardTexte.GetS(TOKEN_LETTER, 1015),
-                                                  (LPCTSTR)CString(bprintf(StandardTexte.GetS(TOKEN_LETTER, 1016), (LPCTSTR)Cities[Frachten[c].VonCity].Name,
-                                                                           (LPCTSTR)Cities[Frachten[c].NachCity].Name)),
-                                                  StandardTexte.GetS(TOKEN_LETTER, 1017), -1);
-                            }
+                            CantDelete = TRUE;
                         }
                     }
                 }
-            } else if (Frachten[c].BisDate <= Sim.Date - 2) {
-                SLONG d = 0;
-                SLONG e = 0;
-                BOOL CantDelete = FALSE;
+            }
 
-                // Veralteten Frachtauftrag aus Flugplan entfernen:
-                for (d = 0; d < Planes.AnzEntries(); d++) {
-                    if (Planes.IsInAlbum(d) != 0) {
-                        CFlugplan &qPlan = Planes[d].Flugplan;
-
-                    start_loop_again:
-                        for (e = Planes[d].Flugplan.Flug.AnzEntries() - 1; e >= 0; e--) {
-                            if (qPlan.Flug[e].ObjectType == 4 && Frachten(qPlan.Flug[e].ObjectId) == ULONG(c)) {
-                                if (qPlan.Flug[e].Startdate > Sim.Date || qPlan.Flug[e].Startzeit > 2) {
-                                    // Löschen:
-                                    if (e == 0) {
-                                        qPlan.StartCity = qPlan.Flug[e].NachCity;
-                                    }
-
-                                    qPlan.Flug[e].ObjectType = 0;
-                                    qPlan.UpdateNextFlight();
-                                    qPlan.UpdateNextStart();
-                                    Planes[d].CheckFlugplaene(PlayerNum);
-                                    UpdateFrachtauftragsUsage();
-                                    if (DoRoutes == 0) {
-                                        DelayFlightsIfNecessary();
-                                    }
-                                    goto start_loop_again;
-                                } else {
-                                    CantDelete = TRUE;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                if (CantDelete == 0) {
-                    Frachten -= c;
-                }
+            if (CantDelete == 0) {
+                Frachten -= c;
             }
         }
     }
@@ -2323,8 +2320,7 @@ void PLAYER::UpdateFrachtauftragsUsage() {
             if (Owner == 0 || Owner == 2 || !RobotUse(ROBOT_USE_NO_CHECK_FFLIGHT)) { // ex: Nur Owner==0
                 if (qFPE.Startdate < job.Date || qFPE.Startdate > job.BisDate) {
                     job.Okay = 0;
-                    qFPE.Okay = 1;  // Falscher Tag!
-                    job.InPlan = 1; // New
+                    qFPE.Okay = 1; // Falscher Tag!
                     continue;
                 }
             }
@@ -3520,6 +3516,7 @@ void PLAYER::RobotPlanRoutes() {
 
             for (e = 0; e < qPlan.Flug.AnzEntries(); e++) {
                 if (qPlan.Flug[e].ObjectType == 0) {
+                    qPlan.Flug[e] = {};
                     qPlan.Flug[e].ObjectType = 1;
                     qPlan.Flug[e].ObjectId = c;
 
@@ -3626,6 +3623,7 @@ void PLAYER::RobotPlanRoutes() {
 
             for (d = 0; d < qPlan.Flug.AnzEntries(); d++) {
                 if (qPlan.Flug[d].ObjectType == 0) {
+                    qPlan.Flug[d] = {};
                     qPlan.Flug[d].ObjectType = 1;
                     qPlan.Flug[d].ObjectId = BestC;
 
@@ -3684,6 +3682,7 @@ void PLAYER::RobotPlanRoutes() {
             if (qPlan.Flug[e].ObjectType == 3) {
                 forall(c, Routen) if ((Routen.IsInAlbum(c) != 0) && (RentRouten.RentRouten[c].Rang != 0U)) {
                     if (Routen[c].VonCity == qPlan.Flug[e].VonCity && Routen[c].NachCity == qPlan.Flug[e].NachCity) {
+                        qPlan.Flug[e] = {};
                         qPlan.Flug[e].ObjectType = 1;
                         qPlan.Flug[e].ObjectId = c;
 
@@ -4153,7 +4152,7 @@ void PLAYER::RobotExecuteAction() {
                             if (VonZeit >= 0 && VonZeit < 23 + 24) {
                                 if (level == 0 || level == 1) {
                                     for (e = qAuftraege.AnzEntries() - 1; e >= 0; e--) {
-                                        if ((qAuftraege[e].Praemie != 0) && qAuftraege[e].VonCity == ULONG(VonCity)) {
+                                        if ((qAuftraege[e].Praemie > 0) && qAuftraege[e].VonCity == ULONG(VonCity)) {
                                             if (RobotUse(ROBOT_USE_SHORTFLIGHTS) && Planes.GetNumUsed() == 4 &&
                                                 (Cities.CalcDistance(qAuftraege[e].VonCity, qAuftraege[e].NachCity) > 3000000 ||
                                                  qAuftraege[e].Personen <= 90)) {
@@ -4178,7 +4177,7 @@ void PLAYER::RobotExecuteAction() {
                                     SLONG MinE = -1;
 
                                     for (e = qAuftraege.AnzEntries() - 1; e >= 0; e--) {
-                                        if ((qAuftraege[e].Praemie != 0) &&
+                                        if ((qAuftraege[e].Praemie > 0) &&
                                             VonZeit + Cities.CalcFlugdauer(VonCity, qAuftraege[e].VonCity, Planes[c].ptGeschwindigkeit) < 23 + 24) {
                                             // VonZeit+Cities.CalcFlugdauer (VonCity, qAuftraege[e].VonCity,
                                             // PlaneTypes[Planes[c].TypeId].Geschwindigkeit)<23+24)
@@ -4936,7 +4935,7 @@ void PLAYER::RobotExecuteAction() {
                         if (VonZeit >= 0 && VonZeit < 23 + 24) {
                             if (level == 0 || level == 1) {
                                 for (e = LastMinuteAuftraege.AnzEntries() - 1; e >= 0; e--) {
-                                    if ((LastMinuteAuftraege[e].Praemie != 0) && LastMinuteAuftraege[e].VonCity == ULONG(VonCity)) {
+                                    if ((LastMinuteAuftraege[e].Praemie > 0) && LastMinuteAuftraege[e].VonCity == ULONG(VonCity)) {
                                         NetGenericAsync(17003 + Sim.Date * 100, e, PlayerNum);
                                         if (RobotUse(ROBOT_USE_SHORTFLIGHTS) && Planes.GetNumUsed() == 4 &&
                                             (Cities.CalcDistance(LastMinuteAuftraege[e].VonCity, LastMinuteAuftraege[e].NachCity) > 3000000 ||
@@ -4967,7 +4966,7 @@ void PLAYER::RobotExecuteAction() {
                                 SLONG MinE = -1;
 
                                 for (e = LastMinuteAuftraege.AnzEntries() - 1; e >= 0; e--) {
-                                    if ((LastMinuteAuftraege[e].Praemie != 0) &&
+                                    if ((LastMinuteAuftraege[e].Praemie > 0) &&
                                         VonZeit + Cities.CalcFlugdauer(VonCity, LastMinuteAuftraege[e].VonCity, Planes[c].ptGeschwindigkeit) < 23 + 24) {
                                         // VonZeit+Cities.CalcFlugdauer (VonCity, LastMinuteAuftraege[e].VonCity,
                                         // PlaneTypes[Planes[c].TypeId].Geschwindigkeit)<23+24)
@@ -5046,7 +5045,7 @@ void PLAYER::RobotExecuteAction() {
                         if (VonZeit >= 0 && VonZeit < 23 + 24 + 24) {
                             if (level == 0 || level == 1) {
                                 for (e = ReisebueroAuftraege.AnzEntries() - 1; e >= 0; e--) {
-                                    if ((ReisebueroAuftraege[e].Praemie != 0) && ReisebueroAuftraege[e].VonCity == ULONG(VonCity)) {
+                                    if ((ReisebueroAuftraege[e].Praemie > 0) && ReisebueroAuftraege[e].VonCity == ULONG(VonCity)) {
                                         if (RobotUse(ROBOT_USE_SHORTFLIGHTS) && Planes.GetNumUsed() == 4 &&
                                             (Cities.CalcDistance(ReisebueroAuftraege[e].VonCity, ReisebueroAuftraege[e].NachCity) > 3000000 ||
                                              ReisebueroAuftraege[e].Personen <= 90)) {
@@ -5075,7 +5074,7 @@ void PLAYER::RobotExecuteAction() {
                                 SLONG MinE = -1;
 
                                 for (e = ReisebueroAuftraege.AnzEntries() - 1; e >= 0; e--) {
-                                    if ((ReisebueroAuftraege[e].Praemie != 0) &&
+                                    if ((ReisebueroAuftraege[e].Praemie > 0) &&
                                         VonZeit + Cities.CalcFlugdauer(VonCity, ReisebueroAuftraege[e].VonCity, Planes[c].ptGeschwindigkeit) < 23 + 24) {
                                         // VonZeit+Cities.CalcFlugdauer (VonCity, ReisebueroAuftraege[e].VonCity,
                                         // PlaneTypes[Planes[c].TypeId].Geschwindigkeit)<23+24)
@@ -5570,20 +5569,25 @@ void PLAYER::DelayFlightsIfNecessary() {
 
     PlanGates();
     for (c = 0; c < SLONG(Planes.AnzEntries()); c++) {
-        if (Planes.IsInAlbum(c) != 0) {
-            CFlugplan &qPlan = Planes[c].Flugplan;
-            SLONG NumDelays = 0;
+        if (Planes.IsInAlbum(c) == 0) {
+            continue;
+        }
+        CFlugplan &qPlan = Planes[c].Flugplan;
+        SLONG NumDelays = 0;
 
-        Again:
-            // for (d=qPlan.Flug.AnzEntries()-1; d>=0; d--)
-            for (d = 0; d < qPlan.Flug.AnzEntries(); d++) {
-                if ((qPlan.Flug[d].ObjectType == 1 || qPlan.Flug[d].ObjectType == 2) &&
-                    (qPlan.Flug[d].VonCity == static_cast<ULONG>(Sim.HomeAirportId) || qPlan.Flug[d].NachCity == static_cast<ULONG>(Sim.HomeAirportId)) &&
-                    qPlan.Flug[d].Gate == -1 && NumDelays < 6) {
-                    qPlan.Flug[d].Startzeit++;
-                    while (qPlan.Flug[d].Startzeit >= 24) {
-                        qPlan.Flug[d].Startzeit -= 24;
-                        qPlan.Flug[d].Startdate++;
+    Again:
+        // for (d=qPlan.Flug.AnzEntries()-1; d>=0; d--)
+        for (d = 0; d < qPlan.Flug.AnzEntries(); d++) {
+            auto &qFPE = qPlan.Flug[d];
+            if ((qFPE.ObjectType == 1 || qFPE.ObjectType == 2) &&
+                (qFPE.VonCity == static_cast<ULONG>(Sim.HomeAirportId) || qFPE.NachCity == static_cast<ULONG>(Sim.HomeAirportId)) && qFPE.Gate == -1 &&
+                NumDelays < 6) {
+                if (qFPE.Startdate > Sim.Date || (qFPE.Startdate == Sim.Date && qFPE.Startzeit > Sim.GetHour() + 2)) {
+
+                    qFPE.Startzeit++;
+                    while (qFPE.Startzeit >= 24) {
+                        qFPE.Startzeit -= 24;
+                        qFPE.Startdate++;
                     }
 
                     NumDelays++;

@@ -658,6 +658,7 @@ void CPlane::CheckFlugplaene(SLONG PlayerNum, BOOL Sort, BOOL PlanGates) {
             Flugplan.Flug[d] = Flugplan.Flug[d - 1];
         }
 
+        Flugplan.Flug[0] = {};
         Flugplan.Flug[0].ObjectType = 3;
         Flugplan.Flug[0].VonCity = Flugplan.StartCity;
         Flugplan.Flug[0].NachCity = Flugplan.Flug[1].VonCity;
@@ -692,6 +693,7 @@ void CPlane::CheckFlugplaene(SLONG PlayerNum, BOOL Sort, BOOL PlanGates) {
                 Flugplan.Flug[d] = Flugplan.Flug[d - 1];
             }
 
+            Flugplan.Flug[c + 1] = {};
             Flugplan.Flug[c + 1].ObjectType = 3;
             Flugplan.Flug[c + 1].VonCity = Flugplan.Flug[c + 0].NachCity;
             Flugplan.Flug[c + 1].NachCity = Flugplan.Flug[c + 2].VonCity;
@@ -718,6 +720,8 @@ void CPlane::CheckFlugplaene(SLONG PlayerNum, BOOL Sort, BOOL PlanGates) {
         if (Flugplan.Flug[c + 1].ObjectType == 0) {
             break;
         }
+
+        assert(Flugplan.Flug[c].Startdate > Sim.Date || (Flugplan.Flug[c].Startdate == Sim.Date && Flugplan.Flug[c].Startzeit > Sim.GetHour() + 1));
 
         SLONG tTime = (Flugplan.Flug[c].Landezeit + 1) % 24;
         SLONG tDate = Flugplan.Flug[c].Landedate + (Flugplan.Flug[c].Landezeit + 1) / 24;
@@ -882,7 +886,7 @@ void CPlane::FlugplaeneFortfuehren(SLONG PlayerNum) {
             // Alte Aufträge oder Automatikflüge löschen:
             if (Flugplan.Flug[c].ObjectType == 2 || Flugplan.Flug[c].ObjectType == 3 || Flugplan.Flug[c].ObjectType == 4) {
                 Flugplan.StartCity = Flugplan.Flug[c].NachCity;
-                Flugplan.Flug[c].ObjectType = 0;
+                Flugplan.Flug[c] = {};
             }
 
             // Routen in die Zukunft verschieben:

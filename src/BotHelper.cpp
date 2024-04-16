@@ -2,6 +2,7 @@
 
 #include "BotPlaner.h"
 
+#include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <unordered_map>
@@ -370,6 +371,7 @@ void printFlightJobs(const PLAYER &qPlayer, const CPlane &qPlane) {
     /* render schedule to ASCII */
     SLONG idx = 0;
     for (SLONG day = Sim.Date; day < Sim.Date + 7; day++) {
+        std::cout << std::setw(10) << getWeekday(day) << std::setw(0);
         for (SLONG i = 0; i < 24; i++) {
             while ((idx < qFlightPlan.AnzEntries()) && (qFlightPlan[idx].ObjectType == 0 || qFlightPlan[idx].Landedate < day ||
                                                         (qFlightPlan[idx].Landedate == day && qFlightPlan[idx].Landezeit < i))) {
@@ -378,11 +380,6 @@ void printFlightJobs(const PLAYER &qPlayer, const CPlane &qPlane) {
 
             if (idx == qFlightPlan.AnzEntries()) {
                 std::cout << ".";
-                continue;
-            }
-
-            auto id = qFlightPlan[idx].ObjectId;
-            if (id < 0) {
                 continue;
             }
 

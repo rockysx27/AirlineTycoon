@@ -46,7 +46,6 @@ CFlugplanEintrag::CFlugplanEintrag(BOOL ObjectType, ULONG ObjectId) {
     CFlugplanEintrag::ObjectType = ObjectType;
     CFlugplanEintrag::ObjectId = ObjectId;
     CFlugplanEintrag::FlightBooked = FALSE;
-    CFlugplanEintrag::ScheduledByGM = FALSE;
 }
 
 //--------------------------------------------------------------------------------------------
@@ -63,7 +62,7 @@ TEAKFILE &operator<<(TEAKFILE &File, const CFlugplanEintrag &Eintrag) {
         if (Eintrag.ObjectType != 0) {
             File << Eintrag.Okay << Eintrag.HoursBefore << Eintrag.Passagiere << Eintrag.PassagiereFC << Eintrag.PArrived << Eintrag.Gate << Eintrag.VonCity
                  << Eintrag.GateWarning << Eintrag.NachCity << Eintrag.Startzeit << Eintrag.Landezeit << Eintrag.Startdate << Eintrag.Landedate
-                 << Eintrag.ObjectId << Eintrag.Ticketpreis << Eintrag.TicketpreisFC << Eintrag.FlightBooked << Eintrag.ScheduledByGM;
+                 << Eintrag.ObjectId << Eintrag.Ticketpreis << Eintrag.TicketpreisFC << Eintrag.FlightBooked;
         }
     }
 
@@ -84,7 +83,7 @@ TEAKFILE &operator>>(TEAKFILE &File, CFlugplanEintrag &Eintrag) {
         if (Eintrag.ObjectType != 0) {
             File >> Eintrag.Okay >> Eintrag.HoursBefore >> Eintrag.Passagiere >> Eintrag.PassagiereFC >> Eintrag.PArrived >> Eintrag.Gate >> Eintrag.VonCity >>
                 Eintrag.GateWarning >> Eintrag.NachCity >> Eintrag.Startzeit >> Eintrag.Landezeit >> Eintrag.Startdate >> Eintrag.Landedate >>
-                Eintrag.ObjectId >> Eintrag.Ticketpreis >> Eintrag.TicketpreisFC >> Eintrag.FlightBooked >> Eintrag.ScheduledByGM;
+                Eintrag.ObjectId >> Eintrag.Ticketpreis >> Eintrag.TicketpreisFC >> Eintrag.FlightBooked;
         } else {
             Eintrag.Okay = 0;
             Eintrag.Gate = -1;
@@ -94,7 +93,6 @@ TEAKFILE &operator>>(TEAKFILE &File, CFlugplanEintrag &Eintrag) {
             Eintrag.ObjectType = 0;
             Eintrag.ObjectId = -1;
             Eintrag.FlightBooked = FALSE;
-            Eintrag.ScheduledByGM = FALSE;
         }
     }
 
@@ -587,16 +585,24 @@ void CFlugplanEintrag::CalcPassengers(SLONG PlayerNum, CPlane &qPlane) {
 void CFlugplanEintrag::BookFlight(CPlane *Plane, SLONG PlayerNum) {
     PLAYER &qPlayer = Sim.Players.Players[PlayerNum];
 
-    if (!ScheduledByGM) {
-        redprintf("Schedule.cpp: %s: Flight not scheduled via GameMechanic on %s:", (LPCTSTR)qPlayer.AirlineX, (LPCTSTR)Plane->Name);
-        Helper::printFPE(*this);
-    }
     if (FlightBooked) {
-        redprintf("Schedule.cpp: %s: Tried to book flight twice on %s:", (LPCTSTR)qPlayer.AirlineX, (LPCTSTR)Plane->Name);
+        hprintf("==========");
+        redprintf("Schedule.cpp: %ld/%ld: %s: Tried to book flight twice:", Sim.Date, Sim.GetHour(), (LPCTSTR)qPlayer.AirlineX);
+        printf("Schedule.cpp: ");
         Helper::printFPE(*this);
+        printf("Schedule.cpp: ");
+        if (ObjectType == 1) {
+            Helper::printRoute(Routen[ObjectId]);
+        } else if (ObjectType == 2) {
+            Helper::printJob(qPlayer.Auftraege[ObjectId]);
+        } else if (ObjectType == 4) {
+            Helper::printFreight(qPlayer.Frachten[ObjectId]);
+        } else {
+            hprintf("None");
+        }
+        hprintf("==========");
+        return;
     }
-    hprintf("Schedule.cpp: %s: Booking flight on %s:", (LPCTSTR)qPlayer.AirlineX, (LPCTSTR)Plane->Name);
-    Helper::printFPE(*this);
     FlightBooked = TRUE;
 
     __int64 Saldo = 0;
