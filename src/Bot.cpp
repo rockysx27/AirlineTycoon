@@ -83,6 +83,12 @@ std::vector<SLONG> Bot::findBestAvailablePlaneType(bool forRoutes) const {
                 score *= planeType.Reichweite;
             }
             score /= planeType.Verbrauch;
+        } else if (kPlaneScoreMode == 1) {
+            score = 1.0 * planeType.Passagiere * planeType.Geschwindigkeit;
+            if (forRoutes) {
+                score *= planeType.Reichweite;
+            }
+            score /= (planeType.Verbrauch * planeType.Verbrauch * planeType.Preis);
         } else {
             if (forRoutes) {
                 score = 1.0e7 * planeType.Passagiere * planeType.Geschwindigkeit * planeType.Reichweite;

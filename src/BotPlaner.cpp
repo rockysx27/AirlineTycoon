@@ -65,33 +65,53 @@ inline std::pair<int, int> calcCostAndDuration(int startCity, int destCity, cons
     return {cost, duration};
 }
 
-BotPlaner::BotPlaner(PLAYER &player, const CPlanes &planes, JobOwner jobOwner, std::vector<int> intJobSource)
-    : qPlayer(player), mJobOwner(jobOwner), mIntJobSource(std::move(intJobSource)), qPlanes(planes) {
+BotPlaner::BotPlaner(PLAYER &player, const CPlanes &planes) : qPlayer(player), qPlanes(planes) {}
+
+void BotPlaner::addJobSource(JobOwner jobOwner, std::vector<int> intJobSource) {
     if (jobOwner == JobOwner::International) {
-        for (const auto &i : mIntJobSource) {
+        for (const auto &i : intJobSource) {
             if (i < 0 || i >= AuslandsAuftraege.size()) {
                 redprintf("BotPlaner::BotPlaner(): Invalid intJobSource given: %d", i);
-                mJobOwner = JobOwner::Backlog;
+                return;
             }
         }
-        if (mIntJobSource.empty()) {
+        if (intJobSource.empty()) {
             redprintf("BotPlaner::BotPlaner(): No intJobSource given.");
-            mJobOwner = JobOwner::Backlog;
+            return;
         }
     } else if (jobOwner == JobOwner::InternationalFreight) {
-        for (const auto &i : mIntJobSource) {
+        for (const auto &i : intJobSource) {
             if (i < 0 || i >= AuslandsFrachten.size()) {
                 redprintf("BotPlaner::BotPlaner(): Invalid intJobSource given.");
-                mJobOwner = JobOwner::BacklogFreight;
+                return;
             }
         }
-        if (mIntJobSource.empty()) {
+        if (intJobSource.empty()) {
             redprintf("BotPlaner::BotPlaner(): No intJobSource given.");
-            mJobOwner = JobOwner::BacklogFreight;
+            return;
         }
     } else {
-        if (!mIntJobSource.empty()) {
+        if (!intJobSource.empty()) {
             redprintf("BotPlaner::BotPlaner(): intJobSource does not need to be given for this job source.");
+            return;
+        }
+    }
+
+    if (jobOwner == JobOwner::TravelAgency) {
+        mJobSources.emplace_back(&ReisebueroAuftraege, jobOwner);
+    } else if (jobOwner == JobOwner::LastMinute) {
+        mJobSources.emplace_back(&LastMinuteAuftraege, jobOwner);
+    } else if (jobOwner == JobOwner::Freight) {
+        mJobSources.emplace_back(&gFrachten, jobOwner);
+    } else if (jobOwner == JobOwner::International) {
+        for (const auto &i : intJobSource) {
+            mJobSources.emplace_back(&AuslandsAuftraege[i], jobOwner);
+            mJobSources.back().sourceId = i;
+        }
+    } else if (jobOwner == JobOwner::InternationalFreight) {
+        for (const auto &i : intJobSource) {
+            mJobSources.emplace_back(&AuslandsFrachten[i], jobOwner);
+            mJobSources.back().sourceId = i;
         }
     }
 }
@@ -140,33 +160,15 @@ void BotPlaner::printGraph(const Graph &g) {
 
 void BotPlaner::collectAllFlightJobs(const std::vector<int> &planeIds) {
     mJobList.clear();
-    std::vector<JobSource> sources;
-    if (mJobOwner == JobOwner::TravelAgency) {
-        sources.emplace_back(&ReisebueroAuftraege, mJobOwner);
-    } else if (mJobOwner == JobOwner::LastMinute) {
-        sources.emplace_back(&LastMinuteAuftraege, mJobOwner);
-    } else if (mJobOwner == JobOwner::Freight) {
-        sources.emplace_back(&gFrachten, mJobOwner);
-    } else if (mJobOwner == JobOwner::International) {
-        for (const auto &i : mIntJobSource) {
-            sources.emplace_back(&AuslandsAuftraege[i], mJobOwner);
-            sources.back().sourceId = i;
-        }
-    } else if (mJobOwner == JobOwner::InternationalFreight) {
-        for (const auto &i : mIntJobSource) {
-            sources.emplace_back(&AuslandsFrachten[i], mJobOwner);
-            sources.back().sourceId = i;
-        }
-    }
 
     /* jobs already in planer */
-    sources.emplace_back(&qPlayer.Auftraege, JobOwner::Backlog);
+    mJobSources.emplace_back(&qPlayer.Auftraege, JobOwner::Backlog);
 
     /* freight jobs already in planer */
-    sources.emplace_back(&qPlayer.Frachten, JobOwner::BacklogFreight);
+    mJobSources.emplace_back(&qPlayer.Frachten, JobOwner::BacklogFreight);
 
     /* create list of open jobs */
-    for (const auto &source : sources) {
+    for (const auto &source : mJobSources) {
         /* job source B: Jobs */
         for (int i = 0; source.jobs && i < source.jobs->AnzEntries(); i++) {
             if (source.jobs->IsInAlbum(i) == 0) {
@@ -211,6 +213,8 @@ void BotPlaner::collectAllFlightJobs(const std::vector<int> &planeIds) {
             }
         }
     }
+
+    mJobSources.clear();
 
     /* add jobs that will be re-planned */
     std::unordered_map<SLONG, int> jobs; /* to only count freight jobs once */
@@ -332,7 +336,7 @@ std::vector<Graph> BotPlaner::prepareGraph() {
             neighborList.reserve(g.nNodes);
             for (int j = nPlanes; j < g.nNodes; j++) {
                 if (i == j) {
-                    continue; /* self edge only for freight */
+                    continue; /* self edge not allowed */
                 }
 
                 const auto &destJob = mJobList[g.nodeInfo[j].jobIdx];

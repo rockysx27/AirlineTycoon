@@ -108,7 +108,9 @@ class BotPlaner {
     using SolutionList = std::vector<BotPlaner::Solution>;
 
     BotPlaner() = default;
-    BotPlaner(PLAYER &player, const CPlanes &planes, JobOwner jobOwner, std::vector<int> intJobSource);
+    BotPlaner(PLAYER &player, const CPlanes &planes);
+
+    void addJobSource(JobOwner jobOwner, std::vector<int> intJobSource);
 
     /* score weighting factors */
     void setDistanceFactor(int val) { mDistanceFactor = val; }
@@ -163,7 +165,6 @@ class BotPlaner {
         inline bool isFullyScheduled() const { return (numStillNeeded <= 0); }
         inline void schedule(int passenger) {
             if (isFreight()) {
-                // assert(numStillNeeded > 0);
                 numStillNeeded -= passenger / 10;
             } else {
                 assert(numStillNeeded == 1);
@@ -173,7 +174,6 @@ class BotPlaner {
         inline void unschedule(int passenger) {
             if (isFreight()) {
                 numStillNeeded += passenger / 10;
-                assert(numStillNeeded <= fracht.Tons);
             } else {
                 assert(numStillNeeded == 0);
                 numStillNeeded = 1;
@@ -250,8 +250,7 @@ class BotPlaner {
     }
 
     PLAYER &qPlayer;
-    JobOwner mJobOwner;
-    std::vector<int> mIntJobSource;
+    std::vector<JobSource> mJobSources;
     const CPlanes &qPlanes;
     PlaneTime mScheduleFromTime;
 

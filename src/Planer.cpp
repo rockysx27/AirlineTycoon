@@ -3014,7 +3014,8 @@ void CPlaner::AutoPlan(SLONG mode) {
     }
 
     if (mode == 1) {
-        BotPlaner bot(qPlayer, qPlayer.Planes, BotPlaner::JobOwner::International, cities);
+        BotPlaner bot(qPlayer, qPlayer.Planes);
+        bot.addJobSource(BotPlaner::JobOwner::International, cities);
         auto solutions = bot.planFlights(planeIds, kAvailTimeExtra);
         bot.applySolution(qPlayer, solutions);
         Helper::checkFlightJobs(qPlayer, true, true);
@@ -3022,7 +3023,8 @@ void CPlaner::AutoPlan(SLONG mode) {
     }
 
     if (mode == 2) {
-        BotPlaner bot(qPlayer, qPlayer.Planes, BotPlaner::JobOwner::International, cities);
+        BotPlaner bot(qPlayer, qPlayer.Planes);
+        bot.addJobSource(BotPlaner::JobOwner::International, cities);
         bot.setDistanceFactor(1);
         auto solutions = bot.planFlights(planeIds, kAvailTimeExtra);
         bot.applySolution(qPlayer, solutions);

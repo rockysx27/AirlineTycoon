@@ -322,7 +322,9 @@ void Bot::actionCallInternational(bool areWeInOffice) {
 
     hprintf("Bot::actionCallInternational(): There are %u cities we can call.", cities.size());
     if (!cities.empty()) {
-        BotPlaner planer(qPlayer, qPlayer.Planes, BotPlaner::JobOwner::International, cities);
+        BotPlaner planer(qPlayer, qPlayer.Planes);
+        planer.addJobSource(BotPlaner::JobOwner::International, cities);
+        planer.addJobSource(BotPlaner::JobOwner::InternationalFreight, cities);
         grabFlights(planer, areWeInOffice);
 
         // Frachtaufträge:
@@ -340,7 +342,8 @@ void Bot::actionCallInternational(bool areWeInOffice) {
 void Bot::actionCheckLastMinute() {
     LastMinuteAuftraege.RefillForLastMinute();
 
-    BotPlaner planer(qPlayer, qPlayer.Planes, BotPlaner::JobOwner::LastMinute, {});
+    BotPlaner planer(qPlayer, qPlayer.Planes);
+    planer.addJobSource(BotPlaner::JobOwner::LastMinute, {});
     grabFlights(planer, false);
 
     LastMinuteAuftraege.RefillForLastMinute();
@@ -359,7 +362,8 @@ void Bot::actionCheckTravelAgency() {
 
     ReisebueroAuftraege.RefillForReisebuero();
 
-    BotPlaner planer(qPlayer, qPlayer.Planes, BotPlaner::JobOwner::TravelAgency, {});
+    BotPlaner planer(qPlayer, qPlayer.Planes);
+    planer.addJobSource(BotPlaner::JobOwner::TravelAgency, {});
     grabFlights(planer, false);
 
     ReisebueroAuftraege.RefillForReisebuero();
@@ -368,7 +372,8 @@ void Bot::actionCheckTravelAgency() {
 void Bot::actionCheckFreightDepot() {
     gFrachten.Refill();
 
-    BotPlaner planer(qPlayer, qPlayer.Planes, BotPlaner::JobOwner::Freight, {});
+    BotPlaner planer(qPlayer, qPlayer.Planes);
+    planer.addJobSource(BotPlaner::JobOwner::Freight, {});
     grabFlights(planer, false);
 
     gFrachten.Refill();
@@ -447,7 +452,7 @@ void Bot::planFlights() {
     if (!BotPlaner::applySolution(qPlayer, mPlanerSolution)) {
         redprintf("Bot::planFlights(): Solution does not apply! Need to re-plan.");
 
-        BotPlaner planer(qPlayer, qPlayer.Planes, BotPlaner::JobOwner::Backlog, {});
+        BotPlaner planer(qPlayer, qPlayer.Planes);
         mPlanerSolution = planer.planFlights(mPlanesForJobs, kAvailTimeExtra);
         if (!mPlanerSolution.empty()) {
             BotPlaner::applySolution(qPlayer, mPlanerSolution);
