@@ -590,37 +590,39 @@ void CPlane::CheckFlugplaene(SLONG PlayerNum, BOOL Sort, BOOL PlanGates) {
 
     // Automatikflüge löschen, andere ergänzen:
     for (c = Flugplan.Flug.AnzEntries() - 1; c >= 0; c--) {
-        if (Flugplan.Flug[c].Startdate > Sim.Date || (Flugplan.Flug[c].Startdate == Sim.Date && Flugplan.Flug[c].Startzeit > Sim.GetHour() + 1)) {
-            if (Flugplan.Flug[c].ObjectType == 3) {
+        if (Flugplan.Flug[c].Startdate < Sim.Date || (Flugplan.Flug[c].Startdate == Sim.Date && Flugplan.Flug[c].Startzeit <= Sim.GetHour() + 1)) {
+            continue;
+        }
+
+        if (Flugplan.Flug[c].ObjectType == 3) {
+            Flugplan.Flug[c].ObjectType = 0;
+        } else if (Flugplan.Flug[c].ObjectType != 0) {
+            if (Flugplan.Flug[c].ObjectType == 1) // Typ: Route
+            {
+                Flugplan.Flug[c].VonCity = Routen[Flugplan.Flug[c].ObjectId].VonCity;
+                Flugplan.Flug[c].NachCity = Routen[Flugplan.Flug[c].ObjectId].NachCity;
+            } else if (Flugplan.Flug[c].ObjectType == 2) // Typ: Auftrag
+            {
+                Flugplan.Flug[c].VonCity = Sim.Players.Players[PlayerNum].Auftraege[Flugplan.Flug[c].ObjectId].VonCity;
+                Flugplan.Flug[c].NachCity = Sim.Players.Players[PlayerNum].Auftraege[Flugplan.Flug[c].ObjectId].NachCity;
+            } else if (Flugplan.Flug[c].ObjectType == 4) // Typ: Fracht
+            {
+                Flugplan.Flug[c].VonCity = Sim.Players.Players[PlayerNum].Frachten[Flugplan.Flug[c].ObjectId].VonCity;
+                Flugplan.Flug[c].NachCity = Sim.Players.Players[PlayerNum].Frachten[Flugplan.Flug[c].ObjectId].NachCity;
+            }
+
+            // SLONG Dauer = Cities.CalcFlugdauer (Flugplan.Flug[c].VonCity, Flugplan.Flug[c].NachCity, PlaneTypes[TypeId].Geschwindigkeit);
+            SLONG Dauer = Cities.CalcFlugdauer(Flugplan.Flug[c].VonCity, Flugplan.Flug[c].NachCity, ptGeschwindigkeit);
+            Flugplan.Flug[c].Landezeit = (Flugplan.Flug[c].Startzeit + Dauer) % 24;
+
+            Flugplan.Flug[c].Landedate = Flugplan.Flug[c].Startdate;
+            if (Flugplan.Flug[c].Landezeit < Flugplan.Flug[c].Startzeit) {
+                Flugplan.Flug[c].Landedate++;
+            }
+
+            if (Dauer >= 24) {
                 Flugplan.Flug[c].ObjectType = 0;
-            } else if (Flugplan.Flug[c].ObjectType != 0) {
-                if (Flugplan.Flug[c].ObjectType == 1) // Typ: Route
-                {
-                    Flugplan.Flug[c].VonCity = Routen[Flugplan.Flug[c].ObjectId].VonCity;
-                    Flugplan.Flug[c].NachCity = Routen[Flugplan.Flug[c].ObjectId].NachCity;
-                } else if (Flugplan.Flug[c].ObjectType == 2) // Typ: Auftrag
-                {
-                    Flugplan.Flug[c].VonCity = Sim.Players.Players[PlayerNum].Auftraege[Flugplan.Flug[c].ObjectId].VonCity;
-                    Flugplan.Flug[c].NachCity = Sim.Players.Players[PlayerNum].Auftraege[Flugplan.Flug[c].ObjectId].NachCity;
-                } else if (Flugplan.Flug[c].ObjectType == 4) // Typ: Fracht
-                {
-                    Flugplan.Flug[c].VonCity = Sim.Players.Players[PlayerNum].Frachten[Flugplan.Flug[c].ObjectId].VonCity;
-                    Flugplan.Flug[c].NachCity = Sim.Players.Players[PlayerNum].Frachten[Flugplan.Flug[c].ObjectId].NachCity;
-                }
-
-                // SLONG Dauer = Cities.CalcFlugdauer (Flugplan.Flug[c].VonCity, Flugplan.Flug[c].NachCity, PlaneTypes[TypeId].Geschwindigkeit);
-                SLONG Dauer = Cities.CalcFlugdauer(Flugplan.Flug[c].VonCity, Flugplan.Flug[c].NachCity, ptGeschwindigkeit);
-                Flugplan.Flug[c].Landezeit = (Flugplan.Flug[c].Startzeit + Dauer) % 24;
-
-                Flugplan.Flug[c].Landedate = Flugplan.Flug[c].Startdate;
-                if (Flugplan.Flug[c].Landezeit < Flugplan.Flug[c].Startzeit) {
-                    Flugplan.Flug[c].Landedate++;
-                }
-
-                if (Dauer >= 24) {
-                    Flugplan.Flug[c].ObjectType = 0;
-                    Sim.Players.Players[PlayerNum].Messages.AddMessage(BERATERTYP_GIRL, StandardTexte.GetS(TOKEN_ADVICE, 2310));
-                }
+                Sim.Players.Players[PlayerNum].Messages.AddMessage(BERATERTYP_GIRL, StandardTexte.GetS(TOKEN_ADVICE, 2310));
             }
         }
     }
@@ -653,26 +655,32 @@ void CPlane::CheckFlugplaene(SLONG PlayerNum, BOOL Sort, BOOL PlanGates) {
 
     // Nötigenfalls am Anfang automatische Flüge einbauen:
     if (Flugplan.Flug[0].ObjectType != 0 && Cities(Flugplan.Flug[0].VonCity) != static_cast<ULONG>(Cities(Flugplan.StartCity))) {
-        // Automatik-Flug einfügen:
-        for (d = Flugplan.Flug.AnzEntries() - 1; d > 0; d--) {
-            Flugplan.Flug[d] = Flugplan.Flug[d - 1];
+        if (Flugplan.Flug[c].Startdate > Sim.Date || (Flugplan.Flug[c].Startdate == Sim.Date && Flugplan.Flug[c].Startzeit > Sim.GetHour() + 1)) {
+            // Automatik-Flug einfügen:
+            for (d = Flugplan.Flug.AnzEntries() - 1; d > 0; d--) {
+                Flugplan.Flug[d] = Flugplan.Flug[d - 1];
+            }
+
+            Flugplan.Flug[0] = {};
+            Flugplan.Flug[0].ObjectType = 3;
+            Flugplan.Flug[0].VonCity = Flugplan.StartCity;
+            Flugplan.Flug[0].NachCity = Flugplan.Flug[1].VonCity;
+            Flugplan.Flug[0].Startdate = Sim.Date;
+            Flugplan.Flug[0].Startzeit = Sim.GetHour() + 2;
+
+            // SLONG Dauer = Cities.CalcFlugdauer (Flugplan.Flug[0].VonCity, Flugplan.Flug[0].NachCity, PlaneTypes[TypeId].Geschwindigkeit);
+            SLONG Dauer = Cities.CalcFlugdauer(Flugplan.Flug[0].VonCity, Flugplan.Flug[0].NachCity, ptGeschwindigkeit);
+            Flugplan.Flug[0].Landezeit = (Flugplan.Flug[0].Startzeit + Dauer) % 24;
+            Flugplan.Flug[0].Landedate = Flugplan.Flug[0].Startdate + (Flugplan.Flug[0].Startzeit + Dauer) / 24;
         }
-
-        Flugplan.Flug[0] = {};
-        Flugplan.Flug[0].ObjectType = 3;
-        Flugplan.Flug[0].VonCity = Flugplan.StartCity;
-        Flugplan.Flug[0].NachCity = Flugplan.Flug[1].VonCity;
-        Flugplan.Flug[0].Startdate = Sim.Date;
-        Flugplan.Flug[0].Startzeit = Sim.GetHour() + 2;
-
-        // SLONG Dauer = Cities.CalcFlugdauer (Flugplan.Flug[0].VonCity, Flugplan.Flug[0].NachCity, PlaneTypes[TypeId].Geschwindigkeit);
-        SLONG Dauer = Cities.CalcFlugdauer(Flugplan.Flug[0].VonCity, Flugplan.Flug[0].NachCity, ptGeschwindigkeit);
-        Flugplan.Flug[0].Landezeit = (Flugplan.Flug[0].Startzeit + Dauer) % 24;
-        Flugplan.Flug[0].Landedate = Flugplan.Flug[0].Startdate + (Flugplan.Flug[0].Startzeit + Dauer) / 24;
     }
 
     // Nötigenfalls zwischendurch automatische Flüge einbauen:
     for (c = 0; c < Flugplan.Flug.AnzEntries() - 1; c++) {
+        if (Flugplan.Flug[c + 1].Startdate < Sim.Date || (Flugplan.Flug[c + 1].Startdate == Sim.Date && Flugplan.Flug[c + 1].Startzeit <= Sim.GetHour() + 1)) {
+            continue;
+        }
+
         if (Flugplan.Flug[c + 1].ObjectType == 0) {
             break;
         }
@@ -721,7 +729,9 @@ void CPlane::CheckFlugplaene(SLONG PlayerNum, BOOL Sort, BOOL PlanGates) {
             break;
         }
 
-        assert(Flugplan.Flug[c].Startdate > Sim.Date || (Flugplan.Flug[c].Startdate == Sim.Date && Flugplan.Flug[c].Startzeit > Sim.GetHour() + 1));
+        if (Flugplan.Flug[c + 1].Startdate < Sim.Date || (Flugplan.Flug[c + 1].Startdate == Sim.Date && Flugplan.Flug[c + 1].Startzeit <= Sim.GetHour() + 1)) {
+            continue;
+        }
 
         SLONG tTime = (Flugplan.Flug[c].Landezeit + 1) % 24;
         SLONG tDate = Flugplan.Flug[c].Landedate + (Flugplan.Flug[c].Landezeit + 1) / 24;
@@ -766,9 +776,11 @@ void CPlane::CheckFlugplaene(SLONG PlayerNum, BOOL Sort, BOOL PlanGates) {
         if (Flugplan.Flug[c + 1].ObjectType == 0) {
             break;
         }
+        if (Flugplan.Flug[c].Startdate < Sim.Date || (Flugplan.Flug[c].Startdate == Sim.Date && Flugplan.Flug[c].Startzeit <= Sim.GetHour() + 1)) {
+            continue;
+        }
 
-        if (Flugplan.Flug[c].ObjectType == 3 &&
-            (Flugplan.Flug[c].Startdate > Sim.Date || (Flugplan.Flug[c].Startdate == Sim.Date && Flugplan.Flug[c].Startzeit > Sim.GetHour() + 1))) {
+        if (Flugplan.Flug[c].ObjectType == 3) {
             SLONG tTime = (Flugplan.Flug[c + 1].Startzeit - 1 + 24) % 24;
             SLONG tDate = Flugplan.Flug[c + 1].Startdate - static_cast<SLONG>(Flugplan.Flug[c + 1].Startzeit == 0);
 
