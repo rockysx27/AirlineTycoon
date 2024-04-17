@@ -126,6 +126,7 @@ CRegistryAccess::~CRegistryAccess() { Close(); }
 // Alten Zugriff schließen:
 //--------------------------------------------------------------------------------------------
 void CRegistryAccess::Close() {
+    return;
     if (hKey != nullptr) {
 #if USE_JSON
         hprintf("Checkup.cpp: Writing AT.json");

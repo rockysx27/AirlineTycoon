@@ -79,27 +79,11 @@ std::vector<SLONG> Bot::findBestAvailablePlaneType(bool forRoutes) const {
         }
 
         DOUBLE score = 0;
-        if (kPlaneScoreMode == 0) {
-            score = 1.0 * planeType.Passagiere * planeType.Passagiere;
-            if (forRoutes) {
-                score *= planeType.Reichweite;
-            }
-            score /= planeType.Verbrauch;
-        } else if (kPlaneScoreMode == 1) {
-            score = 1.0 * planeType.Passagiere * planeType.Geschwindigkeit;
-            if (forRoutes) {
-                score *= planeType.Reichweite;
-            }
-            score /= (planeType.Verbrauch * planeType.Verbrauch * planeType.Preis);
-        } else {
-            if (forRoutes) {
-                score = 1.0e7 * planeType.Passagiere * planeType.Geschwindigkeit * planeType.Reichweite;
-                score /= (planeType.Verbrauch * planeType.Verbrauch * planeType.Preis);
-            } else {
-                score = 1.0e12 * planeType.Reichweite;
-                score /= (planeType.Preis * planeType.Preis);
-            }
+        score = 1.0 * planeType.Passagiere;
+        if (!forRoutes) {
+            score *= planeType.Reichweite;
         }
+        score /= planeType.Verbrauch;
 
         scores.emplace_back(i, score);
     }
@@ -349,11 +333,19 @@ void Bot::RobotInit() {
     auto balance = qPlayer.BilanzWoche.Hole();
     if (bQuick) {
         if (Sim.Date == 0) {
-            hprintf("BotStatistics: Tag, Geld, Saldo, Gewinn, Verlust, Auftraege, Fracht, Routen, Kerosin, Wartung");
+            hprintf("BotStatistics: Tag, Geld, Saldo, Gewinn, Verlust, Auftraege, Fracht, Routen, Kerosin, Wartung, Planetype");
         }
-        hprintf("BotStatistics: %d, %lld, %lld, %lld, %lld, %lld, %lld, %lld, %lld, %lld", Sim.Date, qPlayer.Money, balance.GetOpSaldo(), balance.GetOpGewinn(),
-                balance.GetOpVerlust(), balance.Auftraege, balance.FrachtAuftraege, balance.Tickets, balance.KerosinFlug + balance.KerosinVorrat,
-                balance.Wartung);
+        SLONG count = 0;
+        for (SLONG i = 0; i < qPlayer.Planes.AnzEntries(); i++) {
+            if (qPlayer.Planes.IsInAlbum(i)) {
+                if (kPlaneScoreForceBest + 0x10000000 == qPlayer.Planes[i].TypeId) {
+                    count++;
+                }
+            }
+        }
+        hprintf("BotStatistics: %d, %lld, %lld, %lld, %lld, %lld, %lld, %lld, %lld, %lld, %lld", Sim.Date, qPlayer.Money, balance.GetOpSaldo(),
+                balance.GetOpGewinn(), balance.GetOpVerlust(), balance.Auftraege, balance.FrachtAuftraege, balance.Tickets,
+                balance.KerosinFlug + balance.KerosinVorrat, balance.Wartung, count);
     } else {
         greenprintf("Bot.cpp: Enter RobotInit(): Current day: %d, money: %s $ (op saldo %s = %s %s)", Sim.Date, Insert1000erDots64(qPlayer.Money).c_str(),
                     Insert1000erDots64(balance.GetOpSaldo()).c_str(), Insert1000erDots64(balance.GetOpGewinn()).c_str(),
