@@ -856,10 +856,6 @@ void CAufsicht::OnRButtonDown(UINT nFlags, CPoint point) {
         return;
     }
 
-    if (CheatAutoSkip != 0) {
-        CanCancel = TRUE;
-    }
-
     if (MenuIsOpen() != 0) {
         if (CanCancel != 0) {
             MenuRightClick(point);

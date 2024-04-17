@@ -271,8 +271,8 @@ CStatistik::CStatistik(BOOL bHandy, ULONG PlayerNum) : CStdRaum(bHandy, PlayerNu
         _iArray[g][c++].define = STAT_BEKANNTHEIT;
 
         _iArray[g][c].typOfItem = TYP_SINGLE_PERCENT;
-        if (Sim.Difficulty == DIFF_ADDON01 || Sim.Difficulty == DIFF_ADDON03 || Sim.Difficulty == DIFF_ADDON04 || Sim.Difficulty == DIFF_ADDON06 ||
-            Sim.Difficulty == DIFF_ATFS09 || Sim.Difficulty == DIFF_ATFS10) {
+        if (Sim.Difficulty == DIFF_FREEGAME || Sim.Difficulty == DIFF_ADDON01 || Sim.Difficulty == DIFF_ADDON03 || Sim.Difficulty == DIFF_ADDON04 ||
+            Sim.Difficulty == DIFF_ADDON06 || Sim.Difficulty == DIFF_ATFS09 || Sim.Difficulty == DIFF_ATFS10) {
             _iArray[g][c].typOfItem = TYP_VALUE;
         }
         _iArray[g][c].textId = 10018;

@@ -118,6 +118,7 @@ class BotPlaner {
     void setUhrigBonus(int val) { mUhrigBonus = val; }
     void setConstBonus(int val) { mConstBonus = val; }
     void setMinimumScoreRatio(float val) { mMinScoreRatio = val; }
+    void setFreightBonus(int val) { mFreightBonus = val; }
     void setFreeFreightBonus(int val) { mFreeFreightBonus = val; }
 
     SolutionList planFlights(const std::vector<int> &planeIdsInput, int extraBufferTime);
@@ -260,6 +261,7 @@ class BotPlaner {
     int mUhrigBonus{0};
     int mConstBonus{0};
     float mMinScoreRatio{1.0f};
+    int mFreightBonus{0};
     int mFreeFreightBonus{0};
 
     /* state */

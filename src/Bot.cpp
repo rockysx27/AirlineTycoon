@@ -317,7 +317,7 @@ bool Bot::findPlanesAvailableForService(std::deque<SLONG> &listUnassigned, std::
         hprintf("Bot::findPlanesAvailableForService(): Plane %s: Zustand = %u, WorstZustand = %u, Baujahr = %ld", Helper::getPlaneName(qPlane).c_str(),
                 qPlane.Zustand, qPlane.WorstZustand, qPlane.Baujahr);
 
-        if (qPlane.Zustand < 100 && (qPlane.Zustand < kPlaneTargetZustand)) {
+        if (qPlane.Zustand < 100 && (qPlane.Zustand < qPlane.TargetZustand)) {
             hprintf("Bot::findPlanesAvailableForService(): Plane %s still not available for service: Needs repairs.", Helper::getPlaneName(qPlane).c_str());
             newUnassigned.push_back(id);
         } else if (!checkPlaneAvailable(id, false)) {
