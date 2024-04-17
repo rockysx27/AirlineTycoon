@@ -327,10 +327,6 @@ void Bot::actionCallInternational(bool areWeInOffice) {
         planer.addJobSource(BotPlaner::JobOwner::InternationalFreight, cities);
         grabFlights(planer, areWeInOffice);
 
-        // Frachtaufträge:
-        // RobotUse(ROBOT_USE_MUCH_FRACHT)
-        // TODO
-
         SLONG cost = cities.size();
         qPlayer.History.AddCallCost(cost);
         qPlayer.Money -= cost;

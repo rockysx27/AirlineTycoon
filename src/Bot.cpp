@@ -37,6 +37,7 @@ const SLONG kMoneyReserveExpandAirport = 1000 * 1000;
 
 SLONG kPlaneScoreMode = 0;
 SLONG kPlaneScoreForceBest = -1;
+SLONG kTestMode = 0;
 
 inline const char *getPrioName(Bot::Prio prio) {
     switch (prio) {
@@ -753,6 +754,7 @@ void Bot::RobotExecuteAction() {
         if (condTakeOutLoan() != Prio::None) {
             __int64 limit = qPlayer.CalcCreditLimit();
             __int64 m = std::min(limit, (kMoneyEmergencyFund + kMoneyEmergencyFund / 2) - qPlayer.Money);
+            m = std::max(m, 1000LL);
             if (mRunToFinalObjective == FinalPhase::TargetRun) {
                 m = limit;
             }

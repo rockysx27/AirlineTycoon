@@ -49,6 +49,7 @@ extern const SLONG kMoneyReserveExpandAirport;
 
 extern SLONG kPlaneScoreMode;
 extern SLONG kPlaneScoreForceBest;
+extern SLONG kTestMode;
 
 class Bot {
   public:

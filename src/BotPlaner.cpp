@@ -316,7 +316,8 @@ std::vector<Graph> BotPlaner::prepareGraph() {
             }
 
             if (canFlyThisJob(*plane, job.getPersonen(), distance, duration)) {
-                while (numRequired-- > 0) {
+                auto n = numRequired;
+                while (n-- > 0) {
                     int node = g.addNode(jobIdx);
                     auto &qNodeInfo = g.nodeInfo[node];
 
@@ -324,7 +325,7 @@ std::vector<Graph> BotPlaner::prepareGraph() {
                     qNodeInfo.earliest = job.getDate();
                     qNodeInfo.latest = job.getBisDate();
                     qNodeInfo.score = job.score - cost;
-                    qNodeInfo.scoreRatio = 1.0f * job.score / cost;
+                    qNodeInfo.scoreRatio = 1.0f * job.score / (cost * numRequired);
                     qNodeInfo.duration = duration + kDurationExtra;
                 }
             }
