@@ -358,7 +358,8 @@ std::vector<Graph> BotPlaner::prepareGraph() {
                     continue; /* we are not using the algo that utilizes bestNeighbors */
                 }
 
-                if (!destJob.wasTaken() && g.nodeInfo[j].scoreRatio < mMinScoreRatio && destJob.getBisDate() > Sim.Date) {
+                auto minScore = (destJob.getBisDate() == Sim.Date) ? mMinScoreRatioLastMinute : mMinScoreRatio;
+                if (!destJob.wasTaken() && g.nodeInfo[j].scoreRatio < minScore) {
                     continue; /* job was not taken yet and does not have required minimum score */
                 }
                 if (g.nodeInfo[i].earliest > g.nodeInfo[j].latest) {

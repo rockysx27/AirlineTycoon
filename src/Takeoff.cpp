@@ -280,7 +280,7 @@ BOOL CTakeOffApp::InitInstance(int argc, char *argv[]) {
             CheatAutoSkip = 1;
             i++;
             if (i < argc) {
-                kTestMode = atoi(argv[i]);
+                kSchedulingMinScoreRatioLastMinute = atoi(argv[i]);
             }
         }
         // if (stricmp (Argument, "/e")==0) gLanguage = LANGUAGE_E;

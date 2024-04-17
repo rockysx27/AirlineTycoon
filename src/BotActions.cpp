@@ -391,7 +391,8 @@ void Bot::grabFlights(BotPlaner &planer, bool areWeInOffice) {
         hprintf("Bot::grabFlights(): Extra time planned for walking to office: %d", extraBufferTime);
     }
 
-    planer.setMinimumScoreRatio(kSchedulingMinScoreRatio);
+    planer.setMinScoreRatio(kSchedulingMinScoreRatio);
+    planer.setMinScoreRatioLastMinute(kSchedulingMinScoreRatioLastMinute);
 
     /* configure weighting for special missions */
     switch (Sim.Difficulty) {

@@ -117,9 +117,10 @@ class BotPlaner {
     void setPassengerFactor(int val) { mPassengerFactor = val; }
     void setUhrigBonus(int val) { mUhrigBonus = val; }
     void setConstBonus(int val) { mConstBonus = val; }
-    void setMinimumScoreRatio(float val) { mMinScoreRatio = val; }
     void setFreightBonus(int val) { mFreightBonus = val; }
     void setFreeFreightBonus(int val) { mFreeFreightBonus = val; }
+    void setMinScoreRatio(float val) { mMinScoreRatio = val; }
+    void setMinScoreRatioLastMinute(float val) { mMinScoreRatioLastMinute = val; }
 
     SolutionList planFlights(const std::vector<int> &planeIdsInput, int extraBufferTime);
     static bool applySolution(PLAYER &qPlayer, const SolutionList &solutions);
@@ -261,6 +262,7 @@ class BotPlaner {
     int mUhrigBonus{0};
     int mConstBonus{0};
     float mMinScoreRatio{1.0f};
+    float mMinScoreRatioLastMinute{1.0f};
     int mFreightBonus{0};
     int mFreeFreightBonus{0};
 

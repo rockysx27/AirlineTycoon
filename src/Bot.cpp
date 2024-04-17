@@ -7,7 +7,8 @@
 #include <algorithm>
 
 const bool kAlwaysReplan = true;
-const float kSchedulingMinScoreRatio = 14.0f;
+const float kSchedulingMinScoreRatio = 15.0f;
+const float kSchedulingMinScoreRatioLastMinute = 5.0f;
 const SLONG kSwitchToRoutesNumPlanesMin = 2;
 const SLONG kSwitchToRoutesNumPlanesMax = 4;
 const SLONG kSmallestAdCampaign = 4;

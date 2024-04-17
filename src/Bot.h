@@ -16,6 +16,7 @@ typedef long long __int64;
 
 extern const bool kAlwaysReplan;
 extern const float kSchedulingMinScoreRatio;
+extern const float kSchedulingMinScoreRatioLastMinute;
 extern const SLONG kSwitchToRoutesNumPlanesMin;
 extern const SLONG kSwitchToRoutesNumPlanesMax;
 extern const SLONG kSmallestAdCampaign;
