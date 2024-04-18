@@ -187,7 +187,7 @@ void BotPlaner::collectAllFlightJobs(const std::vector<int> &planeIds) {
                 score += mConstBonus;
 
                 mJobList.back().score = score;
-                mJobList.back().scoreRatio = 1.0f * score / CalculateFlightCost(job.VonCity, job.NachCity, 8000, 700, -1);
+                mJobList.back().scoreRatio = 1.0f * score / CalculateFlightCostNoTank(job.VonCity, job.NachCity, 8000, 700);
             }
         }
         /* job source B: Freight */
@@ -210,7 +210,7 @@ void BotPlaner::collectAllFlightJobs(const std::vector<int> &planeIds) {
                 }
 
                 mJobList.back().score = score;
-                mJobList.back().scoreRatio = 1.0f * score / CalculateFlightCost(job.VonCity, job.NachCity, 8000, 700, -1);
+                mJobList.back().scoreRatio = 1.0f * score / CalculateFlightCostNoTank(job.VonCity, job.NachCity, 8000, 700);
             }
         }
     }
@@ -230,7 +230,7 @@ void BotPlaner::collectAllFlightJobs(const std::vector<int> &planeIds) {
                 const auto &job = qPlayer.Auftraege[qFPE.ObjectId];
                 mJobList.emplace_back(qFPE.ObjectId, -1, job, JobOwner::Planned);
                 mJobList.back().score = job.Praemie;
-                mJobList.back().scoreRatio = 1.0f * job.Praemie / CalculateFlightCost(job.VonCity, job.NachCity, 8000, 700, -1);
+                mJobList.back().scoreRatio = 1.0f * job.Praemie / CalculateFlightCostNoTank(job.VonCity, job.NachCity, 8000, 700);
             } else if (qFPE.ObjectType == 4) {
                 if (jobs.find(qFPE.ObjectId) == jobs.end()) {
                     jobs[qFPE.ObjectId] = mJobList.size();
@@ -238,7 +238,7 @@ void BotPlaner::collectAllFlightJobs(const std::vector<int> &planeIds) {
                     const auto &job = qPlayer.Frachten[qFPE.ObjectId];
                     mJobList.emplace_back(qFPE.ObjectId, -1, job, JobOwner::PlannedFreight);
                     mJobList.back().score = job.Praemie;
-                    mJobList.back().scoreRatio = 1.0f * job.Praemie / CalculateFlightCost(job.VonCity, job.NachCity, 8000, 700, -1);
+                    mJobList.back().scoreRatio = 1.0f * job.Praemie / CalculateFlightCostNoTank(job.VonCity, job.NachCity, 8000, 700);
                     mJobList.back().setNumStillNeeded(qFPE.Passagiere);
                 } else {
                     mJobList[jobs[qFPE.ObjectId]].addNumStillNeeded(qFPE.Passagiere);

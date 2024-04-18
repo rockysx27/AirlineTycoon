@@ -198,6 +198,7 @@ class CFlugplanEintrag {
     SLONG ObjectId{-1};       // Bezeichnet Auftrag oder -1
     SLONG Ticketpreis{};      // Ticketpreis für Routen
     SLONG TicketpreisFC{};    // Ticketpreis für Routen (Erste Klasse)
+    BOOL FlightBooked{FALSE}; // Added: Ensure flight is only "booked" once
 
     CFlugplanEintrag() = default;
     void CalcPassengers(SLONG PlayerNum, CPlane &qPlane);
@@ -229,6 +230,7 @@ class CPlane {
     SLONG Ort{};                              //-1=Landend; -2=Startend; -5 in der Luft; sonst Stadt
     ULONG TypeId{};                           // referenziert CPlaneType oder ist -1
     CFlugplan Flugplan;                       // Der Flugplan
+    SLONG Baujahr{2000};                      // Das Baujahr dieses Flugzeuges
     SLONG MaxPassagiere{}, MaxPassagiereFC{}; // Soviele Leute passen bei der derzeiten Konfiguration rein
     SLONG Problem{};                          // 0 oder Anzahl der Stunden bis das Flugzeug kein Problem mehr hat
     SLONG ptPassagiere{};                     // Maximale Zahl der Passagiere (ein erste Klasse Passagier verbraucht 2 Plätze)

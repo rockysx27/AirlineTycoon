@@ -3,6 +3,7 @@
 #include "BotPlaner.h"
 #include "compat_global.h"
 
+#include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <unordered_map>
@@ -73,6 +74,13 @@ std::string getJobName(const CAuftrag &qAuftrag) {
 
 std::string getFreightName(const CFracht &qAuftrag) {
     return {bprintf("%s -> %s", (LPCTSTR)Cities[qAuftrag.VonCity].Name, (LPCTSTR)Cities[qAuftrag.NachCity].Name)};
+}
+
+std::string getPlaneName(const CPlane &qPlane, int mode) {
+    if (mode == 1) {
+        return {bprintf("%s (%s, Bj: %ld)", (LPCTSTR)qPlane.Name, (LPCTSTR)PlaneTypes[qPlane.TypeId].Name, qPlane.Baujahr)};
+    }
+    return {bprintf("%s (%s)", (LPCTSTR)qPlane.Name, (LPCTSTR)PlaneTypes[qPlane.TypeId].Name)};
 }
 
 void printFPE(const CFlugplanEintrag &qFPE) {
@@ -337,7 +345,7 @@ void printFlightJobs(const PLAYER &qPlayer, SLONG planeId) {
 void printFlightJobs(const PLAYER &qPlayer, const CPlane &qPlane) {
     auto &qFlightPlan = qPlane.Flugplan.Flug;
 
-    hprintf("Helper::printFlightJobs(): Schedule for plane %s:", (LPCTSTR)qPlane.Name);
+    hprintf("Helper::printFlightJobs(): Schedule for plane %s:", Helper::getPlaneName(qPlane).c_str());
 
     /* print job list */
     for (SLONG d = 0; d < qFlightPlan.AnzEntries(); d++) {
@@ -364,6 +372,7 @@ void printFlightJobs(const PLAYER &qPlayer, const CPlane &qPlane) {
     /* render schedule to ASCII */
     SLONG idx = 0;
     for (SLONG day = Sim.Date; day < Sim.Date + 7; day++) {
+        std::cout << std::setw(10) << getWeekday(day) << std::setw(0);
         for (SLONG i = 0; i < 24; i++) {
             while ((idx < qFlightPlan.AnzEntries()) && (qFlightPlan[idx].ObjectType == 0 || qFlightPlan[idx].Landedate < day ||
                                                         (qFlightPlan[idx].Landedate == day && qFlightPlan[idx].Landezeit < i))) {
@@ -372,11 +381,6 @@ void printFlightJobs(const PLAYER &qPlayer, const CPlane &qPlane) {
 
             if (idx == qFlightPlan.AnzEntries()) {
                 std::cout << ".";
-                continue;
-            }
-
-            auto id = qFlightPlan[idx].ObjectId;
-            if (id < 0) {
                 continue;
             }
 
@@ -505,9 +509,10 @@ SLONG checkFlightJobs(const PLAYER &qPlayer, bool alwaysPrint, bool verboseInfo)
     }
 
     hprintf("Helper::checkFlightJobs(): %s: Found %ld problems for %ld planes.", (LPCTSTR)qPlayer.AirlineX, nIncorrect, nPlanes);
-    overallInfo.printGain();
     if (verboseInfo) {
         overallInfo.printDetails();
+    } else {
+        overallInfo.printGain();
     }
     return nIncorrect;
 }
@@ -535,6 +540,8 @@ bool checkRoomOpen(SLONG roomId) {
     case ACTION_CHECKAGENT1:
         return (time <= timeLastClose - 60000 && Sim.Weekday != 5 && GlobalUse(USE_TRAVELHOLDING));
     case ACTION_BUYUSEDPLANE:
+        [[fallthrough]];
+    case ACTION_VISITMUSEUM:
         return (time >= timeMuseOpen && Sim.Weekday != 5 && Sim.Weekday != 6);
     case ACTION_CHECKAGENT2:
         return (time <= timeReisClose - 60000 && GlobalUse(USE_TRAVELHOLDING));
@@ -660,20 +667,6 @@ SLONG getRoomFromAction(SLONG PlayerNum, SLONG actionId) {
         DebugBreak();
     }
     return -1;
-}
-
-SLONG getWalkDistance(int playerNum, SLONG roomId) {
-    auto primaryTarget = Airport.GetRandomTypedRune(RUNE_2SHOP, roomId);
-    PERSON &qPerson = Sim.Persons[Sim.Persons.GetPlayerIndex(playerNum)];
-
-    SLONG speedCount = abs(qPerson.Position.x - primaryTarget.x);
-    speedCount += abs(qPerson.Position.y - primaryTarget.y);
-
-    if (abs(qPerson.Position.y - primaryTarget.y) > 4600) {
-        speedCount -= 4600;
-    }
-    speedCount = max(1, speedCount);
-    return speedCount;
 }
 
 const char *getItemName(SLONG item) {

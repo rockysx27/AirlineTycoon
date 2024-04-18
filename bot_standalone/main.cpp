@@ -7,6 +7,8 @@
 #include <iostream>
 
 static const int numAveraged = 5;
+static const float kSchedulingMinScoreRatio = 15.0f;
+static const float kSchedulingMinScoreRatioLastMinute = 5.0f;
 
 void findBestPlaneTypes();
 int64_t run(int numPasses, int freightMode);
@@ -100,7 +102,12 @@ int64_t _run(int numPasses, int freightMode, const std::vector<int> &planeIds) {
         }
 
         // std::cout << "====================" << std::endl;
-        BotPlaner planer(qPlayer, qPlayer.Planes, source, cities);
+        BotPlaner planer(qPlayer, qPlayer.Planes);
+        planer.addJobSource(source, cities);
+
+        planer.setMinScoreRatio(kSchedulingMinScoreRatio);
+        planer.setMinScoreRatioLastMinute(kSchedulingMinScoreRatioLastMinute);
+
         auto solutions = planer.planFlights(planeIds, 2);
         planer.applySolution(qPlayer, solutions);
         int nIncorrect = Helper::checkFlightJobs(qPlayer, false, false);

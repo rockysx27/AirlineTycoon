@@ -445,8 +445,8 @@ void BotPlaner::insertNode(Graph &g, int planeIdx, int currentNode, int nextNode
     currentTime += g.adjMatrix[currentNode][nextNode].duration;
     assert(g.adjMatrix[currentNode][nextNode].duration >= 0);
 
-    /* job premium */
-    qPlaneState.currentPremium += nextInfo.premium;
+    /* job score */
+    qPlaneState.currentPremium += nextInfo.score;
 
     /* job duration */
     if (currentTime.getDate() < nextInfo.earliest) {
@@ -506,8 +506,8 @@ void BotPlaner::removeNode(Graph &g, int planeIdx, int currentNode) {
     int prevNode = g.nodeState[currentNode].cameFrom;
     assert(prevNode >= 0);
 
-    /* job premium */
-    qPlaneState.currentPremium -= curInfo.premium;
+    /* job score */
+    qPlaneState.currentPremium -= curInfo.score;
 
     /* edge cost */
     qPlaneState.currentCost -= g.adjMatrix[prevNode][currentNode].cost;
@@ -564,21 +564,24 @@ int BotPlaner::removeAllJobInstances(int jobIdx) {
     int nPlaneTypes = mPlaneTypeToPlane.size();
     for (int pt = 0; pt < nPlaneTypes; pt++) {
         Graph &g = mGraphs[pt];
-        int currentNode = g.getNode(jobIdx);
-        while (g.nodeInfo[currentNode].jobIdx == jobIdx && currentNode < g.nNodes) {
+        int jobNode = g.getNode(jobIdx);
+        if (jobNode < g.nPlanes) {
+            continue;
+        }
+        while (jobNode < g.nNodes && g.nodeInfo[jobNode].jobIdx == jobIdx) {
             /* check if job node in this graph is scheduled */
-            if (g.nodeState[currentNode].cameFrom != -1) {
+            if (g.nodeState[jobNode].cameFrom != -1) {
                 /* need to get planeIdx */
-                int planeIdx = currentNode;
+                int planeIdx = jobNode;
                 while (g.nodeState[planeIdx].cameFrom != -1) {
                     planeIdx = g.nodeState[planeIdx].cameFrom; /* trace back to first node */
                 }
                 assert(planeIdx >= 0 && planeIdx < g.nPlanes);
 
-                removeNode(g, planeIdx, currentNode);
+                removeNode(g, planeIdx, jobNode);
                 nRemoved++;
             }
-            currentNode++;
+            jobNode++;
         }
     }
     return nRemoved;
@@ -603,7 +606,7 @@ int BotPlaner::runRemoveWorst(int planeIdx, int numToRemove) {
             assert(g.adjMatrix[prevNode][currentNode].duration >= 0);
 
             int jobIdx = g.nodeInfo[currentNode].jobIdx;
-            int gain = g.nodeInfo[currentNode].premium - g.adjMatrix[prevNode][currentNode].cost;
+            int gain = g.nodeInfo[currentNode].score - g.adjMatrix[prevNode][currentNode].cost;
             if (!mJobList[jobIdx].wasTaken() && (gain < worstGain)) {
                 worstGain = gain;
 
@@ -706,7 +709,7 @@ bool BotPlaner::runAddBestNeighbor(int planeIdx, int choice) {
             continue;
         }
 
-        int score = g.nodeInfo[nodeToInsert].premium - g.adjMatrix[currentNode][nodeToInsert].cost;
+        int score = g.nodeInfo[nodeToInsert].score - g.adjMatrix[currentNode][nodeToInsert].cost;
         int overnextNode = g.nodeState[currentNode].nextNode;
         if (overnextNode != -1) {
             score += (g.adjMatrix[currentNode][overnextNode].cost - g.adjMatrix[nodeToInsert][overnextNode].cost);
@@ -735,6 +738,7 @@ bool BotPlaner::runAddNodeToBestPlaneInner(int jobIdxToInsert) {
     int bestWhereToInsert = 0;
     int bestNode = 0;
 
+    const auto &job = mJobList[jobIdxToInsert];
     int randOffset = getRandInt(0, mPlaneStates.size() - 1);
     for (int i = 0; i < mPlaneStates.size(); i++) {
         int planeIdx = (randOffset + i) % mPlaneStates.size();
@@ -752,12 +756,13 @@ bool BotPlaner::runAddNodeToBestPlaneInner(int jobIdxToInsert) {
             nodeToInsert++;
         }
         if (g.nodeInfo[nodeToInsert].jobIdx != jobIdxToInsert) {
-            redprintf("BotPlaner::runAddNodeToBestPlaneInner(): Not enough node instances for freight job: %ld", mJobList[jobIdxToInsert].getName().c_str());
+            redprintf("BotPlaner::runAddNodeToBestPlaneInner(): Not enough node instances for freight job: %s", mJobList[jobIdxToInsert].getName().c_str());
             continue;
         }
 
-        if (g.nodeInfo[nodeToInsert].premium <= 0) {
-            continue;
+        auto minScore = (job.getBisDate() == Sim.Date) ? mMinScoreRatioLastMinute : mMinScoreRatio;
+        if (!job.wasTaken() && g.nodeInfo[nodeToInsert].scoreRatio < minScore) {
+            continue; /* job was not taken yet and does not have required minimum score */
         }
 
         /* iterate over nodes and make room */
@@ -793,7 +798,7 @@ bool BotPlaner::runAddNodeToBestPlaneInner(int jobIdxToInsert) {
                 continue;
             }
 
-            int score = g.nodeInfo[nodeToInsert].premium - g.adjMatrix[currentNode][nodeToInsert].cost;
+            int score = g.nodeInfo[nodeToInsert].score - g.adjMatrix[currentNode][nodeToInsert].cost;
             int overnextNode = g.nodeState[currentNode].nextNode;
             if (overnextNode != -1) {
                 score += (g.adjMatrix[currentNode][overnextNode].cost - g.adjMatrix[nodeToInsert][overnextNode].cost);

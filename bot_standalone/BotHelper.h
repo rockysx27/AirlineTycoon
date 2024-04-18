@@ -148,10 +148,11 @@ struct ScheduleInfo {
         printGain();
 
         if (uhrigFlights > 0) {
-            hprintf("Flying %ld jobs (%ld from Uhrig, %ld passengers), %ld freight jobs (%ld tons) and %ld miles.", jobs, uhrigFlights, passengers, freightJobs,
-                    tons, miles);
+            hprintf("Flying %ld jobs (%ld from Uhrig, %ld passengers), %ld freight jobs (%ld tons) and %s miles.", jobs, uhrigFlights, passengers, freightJobs,
+                    tons, Insert1000erDots(miles).c_str());
         } else {
-            hprintf("Flying %ld jobs (%ld passengers), %ld freight jobs (%ld tons) and %ld miles.", jobs, passengers, freightJobs, tons, miles);
+            hprintf("Flying %ld jobs (%ld passengers), %ld freight jobs (%ld tons) and %s miles.", jobs, passengers, freightJobs, tons,
+                    Insert1000erDots(miles).c_str());
         }
         hprintf("%.1f %% of plane schedule are regular flights, %.1f %% are automatic flights (%.1f %% useful kerosene).", getRatioFlights(),
                 getRatioAutoFlights(), getKeroseneRatio());
@@ -184,6 +185,7 @@ void printFreight(const CFracht &qAuftrag);
 std::string getRouteName(const CRoute &qRoute);
 std::string getJobName(const CAuftrag &qAuftrag);
 std::string getFreightName(const CFracht &qAuftrag);
+std::string getPlaneName(const CPlane &qPlane, int mode = 0);
 
 void printFPE(const CFlugplanEintrag &qFPE);
 
@@ -205,7 +207,6 @@ void printAllSchedules(bool infoOnly);
 
 bool checkRoomOpen(SLONG roomId);
 SLONG getRoomFromAction(SLONG PlayerNum, SLONG actionId);
-SLONG getWalkDistance(int playerNum, SLONG roomId);
 
 const char *getItemName(SLONG item);
 
