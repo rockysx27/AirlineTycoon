@@ -18,6 +18,7 @@ const int kAvailTimeExtra = 2;
 const int kDurationExtra = 1;
 const int kScheduleForNextDays = 4;
 const int64_t timeBudgetMS = 100;
+const int kFreightMaxFlights = 4;
 
 inline constexpr int ceil_div(int a, int b) {
     assert(b != 0);
@@ -315,9 +316,13 @@ std::vector<Graph> BotPlaner::prepareGraph() {
         for (int jobIdx = 0; jobIdx < mJobList.size(); jobIdx++) {
             const auto &job = mJobList[jobIdx];
 
+            /* freight job way too big for plane? */
             int numRequired = 1;
             if (job.isFreight()) {
                 numRequired = ceil_div(job.getNumStillNeeded(), plane->ptPassagiere / 10);
+            }
+            if (numRequired > kFreightMaxFlights) {
+                continue;
             }
 
             /* calculate cost, duration and distance */

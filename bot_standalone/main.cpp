@@ -64,7 +64,7 @@ int64_t run(int numPasses, int freightMode) {
     for (int i = 0; i < 10; i++) {
         planeIds.push_back(qPlayer.BuyPlane(106, nullptr));
         planeIds.push_back(qPlayer.BuyPlane(111, nullptr));
-        planeIds.push_back(qPlayer.BuyPlane(111, nullptr));
+        planeIds.push_back(qPlayer.BuyPlane(119, nullptr));
     }
     return _run(numPasses, freightMode, planeIds);
 }
@@ -80,30 +80,23 @@ int64_t _run(int numPasses, int freightMode, const std::vector<int> &planeIds) {
 
     for (currentPass = 0; currentPass < numPasses; currentPass++) {
         std::cout << "********** " << currentPass << " **********" << std::endl;
-        auto source = (freightMode > 0) ? BotPlaner::JobOwner::InternationalFreight : BotPlaner::JobOwner::International;
 
         std::vector<int> cities;
-        if (source == BotPlaner::JobOwner::TravelAgency) {
-            ReisebueroAuftraege.FillForReisebuero();
-        } else if (source == BotPlaner::JobOwner::International) {
-            for (int cityNum = 0; cityNum < AuslandsAuftraege.size(); cityNum++) {
-                if (Cities.IsInAlbum(cityNum)) {
-                    GameMechanic::refillFlightJobs(cityNum);
-                    cities.push_back(cityNum);
-                }
-            }
-        } else if (source == BotPlaner::JobOwner::InternationalFreight) {
-            for (int cityNum = 0; cityNum < AuslandsFrachten.size(); cityNum++) {
-                if (Cities.IsInAlbum(cityNum)) {
-                    GameMechanic::refillFlightJobs(cityNum);
-                    cities.push_back(cityNum);
-                }
+        ReisebueroAuftraege.FillForReisebuero();
+        LastMinuteAuftraege.FillForReisebuero();
+        assert(AuslandsAuftraege.size() == AuslandsFrachten.size());
+        for (int cityNum = 0; cityNum < AuslandsAuftraege.size(); cityNum++) {
+            if (Cities.IsInAlbum(cityNum)) {
+                GameMechanic::refillFlightJobs(cityNum);
+                cities.push_back(cityNum);
             }
         }
 
         // std::cout << "====================" << std::endl;
         BotPlaner planer(qPlayer, qPlayer.Planes);
-        planer.addJobSource(source, cities);
+        planer.addJobSource(BotPlaner::JobOwner::TravelAgency, {});
+        planer.addJobSource(BotPlaner::JobOwner::International, cities);
+        planer.addJobSource(BotPlaner::JobOwner::InternationalFreight, cities);
 
         planer.setMinScoreRatio(kSchedulingMinScoreRatio);
         planer.setMinScoreRatioLastMinute(kSchedulingMinScoreRatioLastMinute);
