@@ -89,13 +89,30 @@ std::vector<SLONG> Bot::findBestAvailablePlaneType(bool forRoutes) const {
     }
     std::sort(scores.begin(), scores.end(), [](const std::pair<SLONG, DOUBLE> &a, const std::pair<SLONG, DOUBLE> &b) { return a.second > b.second; });
 
+    /* build list */
     std::vector<SLONG> bestList;
     bestList.reserve(scores.size());
+
+    /* exception: Force specified plane type to be best */
     if (kPlaneScoreForceBest != -1) {
         SLONG bestType = kPlaneScoreForceBest + 0x10000000;
         hprintf("Bot::findBestAvailablePlaneType(): Forcing best plane type to be %s", (LPCTSTR)PlaneTypes[bestType].Name);
         bestList.push_back(bestType);
     }
+
+    /* exception: Have atleast one gulfstream for jobs */
+    SLONG numGulfstream = 0;
+    SLONG gulfstreamType = 119 + 0x10000000;
+    for (SLONG i = 0; i < qPlayer.Planes.AnzEntries(); i++) {
+        if (qPlayer.Planes.IsInAlbum(i) && qPlayer.Planes[i].TypeId == gulfstreamType) {
+            numGulfstream++;
+        }
+    }
+    if (numGulfstream == 0 && !mDoRoutes) {
+        hprintf("Bot::findBestAvailablePlaneType(): Forcing best plane type to be %s", (LPCTSTR)PlaneTypes[gulfstreamType].Name);
+        bestList.push_back(gulfstreamType);
+    }
+
     for (const auto &i : scores) {
         hprintf("Bot::findBestAvailablePlaneType(): Plane type %s has score %.2e", (LPCTSTR)PlaneTypes[i.first].Name, i.second);
         bestList.push_back(i.first);
