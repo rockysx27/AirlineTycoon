@@ -69,7 +69,6 @@ BotPlaner::FlightJob::FlightJob(int i, int j, CFracht a, JobOwner o) : id(i), so
     assert(i >= 0x1000000);
     startCity = Cities.find(fracht.VonCity);
     destCity = Cities.find(fracht.NachCity);
-    numStillNeeded = fracht.Tons;
 }
 
 BotPlaner::BotPlaner(PLAYER &player, const CPlanes &planes) : qPlayer(player), qPlanes(planes) {}
@@ -218,6 +217,7 @@ void BotPlaner::collectAllFlightJobs(const std::vector<int> &planeIds) {
 
                 mJobList.back().score = score;
                 mJobList.back().scoreRatio = 1.0f * score / CalculateFlightCostNoTank(job.VonCity, job.NachCity, 8000, 700);
+                mJobList.back().setNumToTransport(job.Tons);
             }
         }
     }
@@ -246,9 +246,9 @@ void BotPlaner::collectAllFlightJobs(const std::vector<int> &planeIds) {
                     mJobList.emplace_back(qFPE.ObjectId, -1, job, JobOwner::PlannedFreight);
                     mJobList.back().score = job.Praemie;
                     mJobList.back().scoreRatio = 1.0f * job.Praemie / CalculateFlightCostNoTank(job.VonCity, job.NachCity, 8000, 700);
-                    mJobList.back().setNumStillNeeded(qFPE.Passagiere);
+                    mJobList.back().setNumToTransport(qPlanes[i].ptPassagiere / 10);
                 } else {
-                    mJobList[jobs[qFPE.ObjectId]].addNumStillNeeded(qFPE.Passagiere);
+                    mJobList[jobs[qFPE.ObjectId]].addNumToTransport(qPlanes[i].ptPassagiere / 10);
                 }
             }
         }
@@ -313,7 +313,7 @@ std::vector<Graph> BotPlaner::prepareGraph() {
 
             int numRequired = 1;
             if (job.isFreight()) {
-                numRequired = ceil_div(job.getTons(), plane->ptPassagiere / 10);
+                numRequired = ceil_div(job.getNumStillNeeded(), plane->ptPassagiere / 10);
             }
 
             int cost = 0;

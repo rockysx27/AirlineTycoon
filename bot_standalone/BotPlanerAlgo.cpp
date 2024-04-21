@@ -309,7 +309,7 @@ void BotPlaner::applySolutionToGraph() {
                     }
                     int jobIdx = it->second;
                     nextNode = g.getNode(jobIdx);
-                    while (g.nodeState[nextNode].cameFrom != -1 && g.nodeInfo[nextNode].jobIdx == jobIdx) {
+                    while (nextNode < g.nNodes && g.nodeState[nextNode].cameFrom != -1 && g.nodeInfo[nextNode].jobIdx == jobIdx) {
                         nextNode++;
                     }
                     if (g.nodeInfo[nextNode].jobIdx != jobIdx) {
@@ -752,7 +752,7 @@ bool BotPlaner::runAddNodeToBestPlaneInner(int jobIdxToInsert) {
         if (nodeToInsert == -1) {
             continue;
         }
-        while (g.nodeState[nodeToInsert].cameFrom != -1 && g.nodeInfo[nodeToInsert].jobIdx == jobIdxToInsert) {
+        while (nodeToInsert < g.nNodes && g.nodeState[nodeToInsert].cameFrom != -1 && g.nodeInfo[nodeToInsert].jobIdx == jobIdxToInsert) {
             nodeToInsert++;
         }
         if (g.nodeInfo[nodeToInsert].jobIdx != jobIdxToInsert) {

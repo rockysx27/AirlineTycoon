@@ -145,9 +145,12 @@ class BotPlaner {
       public:
         FlightJob(int i, int j, CAuftrag a, JobOwner o);
         FlightJob(int i, int j, CFracht a, JobOwner o);
-        int getNumStillNeeded() { return numStillNeeded; }
-        void setNumStillNeeded(int val) { numStillNeeded = val; }
-        void addNumStillNeeded(int val) { numStillNeeded += val; }
+        int getNumStillNeeded() const { return numStillNeeded; }
+        void setNumToTransport(int val) { numToTransport = numStillNeeded = val; }
+        void addNumToTransport(int val) {
+            numToTransport += val;
+            numStillNeeded = numToTransport;
+        }
         inline bool wasTaken() const {
             return owner == JobOwner::Planned || owner == JobOwner::PlannedFreight || owner == JobOwner::Backlog || owner == JobOwner::BacklogFreight;
         }
@@ -161,9 +164,8 @@ class BotPlaner {
         inline int getBisDate() const { return isFreight() ? fracht.BisDate : auftrag.BisDate; }
         inline int getPremium() const { return isFreight() ? fracht.Praemie : auftrag.Praemie; }
         inline int getPersonen() const { return isFreight() ? 0 : auftrag.Personen; }
-        inline int getTons() const { return isFreight() ? fracht.Tons : 0; }
-        inline int getOverscheduledTons() const { return (isFreight() && numStillNeeded < 0) ? (-numStillNeeded) : 0; }
-        inline bool isScheduled() const { return isFreight() ? (numStillNeeded < fracht.Tons) : (numStillNeeded == 0); }
+        inline int getOverscheduledTons() const { return (numStillNeeded < 0) ? (-numStillNeeded) : 0; }
+        inline bool isScheduled() const { return (numStillNeeded < numToTransport); }
         inline bool isFullyScheduled() const { return (numStillNeeded <= 0); }
         inline void schedule(int passenger) {
             if (isFreight()) {
@@ -193,6 +195,7 @@ class BotPlaner {
         CAuftrag auftrag;
         CFracht fracht;
         int numStillNeeded{1};
+        int numToTransport{1};
         int startCity{-1};
         int destCity{-1};
     };
