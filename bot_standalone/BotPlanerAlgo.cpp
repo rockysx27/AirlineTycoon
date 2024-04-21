@@ -738,7 +738,6 @@ bool BotPlaner::runAddNodeToBestPlaneInner(int jobIdxToInsert) {
     int bestWhereToInsert = 0;
     int bestNode = 0;
 
-    const auto &job = mJobList[jobIdxToInsert];
     int randOffset = getRandInt(0, mPlaneStates.size() - 1);
     for (int i = 0; i < mPlaneStates.size(); i++) {
         int planeIdx = (randOffset + i) % mPlaneStates.size();
@@ -758,11 +757,6 @@ bool BotPlaner::runAddNodeToBestPlaneInner(int jobIdxToInsert) {
         if (g.nodeInfo[nodeToInsert].jobIdx != jobIdxToInsert) {
             redprintf("BotPlaner::runAddNodeToBestPlaneInner(): Not enough node instances for freight job: %s", mJobList[jobIdxToInsert].getName().c_str());
             continue;
-        }
-
-        auto minScore = (job.getBisDate() == Sim.Date) ? mMinScoreRatioLastMinute : mMinScoreRatio;
-        if (!job.wasTaken() && g.nodeInfo[nodeToInsert].scoreRatio < minScore) {
-            continue; /* job was not taken yet and does not have required minimum score */
         }
 
         /* iterate over nodes and make room */

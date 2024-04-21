@@ -320,13 +320,19 @@ std::vector<Graph> BotPlaner::prepareGraph() {
                 numRequired = ceil_div(job.getNumStillNeeded(), plane->ptPassagiere / 10);
             }
 
+            /* calculate cost, duration and distance */
             int cost = 0;
             int duration = 0;
             int distance = 0;
             calcCostAndDuration(job.getStartCity(), job.getDestCity(), *plane, false, cost, duration, distance);
 
+            /* check job score */
             int score = job.score - cost;
             int scoreRatio = 1.0f * job.score / (cost * numRequired);
+            auto minScore = (job.getBisDate() == Sim.Date) ? mMinScoreRatioLastMinute : mMinScoreRatio;
+            if (!job.wasTaken() && scoreRatio < minScore) {
+                continue; /* job was not taken yet and does not have required minimum score */
+            }
 
             if (canFlyThisJob(*plane, job.getPersonen(), distance, duration)) {
                 auto n = numRequired;
@@ -376,13 +382,10 @@ std::vector<Graph> BotPlaner::prepareGraph() {
                     continue; /* we are not using the algo that utilizes bestNeighbors */
                 }
 
-                auto minScore = (destJob.getBisDate() == Sim.Date) ? mMinScoreRatioLastMinute : mMinScoreRatio;
-                if (!destJob.wasTaken() && g.nodeInfo[j].scoreRatio < minScore) {
-                    continue; /* job was not taken yet and does not have required minimum score */
-                }
                 if (g.nodeInfo[i].earliest > g.nodeInfo[j].latest) {
                     continue; /* not possible because date constraints */
                 }
+
                 neighborList.emplace_back(j, g.nodeInfo[j].score - g.adjMatrix[i][j].cost);
             }
 
