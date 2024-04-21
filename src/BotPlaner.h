@@ -44,18 +44,18 @@ class Graph {
         int nextNode{-1};
     };
 
-    Graph(int numPlanes, int ptPass) : nPlanes(numPlanes), nNodes(numPlanes), planeTypePassengers(ptPass) { resize(); }
+    Graph(int numPlanes, int ptPass) : nPlanes(numPlanes), nNodes(numPlanes), planeTypePassengers(ptPass) {}
 
     int addNode(int jobId) {
         if (mapJobIdToNode.find(jobId) == mapJobIdToNode.end()) {
             mapJobIdToNode[jobId] = nNodes;
         }
         nNodes++;
-        resize();
+        nodeInfo.resize(nNodes);
         return (nNodes - 1);
     }
 
-    void resize() {
+    void resizeAll() {
         nodeInfo.resize(nNodes);
         nodeState.resize(nNodes);
         adjMatrix.resize(nNodes);
@@ -140,11 +140,8 @@ class BotPlaner {
 
     class FlightJob {
       public:
-        FlightJob(int i, int j, CAuftrag a, JobOwner o) : id(i), sourceId(j), owner(o), auftrag(a) { assert(i >= 0x1000000); }
-        FlightJob(int i, int j, CFracht a, JobOwner o) : id(i), sourceId(j), owner(o), fracht(a) {
-            assert(i >= 0x1000000);
-            numStillNeeded = fracht.Tons;
-        }
+        FlightJob(int i, int j, CAuftrag a, JobOwner o);
+        FlightJob(int i, int j, CFracht a, JobOwner o);
         int getNumStillNeeded() { return numStillNeeded; }
         void setNumStillNeeded(int val) { numStillNeeded = val; }
         void addNumStillNeeded(int val) { numStillNeeded += val; }
@@ -155,8 +152,8 @@ class BotPlaner {
             return owner == JobOwner::PlannedFreight || owner == JobOwner::Freight || owner == JobOwner::InternationalFreight ||
                    owner == JobOwner::BacklogFreight;
         }
-        inline int getStartCity() const { return isFreight() ? fracht.VonCity : auftrag.VonCity; }
-        inline int getDestCity() const { return isFreight() ? fracht.NachCity : auftrag.NachCity; }
+        inline int getStartCity() const { return startCity; }
+        inline int getDestCity() const { return destCity; }
         inline int getDate() const { return isFreight() ? fracht.Date : auftrag.Date; }
         inline int getBisDate() const { return isFreight() ? fracht.BisDate : auftrag.BisDate; }
         inline int getPremium() const { return isFreight() ? fracht.Praemie : auftrag.Praemie; }
@@ -193,6 +190,8 @@ class BotPlaner {
         CAuftrag auftrag;
         CFracht fracht;
         int numStillNeeded{1};
+        int startCity{-1};
+        int destCity{-1};
     };
 
     struct JobSource {

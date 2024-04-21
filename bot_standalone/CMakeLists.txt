@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
-else()
+elseif (CMAKE_BUILD_TYPE STREQUAL "Release")
     set(CMAKE_BUILD_TYPE Release)
     add_compile_definitions(NDEBUG)
 endif()

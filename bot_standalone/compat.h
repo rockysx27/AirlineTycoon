@@ -300,6 +300,9 @@ class CITIES : public ALBUM_V<CITY> {
     ULONG GetIdFromName(const char *Name);
     ULONG GetIdFromNames(const char *Name, ...);
     void UseRealKuerzel(BOOL Real);
+
+  private:
+    SLONG HashTableSize{};
 };
 
 class PLAYER {

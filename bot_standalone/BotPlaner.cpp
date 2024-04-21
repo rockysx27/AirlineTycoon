@@ -37,12 +37,12 @@ inline bool canFlyThisJob(const CPlane &qPlane, int passengers, int distance, in
     return true;
 }
 
-inline std::pair<int, int> calcCostAndDuration(int startCity, int destCity, const CPlane &qPlane, bool emptyFlight, int *outDistance = nullptr) {
+inline void calcCostAndDuration(int startCity, int destCity, const CPlane &qPlane, bool emptyFlight, int &cost, int &duration, int &distance) {
     assert(startCity >= 0 && startCity < Cities.AnzEntries());
     assert(destCity >= 0 && destCity < Cities.AnzEntries());
     /* needs to match CITIES::CalcFlugdauer() */
-    SLONG distance = Cities.CalcDistance(startCity, destCity);
-    SLONG duration = (distance / qPlane.ptGeschwindigkeit + 999) / 1000 + 1 + 2 - 2;
+    distance = Cities.CalcDistance(startCity, destCity);
+    duration = (distance / qPlane.ptGeschwindigkeit + 999) / 1000 + 1 + 2 - 2;
     if (duration < 2) {
         duration = 2;
     }
@@ -53,7 +53,7 @@ inline std::pair<int, int> calcCostAndDuration(int startCity, int destCity, cons
                      / qPlane.ptGeschwindigkeit;
 
     /* needs to match CalculateFlightCostNoTank() */
-    SLONG cost = kerosene * Sim.Kerosin;
+    cost = kerosene * Sim.Kerosin;
     if (cost < 1000) {
         cost = 1000;
     }
@@ -61,12 +61,19 @@ inline std::pair<int, int> calcCostAndDuration(int startCity, int destCity, cons
     if (emptyFlight) {
         cost -= (qPlane.ptPassagiere * distance / 1000 / 40);
     }
+}
 
-    if (outDistance) {
-        *outDistance = static_cast<int>(distance);
-    }
+BotPlaner::FlightJob::FlightJob(int i, int j, CAuftrag a, JobOwner o) : id(i), sourceId(j), owner(o), auftrag(a) {
+    assert(i >= 0x1000000);
+    startCity = Cities.find(auftrag.VonCity);
+    destCity = Cities.find(auftrag.NachCity);
+}
 
-    return {cost, duration};
+BotPlaner::FlightJob::FlightJob(int i, int j, CFracht a, JobOwner o) : id(i), sourceId(j), owner(o), fracht(a) {
+    assert(i >= 0x1000000);
+    startCity = Cities.find(fracht.VonCity);
+    destCity = Cities.find(fracht.NachCity);
+    numStillNeeded = fracht.Tons;
 }
 
 BotPlaner::BotPlaner(PLAYER &player, const CPlanes &planes) : qPlayer(player), qPlanes(planes) {}
@@ -75,28 +82,28 @@ void BotPlaner::addJobSource(JobOwner jobOwner, std::vector<int> intJobSource) {
     if (jobOwner == JobOwner::International) {
         for (const auto &i : intJobSource) {
             if (i < 0 || i >= AuslandsAuftraege.size()) {
-                redprintf("BotPlaner::BotPlaner(): Invalid intJobSource given: %d", i);
+                redprintf("BotPlaner::addJobSource(): Invalid intJobSource given: %d", i);
                 return;
             }
         }
         if (intJobSource.empty()) {
-            redprintf("BotPlaner::BotPlaner(): No intJobSource given.");
+            redprintf("BotPlaner::addJobSource(): No intJobSource given.");
             return;
         }
     } else if (jobOwner == JobOwner::InternationalFreight) {
         for (const auto &i : intJobSource) {
             if (i < 0 || i >= AuslandsFrachten.size()) {
-                redprintf("BotPlaner::BotPlaner(): Invalid intJobSource given.");
+                redprintf("BotPlaner::addJobSource(): Invalid intJobSource given.");
                 return;
             }
         }
         if (intJobSource.empty()) {
-            redprintf("BotPlaner::BotPlaner(): No intJobSource given.");
+            redprintf("BotPlaner::addJobSource(): No intJobSource given.");
             return;
         }
     } else {
         if (!intJobSource.empty()) {
-            redprintf("BotPlaner::BotPlaner(): intJobSource does not need to be given for this job source.");
+            redprintf("BotPlaner::addJobSource(): intJobSource does not need to be given for this job source.");
             return;
         }
     }
@@ -307,18 +314,19 @@ std::vector<Graph> BotPlaner::prepareGraph() {
         /* nodes for jobs */
         for (int jobIdx = 0; jobIdx < mJobList.size(); jobIdx++) {
             const auto &job = mJobList[jobIdx];
-            int startCity = Cities.find(job.getStartCity());
-            int destCity = Cities.find(job.getDestCity());
-
-            int cost = 0;
-            int duration = 0;
-            int distance = 0;
-            std::tie(cost, duration) = calcCostAndDuration(startCity, destCity, *plane, false, &distance);
 
             int numRequired = 1;
             if (job.isFreight()) {
                 numRequired = ceil_div(job.getTons(), plane->ptPassagiere / 10);
             }
+
+            int cost = 0;
+            int duration = 0;
+            int distance = 0;
+            calcCostAndDuration(job.getStartCity(), job.getDestCity(), *plane, false, cost, duration, distance);
+
+            int score = job.score - cost;
+            int scoreRatio = 1.0f * job.score / (cost * numRequired);
 
             if (canFlyThisJob(*plane, job.getPersonen(), distance, duration)) {
                 auto n = numRequired;
@@ -329,17 +337,21 @@ std::vector<Graph> BotPlaner::prepareGraph() {
                     qNodeInfo.jobIdx = jobIdx;
                     qNodeInfo.earliest = job.getDate();
                     qNodeInfo.latest = job.getBisDate();
-                    qNodeInfo.score = job.score - cost;
-                    qNodeInfo.scoreRatio = 1.0f * job.score / (cost * numRequired);
+                    qNodeInfo.score = score;
+                    qNodeInfo.scoreRatio = scoreRatio;
                     qNodeInfo.duration = duration + kDurationExtra;
                 }
             }
         }
 
+        g.resizeAll();
+
         /* edges */
         for (int i = 0; i < g.nNodes; i++) {
             std::vector<std::pair<int, int>> neighborList;
-            neighborList.reserve(g.nNodes);
+            if (kNumToAdd > 0) {
+                neighborList.reserve(g.nNodes);
+            }
             for (int j = nPlanes; j < g.nNodes; j++) {
                 if (i == j) {
                     continue; /* self edge not allowed */
@@ -348,11 +360,13 @@ std::vector<Graph> BotPlaner::prepareGraph() {
                 const auto &destJob = mJobList[g.nodeInfo[j].jobIdx];
                 int startCity = (i >= nPlanes) ? mJobList[g.nodeInfo[i].jobIdx].getDestCity() : mPlaneStates[i].startCity;
                 int destCity = destJob.getStartCity();
-                startCity = Cities.find(startCity);
-                destCity = Cities.find(destCity);
                 if (startCity != destCity) {
-                    std::tie(g.adjMatrix[i][j].cost, g.adjMatrix[i][j].duration) = calcCostAndDuration(startCity, destCity, *plane, true);
-                    g.adjMatrix[i][j].duration += kDurationExtra;
+                    int cost = 0;
+                    int duration = 0;
+                    int distance = 0;
+                    calcCostAndDuration(startCity, destCity, *plane, true, cost, duration, distance);
+                    g.adjMatrix[i][j].cost = cost;
+                    g.adjMatrix[i][j].duration = duration + kDurationExtra;
                 } else {
                     g.adjMatrix[i][j].cost = 0;
                     g.adjMatrix[i][j].duration = 0;

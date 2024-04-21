@@ -34,7 +34,7 @@ struct RouteScore {
     SLONG numPlanes{-1};
 };
 
-static constexpr int ceil_div(int a, int b) {
+inline constexpr int ceil_div(int a, int b) {
     assert(b != 0);
     return a / b + (a % b != 0);
 }

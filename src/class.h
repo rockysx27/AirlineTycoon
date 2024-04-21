@@ -440,7 +440,6 @@ class /**/ CPlaneType {
 
 class /**/ CPlaneTypes : public ALBUM_V<CPlaneType> {
   public:
-  public:
     CPlaneTypes() : ALBUM_V<CPlaneType>("PlaneTypes") {}
     CPlaneTypes(const CString &TabFilename);
     void ReInit(const CString &TabFilename);
@@ -1062,6 +1061,9 @@ class /**/ CITIES : public ALBUM_V<CITY> {
     ULONG GetIdFromName(const char *Name);
     ULONG GetIdFromNames(const char *Name, ...);
     void UseRealKuerzel(BOOL Real);
+
+  private:
+    SLONG HashTableSize{};
 };
 
 //--------------------------------------------------------------------------------------------
