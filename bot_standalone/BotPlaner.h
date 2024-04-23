@@ -164,9 +164,16 @@ class BotPlaner {
         inline int getBisDate() const { return isFreight() ? fracht.BisDate : auftrag.BisDate; }
         inline int getPremium() const { return isFreight() ? fracht.Praemie : auftrag.Praemie; }
         inline int getPersonen() const { return isFreight() ? 0 : auftrag.Personen; }
+        inline int getTonsOpen() const { return isFreight() ? fracht.TonsOpen : 0; }
+        inline int getTonsLeft() const { return isFreight() ? fracht.TonsLeft : 0; }
         inline int getOverscheduledTons() const { return (numStillNeeded < 0) ? (-numStillNeeded) : 0; }
         inline bool isScheduled() const { return (numStillNeeded < numToTransport); }
         inline bool isFullyScheduled() const { return (numStillNeeded <= 0); }
+        inline void setIncompleteFreight() {
+            assert(isFreight());
+            incompleteFreight = true;
+        }
+        inline bool scheduledOK() const { return (numStillNeeded <= 0) || incompleteFreight; }
         inline void schedule(int passenger) {
             if (isFreight()) {
                 numStillNeeded -= passenger / 10;
@@ -196,6 +203,7 @@ class BotPlaner {
         CFracht fracht;
         int numStillNeeded{1};
         int numToTransport{1};
+        bool incompleteFreight{false};
         int startCity{-1};
         int destCity{-1};
     };

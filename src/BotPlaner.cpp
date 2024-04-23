@@ -218,7 +218,8 @@ void BotPlaner::collectAllFlightJobs(const std::vector<int> &planeIds) {
 
                 mJobList.back().score = score;
                 mJobList.back().scoreRatio = 1.0f * score / CalculateFlightCostNoTank(job.VonCity, job.NachCity, 8000, 700);
-                mJobList.back().setNumToTransport(job.Tons);
+                mJobList.back().setNumToTransport(job.TonsLeft);
+                assert(job.TonsLeft <= job.Tons);
             }
         }
     }
@@ -264,11 +265,24 @@ void BotPlaner::collectAllFlightJobs(const std::vector<int> &planeIds) {
     });
 
     for (int i = 0; i < mJobList.size(); i++) {
-        if (mJobList[i].owner == JobOwner::Planned) {
-            mExistingJobsById[mJobList[i].id] = i;
+        auto &job = mJobList[i];
+        if (job.owner == JobOwner::Planned) {
+            mExistingJobsById[job.id] = i;
         }
-        if (mJobList[i].owner == JobOwner::PlannedFreight) {
-            mExistingFreightJobsById[mJobList[i].id] = i;
+        if (job.owner == JobOwner::PlannedFreight) {
+            mExistingFreightJobsById[job.id] = i;
+
+            /* if there are tons open it means that the existing schedule already did not have enough instances of this freight job */
+            if (job.getTonsOpen() > 0) {
+                redprintf("BotPlaner::collectAllFlightJobs(): Existing plane schedules did not have enough instances for job %s: %ld open, %ld left.",
+                          job.getName().c_str(), job.getTonsOpen(), job.getTonsLeft());
+                job.addNumToTransport(job.getTonsOpen());
+                job.setIncompleteFreight();
+            }
+            /* limit numToTransport to total amount of tons left */
+            if (job.getNumStillNeeded() > job.getTonsLeft()) {
+                job.setNumToTransport(job.getTonsLeft());
+            }
         }
     }
 }
@@ -510,15 +524,18 @@ bool BotPlaner::applySolutionForPlane(PLAYER &qPlayer, int planeId, const BotPla
             continue;
         }
         bool isFreight = (qFPE.ObjectType == 4);
+        const auto strJob = isFreight ? Helper::getFreightName(qPlayer.Frachten[qFPE.ObjectId]) : Helper::getJobName(qPlayer.Auftraege[qFPE.ObjectId]);
 
         JobScheduled iter;
         if (isFreight) {
             if (freightHash.find(qFPE.ObjectId) == freightHash.end()) {
+                redprintf("BotPlaner::applySolutionForPlane(): Plane %s, schedule entry %d: Unknown freight job scheduled: %s", (LPCTSTR)qPlanes[planeId].Name,
+                          d, strJob.c_str());
                 continue;
             }
             if (freightHash[qFPE.ObjectId].empty()) {
-                redprintf("BotPlaner::applySolutionForPlane(): Plane %s, schedule entry %d: Too many instances of freight job scheduled",
-                          (LPCTSTR)qPlanes[planeId].Name, d);
+                redprintf("BotPlaner::applySolutionForPlane(): Plane %s, schedule entry %d: Too many instances of freight job scheduled: %s",
+                          (LPCTSTR)qPlanes[planeId].Name, d, strJob.c_str());
                 continue;
             }
             iter = freightHash[qFPE.ObjectId].back();
@@ -531,7 +548,6 @@ bool BotPlaner::applySolutionForPlane(PLAYER &qPlayer, int planeId, const BotPla
             jobHash.erase(qFPE.ObjectId);
         }
 
-        const auto strJob = isFreight ? Helper::getFreightName(qPlayer.Frachten[iter.objectId]) : Helper::getJobName(qPlayer.Auftraege[iter.objectId]);
         const auto startTime = iter.start;
         const auto endTime = iter.end - kDurationExtra;
 

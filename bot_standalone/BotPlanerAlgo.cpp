@@ -313,7 +313,7 @@ void BotPlaner::applySolutionToGraph() {
                         nextNode++;
                     }
                     if (g.nodeInfo[nextNode].jobIdx != jobIdx) {
-                        redprintf("BotPlaner::applySolutionToGraph(): Not enough node instances for freight job: %ld", qFPE.ObjectId);
+                        redprintf("BotPlaner::applySolutionToGraph(): Not enough node instances for freight job: %s", mJobList[jobIdx].getName().c_str());
                         return;
                     }
                 }
@@ -654,7 +654,9 @@ int BotPlaner::runPruneFreightJobs() {
                 continue;
             }
 
-            if (mJobList[jobIdx].getOverscheduledTons() >= g.planeTypePassengers / 10) {
+            bool overScheduled = (mJobList[jobIdx].getOverscheduledTons() >= g.planeTypePassengers / 10);
+            bool notEnoughScheduled = (!mJobList[jobIdx].isFullyScheduled());
+            if (overScheduled || notEnoughScheduled) {
                 removeNode(g, planeIdx, currentNode);
                 nRemoved++;
             }
@@ -853,6 +855,7 @@ bool BotPlaner::algo(int64_t timeBudget) {
     int overallBestGain = oldGain;
     std::vector<std::vector<int>> overallBestPath(mPlaneStates.size());
     applySolutionToGraph();
+    runPruneFreightJobs();
     for (int planeIdx = 0; planeIdx < mPlaneStates.size(); planeIdx++) {
         savePath(planeIdx, overallBestPath[planeIdx]);
     }
@@ -868,7 +871,7 @@ bool BotPlaner::algo(int64_t timeBudget) {
     int temperature = kTempStart;
     while (temperature > 0) {
         for (int i = 0; i < mJobList.size(); i++) {
-            assert(mJobList[i].isFullyScheduled() || !mJobList[i].isScheduled());
+            assert(mJobList[i].scheduledOK() || !mJobList[i].isScheduled());
         }
 
         for (int planeIdx = 0; planeIdx < mPlaneStates.size(); planeIdx++) {
@@ -890,7 +893,7 @@ bool BotPlaner::algo(int64_t timeBudget) {
         int numToAdd = kNumBestToAdd * mPlaneStates.size();
         for (int i = 0; i < mJobList.size() && (numToAdd > 0); i++) {
             if (mJobList[i].isScheduled()) {
-                assert(mJobList[i].isFullyScheduled());
+                assert(mJobList[i].scheduledOK());
                 continue;
             }
             if (getRandInt(0, 1) != 0) {
