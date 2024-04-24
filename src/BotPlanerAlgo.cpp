@@ -272,8 +272,9 @@ void BotPlaner::applySolutionToGraph() {
         auto &g = mGraphs[qPlaneState.planeTypeId];
 
         int currentNode = p;
-        int autoFlightDuration = -1;
+        int autoFlightDuration = 0;
         const auto &qFlightPlan = qPlanes[qPlaneState.planeId].Flugplan.Flug;
+        bool skippedNode = false;
         for (int d = 0; d < qFlightPlan.AnzEntries(); d++) {
             const auto &qFPE = qFlightPlan[d];
             if (qFPE.ObjectType <= 0) {
@@ -286,6 +287,7 @@ void BotPlaner::applySolutionToGraph() {
 
             if (qFPE.Okay != 0) {
                 redprintf("BotPlaner::applySolutionToGraph(): Not scheduled correctly, skipping: %ld", qFPE.ObjectId);
+                skippedNode = true;
                 continue;
             }
 
@@ -317,17 +319,19 @@ void BotPlaner::applySolutionToGraph() {
                 }
 
                 /* check duration of any previous automatic flight */
-                if (autoFlightDuration != -1 && autoFlightDuration != g.adjMatrix[currentNode][nextNode].duration) {
+                auto actualDuration = g.adjMatrix[currentNode][nextNode].duration;
+                if (!(autoFlightDuration == actualDuration || (skippedNode && autoFlightDuration > actualDuration))) {
                     redprintf("BotPlaner::applySolutionToGraph(): Duration of automatic flight does not match before FPE: %ld", qFPE.ObjectId);
                 }
 
                 insertNode(g, p, currentNode, nextNode);
                 currentNode = nextNode;
 
-                autoFlightDuration = -1;
+                autoFlightDuration = 0;
+                skippedNode = false;
             } else if (qFPE.ObjectType == 3) {
-                assert(autoFlightDuration == -1);
-                autoFlightDuration = 24 * (qFPE.Landedate - qFPE.Startdate) + (qFPE.Landezeit - qFPE.Startzeit);
+                assert(autoFlightDuration == 0 || skippedNode);
+                autoFlightDuration += 24 * (qFPE.Landedate - qFPE.Startdate) + (qFPE.Landezeit - qFPE.Startzeit);
                 autoFlightDuration += kDurationExtra;
             }
         }

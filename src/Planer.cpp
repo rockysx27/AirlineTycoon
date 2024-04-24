@@ -3015,7 +3015,9 @@ void CPlaner::AutoPlan(SLONG mode) {
 
     if (mode == 1) {
         BotPlaner bot(qPlayer, qPlayer.Planes);
-        bot.addJobSource(BotPlaner::JobOwner::International, cities);
+        bot.addJobSource(BotPlaner::JobOwner::BacklogFreight, {});
+        bot.setMinScoreRatio(1);
+        bot.setMinScoreRatioLastMinute(1);
         auto solutions = bot.planFlights(planeIds, kAvailTimeExtra);
         bot.applySolution(qPlayer, solutions);
         Helper::checkFlightJobs(qPlayer, true, true);
@@ -3024,8 +3026,9 @@ void CPlaner::AutoPlan(SLONG mode) {
 
     if (mode == 2) {
         BotPlaner bot(qPlayer, qPlayer.Planes);
-        bot.addJobSource(BotPlaner::JobOwner::International, cities);
-        bot.setDistanceFactor(1);
+        bot.addJobSource(BotPlaner::JobOwner::InternationalFreight, cities);
+        bot.setMinScoreRatio(1);
+        bot.setMinScoreRatioLastMinute(1);
         auto solutions = bot.planFlights(planeIds, kAvailTimeExtra);
         bot.applySolution(qPlayer, solutions);
         Helper::checkFlightJobs(qPlayer, true, true);
