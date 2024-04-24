@@ -184,11 +184,12 @@ class TEAKRAND {
     void Reset(void) { mMT.seed(Seed); }
 
     UWORD Rand(void) { return getRandInt(0, UINT16_MAX); }
-    UWORD Rand(SLONG Max) { return (UWORD(getRandInt(0, Max - 1))); }
-    UWORD Rand(SLONG Min, SLONG Max) { return (UWORD(getRandInt(Min, Max))); }
+    UWORD Rand(SLONG Max) { return getRandInt(0, Max - 1); }
+    UWORD Rand(SLONG Min, SLONG Max) { return getRandInt(Min, Max); }
     ULONG GetSeed(void) { return (Seed); }
 
     inline int getRandInt(int min, int max) {
+        assert(max >= min);
         std::uniform_int_distribution<int> dist(min, max);
         return dist(mMT);
     }
@@ -196,8 +197,8 @@ class TEAKRAND {
   private:
     ULONG Seed{};
 
-    // std::mt19937 mMT{std::random_device{}()};
-    std::mt19937 mMT{};
+    std::mt19937 mMT{std::random_device{}()};
+    // std::mt19937 mMT{};
 };
 
 template <typename T> class TXYZ {
@@ -505,7 +506,7 @@ template <typename T> class ALBUM_V {
             TeakLibW_Exception(nullptr, 0, ExcAlbumFind, Name.c_str());
         }
 
-        SLONG target = (random != nullptr) ? random->Rand(used) : rand() % 5;
+        SLONG target = (random != nullptr) ? random->Rand(used) : rand() % used;
         SLONG index = 0;
         for (SLONG i = AnzEntries() - 1; i >= 0; --i) {
             if (List[i].second == 0) {

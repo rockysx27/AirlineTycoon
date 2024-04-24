@@ -9,6 +9,7 @@
 #include <chrono>
 #include <filesystem>
 #include <locale>
+#include <ostream>
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -1797,95 +1798,20 @@ void CheckEventSync(SLONG EventId) {
 }
 
 //--------------------------------------------------------------------------------------------
-// Konstruktor mit Seed=0
-//--------------------------------------------------------------------------------------------
-TEAKRAND::TEAKRAND() { Seed = Value = 0; }
-
-//--------------------------------------------------------------------------------------------
-// Kondtruktor mit Seed Angabe
-//--------------------------------------------------------------------------------------------
-TEAKRAND::TEAKRAND(ULONG seedInput) { Seed = Value = seedInput; }
-
-//--------------------------------------------------------------------------------------------
-// nachträglicher Kondtruktor
-//--------------------------------------------------------------------------------------------
-void TEAKRAND::SRand(ULONG seedInput) { Seed = Value = seedInput; }
-
-//--------------------------------------------------------------------------------------------
 // nachträglicher Kondtruktor mit Seed aus Uhrzeit
 //--------------------------------------------------------------------------------------------
-void TEAKRAND::SRandTime() { Seed = Value = AtGetTime(); }
-
-//--------------------------------------------------------------------------------------------
-// Setzt den Zufallsgenerator auf dem exakten Zustand nach dem Konstruktor zurück:
-//--------------------------------------------------------------------------------------------
-void TEAKRAND::Reset() { Value = Seed; }
-
-//--------------------------------------------------------------------------------------------
-// eigentlicher Zufallszahlengenerator: (Xn+1 = Xn * 7381 + 269EC3h)
-//--------------------------------------------------------------------------------------------
-UWORD TEAKRAND::Rand() {
-#ifdef ENABLE_ASM
-    ULONG localValue = Value;
-
-    _asm
-        {
-        pusha
-
-             // Thanx to Machosoft!
-            mov       eax, [localValue]
-            mov       ecx, eax
-            lea       eax, dword ptr [eax+eax*4]
-            lea       eax, dword ptr [eax+eax*4]
-            add       eax, ecx
-            lea       eax, dword ptr [ecx+eax*8]
-            shl       eax, 8
-            sub       eax, ecx
-            lea       eax, dword ptr [ecx+eax*4]
-            add       eax, 00269ec3h
-            mov       [localValue], eax
-
-            popa
-        }
-
-    Value = localValue;
-
-    return (UWORD(localValue >> 16));
-#else
-    Value = Value * 7381 + 0x269EC3;
-
-    return (UWORD(Value >> 16));
-#endif
+void TEAKRAND::SRandTime() {
+    Seed = AtGetTime();
+    mMT.seed(Seed);
 }
-
-//--------------------------------------------------------------------------------------------
-// Zufallszahl aus dem Intervall [0..Max]
-//--------------------------------------------------------------------------------------------
-UWORD TEAKRAND::Rand(SLONG Max) {
-    if (this == pSurvisedRandom1 || this == pSurvisedRandom2) {
-        CheckEventSync(-Sim.TimeSlice);
-        CheckEventSync(Max);
-        CheckEventSync(SLONG(Value >> 16));
-    }
-
-    return (UWORD(Rand() % Max));
-}
-
-//--------------------------------------------------------------------------------------------
-// Zufallszahl aus dem Intervall [Min..Max]
-//--------------------------------------------------------------------------------------------
-UWORD TEAKRAND::Rand(SLONG Min, SLONG Max) { return (UWORD(Rand() % (Max - Min + 1) + Min)); }
-
-//--------------------------------------------------------------------------------------------
-// Gibt den aktuellen "Seed" zus Generators zurück:
-//--------------------------------------------------------------------------------------------
-ULONG TEAKRAND::GetSeed() { return (Value); }
 
 //--------------------------------------------------------------------------------------------
 // Speichert den Zustand des Generators:
 //--------------------------------------------------------------------------------------------
 TEAKFILE &operator<<(TEAKFILE &File, const TEAKRAND &r) {
-    File << r.Seed << r.Value;
+    std::stringstream ss{};
+    ss << r.mMT;
+    File << r.Seed << ss.str();
 
     return (File);
 }
@@ -1894,7 +1820,11 @@ TEAKFILE &operator<<(TEAKFILE &File, const TEAKRAND &r) {
 // Lädt den Zustand des Generators:
 //--------------------------------------------------------------------------------------------
 TEAKFILE &operator>>(TEAKFILE &File, TEAKRAND &r) {
-    File >> r.Seed >> r.Value;
+    std::string str;
+    File >> r.Seed >> str;
+
+    std::stringstream ss(str);
+    ss >> r.mMT;
 
     return (File);
 }

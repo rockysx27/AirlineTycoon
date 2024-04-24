@@ -2630,11 +2630,12 @@ CPlane SIM::CreateRandomUsedPlane(SLONG seed) const {
     // if (PlaneTypes[plane.TypeId].Erstbaujahr<1990)
     if (plane.ptErstbaujahr < 1990) {
         // plane.Baujahr = 1990-rnd.Rand (1990-PlaneTypes[plane.TypeId].Erstbaujahr);
-        plane.Baujahr = 1990 - rnd.Rand(1990 - plane.ptErstbaujahr);
+        plane.Baujahr = rnd.getRandInt(plane.ptErstbaujahr + 1, 1990);
+    } else if (plane.ptErstbaujahr < 1996) {
+        plane.Baujahr = rnd.getRandInt(plane.ptErstbaujahr + 1, 1996);
     } else {
-        plane.Baujahr = 1996 - rnd.Rand(1996 - plane.ptErstbaujahr);
+        plane.Baujahr = rnd.getRandInt(plane.ptErstbaujahr + 1, 1999);
     }
-    // plane.Baujahr = 1996-rnd.Rand (1996-PlaneTypes[plane.TypeId].Erstbaujahr);
 
     plane.Zustand = UBYTE((plane.Baujahr - 1950) + 25 + rnd.Rand(40) - 20);
     if (plane.Zustand < 20 || plane.Zustand > 200) {
