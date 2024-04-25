@@ -20,6 +20,7 @@ extern int kNumBestToAdd;
 extern int kNumToRemove;
 extern int kTempStart;
 extern int kTempStep;
+extern int kJobSelectRandomization;
 
 class Graph {
   public:

@@ -15,6 +15,7 @@ int kNumBestToAdd = 2;
 int kNumToRemove = 1;
 int kTempStart = 1000;
 int kTempStep = 100;
+int kJobSelectRandomization = 1;
 extern const int kScheduleForNextDays;
 
 inline int pathLength(const Graph &g, int start) {
@@ -898,7 +899,7 @@ bool BotPlaner::algo(int64_t timeBudget) {
                 assert(mJobList[i].scheduledOK());
                 continue;
             }
-            if (getRandInt(0, 1) != 0) {
+            if (getRandInt(1, 100) <= kJobSelectRandomization) {
                 continue;
             }
             if (runAddNodeToBestPlane(i)) {
