@@ -2,9 +2,16 @@
 #define BOT_HELPER_H_
 
 #include <array>
+#include <cassert>
 #include <climits>
 #include <iostream>
 #include <optional>
+#include <vector>
+
+inline constexpr int ceil_div(int a, int b) {
+    assert(b != 0);
+    return a / b + (a % b != 0);
+}
 
 class PlaneTime {
   public:

@@ -62,6 +62,7 @@ add_executable (AT
     Bot.cpp
     BotConditions.cpp
     BotActions.cpp
+    BotFunctions.cpp
     BotHelper.cpp
     BotPlaner.cpp
     BotPlanerAlgo.cpp

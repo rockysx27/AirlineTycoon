@@ -7,12 +7,9 @@
 #include <unordered_map>
 #include <vector>
 
-class CPlaneType;
 class CRoute;
 class CRentRoute;
 class PLAYER;
-
-typedef long long __int64;
 
 extern const bool kAlwaysReplan;
 extern const float kSchedulingMinScoreRatio;
@@ -162,8 +159,6 @@ class Bot {
     Prio condVisitAds();
 
     /* in BotActions.cpp */
-    void determineNemesis();
-    void switchToFinalTarget();
     void actionStartDay(__int64 moneyAvailable);
     void actionStartDayLaptop(__int64 moneyAvailable);
     void actionBuero();
@@ -171,14 +166,10 @@ class Bot {
     void actionCheckLastMinute();
     void actionCheckTravelAgency();
     void actionCheckFreightDepot();
-    void grabFlights(BotPlaner &planer, bool areWeInOffice);
-    void requestPlanFlights(bool areWeInOffice);
-    void planFlights();
     void actionUpgradePlanes();
     void actionBuyNewPlane(__int64 moneyAvailable);
     void actionBuyUsedPlane(__int64 moneyAvailable);
     void actionVisitHR();
-    std::pair<SLONG, SLONG> kerosineQualiOptimization(__int64 moneyAvailable, DOUBLE targetFillRatio) const;
     void actionBuyKerosine(__int64 moneyAvailable);
     void actionBuyKerosineTank(__int64 moneyAvailable);
     void actionSabotage(__int64 moneyAvailable);
@@ -196,7 +187,16 @@ class Bot {
     void actionBuyAdsForRoutes(__int64 moneyAvailable);
     void actionBuyAds(__int64 moneyAvailable);
 
-    /* routes (in BotActions.cpp) */
+    /* in BotFunctions.cpp */
+    void determineNemesis();
+    void switchToFinalTarget();
+    std::vector<SLONG> findBestAvailablePlaneType(bool forRoutes) const;
+    SLONG findBestAvailableUsedPlane() const;
+    void grabFlights(BotPlaner &planer, bool areWeInOffice);
+    void requestPlanFlights(bool areWeInOffice);
+    void planFlights();
+    std::pair<SLONG, SLONG> kerosineQualiOptimization(__int64 moneyAvailable, DOUBLE targetFillRatio) const;
+    /* routes */
     SLONG getRouteTurnAroundDuration(const CRoute &qRoute, SLONG planeTypeId) const;
     void checkLostRoutes();
     void updateRouteInfo();
@@ -218,8 +218,6 @@ class Bot {
         }
         return planes;
     }
-    std::vector<SLONG> findBestAvailablePlaneType(bool forRoutes) const;
-    SLONG findBestAvailableUsedPlane() const;
     SLONG calcCurrentGainFromJobs() const;
     bool checkPlaneLists();
     bool findPlanesNotAvailableForService(std::vector<SLONG> &listAvailable, std::deque<SLONG> &listUnassigned);

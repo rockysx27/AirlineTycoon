@@ -1,6 +1,5 @@
 #include "Bot.h"
 
-#include "AtNet.h"
 #include "BotHelper.h"
 #include "BotPlaner.h"
 
@@ -63,97 +62,6 @@ inline const char *getPrioName(Bot::Prio prio) {
         return "INVALID";
     }
     return "INVALID";
-}
-
-std::vector<SLONG> Bot::findBestAvailablePlaneType(bool forRoutes) const {
-    CDataTable planeTable;
-    planeTable.FillWithPlaneTypes();
-    std::vector<std::pair<SLONG, DOUBLE>> scores;
-    for (const auto &i : planeTable.LineIndex) {
-        if (!PlaneTypes.IsInAlbum(i)) {
-            continue;
-        }
-        const auto &planeType = PlaneTypes[i];
-
-        if (!GameMechanic::checkPlaneTypeAvailable(i)) {
-            continue;
-        }
-
-        DOUBLE score = 0;
-        score = 1.0 * planeType.Passagiere;
-        if (!forRoutes) {
-            score *= planeType.Reichweite;
-        }
-        score /= planeType.Verbrauch;
-
-        scores.emplace_back(i, score);
-    }
-    std::sort(scores.begin(), scores.end(), [](const std::pair<SLONG, DOUBLE> &a, const std::pair<SLONG, DOUBLE> &b) { return a.second > b.second; });
-
-    /* build list */
-    std::vector<SLONG> bestList;
-    bestList.reserve(scores.size());
-
-    /* exception: Force specified plane type to be best */
-    if (kPlaneScoreForceBest != -1) {
-        SLONG bestType = kPlaneScoreForceBest + 0x10000000;
-        hprintf("Bot::findBestAvailablePlaneType(): Forcing best plane type to be %s", (LPCTSTR)PlaneTypes[bestType].Name);
-        bestList.push_back(bestType);
-    }
-
-    /* exception: Have atleast one gulfstream for jobs */
-    SLONG numGulfstream = 0;
-    SLONG gulfstreamType = 119 + 0x10000000;
-    for (SLONG i = 0; i < qPlayer.Planes.AnzEntries(); i++) {
-        if (qPlayer.Planes.IsInAlbum(i) && qPlayer.Planes[i].TypeId == gulfstreamType) {
-            numGulfstream++;
-        }
-    }
-    if (numGulfstream == 0 && !mDoRoutes) {
-        hprintf("Bot::findBestAvailablePlaneType(): Forcing best plane type to be %s", (LPCTSTR)PlaneTypes[gulfstreamType].Name);
-        bestList.push_back(gulfstreamType);
-    }
-
-    for (const auto &i : scores) {
-        hprintf("Bot::findBestAvailablePlaneType(): Plane type %s has score %.2e", (LPCTSTR)PlaneTypes[i.first].Name, i.second);
-        bestList.push_back(i.first);
-    }
-
-    hprintf("Bot::findBestAvailablePlaneType(): Best plane type is %s", (LPCTSTR)PlaneTypes[bestList[0]].Name);
-    return bestList;
-}
-
-SLONG Bot::findBestAvailableUsedPlane() const {
-    SLONG bestIdx = -1;
-    DOUBLE bestScore = kUsedPlaneMinimumScore;
-    for (SLONG c = 0; c < 3; c++) {
-        const auto &qPlane = Sim.UsedPlanes[0x1000000 + c];
-        if (qPlane.Name.GetLength() <= 0) {
-            continue;
-        }
-        DOUBLE score = 1.0 * 1e9 * qPlane.ptPassagiere * qPlane.ptPassagiere;
-        score /= qPlane.ptVerbrauch;
-        score /= (2015 - qPlane.Baujahr);
-
-        auto worstZustand = qPlane.Zustand - 20;
-        SLONG improvementNeeded = std::max(0, 80 - worstZustand);
-        SLONG repairCost = improvementNeeded * (qPlane.ptPreis / 110);
-        if (qPlayer.HasBerater(BERATERTYP_FLUGZEUG) > 0) {
-            score /= repairCost;
-        }
-
-        hprintf("Bot::findBestAvailableUsedPlane(): Used plane %s has score %.2f", Helper::getPlaneName(qPlane).c_str(), score);
-        hprintf("\t\tPassengers = %ld, fuel = %ld, year = %d", qPlane.ptPassagiere, qPlane.ptVerbrauch, qPlane.Baujahr);
-        if (qPlayer.HasBerater(BERATERTYP_FLUGZEUG) > 0) {
-            hprintf("\t\tWorstZustand = %u, cost = %d", worstZustand, repairCost);
-        }
-
-        if (score > bestScore) {
-            bestScore = score;
-            bestIdx = c;
-        }
-    }
-    return bestIdx;
 }
 
 SLONG Bot::calcCurrentGainFromJobs() const {

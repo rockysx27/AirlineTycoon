@@ -16,11 +16,6 @@ const int kScheduleForNextDays = 4;
 const int64_t timeBudgetMS = 100;
 const int kFreightMaxFlights = 4;
 
-inline constexpr int ceil_div(int a, int b) {
-    assert(b != 0);
-    return a / b + (a % b != 0);
-}
-
 inline bool canFlyThisJob(const CPlane &qPlane, int passengers, int distance, int duration) {
     if (passengers > qPlane.ptPassagiere) {
         return false;
