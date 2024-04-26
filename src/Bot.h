@@ -204,7 +204,7 @@ class Bot {
     void planRoutes();
 
     /* misc (in Bot.cpp) */
-    SLONG numPlanes() const { return mPlanesForJobs.size() + mPlanesForRoutes.size() + mPlanesForRoutesUnassigned.size(); }
+    SLONG numPlanes() const { return mPlanesForJobs.size() + mPlanesForJobsUnassigned.size() + mPlanesForRoutes.size() + mPlanesForRoutesUnassigned.size(); }
     std::vector<SLONG> getAllPlanes() const {
         std::vector<SLONG> planes = mPlanesForRoutes;
         for (auto &i : mPlanesForRoutesUnassigned) {

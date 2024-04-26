@@ -588,16 +588,16 @@ bool BotPlaner::applySolutionForPlane(PLAYER &qPlayer, int planeId, const BotPla
 BotPlaner::SolutionList BotPlaner::planFlights(const std::vector<int> &planeIdsInput, int extraBufferTime) {
     auto t_begin = std::chrono::steady_clock::now();
 
-    if (mDistanceFactor > 0) {
+    if (mDistanceFactor != 0) {
         hprintf("BotPlaner::planFlights(): Using mDistanceFactor = %d", mDistanceFactor);
     }
-    if (mPassengerFactor > 0) {
+    if (mPassengerFactor != 0) {
         hprintf("BotPlaner::planFlights(): Using mPassengerFactor = %d", mPassengerFactor);
     }
-    if (mUhrigBonus > 0) {
+    if (mUhrigBonus != 0) {
         hprintf("BotPlaner::planFlights(): Using mUhrigBonus = %d", mUhrigBonus);
     }
-    if (mConstBonus > 0) {
+    if (mConstBonus != 0) {
         hprintf("BotPlaner::planFlights(): Using mConstBonus = %d", mConstBonus);
     }
 

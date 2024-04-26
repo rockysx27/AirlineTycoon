@@ -212,7 +212,31 @@ void Bot::switchToFinalTarget() {
                 forceSwitch = true;
             }
         }
+    } else if (qPlayer.RobotUse(ROBOT_USE_LUXERY) && Sim.Difficulty == DIFF_ATFS02) {
+        /* how much money do we need to upgrade everything safety-related? */
+        auto planes = getAllPlanes();
+        for (SLONG c = 0; c < planes.size(); c++) {
+            CPlane &qPlane = qPlayer.Planes[planes[c]];
+            if (qPlane.ReifenTarget < 2) {
+                requiredMoney += (ReifenCosts[2] - ReifenCosts[qPlane.Reifen] / 2);
+            }
+            if (qPlane.TriebwerkTarget < 2) {
+                requiredMoney += (TriebwerkCosts[2] - TriebwerkCosts[qPlane.Triebwerk] / 2);
+            }
+            if (qPlane.SicherheitTarget < 2) {
+                requiredMoney += (SicherheitCosts[2] - SicherheitCosts[qPlane.Sicherheit] / 2);
+            }
+            if (qPlane.ElektronikTarget < 2) {
+                requiredMoney += (ElektronikCosts[2] - ElektronikCosts[qPlane.Elektronik] / 2);
+            }
+        }
 
+        if (qPlayer.Planes.GetNumUsed() < 5) {
+            hprintf("Bot::switchToFinalTarget(): We do not have enough planes yet: %ld (need 5)", qPlayer.Planes.GetNumUsed());
+            requiredMoney = LLONG_MAX; /* we cannot reach target yet */
+        } else {
+            hprintf("Bot::switchToFinalTarget(): Need %lld to upgrade existing planes.", requiredMoney);
+        }
     } else {
         /* no race to finish for this mission */
         return;
@@ -226,26 +250,43 @@ void Bot::switchToFinalTarget() {
         hprintf("Bot::switchToFinalTarget(): Competitor too close, forcing switch.");
     }
 
+    /* is our target in reach at all? */
+    if (requiredMoney == LLONG_MAX) {
+        hprintf("Bot::switchToFinalTarget(): Cannot switch to final target run, target not in reach.");
+        if (mRunToFinalObjective == FinalPhase::SaveMoney) {
+            redprintf("Bot::switchToFinalTarget(): We switched to 'save money' phase too early!");
+        } else if (mRunToFinalObjective == FinalPhase::TargetRun) {
+            redprintf("Bot::switchToFinalTarget(): We switched to 'target run' phase too early!");
+        }
+        return;
+    }
+
+    /* switch to final phase if we have enough money */
     auto availableMoney = howMuchMoneyCanWeGet(true);
     auto cash = qPlayer.Money - kMoneyEmergencyFund;
-    if ((availableMoney > requiredMoney) || forceSwitch) {
-        mRunToFinalObjective = FinalPhase::TargetRun;
-        mMoneyForFinalObjective = requiredMoney;
-        hprintf("Bot::switchToFinalTarget(): Switching to final target run. Need %s $, got %s $ (+ %s $).", (LPCTSTR)Insert1000erDots64(requiredMoney),
-                (LPCTSTR)Insert1000erDots64(cash), (LPCTSTR)Insert1000erDots64(availableMoney - cash));
-    } else if (1.0 * availableMoney / requiredMoney >= 0.8) {
-        mRunToFinalObjective = FinalPhase::SaveMoney;
-        mMoneyForFinalObjective = requiredMoney;
-        hprintf("Bot::switchToFinalTarget(): Switching to money saving phase. Need %s $, got %s $ (+ %s $).", (LPCTSTR)Insert1000erDots64(requiredMoney),
-                (LPCTSTR)Insert1000erDots64(cash), (LPCTSTR)Insert1000erDots64(availableMoney - cash));
-    } else if (mRunToFinalObjective == FinalPhase::No) {
-        if (requiredMoney < LLONG_MAX) {
-            hprintf("Bot::switchToFinalTarget(): Cannot switch to final target run. Need %s $, got %s $ (+ %s $).", (LPCTSTR)Insert1000erDots64(requiredMoney),
+    if (mRunToFinalObjective < FinalPhase::TargetRun) {
+        if ((availableMoney > requiredMoney) || forceSwitch) {
+            mRunToFinalObjective = FinalPhase::TargetRun;
+            mMoneyForFinalObjective = requiredMoney;
+            hprintf("Bot::switchToFinalTarget(): Switching to final target run. Need %s $, got %s $ (+ %s $).", (LPCTSTR)Insert1000erDots64(requiredMoney),
                     (LPCTSTR)Insert1000erDots64(cash), (LPCTSTR)Insert1000erDots64(availableMoney - cash));
-        } else {
-            hprintf("Bot::switchToFinalTarget(): Cannot switch to final target run, target not in reach.");
+            return;
         }
     }
+
+    /* switch to money saving phase if we have already 80% */
+    if (mRunToFinalObjective < FinalPhase::SaveMoney) {
+        if (1.0 * availableMoney / requiredMoney >= 0.8) {
+            mRunToFinalObjective = FinalPhase::SaveMoney;
+            mMoneyForFinalObjective = requiredMoney;
+            hprintf("Bot::switchToFinalTarget(): Switching to money saving phase. Need %s $, got %s $ (+ %s $).", (LPCTSTR)Insert1000erDots64(requiredMoney),
+                    (LPCTSTR)Insert1000erDots64(cash), (LPCTSTR)Insert1000erDots64(availableMoney - cash));
+            return;
+        }
+    }
+
+    hprintf("Bot::switchToFinalTarget(): Cannot switch to final target run. Need %s $, got %s $ (+ %s $).", (LPCTSTR)Insert1000erDots64(requiredMoney),
+            (LPCTSTR)Insert1000erDots64(cash), (LPCTSTR)Insert1000erDots64(availableMoney - cash));
 }
 
 void Bot::actionStartDay(__int64 moneyAvailable) {
@@ -419,6 +460,12 @@ void Bot::grabFlights(BotPlaner &planer, bool areWeInOffice) {
         break;
     case DIFF_ADDON09:
         planer.setUhrigBonus(1000 * 1000);
+        break;
+    case DIFF_ATFS03:
+        if (qPlayer.Planes.GetNumUsed() >= 4) {
+            planer.setDistanceFactor(-1);         /* prefer short flights */
+            planer.setPassengerFactor(10 * 1000); /* need to fly as many passengers as possible */
+        }
         break;
     default:
         break;
