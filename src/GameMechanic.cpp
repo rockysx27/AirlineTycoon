@@ -804,7 +804,7 @@ bool GameMechanic::overtakeAirline(PLAYER &qPlayer, SLONG targetAirline, bool li
 }
 
 GameMechanic::EmitStockResult GameMechanic::canEmitStock(PLAYER &qPlayer, SLONG *outHowMany) {
-    SLONG num = (qPlayer.MaxAktien - qPlayer.AnzAktien) / 100 * 100;
+    SLONG num = 100 * (qPlayer.MaxAktien - qPlayer.AnzAktien) / 100;
     if (outHowMany) {
         *outHowMany = num;
     }

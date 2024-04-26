@@ -53,7 +53,7 @@ template <typename T> inline void eraseFirst(T &l, int val) {
 void Bot::determineNemesis() {
     auto nemesisOld = mNemesis;
     mNemesis = -1;
-    mNemesisScore = 0;
+    mNemesisScore = INT_MIN;
     for (SLONG p = 0; p < 4; p++) {
         auto &qTarget = Sim.Players.Players[p];
         if (p == qPlayer.PlayerNum || qTarget.IsOut != 0) {
@@ -74,6 +74,9 @@ void Bot::determineNemesis() {
                         score += qPrices[i];
                     }
                 }
+            } else if (Sim.Difficulty == DIFF_ADDON01) {
+                /* negative: lower score is better! */
+                score = -qTarget.GetMissionRating();
             } else {
                 score = qTarget.GetMissionRating();
             }

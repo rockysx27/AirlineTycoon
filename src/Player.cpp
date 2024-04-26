@@ -120,6 +120,10 @@ void PLAYER::ReInitBot() {
 // Fügt 5 Flüge vom Uhrig hinzu:
 //--------------------------------------------------------------------------------------------
 void PLAYER::Add5UhrigFlights() {
+    if (Auftraege.GetNumFree() < 5) {
+        Auftraege.ReSize(Auftraege.AnzEntries() + 5);
+    }
+
     for (SLONG c = 0; c < 5; c++) {
         CAuftrag a;
 
