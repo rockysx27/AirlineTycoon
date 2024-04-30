@@ -60,8 +60,9 @@ add_executable (AT
     Bank.cpp
     Block.cpp
     Bot.cpp
-    BotConditions.cpp
     BotActions.cpp
+    BotDesigner.cpp
+    BotConditions.cpp
     BotFunctions.cpp
     BotHelper.cpp
     BotPlaner.cpp

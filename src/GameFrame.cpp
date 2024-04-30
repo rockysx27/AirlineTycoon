@@ -12,6 +12,8 @@
 #include "Synthese.h"
 #include "glpause.h"
 
+#include "BotDesigner.h"
+
 #include "SbLib.h"
 #include "network.h"
 extern SBNetwork gNetwork;
@@ -2083,6 +2085,10 @@ void GameFrame::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) {
 
         if (nChar == ATKEY_F6) {
             Helper::printAllSchedules(true);
+        }
+
+        if (nChar == ATKEY_F7) {
+            BotDesigner().findBestDesignerPlane();
         }
     }
 

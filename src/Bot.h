@@ -192,6 +192,7 @@ class Bot {
     void switchToFinalTarget();
     std::vector<SLONG> findBestAvailablePlaneType(bool forRoutes) const;
     SLONG findBestAvailableUsedPlane() const;
+    SLONG findBestDesignerPlane() const;
     void grabFlights(BotPlaner &planer, bool areWeInOffice);
     void requestPlanFlights(bool areWeInOffice);
     void planFlights();

@@ -275,7 +275,7 @@ std::vector<SLONG> Bot::findBestAvailablePlaneType(bool forRoutes) const {
             continue;
         }
 
-        DOUBLE score = 0;
+        DOUBLE score = 1.0; /* multiplication (geometric mean) because values have wildly different ranges */
         score = 1.0 * planeType.Passagiere;
         if (!forRoutes) {
             score *= planeType.Reichweite;
@@ -327,7 +327,9 @@ SLONG Bot::findBestAvailableUsedPlane() const {
         if (qPlane.Name.GetLength() <= 0) {
             continue;
         }
-        DOUBLE score = 1.0 * 1e9 * qPlane.ptPassagiere * qPlane.ptPassagiere;
+
+        DOUBLE score = 1.0 * 1e9; /* multiplication (geometric mean) because values have wildly different ranges */
+        score *= qPlane.ptPassagiere * qPlane.ptPassagiere;
         score /= qPlane.ptVerbrauch;
         score /= (2015 - qPlane.Baujahr);
 
@@ -351,6 +353,8 @@ SLONG Bot::findBestAvailableUsedPlane() const {
     }
     return bestIdx;
 }
+
+SLONG Bot::findBestDesignerPlane() const {}
 
 void Bot::grabFlights(BotPlaner &planer, bool areWeInOffice) {
     auto res = canWePlanFlights();
