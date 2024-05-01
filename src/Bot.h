@@ -263,6 +263,7 @@ class Bot {
     __int64 mMoneyReservedForAuctions{0};
     SLONG mNemesis{-1};
     __int64 mNemesisScore{0};
+    bool mNeedToShutdownSecurity{false};
 
     /* status boss office */
     SLONG mBossNumCitiesAvailable{-1};

@@ -576,8 +576,13 @@ void Bot::actionSabotage(__int64 moneyAvailable) {
             mItemAntiVirus = 3;
         }
     }
+    if (qPlayer.HasItem(ITEM_ZANGE) == 0) {
+        if (GameMechanic::PickUpItemResult::PickedUp == GameMechanic::pickUpItem(qPlayer, ITEM_ZANGE)) {
+            hprintf("Bot::actionSabotage(): Picked up item pliers");
+        }
+    }
 
-    if (!qPlayer.RobotUse(ROBOT_USE_SABOTAGE) || mNemesis == -1) {
+    if (!qPlayer.RobotUse(ROBOT_USE_EXTREME_SABOTAGE) || mNemesis == -1) {
         return;
     }
     GameMechanic::setSaboteurTarget(qPlayer, mNemesis);
@@ -587,6 +592,8 @@ void Bot::actionSabotage(__int64 moneyAvailable) {
         if (res == GameMechanic::CheckSabotageResult::Ok) {
             GameMechanic::activateSaboteurJob(qPlayer);
             hprintf("Bot::actionSabotage(): Sabotaging nemesis %s using pills", (LPCTSTR)Sim.Players.Players[mNemesis].AirlineX);
+        } else if (res == GameMechanic::CheckSabotageResult::DeniedSecurity) {
+            mNeedToShutdownSecurity = true;
         }
     }
 

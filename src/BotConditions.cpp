@@ -654,13 +654,16 @@ Bot::Prio Bot::condSabotage(__int64 &moneyAvailable) {
     if (qPlayer.ArabTrust == 0) {
         return Prio::None;
     }
-    if (qPlayer.RobotUse(ROBOT_USE_SABOTAGE) && qPlayer.ArabHints < kMaxSabotageHints) {
+    if (qPlayer.RobotUse(ROBOT_USE_EXTREME_SABOTAGE) && qPlayer.ArabHints < kMaxSabotageHints) {
         if (mNemesis != -1) {
             return Prio::Low;
         }
     }
     if (mItemAntiVirus == 1 || mItemAntiVirus == 2) {
         return Prio::Low; /* collect darts */
+    }
+    if (qPlayer.HasItem(ITEM_ZANGE) == 0) {
+        return mNeedToShutdownSecurity ? Prio::Medium : Prio::Low; /* collect pliers */
     }
     return Prio::None;
 }
@@ -1000,13 +1003,13 @@ Bot::Prio Bot::condSabotageSecurity() {
     if (!hoursPassed(ACTION_VISITSECURITY2, 24)) {
         return Prio::None;
     }
-    if (!qPlayer.RobotUse(ROBOT_USE_SECURTY_OFFICE)) {
+    if (!mNeedToShutdownSecurity) {
         return Prio::None;
     }
     if (qPlayer.HasItem(ITEM_ZANGE) == 0) {
         return Prio::None;
     }
-    return Prio::Lowest;
+    return Prio::Medium;
 }
 
 Bot::Prio Bot::condVisitDesigner(__int64 &moneyAvailable) {

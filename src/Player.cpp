@@ -7332,10 +7332,7 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
     //                                                012345   F   0123456789   0123456789
     case ROBOT_USE_SABOTAGE:
         /* Note: Also disallows visiting ArabAir */
-        /* SuperBot: Respects this flag (only for sabotage) */
-        if (IsSuperBot()) {
-            return false;
-        }
+        /* SuperBot: Ignores this flag  */
         pFeatureDesc = "-XXXXX"
                        "X"
                        "XXXXXXXXXX"
@@ -7494,6 +7491,7 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
                        "XXXXXXXXXX";
         break;
     case ROBOT_USE_MUCH_SABOTAGE:
+        /* SuperBot: Ignores this flag */
         pFeatureDesc = "---XXX"
                        "!"
                        "XXXXXXXXXX"
@@ -7663,7 +7661,7 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
                        "--X-------";
         break;
     case ROBOT_USE_EXTREME_SABOTAGE:
-        /* SuperBot: Ignores this flag */
+        /* SuperBot: Respects this flag */
         pFeatureDesc = "------"
                        "."
                        "----------"
