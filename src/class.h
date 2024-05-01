@@ -2180,7 +2180,7 @@ class PLAYER {
     void BookSalary(void);   // Zieht Gehalt vom Geld ab
     void BroadcastPosition(bool bForce = false);
     void BroadcastRooms(SLONG Message, SLONG RoomLeft = -1);
-    void BuyPlane(CXPlane &plane, TEAKRAND *pRnd);
+    ULONG BuyPlane(CXPlane &plane, TEAKRAND *pRnd);
     ULONG BuyPlane(ULONG PlaneTypeId, TEAKRAND *pRnd);
     void BuyItem(UBYTE Item);
     SLONG CalcSecurityCosts(bool bFixOnly = false, bool bPlaneOnly = false);

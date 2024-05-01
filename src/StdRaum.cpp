@@ -3830,7 +3830,7 @@ void CStdRaum::MenuStart(SLONG MenuType, SLONG MenuPar1, SLONG MenuPar2, SLONG M
         MenuPage = 0;
         MenuPar4 = "";
         MenuDataTable.FillWithXPlaneTypes();
-        MenuPageMax = (MenuDataTable.AnzRows - 1) / 13;
+        MenuPageMax = ((MenuDataTable.AnzRows - 1) / 13) * 13;
         break;
 
     case MENU_CLOSED:

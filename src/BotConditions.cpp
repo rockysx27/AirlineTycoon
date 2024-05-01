@@ -491,7 +491,7 @@ Bot::Prio Bot::condBuyNewPlane(__int64 &moneyAvailable) {
     if (!hoursPassed(ACTION_BUYNEWPLANE, 2)) {
         return Prio::None;
     }
-    if (!qPlayer.RobotUse(ROBOT_USE_MAKLER)) {
+    if (!qPlayer.RobotUse(ROBOT_USE_MAKLER) || qPlayer.RobotUse(ROBOT_USE_DESIGNER_BUY)) {
         return Prio::None;
     }
     if (!mLongTermStrategy) {
@@ -959,7 +959,7 @@ Bot::Prio Bot::condVisitRouteBoxPlanning() {
     if (!Helper::checkRoomOpen(ACTION_WERBUNG_ROUTES)) {
         return Prio::None; /* let's wait until we are able to buy ads for the route */
     }
-    if (mRoutes.empty() || mRoutes[mRoutesSortedByUtilization[0]].routeUtilization >= kMaximumRouteUtilization()) {
+    if (mRoutes.empty() || mRoutes[mRoutesSortedByUtilization[0]].routeUtilization >= kMaximumRouteUtilization) {
         return Prio::Medium;
     }
     return Prio::None;
@@ -1011,12 +1011,29 @@ Bot::Prio Bot::condSabotageSecurity() {
 
 Bot::Prio Bot::condVisitDesigner(__int64 &moneyAvailable) {
     moneyAvailable = getMoneyAvailable();
-    if (!hoursPassed(ACTION_VISITDESIGNER, 24)) {
+    if (!hoursPassed(ACTION_VISITDESIGNER, 2)) {
         return Prio::None;
     }
     if (!qPlayer.RobotUse(ROBOT_USE_DESIGNER) || !qPlayer.RobotUse(ROBOT_USE_DESIGNER_BUY)) {
         return Prio::None;
     }
+    if (HowToPlan::None == canWePlanFlights()) {
+        return Prio::None;
+    }
+    if (!haveDiscount()) {
+        return Prio::None; /* wait until we have some discount */
+    }
+
+    if (mDesignerPlane.Name.empty() || !mDesignerPlane.IsBuildable()) {
+        return Prio::None; /* no designer plane available */
+    }
+    if ((qPlayer.xPiloten < mDesignerPlane.CalcPiloten()) || (qPlayer.xBegleiter < mDesignerPlane.CalcBegleiter())) {
+        return Prio::None; /* not enough crew */
+    }
+    if (moneyAvailable >= mDesignerPlane.CalcCost()) {
+        return Prio::High; /* buy the plane (e.g. for a new route) before spending it on something else */
+    }
+
     return Prio::None;
 }
 

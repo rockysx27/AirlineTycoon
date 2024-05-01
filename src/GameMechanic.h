@@ -62,7 +62,7 @@ class GameMechanic {
     static bool sellPlane(PLAYER &qPlayer, SLONG planeID);
 
     /* Designer */
-    static bool buyXPlane(PLAYER &qPlayer, const CString &filename, SLONG amount);
+    static std::vector<SLONG> buyXPlane(PLAYER &qPlayer, const CString &filename, SLONG amount);
 
     /* Bank */
     static bool buyStock(PLAYER &qPlayer, SLONG airlineNum, SLONG amount);

@@ -14,15 +14,11 @@ class PLAYER;
 extern const bool kAlwaysReplan;
 extern const float kSchedulingMinScoreRatio;
 extern const float kSchedulingMinScoreRatioLastMinute;
-extern const SLONG kSwitchToRoutesNumPlanesMin;
-extern const SLONG kSwitchToRoutesNumPlanesMax;
+extern SLONG kSwitchToRoutesNumPlanesMin;
+extern SLONG kSwitchToRoutesNumPlanesMax;
 extern const SLONG kSmallestAdCampaign;
 extern const SLONG kMinimumImage;
-extern const SLONG kMaximumRouteUtilizationValue;
-inline SLONG kMaximumRouteUtilization() {
-    /* we only need to hold the route, move on to the next one fast! */
-    return (Sim.Difficulty == DIFF_NORMAL) ? 20 : kMaximumRouteUtilizationValue;
-}
+extern SLONG kMaximumRouteUtilization;
 extern const SLONG kMaximumPlaneUtilization;
 extern const DOUBLE kMaxTicketPriceFactor;
 extern const SLONG kTargetEmployeeHappiness;
@@ -169,6 +165,7 @@ class Bot {
     void actionUpgradePlanes();
     void actionBuyNewPlane(__int64 moneyAvailable);
     void actionBuyUsedPlane(__int64 moneyAvailable);
+    void actionBuyDesignerPlane(__int64 moneyAvailable);
     void actionVisitHR();
     void actionBuyKerosine(__int64 moneyAvailable);
     void actionBuyKerosineTank(__int64 moneyAvailable);
@@ -192,7 +189,6 @@ class Bot {
     void switchToFinalTarget();
     std::vector<SLONG> findBestAvailablePlaneType(bool forRoutes) const;
     SLONG findBestAvailableUsedPlane() const;
-    SLONG findBestDesignerPlane() const;
     void grabFlights(BotPlaner &planer, bool areWeInOffice);
     void requestPlanFlights(bool areWeInOffice);
     void planFlights();
@@ -297,6 +293,10 @@ class Bot {
 
     /* anim state */
     int mOnThePhone{0};
+
+    /* designer plane */
+    CXPlane mDesignerPlane;
+    CString mDesignerPlaneFile;
 };
 
 TEAKFILE &operator<<(TEAKFILE &File, const PlaneTime &planeTime);

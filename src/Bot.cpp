@@ -8,11 +8,11 @@
 const bool kAlwaysReplan = true;
 const float kSchedulingMinScoreRatio = 16.0f;
 const float kSchedulingMinScoreRatioLastMinute = 5.0f;
-const SLONG kSwitchToRoutesNumPlanesMin = 2;
-const SLONG kSwitchToRoutesNumPlanesMax = 4;
+SLONG kSwitchToRoutesNumPlanesMin = 2;
+SLONG kSwitchToRoutesNumPlanesMax = 4;
 const SLONG kSmallestAdCampaign = 4;
 const SLONG kMinimumImage = -4;
-const SLONG kMaximumRouteUtilizationValue = 90;
+SLONG kMaximumRouteUtilization = 90;
 const SLONG kMaximumPlaneUtilization = 70;
 const DOUBLE kMaxTicketPriceFactor = 3.2;
 const SLONG kTargetEmployeeHappiness = 90;
@@ -321,6 +321,10 @@ void Bot::RobotInit() {
             mItemAntiVirus = -1; /* item not available */
         }
 
+        if (Sim.Difficulty == DIFF_NORMAL) {
+            kMaximumRouteUtilization = 20;
+        }
+
         /* is this a mission that is usually very fast? */
         if (Sim.Difficulty != DIFF_FREEGAME && Sim.Difficulty != DIFF_FREEGAMEMAP) {
             if (Sim.Difficulty <= DIFF_EASY) {
@@ -330,8 +334,25 @@ void Bot::RobotInit() {
         }
 
         if (qPlayer.RobotUse(ROBOT_USE_GROSSESKONTO)) {
-            /* imediately start saving money */
+            /* immediately start saving money */
             mRunToFinalObjective = FinalPhase::SaveMoney;
+        }
+
+        if (qPlayer.RobotUse(ROBOT_USE_DESIGNER_BUY)) {
+            if (Sim.Difficulty == DIFF_ATFS05) {
+                kSwitchToRoutesNumPlanesMin = std::max(3, kSwitchToRoutesNumPlanesMin);
+                kSwitchToRoutesNumPlanesMax = std::max(3, kSwitchToRoutesNumPlanesMax);
+                mDesignerPlaneFile = FullFilename("botplane_atfs05_1.plane", MyPlanePath);
+            } else if (Sim.Difficulty == DIFF_ATFS08) {
+                kSwitchToRoutesNumPlanesMin = std::max(5, kSwitchToRoutesNumPlanesMin);
+                kSwitchToRoutesNumPlanesMax = std::max(5, kSwitchToRoutesNumPlanesMax);
+                mDesignerPlaneFile = FullFilename("botplane_atfs08_1.plane", MyPlanePath);
+            }
+            if (mDesignerPlaneFile.empty() || DoesFileExist(mDesignerPlaneFile) == 0) {
+                redprintf("Bot::RobotInit: We do not have a designer plane for this mission (filename = %s).", (LPCTSTR)mDesignerPlaneFile);
+            } else {
+                mDesignerPlane.Load(mDesignerPlaneFile);
+            }
         }
 
         mFirstRun = false;
@@ -880,6 +901,7 @@ void Bot::RobotExecuteAction() {
 
     case ACTION_VISITDESIGNER:
         if (condVisitDesigner(moneyAvailable) != Prio::None) {
+            actionBuyDesignerPlane(moneyAvailable);
         } else {
             redprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
@@ -1041,6 +1063,9 @@ TEAKFILE &operator<<(TEAKFILE &File, const Bot &bot) {
 
     File << bot.mOnThePhone;
 
+    File << bot.mDesignerPlane;
+    File << bot.mDesignerPlaneFile;
+
     SLONG magicnumber = 0x42;
     File << magicnumber;
 
@@ -1173,6 +1198,9 @@ TEAKFILE &operator>>(TEAKFILE &File, Bot &bot) {
     }
 
     File >> bot.mOnThePhone;
+
+    File >> bot.mDesignerPlane;
+    File >> bot.mDesignerPlaneFile;
 
     SLONG magicnumber = 0;
     File >> magicnumber;

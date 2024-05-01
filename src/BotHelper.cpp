@@ -76,10 +76,11 @@ std::string getFreightName(const CFracht &qAuftrag) {
 }
 
 std::string getPlaneName(const CPlane &qPlane, int mode) {
+    CString typeName = (qPlane.TypeId == -1) ? "Designer" : PlaneTypes[qPlane.TypeId].Name;
     if (mode == 1) {
-        return {bprintf("%s (%s, Bj: %ld)", (LPCTSTR)qPlane.Name, (LPCTSTR)PlaneTypes[qPlane.TypeId].Name, qPlane.Baujahr)};
+        return {bprintf("%s (%s, Bj: %ld)", (LPCTSTR)qPlane.Name, (LPCTSTR)typeName, qPlane.Baujahr)};
     }
-    return {bprintf("%s (%s)", (LPCTSTR)qPlane.Name, (LPCTSTR)PlaneTypes[qPlane.TypeId].Name)};
+    return {bprintf("%s (%s)", (LPCTSTR)qPlane.Name, (LPCTSTR)typeName)};
 }
 
 void printFPE(const CFlugplanEintrag &qFPE) {

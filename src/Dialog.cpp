@@ -564,7 +564,9 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                 Array.ReSize(d);
 
                 if (MenuPar1 >= 0 && MenuPar1 < Array.AnzEntries()) {
-                    if (GameMechanic::buyXPlane(qPlayer, Array[MenuPar1], "\x1\x2\x3\x5\xa"[id - 6011])) {
+                    auto fullFilename = FullFilename(Array[MenuPar1], MyPlanePath);
+                    auto planeIds = GameMechanic::buyXPlane(qPlayer, fullFilename, "\x1\x2\x3\x5\xa"[id - 6011]);
+                    if (!planeIds.empty()) {
                         MakeSayWindow(0, TOKEN_DESIGNER, 6030, pFontPartner);
                     } else {
                         MakeSayWindow(0, TOKEN_DESIGNER, 6020, pFontPartner);

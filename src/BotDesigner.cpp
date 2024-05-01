@@ -10,7 +10,7 @@
 extern std::vector<CPlanePartRelation> gPlanePartRelations;
 
 const SLONG kMaxBest = 5;
-enum class ScoreType { Standard, Fast, FastFast, VIP, Miss05, Miss08 };
+enum class ScoreType { Standard, FastPassengers, FastFast, VIP, Miss05, Miss08 };
 
 class PlaneCandidate {
   public:
@@ -42,7 +42,7 @@ class PlaneCandidate {
         case ScoreType::Standard:
             mPlane.Name = bprintf("Bot Standard %ld", number);
             break;
-        case ScoreType::Fast:
+        case ScoreType::FastPassengers:
             mPlane.Name = bprintf("Bot Jet %ld", number);
             break;
         case ScoreType::FastFast:
@@ -64,8 +64,32 @@ class PlaneCandidate {
     }
 
     void save(SLONG type, SLONG number) {
-        auto planeFilename = FullFilename(bprintf("botplane_%ld_%ld.plane", type, number + 1), MyPlanePath);
-        mPlane.Save(planeFilename);
+        CString fileName;
+        number += 1;
+        switch (mScoreType) {
+        case ScoreType::Standard:
+            fileName = FullFilename(bprintf("botplane_std_%ld.plane", number), MyPlanePath);
+            break;
+        case ScoreType::FastPassengers:
+            fileName = FullFilename(bprintf("botplane_jet_%ld.plane", number), MyPlanePath);
+            break;
+        case ScoreType::FastFast:
+            fileName = FullFilename(bprintf("botplane_speed_%ld.plane", number), MyPlanePath);
+            break;
+        case ScoreType::VIP:
+            fileName = FullFilename(bprintf("botplane_vip_%ld.plane", number), MyPlanePath);
+            break;
+        case ScoreType::Miss05:
+            fileName = FullFilename(bprintf("botplane_atfs05_%ld.plane", number), MyPlanePath);
+            break;
+        case ScoreType::Miss08:
+            fileName = FullFilename(bprintf("botplane_atfs08_%ld.plane", number), MyPlanePath);
+            break;
+        default:
+            fileName = FullFilename(bprintf("botplane_unknown_%ld.plane", number), MyPlanePath);
+            break;
+        }
+        mPlane.Save(fileName);
     }
 
     bool operator<(const PlaneCandidate &other) const { return mScore > other.mScore; }
@@ -130,7 +154,14 @@ class PlaneCandidate {
         }
 
         /* even more speed? */
-        if (mScoreType == ScoreType::Fast || mScoreType == ScoreType::FastFast) {
+        if (mScoreType == ScoreType::FastFast) {
+            mScore *= speed;
+            mScore *= speed;
+        }
+
+        /* optimize for routes */
+        if (mScoreType == ScoreType::FastPassengers) {
+            mScore *= passagiere;
             mScore *= speed;
         }
 
@@ -138,8 +169,6 @@ class PlaneCandidate {
         if (mScoreType != ScoreType::FastFast) {
             mScore /= sqrt(preis); /* one time cost not that important */
             mScore /= verbrauch;
-        } else {
-            mScore *= speed;
         }
 
         if (mScoreType == ScoreType::Miss05) {
@@ -149,7 +178,7 @@ class PlaneCandidate {
         }
 
         if (mScoreType == ScoreType::Miss08) {
-            if (verbrauch * 100 / speed < BTARGET_VERBRAUCH) {
+            if (verbrauch * 100 / speed > BTARGET_VERBRAUCH) {
                 mScore = 0;
             }
         }
@@ -441,7 +470,8 @@ std::pair<BotDesigner::FailedWhy, SLONG> BotDesigner::buildPlane(CXPlane &plane)
 }
 
 SLONG BotDesigner::findBestDesignerPlane() {
-    std::vector<ScoreType> scoresToCheck{ScoreType::Standard, ScoreType::Fast, ScoreType::FastFast, ScoreType::VIP, ScoreType::Miss05, ScoreType::Miss08};
+    std::vector<ScoreType> scoresToCheck{ScoreType::Standard, ScoreType::FastPassengers, ScoreType::FastFast,
+                                         ScoreType::VIP,      ScoreType::Miss05,         ScoreType::Miss08};
     std::vector<std::vector<PlaneCandidate>> bestPlanes;
     bestPlanes.resize(scoresToCheck.size());
     for (auto &list : bestPlanes) {

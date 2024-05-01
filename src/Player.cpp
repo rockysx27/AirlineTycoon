@@ -167,7 +167,7 @@ ULONG PLAYER::BuyPlane(ULONG PlaneTypeId, TEAKRAND *pRnd) {
 //--------------------------------------------------------------------------------------------
 // Der Spieler kauft ein Flugzeug:
 //--------------------------------------------------------------------------------------------
-void PLAYER::BuyPlane(CXPlane &plane, TEAKRAND *pRnd) {
+ULONG PLAYER::BuyPlane(CXPlane &plane, TEAKRAND *pRnd) {
     ULONG Id = 0;
 
     if (Planes.GetNumFree() == 0) {
@@ -213,6 +213,8 @@ void PLAYER::BuyPlane(CXPlane &plane, TEAKRAND *pRnd) {
                 p.Name);
 
     Planes.Sort();
+
+    return Id;
 }
 
 //--------------------------------------------------------------------------------------------
@@ -5424,7 +5426,8 @@ void PLAYER::RobotExecuteAction() {
                 plane.Load(fn);
 
                 while (Money - plane.CalcCost() > 6000000) {
-                    if (!GameMechanic::buyXPlane(*this, fn, 1)) {
+                    auto planeIds = GameMechanic::buyXPlane(*this, fn, 1);
+                    if (planeIds.empty()) {
                         break;
                     }
                 }

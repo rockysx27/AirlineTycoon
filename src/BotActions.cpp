@@ -342,6 +342,33 @@ void Bot::actionBuyUsedPlane(__int64 /*moneyAvailable*/) {
     mPlanesForJobsUnassigned.push_back(planeId);
 }
 
+void Bot::actionBuyDesignerPlane(__int64 /*moneyAvailable*/) {
+    if (mDesignerPlane.Name.empty() || !mDesignerPlane.IsBuildable()) {
+        redprintf("Bot::actionBuyDesignerPlane(): No designer plane!");
+        return;
+    }
+
+    if (qPlayer.xPiloten < mDesignerPlane.CalcPiloten() || qPlayer.xBegleiter < mDesignerPlane.CalcBegleiter()) {
+        redprintf("Bot::actionBuyDesignerPlane(): Not enough crew for selected plane!");
+        return;
+    }
+    for (auto i : GameMechanic::buyXPlane(qPlayer, mDesignerPlaneFile, 1)) {
+        assert(i >= 0x1000000);
+        hprintf("Bot::actionBuyDesignerPlane(): Bought plane %s", Helper::getPlaneName(qPlayer.Planes[i]).c_str());
+        if (mDoRoutes) {
+            mPlanesForRoutesUnassigned.push_back(i);
+            requestPlanRoutes(false);
+        } else {
+            if (checkPlaneAvailable(i, true)) {
+                mPlanesForJobs.push_back(i);
+                grabNewFlights();
+            } else {
+                mPlanesForJobsUnassigned.push_back(i);
+            }
+        }
+    }
+}
+
 void Bot::actionVisitHR() {
     if (mItemPills == 1) {
         if (GameMechanic::useItem(qPlayer, ITEM_POSTKARTE)) {
@@ -415,6 +442,10 @@ void Bot::actionVisitHR() {
             pilotsTarget = bestPlane.ptAnzPiloten;
             stewardessTarget = bestPlane.ptAnzBegleiter;
         }
+    }
+    if (!mDesignerPlane.Name.empty()) {
+        pilotsTarget = std::max(pilotsTarget, mDesignerPlane.CalcPiloten());
+        stewardessTarget = std::max(stewardessTarget, mDesignerPlane.CalcBegleiter());
     }
 
     for (SLONG c = 0; c < Workers.Workers.AnzEntries(); c++) {

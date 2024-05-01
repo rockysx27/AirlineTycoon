@@ -637,29 +637,29 @@ bool GameMechanic::sellPlane(PLAYER &qPlayer, SLONG planeID) {
     return true;
 }
 
-bool GameMechanic::buyXPlane(PLAYER &qPlayer, const CString &filename, SLONG amount) {
-    CString fn = FullFilename(filename, MyPlanePath);
-    if (fn.empty() || DoesFileExist(fn) == 0) {
+std::vector<SLONG> GameMechanic::buyXPlane(PLAYER &qPlayer, const CString &filename, SLONG amount) {
+    std::vector<SLONG> planeIds;
+    if (filename.empty() || DoesFileExist(filename) == 0) {
         redprintf("GameMechanic::buyXPlane: Invalid filename (%s).", (LPCTSTR)filename);
-        return false;
+        return planeIds;
     }
     if (amount < 0 || amount > 10) {
         redprintf("GameMechanic::buyXPlane: Invalid amount (%ld).", amount);
-        return false;
+        return planeIds;
     }
 
     CXPlane plane;
-    plane.Load(fn);
+    plane.Load(filename);
 
     if (qPlayer.Money - plane.CalcCost() * amount < DEBT_LIMIT) {
-        return false;
+        return planeIds;
     }
 
     TEAKRAND rnd;
     rnd.SRand(Sim.Date);
 
     for (SLONG c = 0; c < amount; c++) {
-        qPlayer.BuyPlane(plane, &rnd);
+        planeIds.push_back(qPlayer.BuyPlane(plane, &rnd));
     }
 
     qPlayer.NetBuyXPlane(amount, plane);
@@ -668,7 +668,7 @@ bool GameMechanic::buyXPlane(PLAYER &qPlayer, const CString &filename, SLONG amo
     qPlayer.MapWorkers(FALSE);
     qPlayer.UpdatePersonalberater(1);
 
-    return true;
+    return planeIds;
 }
 
 bool GameMechanic::buyStock(PLAYER &qPlayer, SLONG airlineNum, SLONG amount) {
