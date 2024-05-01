@@ -146,7 +146,7 @@ extern BOOL bTest;               // Schneller Ablauf zum testen
 extern BOOL bActive;             // is application active?
 extern BOOL bFullscreen;         // is application Fullscreen or in Window?
 extern BOOL bCheatMode;          // Ist der Cheatmode zum testen aktiviert?
-extern BOOL bQuick;              // Depeche Mode = Alles auf die Schnelle..
+extern SLONG bQuick;             // Depeche Mode = Alles auf die Schnelle..
 extern BOOL bgWarp;              // Spieler warpt zum Ziel
 extern BOOL bNoVgaRam;           // Keine Bitmaps ins VGA-Ram legen
 extern BOOL bCheatMode;          // Ist der Cheatmode zum testen aktiviert?

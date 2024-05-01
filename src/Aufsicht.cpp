@@ -358,30 +358,35 @@ CAufsicht::CAufsicht(BOOL bHandy, ULONG PlayerNum) : CStdRaum(bHandy, PlayerNum,
 #ifdef DEMO
         if (Sim.Date >= 100)
             StartDialog(TALKER_BOSS, MEDIUM_AIR, 30);
-        else
 #endif
 
-            // Uhrig's Aufträge:
-            if (Sim.Difficulty == DIFF_ADDON09) {
-                for (SLONG c = 0; c < 4; c++) {
-                    PLAYER &qPlayer = Sim.Players.Players[c];
+        auto &qPlayer = Sim.Players.Players[Sim.localPlayer];
+        if ((CheatTestGame != 0 || CheatAutoSkip != 0) && qPlayer.Money < 500000) {
+            qPlayer.Money = 1000000;
+            // log: hprintf ("Event: localPlayer gets Money-Boost for testing reasons");
+        }
 
-                    if (qPlayer.IsOut == 0) {
-                        if (Sim.Date == 0) {
-                            qPlayer.NumOrderFlightsToday = 2 + (qPlayer.PlayerNum & 1);
-                        } else {
-                            qPlayer.NumOrderFlightsToday = 0;
-                        }
+        // Uhrig's Aufträge:
+        if (Sim.Difficulty == DIFF_ADDON09) {
+            for (SLONG c = 0; c < 4; c++) {
+                PLAYER &qPlayer = Sim.Players.Players[c];
 
-                        qPlayer.NumOrderFlightsToday2 = qPlayer.NumOrderFlightsToday;
-                        qPlayer.Statistiken[STAT_AUFTRAEGE].AddAtPastDay(5);
+                if (qPlayer.IsOut == 0) {
+                    if (Sim.Date == 0) {
+                        qPlayer.NumOrderFlightsToday = 2 + (qPlayer.PlayerNum & 1);
+                    } else {
+                        qPlayer.NumOrderFlightsToday = 0;
+                    }
 
-                        if (qPlayer.Owner != 1 || !qPlayer.RobotUse(ROBOT_UHRIG_FLIGHTS_AUTO)) {
-                            qPlayer.Add5UhrigFlights();
-                        }
+                    qPlayer.NumOrderFlightsToday2 = qPlayer.NumOrderFlightsToday;
+                    qPlayer.Statistiken[STAT_AUFTRAEGE].AddAtPastDay(5);
+
+                    if (qPlayer.Owner != 1 || !qPlayer.RobotUse(ROBOT_UHRIG_FLIGHTS_AUTO)) {
+                        qPlayer.Add5UhrigFlights();
                     }
                 }
             }
+        }
 
         if (Sim.Date == 0 || Sim.Options.OptionBriefBriefing == 0) {
             StartDialog(TALKER_BOSS, MEDIUM_AIR, 1);

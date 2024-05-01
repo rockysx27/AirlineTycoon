@@ -257,7 +257,7 @@ Bot::Bot(PLAYER &player) : qPlayer(player) {}
 
 void Bot::RobotInit() {
     auto balance = qPlayer.BilanzWoche.Hole();
-    if (bQuick) {
+    if (bQuick > 0) {
         if (Sim.Date == 0) {
             hprintf("BotStatistics: Tag, Geld, Saldo, Gewinn, Verlust, Auftraege, Fracht, Routen, Kerosin, Wartung, Planetype, Passagiere, PassZufrieden, "
                     "Firmenwert, Flugzeuge, AnzRouten");

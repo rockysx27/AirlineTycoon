@@ -1237,8 +1237,29 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
             case 9304:
             case 9403:
             case 9404:
-                MenuStart(MENU_GAMEOVER, static_cast<SLONG>(static_cast<SLONG>(qPlayer.HasWon()) == 0));
+                MenuStart(MENU_GAMEOVER, static_cast<SLONG>(qPlayer.HasWon() == false));
                 hprintf("Event: Mission abgeschlossen, Spiel wird beendet.");
+                {
+                    SLONG botPlayerNum = -1;
+                    BOOL botHasWon = FALSE;
+                    SLONG bestEnemy = 0;
+                    for (SLONG c = 0; c < Sim.Players.Players.AnzEntries(); c++) {
+                        auto &qPlayer = Sim.Players.Players[c];
+                        if (qPlayer.IsSuperBot()) {
+                            botPlayerNum = c;
+                            botHasWon = qPlayer.HasWon();
+                        } else if (qPlayer.Statistiken[STAT_MISSIONSZIEL].GetAtPastDay(0) > bestEnemy) {
+                            bestEnemy = qPlayer.Statistiken[STAT_MISSIONSZIEL].GetAtPastDay(0);
+                        }
+                    }
+                    if (botPlayerNum != -1) {
+                        hprintf("BotMission: Mission, Sieg, Gegner");
+                        hprintf("BotMission: %ld, %ld, %ld", Sim.Difficulty, botHasWon ? 1 : 0, bestEnemy);
+                        if (bQuick > 0) {
+                            exit(0);
+                        }
+                    }
+                }
                 break;
 
                 // Missionsbericht #1

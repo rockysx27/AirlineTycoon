@@ -232,16 +232,16 @@ void NewGamePopup::Konstruktor(BOOL /*bHandy*/, SLONG /*PlayerNum*/) {
     }
 
     // Nur auf die Schnelle?
-    if ((bQuick != 0) || gLoadGameNumber > -1) {
+    if ((bQuick > 0) || gLoadGameNumber > -1) {
         for (SLONG c = 0; c < Sim.Players.Players.AnzEntries(); c++) {
             Sim.Players.Players[c].IsOut = 0;
         }
 
-        Sim.Difficulty = DIFF_FREEGAME;
+        Sim.Difficulty = (bQuick - 2);
         Sim.Gamestate = UBYTE((Sim.Gamestate & (~GAMESTATE_WORKING)) | GAMESTATE_DONE);
 
         Routen.ReInit("routen.csv", true);
-        Sim.ChooseStartup(bQuick);
+        Sim.ChooseStartup();
 
         Airport.LoadAirport(1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
         AIRPORT::UpdateStaticDoorImage();
@@ -1083,7 +1083,7 @@ void NewGamePopup::OnPaint() {
                         // We load the routes and Sim when recieving the net event to prevent race conditions
                         if (!static_cast<bool>(Sim.bNetwork)) {
                             Routen.ReInit("routen.csv", true);
-                            Sim.ChooseStartup(bQuick);
+                            Sim.ChooseStartup();
                         }
 
                         Airport.LoadAirport(1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
@@ -1451,7 +1451,7 @@ void NewGamePopup::OnLButtonDown(UINT nFlags, CPoint point) {
                             return;
                         }
                         Routen.ReInit("routen.csv", true);
-                        Sim.ChooseStartup(bQuick);
+                        Sim.ChooseStartup();
                     }
 
                     Sim.bThisIsSessionMaster = bThisIsSessionMaster;
@@ -2165,7 +2165,7 @@ void NewGamePopup::CheckNetEvents() {
 
                         Sim.bThisIsSessionMaster = bThisIsSessionMaster;
                         Routen.ReInit("routen.csv", true);
-                        Sim.ChooseStartup(bQuick);
+                        Sim.ChooseStartup();
                         RefreshKlackerField();
                     }
                     break;

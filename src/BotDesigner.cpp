@@ -63,7 +63,7 @@ class PlaneCandidate {
         }
     }
 
-    void save(SLONG type, SLONG number) {
+    void save(SLONG number) {
         CString fileName;
         number += 1;
         switch (mScoreType) {
@@ -555,7 +555,7 @@ SLONG BotDesigner::findBestDesignerPlane() {
         for (int j = 0; j < kMaxBest; j++) {
             auto &bestPlane = bestPlanes[i][j];
             bestPlane.setPlaneName(j);
-            bestPlane.save(i, j);
+            bestPlane.save(j);
             bestPlane.printPlaneInfo();
         }
     }

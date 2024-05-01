@@ -229,6 +229,28 @@ BOOL CTakeOffApp::InitInstance(int argc, char *argv[]) {
         ifil.close();
     }
 
+    // Schneller Mode zum Debuggen?
+    for (int i = 0; i < argc; i++) {
+        char *Argument = argv[i];
+        if (stricmp(Argument, "/quick") == 0) {
+            bQuick = 1;
+            CheatAutoSkip = 1;
+            i++;
+            if (i < argc) {
+                bQuick = 2 + atoi(argv[i]);
+            }
+        }
+        if (stricmp(Argument, "/testbot") == 0) {
+            bQuick = 1;
+            bAutoQuitOnDay = 99;
+            CheatAutoSkip = 1;
+            i++;
+            if (i < argc) {
+                kTestMode = atoi(argv[i]);
+            }
+        }
+    }
+
     // gUpdatingPools = TRUE; //Zum testen; für Release auskommentieren
 
     // Flag-Ersatzstücke aus der Registry lesen:
@@ -259,7 +281,6 @@ BOOL CTakeOffApp::InitInstance(int argc, char *argv[]) {
         }
     }
 
-    // Schneller Mode zum Debuggen?
     for (int i = 0; i < argc; i++) {
         char *Argument = argv[i];
 
@@ -270,19 +291,6 @@ BOOL CTakeOffApp::InitInstance(int argc, char *argv[]) {
             return (FALSE);
         }
 
-        if (stricmp(Argument, "/quick") == 0) {
-            bQuick = TRUE;
-            CheatAutoSkip = 1;
-        }
-        if (stricmp(Argument, "/testbot") == 0) {
-            bQuick = TRUE;
-            bAutoQuitOnDay = 99;
-            CheatAutoSkip = 1;
-            i++;
-            if (i < argc) {
-                kTestMode = atoi(argv[i]);
-            }
-        }
         // if (stricmp (Argument, "/e")==0) gLanguage = LANGUAGE_E;
         // if (stricmp (Argument, "/d")==0) gLanguage = LANGUAGE_D;
         // if (stricmp (Argument, "/f")==0) gLanguage = LANGUAGE_F;
@@ -880,11 +888,11 @@ void CTakeOffApp::GameLoop(void * /*unused*/) {
                     Sim.Gamestate = GAMESTATE_PLAYING | GAMESTATE_WORKING;
                     Sim.DayState = 1;
 
-                    if (1 == 0) {
-                        // Speedup zum testen; für Release beides auskommentieren:
+                    if (CheatAutoSkip == 1) {
                         Sim.IsTutorial = FALSE;
-                        Sim.bNoTime = FALSE;
-                        Sim.DayState = 2;
+                        // Sim.bNoTime = FALSE;
+                        // Sim.DayState = 2;
+                        Sim.Players.Players[Sim.localPlayer].GameSpeed = 5;
                     } else {
                         if (Sim.Difficulty == DIFF_TUTORIAL) {
                             Sim.IsTutorial = TRUE;

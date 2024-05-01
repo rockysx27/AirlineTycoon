@@ -330,7 +330,7 @@ bool SIM::AddGlueSabotage(XY Position, SLONG Dir, SLONG NewDir, SLONG Phase) {
 //------------------------------------------------------------------------------
 // Läßt den Benutzer Schwierigkeit, Anfangsjahr und Spieler wählen:
 //------------------------------------------------------------------------------
-void SIM::ChooseStartup(BOOL /*GameModeQuick*/) {
+void SIM::ChooseStartup() {
     SLONG c = 0;
     SLONG d = 0;
     SLONG e = 0;
@@ -445,6 +445,9 @@ void SIM::ChooseStartup(BOOL /*GameModeQuick*/) {
     SabotageActs.ReSize(0);
 
     IsTutorial = static_cast<BOOL>(Difficulty == DIFF_TUTORIAL);
+    if (bQuick > 0) {
+        IsTutorial = FALSE;
+    }
     DialogOvertureFlags = 0;
 
     // Wochentag für die Öffnungszeiten:
@@ -2209,10 +2212,6 @@ void SIM::NewDay() {
     KeyHints[1] = 0;
 
     auto &qPlayer = Players.Players[localPlayer];
-    if ((CheatTestGame != 0 || CheatAutoSkip != 0) && qPlayer.Money < 0) {
-        qPlayer.Money = 1000000;
-        // log: hprintf ("Event: localPlayer gets Money-Boost for testing reasons");
-    }
     if (CheatAutoSkip == 1) {
         CheatAutoSkip = 2;
         if (!qPlayer.HasItem(ITEM_LAPTOP)) {
@@ -3015,7 +3014,7 @@ BOOL SIM::LoadGame(SLONG Number) {
         for (c = 0; c < 4; c++) {
             bReadyForMornings[c] = Players.Players[c].bReadyForMorning;
         }
-        ChooseStartup(1);
+        ChooseStartup();
         for (c = 0; c < 4; c++) {
             Players.Players[c].bReadyForMorning = bReadyForMornings[c];
         }

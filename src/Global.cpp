@@ -144,7 +144,7 @@ BOOL bTest = FALSE;               // Schneller Ablauf zum testen
 BOOL bActive = TRUE;              // is application active?
 BOOL bFullscreen;                 // is application Fullscreen or in Window?
 BOOL bCheatMode = FALSE;          // Ist der Cheatmode zum testen aktiviert?
-BOOL bQuick = FALSE;              // Depeche Mode = Alles auf die Schnelle..
+SLONG bQuick = 0;                 // Depeche Mode = Alles auf die Schnelle..
 BOOL bgWarp = FALSE;              // Spieler warpt zum Ziel
 BOOL bNoVgaRam = FALSE;           // Keine Bitmaps ins VGA-Ram legen
 BOOL bNoSpeedyBar = FALSE;        // Kein SpeedUp für die Statuszeile
