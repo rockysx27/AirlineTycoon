@@ -40,6 +40,8 @@ Statistics screen:
 * Information visible depends on skill of financial advisor (for yourself) or skill of spy (competitors)
 * Unlimited statistics: Store statistics data for each day without limit
 * Fix rendering of graph when zooming out
+* Fix display of mission target
+* Added more categories to statistics: Number of freight jobs, total tons transported and income from freight jobs
 
 Information menu:
 * Much more information on balance sheet
@@ -61,7 +63,6 @@ Keyboard navigation:
 * Arrow key navigation for many different menus
 
 Employees:
-* Fix problem where no competent personal can be found in long running games
 * More pilots/attendants available for hire
 * Slightly increase competence of randomly generated employees
 * Generate randomized advisors as well
@@ -70,16 +71,20 @@ Employees:
 * Update worker happiness based on salary
     * Chance to increase/decrease happiness each day based on how much salary is higher/lower than original salary
 * The 10% change when increasing/decreasing salary now always refers to 10% of original salary
+* Regularly increase worker happiness if company image is great
 
 Kerosene:
 * Impact of bad kerosene depends on ratio of bad kerosene in tank
 * Do not remember selected kerosene quality for auto purchase
 * Adjust impact of bad kerosene: Quadratic function now
+    * Strong increase in plane damage due to bad kerosene
+    * Not so easy anymore to save enormous amounts of money, but still possible to save a little
 * Offer much larger kerosene tanks
 * Kerosene advisor gives hints to save money
 
 Bug fixes:
-* Frozen windows on laptop fixed
+* Fixed problem where no competent personal can be found in long running games
+* Fixed frozen windows on laptop
 * Integer overflow fixed when emitting lots of stock (resulted in loosing money when emitting)
 * Fixed formula for credit limit
 * Stock trading: Show correct new account balance in form (including fee)
@@ -99,6 +104,14 @@ Bug fixes:
     * Always rotate list of plane saldo for past 7 days
 * Consider also number of first class passengers for statistics
 * Do not show route utilization by defeated players
+* Fixed random crash (during checking of flight plans)
+* Bug fixed in calculation in maximum amount of stock that can be emitted
+    * Bug limited max amount of stock to around 2.1 Mio
+    * Buffer overflow is fixed now, but the originally intended limit of 250 Mio. was changed to 2.5 Mio.
+* Fixed counting of Uhrig flights for mission 9th addon mission
+* Fixed game moving flights automatically that are already locked
+    * Could previously cause double-booking of flights
+* Fixed crash in plane designer when attaching enginges to left side of tail
 
 AI:
 * Uses now same credit limit
@@ -116,12 +129,14 @@ AI:
 
 Misc:
 * Reduce (~ half) cost of plane security upgrades
-* Fix random crash (during checking of flight plans)
 * Spy reports enemy activity based on skill
 * ArabAir opens one hour earlier
 * Calculate route utilization as average of previous 7 days
 * Adding NOTFAIR cheat to make competitors much richer
 * Adding ODDONEOUT cheat to improve image of competitors
+* Adding AUTORUN cheat for ultra-fast forward
 * Use player colors when showing routes on laptop
 * Buy kerosene by clicking price chart
 * Change tooltip of savegames (number of days played)
+* Implement actual random generator using Mersenne twister
+
