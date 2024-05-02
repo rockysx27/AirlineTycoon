@@ -233,16 +233,16 @@ BOOL CTakeOffApp::InitInstance(int argc, char *argv[]) {
     for (int i = 0; i < argc; i++) {
         char *Argument = argv[i];
         if (stricmp(Argument, "/quick") == 0) {
-            bQuick = 1;
+            gQuickTestRun = 1;
             CheatAutoSkip = 1;
             i++;
             if (i < argc) {
-                bQuick = 2 + atoi(argv[i]);
+                gQuickTestRun = 2 + atoi(argv[i]);
             }
         }
         if (stricmp(Argument, "/testbot") == 0) {
-            bQuick = 1;
-            bAutoQuitOnDay = 99;
+            gQuickTestRun = 1;
+            gAutoQuitOnDay = 99;
             CheatAutoSkip = 1;
             i++;
             if (i < argc) {

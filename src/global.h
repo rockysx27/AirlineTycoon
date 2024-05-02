@@ -146,7 +146,7 @@ extern BOOL bTest;               // Schneller Ablauf zum testen
 extern BOOL bActive;             // is application active?
 extern BOOL bFullscreen;         // is application Fullscreen or in Window?
 extern BOOL bCheatMode;          // Ist der Cheatmode zum testen aktiviert?
-extern SLONG bQuick;             // Depeche Mode = Alles auf die Schnelle..
+extern SLONG gQuickTestRun;      // Depeche Mode = Alles auf die Schnelle..
 extern BOOL bgWarp;              // Spieler warpt zum Ziel
 extern BOOL bNoVgaRam;           // Keine Bitmaps ins VGA-Ram legen
 extern BOOL bCheatMode;          // Ist der Cheatmode zum testen aktiviert?
@@ -163,7 +163,7 @@ extern BOOL gDisablePauseKey;    // Pause-Key für Texteingabe abgeschaltet?
 extern BOOL bgJustDidLotsOfWork; // Gegen Sprünge nach Load/Save
 extern BOOL bLeaveGameLoop;      // Hauptschleife verlassen?
 extern BOOL bFirstClass;
-extern SLONG bAutoQuitOnDay;
+extern SLONG gAutoQuitOnDay; // Exit game on specified game
 
 //--------------------------------------------------------------------------------------------
 // Das Spiel höchstpersönlich:

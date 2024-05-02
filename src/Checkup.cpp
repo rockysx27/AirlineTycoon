@@ -127,7 +127,7 @@ CRegistryAccess::~CRegistryAccess() { Close(); }
 // Alten Zugriff schließen:
 //--------------------------------------------------------------------------------------------
 void CRegistryAccess::Close() {
-    if (bQuick > 0) {
+    if (gQuickTestRun > 0) {
         return;
     }
     if (hKey != nullptr) {

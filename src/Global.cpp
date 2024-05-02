@@ -144,7 +144,7 @@ BOOL bTest = FALSE;               // Schneller Ablauf zum testen
 BOOL bActive = TRUE;              // is application active?
 BOOL bFullscreen;                 // is application Fullscreen or in Window?
 BOOL bCheatMode = FALSE;          // Ist der Cheatmode zum testen aktiviert?
-SLONG bQuick = 0;                 // Depeche Mode = Alles auf die Schnelle..
+SLONG gQuickTestRun = 0;          // Depeche Mode = Alles auf die Schnelle..
 BOOL bgWarp = FALSE;              // Spieler warpt zum Ziel
 BOOL bNoVgaRam = FALSE;           // Keine Bitmaps ins VGA-Ram legen
 BOOL bNoSpeedyBar = FALSE;        // Kein SpeedUp für die Statuszeile
@@ -160,7 +160,7 @@ BOOL gDisablePauseKey;            // Pause-Key für Texteingabe abgeschaltet?
 BOOL bgJustDidLotsOfWork = FALSE; // Gegen Sprünge nach Load/Save
 BOOL bLeaveGameLoop = FALSE;      // Hauptschleife verlassen?
 BOOL bFirstClass = FALSE;
-SLONG bAutoQuitOnDay = -1;
+SLONG gAutoQuitOnDay = -1;
 
 //--------------------------------------------------------------------------------------------
 // Das Spiel höchstpersönlich:

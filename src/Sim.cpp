@@ -445,7 +445,7 @@ void SIM::ChooseStartup() {
     SabotageActs.ReSize(0);
 
     IsTutorial = static_cast<BOOL>(Difficulty == DIFF_TUTORIAL);
-    if (bQuick > 0) {
+    if (gQuickTestRun > 0) {
         IsTutorial = FALSE;
     }
     DialogOvertureFlags = 0;

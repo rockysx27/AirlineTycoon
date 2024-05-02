@@ -232,12 +232,12 @@ void NewGamePopup::Konstruktor(BOOL /*bHandy*/, SLONG /*PlayerNum*/) {
     }
 
     // Nur auf die Schnelle?
-    if ((bQuick > 0) || gLoadGameNumber > -1) {
+    if ((gQuickTestRun > 0) || gLoadGameNumber > -1) {
         for (SLONG c = 0; c < Sim.Players.Players.AnzEntries(); c++) {
             Sim.Players.Players[c].IsOut = 0;
         }
 
-        Sim.Difficulty = (bQuick - 2);
+        Sim.Difficulty = (gQuickTestRun - 2);
         Sim.Gamestate = UBYTE((Sim.Gamestate & (~GAMESTATE_WORKING)) | GAMESTATE_DONE);
 
         Routen.ReInit("routen.csv", true);

@@ -48,7 +48,7 @@ void printPostGameInfo() {
                 balance.KerosinFlug + balance.KerosinVorrat, balance.Wartung, qPlayer.Statistiken[STAT_PASSAGIERE].GetAtPastDay(1),
                 qPlayer.Statistiken[STAT_ZUFR_PASSAGIERE].GetAtPastDay(1), qPlayer.Statistiken[STAT_FIRMENWERT].GetAtPastDay(1),
                 qPlayer.Statistiken[STAT_FLUGZEUGE].GetAtPastDay(1), qPlayer.Statistiken[STAT_ROUTEN].GetAtPastDay(1));
-        if (bQuick > 0) {
+        if (gQuickTestRun > 0) {
             exit(0);
         }
     }
