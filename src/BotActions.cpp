@@ -592,8 +592,10 @@ void Bot::actionSabotage(__int64 moneyAvailable) {
         if (res == GameMechanic::CheckSabotageResult::Ok) {
             GameMechanic::activateSaboteurJob(qPlayer);
             hprintf("Bot::actionSabotage(): Sabotaging nemesis %s using pills", (LPCTSTR)Sim.Players.Players[mNemesis].AirlineX);
+            mNemesisSabotaged = mNemesis; /* ensures that we do not sabotage him again tomorrow */
         } else if (res == GameMechanic::CheckSabotageResult::DeniedSecurity) {
             mNeedToShutdownSecurity = true;
+            hprintf("Bot::actionSabotage(): Cannot sabotage nemesis %s: Blocked by security", (LPCTSTR)Sim.Players.Players[mNemesis].AirlineX);
         }
     }
 

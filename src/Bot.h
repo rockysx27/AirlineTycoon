@@ -264,6 +264,7 @@ class Bot {
     SLONG mNemesis{-1};
     __int64 mNemesisScore{0};
     bool mNeedToShutdownSecurity{false};
+    SLONG mNemesisSabotaged{-1};
 
     /* status boss office */
     SLONG mBossNumCitiesAvailable{-1};

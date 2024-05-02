@@ -53,7 +53,7 @@ void Bot::determineNemesis() {
                 score = qTarget.GetMissionRating();
             }
         }
-        if (score > mNemesisScore) {
+        if (score > mNemesisScore && p != mNemesisSabotaged) {
             mNemesis = p;
             mNemesisScore = score;
         }
@@ -67,6 +67,7 @@ void Bot::determineNemesis() {
                     (LPCTSTR)Insert1000erDots64(mNemesisScore));
         }
     }
+    mNemesisSabotaged = -1;
 }
 
 void Bot::switchToFinalTarget() {

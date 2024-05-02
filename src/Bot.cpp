@@ -916,10 +916,12 @@ void Bot::RobotExecuteAction() {
     case ACTION_VISITSECURITY2:
         if (condSabotageSecurity() != Prio::None) {
             if (GameMechanic::sabotageSecurityOffice(qPlayer)) {
-                hprintf("Bot::RobotExecuteAction(): Successfully sabotaged security office!");
+                hprintf("Bot::RobotExecuteAction(): Successfully sabotaged security office.");
+            } else {
+                redprintf("Bot::RobotExecuteAction(): Failed to sabotage security office!");
             }
             mNeedToShutdownSecurity = false;
-            mLastTimeInRoom.erase(ACTION_SABOTAGE);
+            mLastTimeInRoom.erase(ACTION_SABOTAGE); /* allow sabotage again */
         } else {
             redprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
@@ -1036,7 +1038,7 @@ TEAKFILE &operator<<(TEAKFILE &File, const Bot &bot) {
     File << bot.mOutOfGates;
     File << bot.mNeedToPlanJobs << bot.mNeedToPlanRoutes;
     File << bot.mMoneyReservedForRepairs << bot.mMoneyReservedForUpgrades << bot.mMoneyReservedForAuctions;
-    File << bot.mNemesis << bot.mNemesisScore << bot.mNeedToShutdownSecurity;
+    File << bot.mNemesis << bot.mNemesisScore << bot.mNeedToShutdownSecurity << bot.mNemesisSabotaged;
 
     File << bot.mBossNumCitiesAvailable;
     File << bot.mBossGateAvailable;
@@ -1157,7 +1159,7 @@ TEAKFILE &operator>>(TEAKFILE &File, Bot &bot) {
     File >> bot.mOutOfGates;
     File >> bot.mNeedToPlanJobs >> bot.mNeedToPlanRoutes;
     File >> bot.mMoneyReservedForRepairs >> bot.mMoneyReservedForUpgrades >> bot.mMoneyReservedForAuctions;
-    File >> bot.mNemesis >> bot.mNemesisScore >> bot.mNeedToShutdownSecurity;
+    File >> bot.mNemesis >> bot.mNemesisScore >> bot.mNeedToShutdownSecurity >> bot.mNemesisSabotaged;
 
     File >> bot.mBossNumCitiesAvailable;
     File >> bot.mBossGateAvailable;

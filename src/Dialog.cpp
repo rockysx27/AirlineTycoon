@@ -21,6 +21,39 @@ extern SLONG WasLButtonDownMouseClickId;   // Der Id
 extern SLONG WasLButtonDownMouseClickPar1;
 extern SLONG WasLButtonDownMouseClickPar2;
 
+void printPostGameInfo() {
+    SLONG botPlayerNum = -1;
+    BOOL botHasWon = FALSE;
+    SLONG bestEnemy = 0;
+    for (SLONG c = 0; c < Sim.Players.Players.AnzEntries(); c++) {
+        auto &qPlayer = Sim.Players.Players[c];
+        if (qPlayer.IsSuperBot()) {
+            botPlayerNum = c;
+            botHasWon = qPlayer.HasWon();
+        } else if (qPlayer.Statistiken[STAT_MISSIONSZIEL].GetAtPastDay(0) > bestEnemy) {
+            bestEnemy = qPlayer.Statistiken[STAT_MISSIONSZIEL].GetAtPastDay(0);
+        }
+    }
+    if (botPlayerNum != -1) {
+        auto &qPlayer = Sim.Players.Players[botPlayerNum];
+        hprintf("BotMission: Mission, Tage, Sieg, Gegner");
+        hprintf("BotMission: %ld, %ld, %ld, %ld", Sim.Difficulty, Sim.Date, botHasWon ? 1 : 0, bestEnemy);
+
+        hprintf("BotStatistics2: Tag, Geld, Saldo, Gewinn, Verlust, Auftraege, Fracht, Routen, Kerosin, Wartung, Planetype, Passagiere, "
+                "PassZufrieden, "
+                "Firmenwert, Flugzeuge, AnzRouten");
+        auto balance = qPlayer.BilanzWoche.Hole();
+        hprintf("BotStatistics2: %d, %lld, %lld, %lld, %lld, %lld, %lld, %lld, %lld, %ld, %lld, %lld, %lld, %lld, %lld", Sim.Date, qPlayer.Money,
+                balance.GetOpSaldo(), balance.GetOpGewinn(), balance.GetOpVerlust(), balance.Auftraege, balance.FrachtAuftraege, balance.Tickets,
+                balance.KerosinFlug + balance.KerosinVorrat, balance.Wartung, qPlayer.Statistiken[STAT_PASSAGIERE].GetAtPastDay(1),
+                qPlayer.Statistiken[STAT_ZUFR_PASSAGIERE].GetAtPastDay(1), qPlayer.Statistiken[STAT_FIRMENWERT].GetAtPastDay(1),
+                qPlayer.Statistiken[STAT_FLUGZEUGE].GetAtPastDay(1), qPlayer.Statistiken[STAT_ROUTEN].GetAtPastDay(1));
+        if (bQuick > 0) {
+            exit(0);
+        }
+    }
+}
+
 //--------------------------------------------------------------------------------------------
 // Vor allem anderen einen Klick auf den Berater prüfen:
 //--------------------------------------------------------------------------------------------
@@ -1239,27 +1272,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
             case 9404:
                 MenuStart(MENU_GAMEOVER, static_cast<SLONG>(qPlayer.HasWon() == false));
                 hprintf("Event: Mission abgeschlossen, Spiel wird beendet.");
-                {
-                    SLONG botPlayerNum = -1;
-                    BOOL botHasWon = FALSE;
-                    SLONG bestEnemy = 0;
-                    for (SLONG c = 0; c < Sim.Players.Players.AnzEntries(); c++) {
-                        auto &qPlayer = Sim.Players.Players[c];
-                        if (qPlayer.IsSuperBot()) {
-                            botPlayerNum = c;
-                            botHasWon = qPlayer.HasWon();
-                        } else if (qPlayer.Statistiken[STAT_MISSIONSZIEL].GetAtPastDay(0) > bestEnemy) {
-                            bestEnemy = qPlayer.Statistiken[STAT_MISSIONSZIEL].GetAtPastDay(0);
-                        }
-                    }
-                    if (botPlayerNum != -1) {
-                        hprintf("BotMission: Mission, Sieg, Gegner");
-                        hprintf("BotMission: %ld, %ld, %ld", Sim.Difficulty, botHasWon ? 1 : 0, bestEnemy);
-                        if (bQuick > 0) {
-                            exit(0);
-                        }
-                    }
-                }
+                printPostGameInfo();
                 break;
 
                 // Missionsbericht #1
