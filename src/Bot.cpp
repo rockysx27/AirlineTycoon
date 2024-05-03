@@ -1044,7 +1044,8 @@ TEAKFILE &operator<<(TEAKFILE &File, const Bot &bot) {
     File << static_cast<SLONG>(bot.mRunToFinalObjective) << bot.mMoneyForFinalObjective;
     File << bot.mOutOfGates;
     File << bot.mNeedToPlanJobs << bot.mNeedToPlanRoutes;
-    File << bot.mMoneyReservedForRepairs << bot.mMoneyReservedForUpgrades << bot.mMoneyReservedForAuctions;
+    File << bot.mMoneyReservedForRepairs << bot.mMoneyReservedForUpgrades;
+    File << bot.mMoneyReservedForAuctions << bot.mMoneyReservedForFines;
     File << bot.mNemesis << bot.mNemesisScore << bot.mNeedToShutdownSecurity << bot.mNemesisSabotaged;
 
     File << bot.mBossNumCitiesAvailable;
@@ -1165,7 +1166,8 @@ TEAKFILE &operator>>(TEAKFILE &File, Bot &bot) {
     bot.mRunToFinalObjective = static_cast<Bot::FinalPhase>(runToFinalObjective);
     File >> bot.mOutOfGates;
     File >> bot.mNeedToPlanJobs >> bot.mNeedToPlanRoutes;
-    File >> bot.mMoneyReservedForRepairs >> bot.mMoneyReservedForUpgrades >> bot.mMoneyReservedForAuctions;
+    File >> bot.mMoneyReservedForRepairs >> bot.mMoneyReservedForUpgrades;
+    File >> bot.mMoneyReservedForAuctions >> bot.mMoneyReservedForFines;
     File >> bot.mNemesis >> bot.mNemesisScore >> bot.mNeedToShutdownSecurity >> bot.mNemesisSabotaged;
 
     File >> bot.mBossNumCitiesAvailable;

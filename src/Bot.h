@@ -262,6 +262,7 @@ class Bot {
     __int64 mMoneyReservedForRepairs{0};
     __int64 mMoneyReservedForUpgrades{0};
     __int64 mMoneyReservedForAuctions{0};
+    __int64 mMoneyReservedForFines{0};
     SLONG mNemesis{-1};
     __int64 mNemesisScore{0};
     bool mNeedToShutdownSecurity{false};

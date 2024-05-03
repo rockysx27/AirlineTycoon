@@ -53,7 +53,13 @@ Bot::HowToPlan Bot::canWePlanFlights() {
 }
 
 __int64 Bot::getMoneyAvailable() const {
-    return qPlayer.Money - mMoneyReservedForRepairs - mMoneyReservedForUpgrades - mMoneyReservedForAuctions - kMoneyEmergencyFund;
+    __int64 m = qPlayer.Money;
+    m -= mMoneyReservedForRepairs;
+    m -= mMoneyReservedForUpgrades;
+    m -= mMoneyReservedForAuctions;
+    m -= mMoneyReservedForFines;
+    m -= kMoneyEmergencyFund;
+    return m;
 }
 
 Bot::AreWeBroke Bot::areWeBroke() const {

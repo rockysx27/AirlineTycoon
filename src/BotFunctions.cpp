@@ -458,6 +458,35 @@ void Bot::planFlights() {
 
     mPlanerSolution = {};
 
+    /* check whether we will incur any fines */
+    SLONG num = 0;
+    mMoneyReservedForFines = 0;
+    for (int i = 0; i < qPlayer.Auftraege.AnzEntries(); i++) {
+        if (qPlayer.Auftraege.IsInAlbum(i) == 0) {
+            continue;
+        }
+        const auto &job = qPlayer.Auftraege[i];
+        if ((job.VonCity == job.NachCity) || (job.InPlan != 0) || (job.Praemie < 0)) {
+            continue;
+        }
+        mMoneyReservedForFines += job.Strafe;
+        num++;
+    }
+    for (int i = 0; i < qPlayer.Frachten.AnzEntries(); i++) {
+        if (qPlayer.Frachten.IsInAlbum(i) == 0) {
+            continue;
+        }
+        const auto &job = qPlayer.Frachten[i];
+        if ((job.VonCity == job.NachCity) || (job.InPlan != 0) || (job.Praemie < 0)) {
+            continue;
+        }
+        mMoneyReservedForFines += job.Strafe;
+        num++;
+    }
+    if (mMoneyReservedForFines > 0) {
+        redprintf("Bot::planFlights(): %ld jobs not planned, need to reserve %lld for future fines.", num, mMoneyReservedForFines);
+    }
+
     forceReplanning();
 }
 
