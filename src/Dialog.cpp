@@ -25,25 +25,33 @@ void printPostGameInfo();
 
 void printPostGameInfo() {
     SLONG botPlayerNum = -1;
-    BOOL botHasWon = FALSE;
     SLONG bestEnemy = 0;
     for (SLONG c = 0; c < Sim.Players.Players.AnzEntries(); c++) {
         auto &qPlayer = Sim.Players.Players[c];
         if (qPlayer.IsSuperBot()) {
             botPlayerNum = c;
-            botHasWon = qPlayer.HasWon();
         } else if (qPlayer.Statistiken[STAT_MISSIONSZIEL].GetAtPastDay(0) > bestEnemy) {
             bestEnemy = qPlayer.Statistiken[STAT_MISSIONSZIEL].GetAtPastDay(0);
         }
     }
     if (botPlayerNum != -1) {
         auto &qPlayer = Sim.Players.Players[botPlayerNum];
-        hprintf("BotMission: Mission, Tage, Sieg, Gegner");
-        hprintf("BotMission: %ld, %ld, %ld, %ld", Sim.Difficulty, Sim.Date, botHasWon ? 1 : 0, bestEnemy);
+
+        printf("BotMission: Mission, Tage");
+        for (SLONG c = 0; c < 4; c++) {
+            printf(", Sieg%s", (LPCTSTR)Sim.Players.Players[c].Abk);
+        }
+        hprintf(", BesterGegner");
+
+        printf("BotMission: %d, %d", Sim.Difficulty, Sim.Date);
+        for (SLONG c = 0; c < 4; c++) {
+            auto &qP = Sim.Players.Players[c];
+            printf(", %d", (qP.HasWon() != 0 && qP.IsOut == 0) ? 1 : 0);
+        }
+        hprintf(", %ld", bestEnemy);
 
         hprintf("BotStatistics2: Tag, Geld, Saldo, Gewinn, Verlust, Auftraege, Fracht, Routen, Kerosin, Wartung, Planetype, Passagiere, "
-                "PassZufrieden, "
-                "Firmenwert, Flugzeuge, AnzRouten");
+                "PassZufrieden, Firmenwert, Flugzeuge, AnzRouten");
         auto balance = qPlayer.BilanzWoche.Hole();
         hprintf("BotStatistics2: %d, %lld, %lld, %lld, %lld, %lld, %lld, %lld, %lld, %ld, %lld, %lld, %lld, %lld, %lld", Sim.Date, qPlayer.Money,
                 balance.GetOpSaldo(), balance.GetOpGewinn(), balance.GetOpVerlust(), balance.Auftraege, balance.FrachtAuftraege, balance.Tickets,
