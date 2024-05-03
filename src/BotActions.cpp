@@ -496,7 +496,7 @@ void Bot::actionVisitHR() {
     }
     mNumEmployees = nWorkers;
     if (salaryIncreases > 0) {
-        hprintf("Bot::actionStartDay(): Increases salaray of %ld employees", salaryIncreases);
+        hprintf("Bot::actionStartDay(): Increases salary of %ld employees", salaryIncreases);
     }
 }
 
@@ -727,7 +727,8 @@ void Bot::actionVisitMech() {
         auto &qPlane = qPlanes[c];
 
         /* WorstZustand more than 20 lower than repair target means extra cost! */
-        GameMechanic::setPlaneTargetZustand(qPlayer, c, std::min(100, qPlane.WorstZustand + 20));
+        auto worstZustand = std::min(qPlane.WorstZustand, qPlane.Zustand);
+        GameMechanic::setPlaneTargetZustand(qPlayer, c, std::min(100, worstZustand + 20));
 
         if (qPlanes[c].TargetZustand == 100) {
             continue; /* this plane won't cost extra */
@@ -744,7 +745,8 @@ void Bot::actionVisitMech() {
         keepGoing = false;
         for (const auto &iter : planeList) {
             auto &qPlane = qPlanes[iter.first];
-            SLONG cost = (qPlane.TargetZustand + 1 > (qPlane.WorstZustand + 20)) ? (qPlane.ptPreis / 110) : 0;
+            auto worstZustand = std::min(qPlane.WorstZustand, qPlane.Zustand);
+            SLONG cost = (qPlane.TargetZustand + 1 > (worstZustand + 20)) ? (qPlane.ptPreis / 110) : 0;
             if (qPlane.TargetZustand < kPlaneTargetZustand && moneyAvailable >= cost) {
                 GameMechanic::setPlaneTargetZustand(qPlayer, iter.first, qPlane.TargetZustand + 1);
                 keepGoing = true;
@@ -759,12 +761,13 @@ void Bot::actionVisitMech() {
 
     for (const auto &iter : planeList) {
         auto &qPlane = qPlanes[iter.first];
+        auto worstZustand = std::min(qPlane.WorstZustand, qPlane.Zustand);
         if (qPlane.TargetZustand > iter.second) {
             hprintf("Bot::actionVisitMech(): Increasing repair target of plane %s: %ld => %ld (Zustand = %u, WorstZustand = %u)",
-                    Helper::getPlaneName(qPlane, 1).c_str(), iter.second, qPlane.TargetZustand, qPlane.Zustand, qPlane.WorstZustand);
+                    Helper::getPlaneName(qPlane, 1).c_str(), iter.second, qPlane.TargetZustand, qPlane.Zustand, worstZustand);
         } else if (qPlane.TargetZustand < iter.second) {
             hprintf("Bot::actionVisitMech(): Lowering repair target of plane %s: %ld => %ld (Zustand = %u, WorstZustand = %u)",
-                    Helper::getPlaneName(qPlane, 1).c_str(), iter.second, qPlane.TargetZustand, qPlane.Zustand, qPlane.WorstZustand);
+                    Helper::getPlaneName(qPlane, 1).c_str(), iter.second, qPlane.TargetZustand, qPlane.Zustand, worstZustand);
         }
     }
     hprintf("Bot::actionVisitMech(): We are reserving %s $ for repairs, available money: %s $", (LPCTSTR)Insert1000erDots64(mMoneyReservedForRepairs),

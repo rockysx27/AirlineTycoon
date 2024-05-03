@@ -72,6 +72,18 @@ SLONG Bot::calcCurrentGainFromJobs() const {
     return gain;
 }
 
+void Bot::removePlaneFromRoute(SLONG planeId) {
+    for (auto &route : mRoutes) {
+        auto it = route.planeIds.begin();
+        while (it != route.planeIds.end() && *it != planeId) {
+            it++;
+        }
+        if (it != route.planeIds.end()) {
+            route.planeIds.erase(it);
+        }
+    }
+}
+
 bool Bot::checkPlaneAvailable(SLONG planeId, bool printIfAvailable) const {
     const auto &qPlane = qPlayer.Planes[planeId];
     if (qPlane.AnzBegleiter < qPlane.ptAnzBegleiter) {
@@ -123,6 +135,7 @@ bool Bot::checkPlaneLists() {
     for (const auto &i : mPlanesForRoutes) {
         if (!qPlayer.Planes.IsInAlbum(i)) {
             redprintf("Bot::checkPlaneLists(): We lost the plane with ID = %ld", i);
+            removePlaneFromRoute(i);
             planesGoneMissing = true;
             continue;
         }
@@ -206,8 +219,9 @@ bool Bot::findPlanesNotAvailableForService(std::vector<SLONG> &listAvailable, st
     std::vector<SLONG> newAvailable;
     for (const auto id : listAvailable) {
         auto &qPlane = qPlayer.Planes[id];
+        auto worstZustand = std::min(qPlane.WorstZustand, qPlane.Zustand);
         hprintf("Bot::findPlanesNotAvailableForService(): Plane %s: Zustand = %u, WorstZustand = %u, Baujahr = %ld", Helper::getPlaneName(qPlane).c_str(),
-                qPlane.Zustand, qPlane.WorstZustand, qPlane.Baujahr);
+                qPlane.Zustand, worstZustand, qPlane.Baujahr);
 
         SLONG mode = 0; /* 0: keep plane in service */
         if (qPlane.Zustand <= kPlaneMinimumZustand) {
@@ -225,15 +239,7 @@ bool Bot::findPlanesNotAvailableForService(std::vector<SLONG> &listAvailable, st
             }
 
             /* remove plane from route */
-            for (auto &route : mRoutes) {
-                auto it = route.planeIds.begin();
-                while (it != route.planeIds.end() && *it != id) {
-                    it++;
-                }
-                if (it != route.planeIds.end()) {
-                    route.planeIds.erase(it);
-                }
-            }
+            removePlaneFromRoute(id);
         } else {
             newAvailable.push_back(id);
         }
@@ -247,8 +253,9 @@ bool Bot::findPlanesAvailableForService(std::deque<SLONG> &listUnassigned, std::
     std::deque<SLONG> newUnassigned;
     for (const auto id : listUnassigned) {
         auto &qPlane = qPlayer.Planes[id];
+        auto worstZustand = std::min(qPlane.WorstZustand, qPlane.Zustand);
         hprintf("Bot::findPlanesAvailableForService(): Plane %s: Zustand = %u, WorstZustand = %u, Baujahr = %ld", Helper::getPlaneName(qPlane).c_str(),
-                qPlane.Zustand, qPlane.WorstZustand, qPlane.Baujahr);
+                qPlane.Zustand, worstZustand, qPlane.Baujahr);
 
         if (qPlane.Zustand < 100 && (qPlane.Zustand < qPlane.TargetZustand)) {
             hprintf("Bot::findPlanesAvailableForService(): Plane %s still not available for service: Needs repairs.", Helper::getPlaneName(qPlane).c_str());

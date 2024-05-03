@@ -216,6 +216,7 @@ class Bot {
         return planes;
     }
     SLONG calcCurrentGainFromJobs() const;
+    void removePlaneFromRoute(SLONG planeId);
     bool checkPlaneLists();
     bool findPlanesNotAvailableForService(std::vector<SLONG> &listAvailable, std::deque<SLONG> &listUnassigned);
     bool findPlanesAvailableForService(std::deque<SLONG> &listUnassigned, std::vector<SLONG> &listAvailable);
