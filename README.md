@@ -139,4 +139,5 @@ Misc:
 * Buy kerosene by clicking price chart
 * Change tooltip of savegames (number of days played)
 * Implement actual random generator using Mersenne twister
+* Company value includes value of kerosene stored in tanks and tanks themselves
 

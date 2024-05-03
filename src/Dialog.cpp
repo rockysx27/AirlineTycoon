@@ -21,6 +21,8 @@ extern SLONG WasLButtonDownMouseClickId;   // Der Id
 extern SLONG WasLButtonDownMouseClickPar1;
 extern SLONG WasLButtonDownMouseClickPar2;
 
+void printPostGameInfo();
+
 void printPostGameInfo() {
     SLONG botPlayerNum = -1;
     BOOL botHasWon = FALSE;

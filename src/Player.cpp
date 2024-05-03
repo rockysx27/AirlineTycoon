@@ -6277,7 +6277,9 @@ void PLAYER::UpdateStatistics() {
     }
 
     value += Money - Credit;
-    // if (value>2147483647) value=2147483647;    //Overflow verhindern
+
+    value += TankInhalt * Sim.HoleKerosinPreis(2);         // Current value of stored kerosene (assuming worst quality)
+    value += static_cast<__int64>(std::round(Tank * 600)); // Value of tank itself (assuming cheapest tank)
 
     Statistiken[STAT_FIRMENWERT].SetAtPastDay(value);
     // Statistiken[STAT_FIRMENWERT].SetAtPastDay (0, SLONG(value));
