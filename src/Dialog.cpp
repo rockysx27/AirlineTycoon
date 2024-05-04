@@ -8,6 +8,8 @@
 #include "Aufsicht.h"
 #include "Nasa.h"
 
+#include "Bot.h"
+
 CString Space = " ";
 
 extern XY BeraterSprechblasenOffset[];
@@ -50,14 +52,8 @@ void printPostGameInfo() {
         }
         hprintf(", %ld", bestEnemy);
 
-        hprintf("BotStatistics2: Tag, Geld, Saldo, Gewinn, Verlust, Auftraege, Fracht, Routen, Kerosin, Wartung, Planetype, Passagiere, "
-                "PassZufrieden, Firmenwert, Flugzeuge, AnzRouten");
-        auto balance = qPlayer.BilanzWoche.Hole();
-        hprintf("BotStatistics2: %d, %lld, %lld, %lld, %lld, %lld, %lld, %lld, %lld, %ld, %lld, %lld, %lld, %lld, %lld", Sim.Date, qPlayer.Money,
-                balance.GetOpSaldo(), balance.GetOpGewinn(), balance.GetOpVerlust(), balance.Auftraege, balance.FrachtAuftraege, balance.Tickets,
-                balance.KerosinFlug + balance.KerosinVorrat, balance.Wartung, qPlayer.Statistiken[STAT_PASSAGIERE].GetAtPastDay(1),
-                qPlayer.Statistiken[STAT_ZUFR_PASSAGIERE].GetAtPastDay(1), qPlayer.Statistiken[STAT_FIRMENWERT].GetAtPastDay(1),
-                qPlayer.Statistiken[STAT_FLUGZEUGE].GetAtPastDay(1), qPlayer.Statistiken[STAT_ROUTEN].GetAtPastDay(1));
+        qPlayer.mBot->printStatisticsLine();
+
         if (gQuickTestRun > 0) {
             exit(0);
         }

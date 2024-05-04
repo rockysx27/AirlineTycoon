@@ -50,6 +50,8 @@ class Bot {
   public:
     Bot(PLAYER &player);
 
+    void printStatisticsLine();
+
     void RobotInit();
     void RobotPlan();
     void RobotExecuteAction();
