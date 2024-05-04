@@ -74,11 +74,13 @@ class Bot {
     };
     enum class HowToGetMoney {
         None,
-        SellShares,       /* sell shares from other airlines */
-        SellOwnShares,    /* sell own shares if > 50% */
-        SellAllOwnShares, /* sell all own shares */
-        IncreaseCredit,
-        EmitShares
+        SellShares,         /* sell shares from other airlines */
+        SellOwnShares,      /* sell own shares if > 50% */
+        SellAllOwnShares,   /* sell all own shares */
+        IncreaseCredit,     /* take new loan */
+        EmitShares,         /* emit new shares */
+        LowerRepairTargets, /* reduce amount pre-allocated for repairs */
+        CancelPlaneUpgrades /* reduce amount pre-allocated for upgrades */
     };
     enum class FinalPhase {
         No,

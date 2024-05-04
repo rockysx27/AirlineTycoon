@@ -68,6 +68,9 @@ Bot::AreWeBroke Bot::areWeBroke() const {
     }
 
     auto moneyAvailable = getMoneyAvailable();
+    if (moneyAvailable < DEBT_WARNLIMIT3) {
+        return AreWeBroke::Desperate;
+    }
     if (moneyAvailable < 0) {
         return AreWeBroke::Yes;
     }
@@ -100,12 +103,24 @@ Bot::HowToGetMoney Bot::howToGetMoney() {
         numOwnShares = std::max(0, numOwnShares - qPlayer.AnzAktien / 2 - 1);
     }
 
-    if (broke == AreWeBroke::Somewhat) {
-        return (numShares > 0) ? HowToGetMoney::SellShares : HowToGetMoney::None;
+    /* Step 1: Lower repair targets */
+    if (mMoneyReservedForRepairs > 0) {
+        return HowToGetMoney::LowerRepairTargets;
     }
 
+    /* Step 2: Cancel plane upgrades */
+    if (mMoneyReservedForUpgrades > 0) {
+        return HowToGetMoney::CancelPlaneUpgrades;
+    }
+
+    /* Step 3: Emit shares */
     if (GameMechanic::canEmitStock(qPlayer) == GameMechanic::EmitStockResult::Ok) {
         return HowToGetMoney::EmitShares;
+    }
+
+    /* Step 4: Sell shares */
+    if (broke == AreWeBroke::Somewhat) {
+        return (numShares > 0) ? HowToGetMoney::SellShares : HowToGetMoney::None;
     }
     if (numShares > 0) {
         return HowToGetMoney::SellShares;
@@ -113,6 +128,8 @@ Bot::HowToGetMoney Bot::howToGetMoney() {
     if (numOwnShares > 0) {
         return (broke == AreWeBroke::Desperate) ? HowToGetMoney::SellAllOwnShares : HowToGetMoney::SellOwnShares;
     }
+
+    /* Step 5: Take out loan */
     if (qPlayer.CalcCreditLimit() >= 1000) {
         return HowToGetMoney::IncreaseCredit;
     }
@@ -456,6 +473,13 @@ Bot::Prio Bot::condCheckFreight() {
 }
 
 Bot::Prio Bot::condUpgradePlanes() {
+    if (!hoursPassed(ACTION_UPGRADE_PLANES, 1)) { /* When broke: Cancel ugprades ASAP */
+        return Prio::None;
+    }
+    if (howToGetMoney() == HowToGetMoney::CancelPlaneUpgrades) {
+        return Prio::Top;
+    }
+
     if (!hoursPassed(ACTION_UPGRADE_PLANES, 24)) {
         return Prio::None;
     }
@@ -725,11 +749,14 @@ Bot::Prio Bot::condDropMoney(__int64 &moneyAvailable) {
 }
 
 Bot::Prio Bot::condEmitShares() {
-    if (!hoursPassed(ACTION_EMITSHARES, 24)) {
+    if (!hoursPassed(ACTION_EMITSHARES, 1)) {
         return Prio::None;
     }
     if (howToGetMoney() == HowToGetMoney::EmitShares) {
         return Prio::Top;
+    }
+    if (!hoursPassed(ACTION_EMITSHARES, 24)) {
+        return Prio::None;
     }
     if (GameMechanic::canEmitStock(qPlayer) == GameMechanic::EmitStockResult::Ok) {
         return Prio::Medium;
@@ -745,11 +772,7 @@ Bot::Prio Bot::condSellShares(__int64 &moneyAvailable) {
 
     auto res = howToGetMoney();
     if (res == HowToGetMoney::SellShares || res == HowToGetMoney::SellOwnShares || res == HowToGetMoney::SellAllOwnShares) {
-        if (qPlayer.Money < 0) {
-            return Prio::Top;
-        } else {
-            return Prio::High;
-        }
+        return Prio::Top;
     }
     return Prio::None;
 }
@@ -787,12 +810,18 @@ Bot::Prio Bot::condBuyNemesisShares(__int64 &moneyAvailable, SLONG dislike) {
 }
 
 Bot::Prio Bot::condVisitMech() {
-    if (!hoursPassed(ACTION_VISITMECH, 4)) {
-        return Prio::None;
-    }
     /* Plane repairs happen asynchronously. Therefore, we earmark money in the variable mMoneyReservedForRepairs.
      * We need to execute this action regularly even if we have no money since we
      * might cancel previously planned repairs to have more available money. */
+    if (!hoursPassed(ACTION_VISITMECH, 1)) { /* When broke: Lower repair targets ASAP */
+        return Prio::None;
+    }
+    if (howToGetMoney() == HowToGetMoney::LowerRepairTargets) {
+        return Prio::Top;
+    }
+    if (!hoursPassed(ACTION_VISITMECH, 4)) { /* Not broke: Do not need to visit too often */
+        return Prio::None;
+    }
     if (getMoneyAvailable() < 0 && mMoneyReservedForRepairs == 0) {
         return Prio::None;
     }

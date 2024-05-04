@@ -725,16 +725,18 @@ void Bot::actionVisitMech() {
         }
 
         auto &qPlane = qPlanes[c];
+        auto oldTarget = qPlane.TargetZustand;
 
         /* WorstZustand more than 20 lower than repair target means extra cost! */
         auto worstZustand = std::min(qPlane.WorstZustand, qPlane.Zustand);
-        GameMechanic::setPlaneTargetZustand(qPlayer, c, std::min(100, worstZustand + 20));
+        auto worstZustandNoCost = std::min(100, worstZustand + 20);
+        GameMechanic::setPlaneTargetZustand(qPlayer, c, worstZustandNoCost);
 
         if (qPlanes[c].TargetZustand == 100) {
             continue; /* this plane won't cost extra */
         }
 
-        planeList.emplace_back(c, qPlane.TargetZustand);
+        planeList.emplace_back(c, oldTarget);
     }
 
     /* distribute available money for repair extra costs */

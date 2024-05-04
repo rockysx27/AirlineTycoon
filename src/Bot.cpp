@@ -538,8 +538,9 @@ void Bot::RobotExecuteAction() {
     LocalRandom.Rand(2); // Sicherheitshalber, damit wir immer genau ein Random ausführen
 
     mNumActionsToday += 1;
-    greenprintf("Bot.cpp: Enter RobotExecuteAction(): Executing %s (#%d), current time: %02d:%02d, money: %s $", getRobotActionName(qRobotActions[0].ActionId),
-                mNumActionsToday, Sim.GetHour(), Sim.GetMinute(), Insert1000erDots64(qPlayer.Money).c_str());
+    greenprintf("Bot::RobotExecuteAction(): Executing %s (#%d), current time: %02d:%02d, money: %s $ (available: %s $)",
+                getRobotActionName(qRobotActions[0].ActionId), mNumActionsToday, Sim.GetHour(), Sim.GetMinute(), (LPCTSTR)Insert1000erDots64(qPlayer.Money),
+                (LPCTSTR)Insert1000erDots64(getMoneyAvailable()));
 
     mOnThePhone = 0;
 
@@ -726,7 +727,8 @@ void Bot::RobotExecuteAction() {
     case ACTION_RAISEMONEY:
         if (condTakeOutLoan() != Prio::None) {
             __int64 limit = qPlayer.CalcCreditLimit();
-            __int64 m = std::min(limit, (kMoneyEmergencyFund + kMoneyEmergencyFund / 2) - qPlayer.Money);
+            __int64 moneyRequired = -getMoneyAvailable();
+            __int64 m = std::min(limit, moneyRequired);
             m = std::max(m, 1000LL);
             if (mRunToFinalObjective == FinalPhase::TargetRun) {
                 m = limit;

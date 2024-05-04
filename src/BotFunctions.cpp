@@ -484,7 +484,8 @@ void Bot::planFlights() {
         num++;
     }
     if (mMoneyReservedForFines > 0) {
-        redprintf("Bot::planFlights(): %ld jobs not planned, need to reserve %lld for future fines.", num, mMoneyReservedForFines);
+        redprintf("Bot::planFlights(): %ld jobs not planned, need to reserve %s $ for future fines, available money: %s $", num,
+                  (LPCTSTR)Insert1000erDots64(mMoneyReservedForFines), (LPCTSTR)Insert1000erDots64(getMoneyAvailable()));
     }
 
     forceReplanning();
