@@ -742,7 +742,7 @@ Bot::Prio Bot::condDropMoney(__int64 &moneyAvailable) {
     }
 
     moneyAvailable -= kMoneyReservePaybackCredit;
-    if (moneyAvailable >= 0 && qPlayer.Credit > 0 && getWeeklyOpSaldo() > 1000 * 1000) {
+    if (moneyAvailable >= 1000 && qPlayer.Credit > 0 && getWeeklyOpSaldo() > 1000 * 1000) {
         return Prio::Medium;
     }
     return Prio::None;

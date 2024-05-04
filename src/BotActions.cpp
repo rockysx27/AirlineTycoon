@@ -63,7 +63,7 @@ void Bot::actionStartDayLaptop(__int64 moneyAvailable) {
         checkLostRoutes();
         updateRouteInfo();
         requestPlanRoutes(true);
-    } else {
+    } else if (qPlayer.RobotUse(ROBOT_USE_ROUTES)) {
         /* logic for switching to routes */
         if (qPlayer.RobotUse(ROBOT_USE_FORCEROUTES)) {
             mDoRoutes = true;
@@ -75,7 +75,7 @@ void Bot::actionStartDayLaptop(__int64 moneyAvailable) {
             SLONG numPlanes = mPlanesForJobs.size() + mPlanesForJobsUnassigned.size();
             if ((numPlanes >= kSwitchToRoutesNumPlanesMin && moneyAvailable >= moneyNeeded) || numPlanes >= kSwitchToRoutesNumPlanesMax) {
                 mDoRoutes = true;
-                hprintf("Bot::actionStartDay(): Switching to routes.");
+                hprintf("Bot::actionStartDay(): Switching to routes. Reserving 2*%ld + %ld for ads and plane.", costRouteAd, bestPlaneType.Preis);
             }
         }
     }
