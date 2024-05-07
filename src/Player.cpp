@@ -6275,6 +6275,17 @@ void PLAYER::UpdateStatistics() {
         if (Planes.IsInAlbum(c) != 0) {
             value += Planes[c].CalculatePrice();
         }
+
+        // Add value of plane upgrades
+        CPlane &qPlane = Planes[c];
+        auto ptPassagiere = qPlane.ptPassagiere;
+        value += ptPassagiere * (SeatCosts[qPlane.Sitze] - SeatCosts[0]);
+        value += ptPassagiere * (TrayCosts[qPlane.Tabletts] - TrayCosts[0]);
+        value += ptPassagiere * (DecoCosts[qPlane.Deco] - DecoCosts[0]);
+        value += (ReifenCosts[qPlane.Reifen] - ReifenCosts[0]);
+        value += (TriebwerkCosts[qPlane.Triebwerk] - TriebwerkCosts[0]);
+        value += (SicherheitCosts[qPlane.Sicherheit] - SicherheitCosts[0]);
+        value += (ElektronikCosts[qPlane.Elektronik] - ElektronikCosts[0]);
     }
 
     for (c = 0; c < 4; c++) { // Aktien
