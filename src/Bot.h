@@ -41,6 +41,7 @@ extern const SLONG kMoneyReserveBuyOwnShares;
 extern const SLONG kMoneyReserveBuyNemesisShares;
 extern const SLONG kMoneyReserveBossOffice;
 extern const SLONG kMoneyReserveExpandAirport;
+extern const SLONG kMoneyReserveSabotage;
 
 extern SLONG kPlaneScoreMode;
 extern SLONG kPlaneScoreForceBest;
@@ -50,7 +51,7 @@ class Bot {
   public:
     Bot(PLAYER &player);
 
-    void printStatisticsLine();
+    void printStatisticsLine(CString prefix, bool printHeader);
 
     void RobotInit();
     void RobotPlan();

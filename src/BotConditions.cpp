@@ -684,16 +684,24 @@ Bot::Prio Bot::condSabotage(__int64 &moneyAvailable) {
     if (qPlayer.ArabTrust == 0) {
         return Prio::None;
     }
-    if (qPlayer.RobotUse(ROBOT_USE_EXTREME_SABOTAGE) && qPlayer.ArabHints < kMaxSabotageHints) {
-        if (mNemesis != -1) {
-            return Prio::Low;
+
+    moneyAvailable -= kMoneyReserveSabotage;
+    if (qPlayer.RobotUse(ROBOT_USE_EXTREME_SABOTAGE)) {
+        if (!mNeedToShutdownSecurity && (mNemesis != -1)) {
+            /* spiking coffee */
+            auto minCost = SabotagePrice2[1 - 1];
+            if (qPlayer.ArabHints < kMaxSabotageHints && (minCost <= moneyAvailable)) {
+                return Prio::Medium;
+            }
+        }
+
+        if (qPlayer.HasItem(ITEM_ZANGE) == 0) {
+            return mNeedToShutdownSecurity ? Prio::Medium : Prio::Low; /* collect pliers */
         }
     }
+
     if (mItemAntiVirus == 1 || mItemAntiVirus == 2) {
         return Prio::Low; /* collect darts */
-    }
-    if (qPlayer.HasItem(ITEM_ZANGE) == 0) {
-        return mNeedToShutdownSecurity ? Prio::Medium : Prio::Low; /* collect pliers */
     }
     return Prio::None;
 }

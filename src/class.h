@@ -1987,6 +1987,7 @@ class PLAYER {
     SLONG ArabMode2{};                           // Anschlag unterwegs? Und zwar von der Spieler-Bezogenen Art
     SLONG ArabMode3{};                           // Anschlag unterwegs? Und zwar von den Specials
     SLONG ArabActive{};                          // FALSE=Flugzeug war noch nicht gelandet; TRUE=Flugzeug war am Boden, Anschlag jetzt möglich
+    SLONG ArabTimeout{};                         // How often has the Arab failed to sabotage a certain plane?
     std::pair<SLONG, SLONG> ArabModeSelection{}; // Spieler hat Anschlagtyp ausgewählt, aber ein Parameter (Flugzeug/Route) fehlt noch
     SLONG ArabOpfer{};                           // Anschlag auf wen?
     SLONG ArabOpfer2{};                          // Anschlag auf wen?

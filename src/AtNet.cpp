@@ -819,7 +819,7 @@ void PumpNetwork() {
 
                     Message >> qPlayer.ArabTrust >> qPlayer.ArabMode >> qPlayer.ArabMode2 >> qPlayer.ArabMode3 >> qPlayer.ArabActive;
                     Message >> qPlayer.ArabOpfer >> qPlayer.ArabOpfer2 >> qPlayer.ArabOpfer3 >> qPlayer.ArabPlane >> qPlayer.ArabHints;
-                    Message >> qPlayer.NumPassengers >> qPlayer.NumFracht;
+                    Message >> qPlayer.ArabTimeout >> qPlayer.NumPassengers >> qPlayer.NumFracht;
 
                     Anz--;
                 }
@@ -1607,7 +1607,7 @@ void PumpNetwork() {
                 PLAYER &qPlayer = Sim.Players.Players[PlayerNum];
 
                 Message >> qPlayer.ArabOpfer >> qPlayer.ArabMode >> qPlayer.ArabActive >> qPlayer.ArabPlane >> qPlayer.ArabOpfer2 >> qPlayer.ArabMode2 >>
-                    qPlayer.ArabOpfer3 >> qPlayer.ArabMode3;
+                    qPlayer.ArabOpfer3 >> qPlayer.ArabMode3 >> qPlayer.ArabTimeout;
             } break;
 
             case ATNET_WAITFORPLAYER:

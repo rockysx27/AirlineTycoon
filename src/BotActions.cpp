@@ -563,7 +563,7 @@ void Bot::actionBuyKerosineTank(__int64 moneyAvailable) {
     }
 }
 
-void Bot::actionSabotage(__int64 moneyAvailable) {
+void Bot::actionSabotage(__int64 /*moneyAvailable*/) {
     if (mItemAntiVirus == 1) {
         if (GameMechanic::useItem(qPlayer, ITEM_SPINNE)) {
             hprintf("Bot::actionSabotage(): Used item tarantula");
@@ -583,23 +583,38 @@ void Bot::actionSabotage(__int64 moneyAvailable) {
     }
 
     if (!qPlayer.RobotUse(ROBOT_USE_EXTREME_SABOTAGE) || mNemesis == -1) {
+        redprintf("Bot::actionSabotage(): No nemesis");
         return;
     }
+
+    /* exceute sabotage */
     GameMechanic::setSaboteurTarget(qPlayer, mNemesis);
-
-    if (SabotagePrice2[1 - 1] <= moneyAvailable) {
-        auto res = GameMechanic::checkPrerequisitesForSaboteurJob(qPlayer, 1, 1).result;
-        if (res == GameMechanic::CheckSabotageResult::Ok) {
-            GameMechanic::activateSaboteurJob(qPlayer);
-            hprintf("Bot::actionSabotage(): Sabotaging nemesis %s using pills", (LPCTSTR)Sim.Players.Players[mNemesis].AirlineX);
-            mNemesisSabotaged = mNemesis; /* ensures that we do not sabotage him again tomorrow */
-        } else if (res == GameMechanic::CheckSabotageResult::DeniedSecurity) {
-            mNeedToShutdownSecurity = true;
-            hprintf("Bot::actionSabotage(): Cannot sabotage nemesis %s: Blocked by security", (LPCTSTR)Sim.Players.Players[mNemesis].AirlineX);
-        }
+    auto res = GameMechanic::checkPrerequisitesForSaboteurJob(qPlayer, 1, 1, FALSE).result;
+    switch (res) {
+    case GameMechanic::CheckSabotageResult::Ok:
+        GameMechanic::activateSaboteurJob(qPlayer, FALSE);
+        hprintf("Bot::actionSabotage(): Sabotaging nemesis %s (spiked coffee)", (LPCTSTR)Sim.Players.Players[mNemesis].AirlineX);
+        mNemesisSabotaged = mNemesis; /* ensures that we do not sabotage him again tomorrow */
+        break;
+    case GameMechanic::CheckSabotageResult::DeniedSecurity:
+        mNeedToShutdownSecurity = true;
+        hprintf("Bot::actionSabotage(): Cannot sabotage nemesis %s: Blocked by security", (LPCTSTR)Sim.Players.Players[mNemesis].AirlineX);
+        break;
+    case GameMechanic::CheckSabotageResult::DeniedNotEnoughMoney:
+        redprintf("Bot::actionSabotage(): Cannot sabotage nemesis %s: Not enough money", (LPCTSTR)Sim.Players.Players[mNemesis].AirlineX);
+        break;
+    case GameMechanic::CheckSabotageResult::DeniedNoLaptop:
+        redprintf("Bot::actionSabotage(): Cannot sabotage nemesis %s: Enemy has no laptop", (LPCTSTR)Sim.Players.Players[mNemesis].AirlineX);
+        break;
+    case GameMechanic::CheckSabotageResult::DeniedInvalidParam:
+        redprintf("Bot::actionSabotage(): Cannot sabotage nemesis %s: Invalid param", (LPCTSTR)Sim.Players.Players[mNemesis].AirlineX);
+        break;
+    case GameMechanic::CheckSabotageResult::DeniedTrust:
+        redprintf("Bot::actionSabotage(): Cannot sabotage nemesis %s: Not enough trust", (LPCTSTR)Sim.Players.Players[mNemesis].AirlineX);
+        break;
+    default:
+        redprintf("Bot::actionSabotage(): Cannot sabotage nemesis %s: Unknown error", (LPCTSTR)Sim.Players.Players[mNemesis].AirlineX);
     }
-
-    moneyAvailable = getMoneyAvailable();
 }
 
 SLONG Bot::calcBuyShares(__int64 moneyAvailable, DOUBLE kurs) const { return static_cast<SLONG>(std::floor((moneyAvailable - 100) / (1.1 * kurs))); }

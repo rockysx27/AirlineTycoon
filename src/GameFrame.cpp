@@ -1997,8 +1997,7 @@ void GameFrame::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) {
         // COFFEECUP
         if (TypeBuffer[21] == 'C' && TypeBuffer[22] == 'O' && TypeBuffer[23] == 'F' && TypeBuffer[24] == 'F' && TypeBuffer[25] == 'E' &&
             TypeBuffer[26] == 'E' && TypeBuffer[27] == 'C' && TypeBuffer[28] == 'U' && TypeBuffer[29] == 'P') {
-            Sim.Players.Players[0].SecurityFlags = (1 << 7);
-            Sim.Players.Players[Sim.localPlayer].ArabTrust = 6; // Für Spieler 2
+            Sim.Players.Players[Sim.localPlayer].ArabTrust = 6;
 
             /*Sim.Players.Players[Sim.localPlayer].ArabMode2  = 1; //Bakterien im Kaffee
               Sim.Players.Players[Sim.localPlayer].ArabOpfer2 = 2; //Für Spieler 2

@@ -4549,12 +4549,14 @@ void PLAYER::RobotExecuteAction() {
                                 targetMode = min(targetMode, 3);
                             }
 
-                            ArabPlaneSelection = Sim.Players.Players[dislike].Planes.GetRandomUsedIndex(&LocalRandom);
-                            ret = GameMechanic::checkPrerequisitesForSaboteurJob(*this, 0, targetMode);
-                            if (ret.result == GameMechanic::CheckSabotageResult::Ok) {
-                                GameMechanic::activateSaboteurJob(*this);
-                            } else if (ret.result == GameMechanic::CheckSabotageResult::DeniedSecurity) {
-                                SecurityAnnoiance++;
+                            if (targetMode > 0) {
+                                ArabPlaneSelection = Sim.Players.Players[dislike].Planes.GetRandomUsedIndex(&LocalRandom);
+                                ret = GameMechanic::checkPrerequisitesForSaboteurJob(*this, 0, targetMode, FALSE);
+                                if (ret.result == GameMechanic::CheckSabotageResult::Ok) {
+                                    GameMechanic::activateSaboteurJob(*this, FALSE);
+                                } else if (ret.result == GameMechanic::CheckSabotageResult::DeniedSecurity) {
+                                    SecurityAnnoiance++;
+                                }
                             }
                         }
                         break;
@@ -4578,11 +4580,13 @@ void PLAYER::RobotExecuteAction() {
                             targetMode--;
                         }
 
-                        ret = GameMechanic::checkPrerequisitesForSaboteurJob(*this, 1, targetMode);
-                        if (ret.result == GameMechanic::CheckSabotageResult::Ok) {
-                            GameMechanic::activateSaboteurJob(*this);
-                        } else if (ret.result == GameMechanic::CheckSabotageResult::DeniedSecurity) {
-                            SecurityAnnoiance++;
+                        if (targetMode > 0) {
+                            ret = GameMechanic::checkPrerequisitesForSaboteurJob(*this, 1, targetMode, FALSE);
+                            if (ret.result == GameMechanic::CheckSabotageResult::Ok) {
+                                GameMechanic::activateSaboteurJob(*this, FALSE);
+                            } else if (ret.result == GameMechanic::CheckSabotageResult::DeniedSecurity) {
+                                SecurityAnnoiance++;
+                            }
                         }
                         break;
 
@@ -4600,11 +4604,14 @@ void PLAYER::RobotExecuteAction() {
                             if (targetMode == 5) {
                                 ArabPlaneSelection = Sim.Players.Players[dislike].Planes.GetRandomUsedIndex(&LocalRandom);
                             }
-                            ret = GameMechanic::checkPrerequisitesForSaboteurJob(*this, 2, targetMode);
-                            if (ret.result == GameMechanic::CheckSabotageResult::Ok) {
-                                GameMechanic::activateSaboteurJob(*this);
-                            } else if (ret.result == GameMechanic::CheckSabotageResult::DeniedSecurity) {
-                                SecurityAnnoiance++;
+
+                            if (targetMode > 0) {
+                                ret = GameMechanic::checkPrerequisitesForSaboteurJob(*this, 2, targetMode, FALSE);
+                                if (ret.result == GameMechanic::CheckSabotageResult::Ok) {
+                                    GameMechanic::activateSaboteurJob(*this, FALSE);
+                                } else if (ret.result == GameMechanic::CheckSabotageResult::DeniedSecurity) {
+                                    SecurityAnnoiance++;
+                                }
                             }
                         }
                         break;
@@ -6964,7 +6971,7 @@ TEAKFILE &operator<<(TEAKFILE &File, const PLAYER &Player) {
     File << Player.ArabOpfer2 << Player.SickTokay << Player.RunningToToilet;
     File << Player.Stunned << Player.OfficeState << Player.PlayerSmoking << Player.PlayerStinking;
     File << Player.LaptopVirus;
-    File << Player.ArabMode3 << Player.ArabOpfer3;
+    File << Player.ArabMode3 << Player.ArabOpfer3 << Player.ArabTimeout;
     File << Player.WerbeBroschuere << Player.TelephoneDown << Player.Presseerklaerung;
 
     if (SaveVersion == 1 && SaveVersionSub >= 5) {
@@ -7108,7 +7115,7 @@ TEAKFILE &operator>>(TEAKFILE &File, PLAYER &Player) {
     File >> Player.ArabOpfer2 >> Player.SickTokay >> Player.RunningToToilet;
     File >> Player.Stunned >> Player.OfficeState >> Player.PlayerSmoking >> Player.PlayerStinking;
     File >> Player.LaptopVirus;
-    File >> Player.ArabMode3 >> Player.ArabOpfer3;
+    File >> Player.ArabMode3 >> Player.ArabOpfer3 >> Player.ArabTimeout;
     File >> Player.WerbeBroschuere >> Player.TelephoneDown >> Player.Presseerklaerung;
 
     if (SaveVersion == 1 && SaveVersionSub >= 5) {

@@ -31,14 +31,14 @@ class GameMechanic {
     /* Sabotage */
     static SLONG setSaboteurTarget(PLAYER &qPlayer, SLONG target);
     static bool checkSaboteurBusy(PLAYER &qPlayer) { return (qPlayer.ArabMode != 0) || (qPlayer.ArabMode2 != 0) || (qPlayer.ArabMode3 != 0); }
-    enum class CheckSabotageResult { Ok, DeniedInvalidParam, DeniedSecurity, DeniedNotEnoughMoney, DeniedNoLaptop };
+    enum class CheckSabotageResult { Ok, DeniedInvalidParam, DeniedSecurity, DeniedNotEnoughMoney, DeniedNoLaptop, DeniedTrust };
     struct CheckSabotage {
         CheckSabotageResult result{CheckSabotageResult::DeniedInvalidParam};
         int dialogID{};
         CString dialogParam{};
     };
-    static CheckSabotage checkPrerequisitesForSaboteurJob(PLAYER &qPlayer, SLONG type, SLONG number);
-    static bool activateSaboteurJob(PLAYER &qPlayer);
+    static CheckSabotage checkPrerequisitesForSaboteurJob(PLAYER &qPlayer, SLONG type, SLONG number, BOOL fremdSabotage);
+    static bool activateSaboteurJob(PLAYER &qPlayer, BOOL fremdSabotage);
     static void paySaboteurFine(SLONG player, SLONG opfer);
 
     /* Kredite */
@@ -140,6 +140,7 @@ class GameMechanic {
     static void executeSabotageMode1();
     static void executeSabotageMode2(bool &outBAnyBombs);
     static void executeSabotageMode3();
+    static void injectFakeSabotage();
 
   private:
     static bool _planFlightJob(PLAYER &qPlayer, SLONG planeID, SLONG objectID, SLONG objectType, SLONG date, SLONG time);

@@ -1400,6 +1400,11 @@ void SIM::DoTimeStep() {
                     Players.Players[c].bReadyForMorning = 1;
                 }
             }
+
+            // Bei ATFS-Megasabotage-Mission ggf. künstlich Sabotage einfügen:
+            if (Difficulty == DIFF_ATFS06) {
+                GameMechanic::injectFakeSabotage();
+            }
         }
 
         // Verschiedene Sync's für's Netzwerk:
@@ -2514,90 +2519,6 @@ void SIM::NewDay() {
 
             if (abs(Players.Players[c].Sympathie[d]) > 70) {
                 Players.Players[c].Sympathie[d] = Players.Players[c].Sympathie[d] * 69 / 70;
-            }
-        }
-    }
-
-    // Bei ATFS-Megasabotage-Mission ggf. künstlich Sabotage einfügen:
-    if (Difficulty == DIFF_ATFS06) {
-        TEAKRAND SaboRand(Date + SLONG(Players.Players[localPlayer].Money));
-
-        for (c = 0; c < Players.AnzPlayers; c++) {
-            if (c != localPlayer) {
-                PLAYER &qPlayer = Players.Players[c];
-
-                if ((qPlayer.IsOut == 0) && qPlayer.ArabHints < 90 && qPlayer.ArabMode == 0 && qPlayer.ArabMode2 == 0 && qPlayer.ArabMode3 == 0) {
-                    PLAYER &qOpfer = Players.Players[static_cast<SLONG>(SaboRand.Rand(4))];
-
-                    if ((qOpfer.IsOut == 0) && qPlayer.PlayerNum != qOpfer.PlayerNum && qOpfer.Planes.GetNumUsed() > 0) {
-                        switch (SaboRand.Rand(3)) {
-                        case 0:
-                            qPlayer.ArabMode = -(SaboRand.Rand(4) + 1);
-                            break;
-                        case 1:
-                            qPlayer.ArabMode2 = -(SaboRand.Rand(4) + 1);
-                            break;
-                        case 2:
-                            qPlayer.ArabMode3 = -(SaboRand.Rand(5) + 1);
-                            break;
-                        default:
-                            hprintf("Sim.cpp: Default case should not be reached.");
-                            DebugBreak();
-                        }
-
-                        qPlayer.ArabActive = FALSE;
-                        qPlayer.ArabPlane = qOpfer.Planes.GetRandomUsedIndex(&SaboRand);
-
-                        qPlayer.ArabOpfer = qPlayer.ArabOpfer2 = qPlayer.ArabOpfer3 = qOpfer.PlayerNum;
-
-                        if (qPlayer.ArabMode2 == -2 && (qOpfer.HasItem(ITEM_LAPTOP) == 0)) {
-                            qPlayer.ArabMode2 = 0;
-                        }
-
-                        // Wegen Security-Office:
-                        if (qPlayer.ArabMode == -1 && ((qOpfer.SecurityFlags & (1 << 6)) != 0U)) {
-                            qPlayer.ArabMode = 0;
-                        }
-                        if (qPlayer.ArabMode == -2 && ((qOpfer.SecurityFlags & (1 << 6)) != 0U)) {
-                            qPlayer.ArabMode = 0;
-                        }
-                        if (qPlayer.ArabMode == -3 && ((qOpfer.SecurityFlags & (1 << 7)) != 0U)) {
-                            qPlayer.ArabMode = 0;
-                        }
-                        if (qPlayer.ArabMode == -4 && ((qOpfer.SecurityFlags & (1 << 7)) != 0U)) {
-                            qPlayer.ArabMode = 0;
-                        }
-
-                        if (qPlayer.ArabMode2 == -1 && ((qOpfer.SecurityFlags & (1 << 0)) != 0U)) {
-                            qPlayer.ArabMode2 = 0;
-                        }
-                        if (qPlayer.ArabMode2 == -2 && ((qOpfer.SecurityFlags & (1 << 1)) != 0U)) {
-                            qPlayer.ArabMode2 = 0;
-                        }
-                        if (qPlayer.ArabMode2 == -3 && ((qOpfer.SecurityFlags & (1 << 0)) != 0U)) {
-                            qPlayer.ArabMode2 = 0;
-                        }
-                        if (qPlayer.ArabMode2 == -4 && ((qOpfer.SecurityFlags & (1 << 2)) != 0U)) {
-                            qPlayer.ArabMode2 = 0;
-                        }
-
-                        if (qPlayer.ArabMode3 == -1 && ((qOpfer.SecurityFlags & (1 << 8)) != 0U)) {
-                            qPlayer.ArabMode3 = 0;
-                        }
-                        if (qPlayer.ArabMode3 == -2 && ((qOpfer.SecurityFlags & (1 << 5)) != 0U)) {
-                            qPlayer.ArabMode3 = 0;
-                        }
-                        if (qPlayer.ArabMode3 == -3 && ((qOpfer.SecurityFlags & (1 << 5)) != 0U)) {
-                            qPlayer.ArabMode3 = 0;
-                        }
-                        if (qPlayer.ArabMode3 == -4 && ((qOpfer.SecurityFlags & (1 << 3)) != 0U)) {
-                            qPlayer.ArabMode3 = 0;
-                        }
-                        if (qPlayer.ArabMode3 == -5 && ((qOpfer.SecurityFlags & (1 << 8)) != 0U)) {
-                            qPlayer.ArabMode3 = 0;
-                        }
-                    }
-                }
             }
         }
     }

@@ -35,6 +35,7 @@ const SLONG kMoneyReserveBuyOwnShares = 2000 * 1000;
 const SLONG kMoneyReserveBuyNemesisShares = 6000 * 1000;
 const SLONG kMoneyReserveBossOffice = 10 * 1000;
 const SLONG kMoneyReserveExpandAirport = 1000 * 1000;
+const SLONG kMoneyReserveSabotage = 200 * 1000;
 
 SLONG kPlaneScoreMode = 0;
 SLONG kPlaneScoreForceBest = -1;
@@ -284,10 +285,11 @@ void Bot::forceReplanning() { qPlayer.RobotActions[1].ActionId = ACTION_NONE; }
 
 Bot::Bot(PLAYER &player) : qPlayer(player) {}
 
-void Bot::printStatisticsLine() {
-    if (Sim.Date == 0) {
-        hprintf("BotStatistics: Tag, Geld, Kredit, Available, Saldo, Gewinn, Verlust, Auftraege, Fracht, Routen, Kerosin, Wartung, Planetype, Passagiere, "
-                "PassZufrieden, Firmenwert, Flugzeuge, AnzRouten");
+void Bot::printStatisticsLine(CString prefix, bool printHeader) {
+    if (printHeader) {
+        hprintf("%s: Tag, Geld, Kredit, Available, Saldo, Gewinn, Verlust, Auftraege, Fracht, Routen, Kerosin, Wartung, Planetype, Passagiere, "
+                "PassZufrieden, Firmenwert, Flugzeuge, AnzRouten",
+                (LPCTSTR)prefix);
     }
     SLONG count = 0;
     for (SLONG i = 0; i < qPlayer.Planes.AnzEntries(); i++) {
@@ -298,8 +300,8 @@ void Bot::printStatisticsLine() {
         }
     }
     auto balance = qPlayer.BilanzWoche.Hole();
-    hprintf("BotStatistics: %d, %lld, %lld, %lld, %lld, %lld, %lld, %lld, %lld, %lld, %lld, %lld, %ld, %lld, %lld, %lld, %lld, %lld", Sim.Date, qPlayer.Money,
-            qPlayer.Credit, getMoneyAvailable(), balance.GetOpSaldo(), balance.GetOpGewinn(), balance.GetOpVerlust(), balance.Auftraege,
+    hprintf("%s: %d, %lld, %lld, %lld, %lld, %lld, %lld, %lld, %lld, %lld, %lld, %lld, %ld, %lld, %lld, %lld, %lld, %lld", (LPCTSTR)prefix, Sim.Date,
+            qPlayer.Money, qPlayer.Credit, getMoneyAvailable(), balance.GetOpSaldo(), balance.GetOpGewinn(), balance.GetOpVerlust(), balance.Auftraege,
             balance.FrachtAuftraege, balance.Tickets, balance.KerosinFlug + balance.KerosinVorrat, balance.Wartung, count,
             qPlayer.Statistiken[STAT_PASSAGIERE].GetAtPastDay(1), qPlayer.Statistiken[STAT_ZUFR_PASSAGIERE].GetAtPastDay(1),
             qPlayer.Statistiken[STAT_FIRMENWERT].GetAtPastDay(1), qPlayer.Statistiken[STAT_FLUGZEUGE].GetAtPastDay(1),
@@ -308,7 +310,7 @@ void Bot::printStatisticsLine() {
 
 void Bot::RobotInit() {
     if (gQuickTestRun > 0) {
-        printStatisticsLine();
+        printStatisticsLine("BotStatistics", (Sim.Date == 0));
     } else {
         auto balance = qPlayer.BilanzWoche.Hole();
         greenprintf("Bot.cpp: Enter RobotInit(): Current day: %d, money: %s $ (op saldo %s = %s %s)", Sim.Date, Insert1000erDots64(qPlayer.Money).c_str(),
@@ -753,6 +755,7 @@ void Bot::RobotExecuteAction() {
     case ACTION_DROPMONEY:
         if (condDropMoney(moneyAvailable) != Prio::None) {
             __int64 m = std::min({qPlayer.Credit, moneyAvailable, getWeeklyOpSaldo()});
+            m = std::max(m, 1000LL);
             hprintf("Bot::RobotExecuteAction(): Paying back loan: %s $", (LPCTSTR)Insert1000erDots64(m));
             GameMechanic::payBackCredit(qPlayer, m);
             moneyAvailable = getMoneyAvailable();
