@@ -563,7 +563,7 @@ void Bot::actionBuyKerosineTank(__int64 moneyAvailable) {
     }
 }
 
-void Bot::actionSabotage(__int64 /*moneyAvailable*/) {
+void Bot::actionSabotage(__int64 moneyAvailable) {
     if (mItemAntiVirus == 1) {
         if (GameMechanic::useItem(qPlayer, ITEM_SPINNE)) {
             hprintf("Bot::actionSabotage(): Used item tarantula");
@@ -587,13 +587,35 @@ void Bot::actionSabotage(__int64 /*moneyAvailable*/) {
         return;
     }
 
+    /* decide which saboge. Default: Spiked coffee */
+    SLONG jobType = 1;
+    SLONG jobNumber = 1;
+    if (Sim.Difficulty == DIFF_ADDON08 || Sim.Difficulty == DIFF_ATFS07) {
+        /* sabotage planes to damage enemy stock price in stock price competitions */
+        jobType = 0;
+        std::array<SLONG, 5> hintArray{2, 4, 10, 20, 100};
+        for (jobNumber = 4; jobNumber >= 1; jobNumber--) {
+            auto minCost = SabotagePrice[jobNumber - 1];
+            SLONG hints = hintArray[jobNumber - 1];
+            if ((jobNumber <= qPlayer.ArabTrust) && (qPlayer.ArabHints + hints <= kMaxSabotageHints) && (minCost <= moneyAvailable)) {
+                break;
+            }
+        }
+        if (jobNumber < 1) {
+            return;
+        }
+
+        qPlayer.ArabPlaneSelection = Sim.Players.Players[mNemesis].Planes.GetRandomUsedIndex(&LocalRandom);
+    }
+
     /* exceute sabotage */
     GameMechanic::setSaboteurTarget(qPlayer, mNemesis);
-    auto res = GameMechanic::checkPrerequisitesForSaboteurJob(qPlayer, 1, 1, FALSE).result;
+    auto res = GameMechanic::checkPrerequisitesForSaboteurJob(qPlayer, jobType, jobNumber, FALSE).result;
     switch (res) {
     case GameMechanic::CheckSabotageResult::Ok:
         GameMechanic::activateSaboteurJob(qPlayer, FALSE);
-        hprintf("Bot::actionSabotage(): Sabotaging nemesis %s (spiked coffee)", (LPCTSTR)Sim.Players.Players[mNemesis].AirlineX);
+        hprintf("Bot::actionSabotage(): Sabotaging nemesis %s (jobType = %ld, jobNumber = %ld)", (LPCTSTR)Sim.Players.Players[mNemesis].AirlineX, jobType,
+                jobNumber);
         mNemesisSabotaged = mNemesis; /* ensures that we do not sabotage him again tomorrow */
         break;
     case GameMechanic::CheckSabotageResult::DeniedSecurity:

@@ -688,9 +688,18 @@ Bot::Prio Bot::condSabotage(__int64 &moneyAvailable) {
     moneyAvailable -= kMoneyReserveSabotage;
     if (qPlayer.RobotUse(ROBOT_USE_EXTREME_SABOTAGE)) {
         if (!mNeedToShutdownSecurity && (mNemesis != -1)) {
+
             /* spiking coffee */
-            auto minCost = SabotagePrice2[1 - 1];
-            if (qPlayer.ArabHints < kMaxSabotageHints && (minCost <= moneyAvailable)) {
+            auto minCost = SabotagePrice2[0];
+            SLONG hints = 2;
+
+            /* damage stock price */
+            if (Sim.Difficulty == DIFF_ADDON08 || Sim.Difficulty == DIFF_ATFS07) {
+                minCost = SabotagePrice[0];
+                hints = 4;
+            }
+
+            if ((qPlayer.ArabHints + hints <= kMaxSabotageHints) && (minCost <= moneyAvailable)) {
                 return Prio::Medium;
             }
         }

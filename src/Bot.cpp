@@ -23,7 +23,7 @@ const SLONG kUsedPlaneMinimumScore = 40;
 const DOUBLE kMaxKerosinQualiZiel = 1.2;
 const SLONG kStockEmissionMode = 2;
 const bool kReduceDividend = false;
-const SLONG kMaxSabotageHints = 90;
+const SLONG kMaxSabotageHints = 99;
 
 const SLONG kMoneyEmergencyFund = 100000;
 const SLONG kMoneyReserveRepairs = 0;
