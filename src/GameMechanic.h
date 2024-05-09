@@ -31,7 +31,7 @@ class GameMechanic {
     /* Sabotage */
     static SLONG setSaboteurTarget(PLAYER &qPlayer, SLONG target);
     static bool checkSaboteurBusy(PLAYER &qPlayer) { return (qPlayer.ArabMode != 0) || (qPlayer.ArabMode2 != 0) || (qPlayer.ArabMode3 != 0); }
-    enum class CheckSabotageResult { Ok, DeniedInvalidParam, DeniedSecurity, DeniedNotEnoughMoney, DeniedNoLaptop, DeniedTrust };
+    enum class CheckSabotageResult { Ok, DeniedInvalidParam, DeniedSaboteurBusy, DeniedSecurity, DeniedNotEnoughMoney, DeniedNoLaptop, DeniedTrust };
     struct CheckSabotage {
         CheckSabotageResult result{CheckSabotageResult::DeniedInvalidParam};
         int dialogID{};

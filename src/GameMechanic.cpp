@@ -156,7 +156,7 @@ SLONG GameMechanic::setSaboteurTarget(PLAYER &qPlayer, SLONG target) {
 GameMechanic::CheckSabotage GameMechanic::checkPrerequisitesForSaboteurJob(PLAYER &qPlayer, SLONG type, SLONG number, BOOL fremdSabotage) {
     if (checkSaboteurBusy(qPlayer)) {
         hprintf("GameMechanic::checkPrerequisitesForSaboteurJob(%s): Saboteur is busy.", (LPCTSTR)qPlayer.AirlineX);
-        return {CheckSabotageResult::DeniedInvalidParam, 0};
+        return {CheckSabotageResult::DeniedSaboteurBusy, 0};
     }
 
     auto victimID = qPlayer.ArabOpferSelection;
@@ -733,8 +733,21 @@ bool GameMechanic::buyStock(PLAYER &qPlayer, SLONG airlineNum, SLONG amount) {
         return false;
     }
 
+    auto &qPlayerBuyFrom = Sim.Players.Players[airlineNum];
+
+    /* Anzahl freier Aktien */
+    SLONG freeAmount = qPlayerBuyFrom.AnzAktien;
+    for (SLONG c = 0; c < 4; c++) {
+        freeAmount -= Sim.Players.Players[c].OwnsAktien[qPlayerBuyFrom.PlayerNum];
+    }
+
+    if (amount > freeAmount) {
+        redprintf("GameMechanic::buyStock(%s): Limiting amount bought to %ld (was %ld).", (LPCTSTR)qPlayer.AirlineX, freeAmount, amount);
+        amount = freeAmount;
+    }
+
     /* Handel durchführen */
-    auto aktienWert = static_cast<__int64>(Sim.Players.Players[airlineNum].Kurse[0]) * amount;
+    auto aktienWert = static_cast<__int64>(qPlayerBuyFrom.Kurse[0]) * amount;
     auto gesamtPreis = aktienWert + aktienWert / 10 + 100;
     if (qPlayer.Money - gesamtPreis < DEBT_LIMIT) {
         return false;
@@ -747,10 +760,10 @@ bool GameMechanic::buyStock(PLAYER &qPlayer, SLONG airlineNum, SLONG amount) {
     qPlayer.AktienWert[airlineNum] += aktienWert;
 
     /* aktualisiere Aktienkurs */
-    auto anzAktien = static_cast<DOUBLE>(Sim.Players.Players[airlineNum].AnzAktien);
-    Sim.Players.Players[airlineNum].Kurse[0] *= anzAktien / (anzAktien - amount / 2);
-    if (Sim.Players.Players[airlineNum].Kurse[0] < 0) {
-        Sim.Players.Players[airlineNum].Kurse[0] = 0;
+    auto anzAktien = static_cast<DOUBLE>(qPlayerBuyFrom.AnzAktien);
+    qPlayerBuyFrom.Kurse[0] *= anzAktien / (anzAktien - amount / 2);
+    if (qPlayerBuyFrom.Kurse[0] < 0) {
+        qPlayerBuyFrom.Kurse[0] = 0;
     }
 
     if (aktienWert != 0) {
@@ -758,8 +771,8 @@ bool GameMechanic::buyStock(PLAYER &qPlayer, SLONG airlineNum, SLONG amount) {
             SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -SLONG(aktienWert), STAT_A_SONSTIGES);
         }
 
-        if ((Sim.bNetwork != 0) && Sim.Players.Players[airlineNum].Owner == 2) {
-            SIM::SendSimpleMessage(ATNET_ADVISOR, Sim.Players.Players[airlineNum].NetworkID, 4, qPlayer.PlayerNum, airlineNum);
+        if ((Sim.bNetwork != 0) && qPlayerBuyFrom.Owner == 2) {
+            SIM::SendSimpleMessage(ATNET_ADVISOR, qPlayerBuyFrom.NetworkID, 4, qPlayer.PlayerNum, airlineNum);
         }
     }
 
@@ -788,6 +801,12 @@ bool GameMechanic::sellStock(PLAYER &qPlayer, SLONG airlineNum, SLONG amount) {
     if (amount == 0) {
         return false;
     }
+    if (amount > qPlayer.OwnsAktien[airlineNum]) {
+        redprintf("GameMechanic::sellStock(%s): Limiting amount sold to %ld (was %ld).", (LPCTSTR)qPlayer.AirlineX, qPlayer.OwnsAktien[airlineNum], amount);
+        amount = qPlayer.OwnsAktien[airlineNum];
+    }
+
+    auto &qPlayerSellFrom = Sim.Players.Players[airlineNum];
 
     /* aktualisiere Aktienwert */
     {
@@ -796,16 +815,16 @@ bool GameMechanic::sellStock(PLAYER &qPlayer, SLONG airlineNum, SLONG amount) {
     }
 
     /* Handel durchführen */
-    auto aktienWert = static_cast<__int64>(Sim.Players.Players[airlineNum].Kurse[0]) * amount;
+    auto aktienWert = static_cast<__int64>(qPlayerSellFrom.Kurse[0]) * amount;
     auto gesamtPreis = aktienWert - aktienWert / 10 - 100;
     qPlayer.ChangeMoney(gesamtPreis, 3151, "");
     qPlayer.OwnsAktien[airlineNum] -= amount;
 
     /* aktualisiere Aktienkurs */
-    auto anzAktien = static_cast<DOUBLE>(Sim.Players.Players[airlineNum].AnzAktien);
-    Sim.Players.Players[airlineNum].Kurse[0] *= (anzAktien - amount / 2) / anzAktien;
-    if (Sim.Players.Players[airlineNum].Kurse[0] < 0) {
-        Sim.Players.Players[airlineNum].Kurse[0] = 0;
+    auto anzAktien = static_cast<DOUBLE>(qPlayerSellFrom.AnzAktien);
+    qPlayerSellFrom.Kurse[0] *= (anzAktien - amount / 2) / anzAktien;
+    if (qPlayerSellFrom.Kurse[0] < 0) {
+        qPlayerSellFrom.Kurse[0] = 0;
     }
 
     if (aktienWert != 0) {

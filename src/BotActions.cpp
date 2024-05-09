@@ -618,6 +618,12 @@ void Bot::actionSabotage(__int64 moneyAvailable) {
                 jobNumber);
         mNemesisSabotaged = mNemesis; /* ensures that we do not sabotage him again tomorrow */
         break;
+    case GameMechanic::CheckSabotageResult::DeniedInvalidParam:
+        redprintf("Bot::actionSabotage(): Cannot sabotage nemesis %s: Invalid param", (LPCTSTR)Sim.Players.Players[mNemesis].AirlineX);
+        break;
+    case GameMechanic::CheckSabotageResult::DeniedSaboteurBusy:
+        redprintf("Bot::actionSabotage(): Cannot sabotage nemesis %s: Saboteur busy", (LPCTSTR)Sim.Players.Players[mNemesis].AirlineX);
+        break;
     case GameMechanic::CheckSabotageResult::DeniedSecurity:
         mNeedToShutdownSecurity = true;
         hprintf("Bot::actionSabotage(): Cannot sabotage nemesis %s: Blocked by security", (LPCTSTR)Sim.Players.Players[mNemesis].AirlineX);
@@ -627,9 +633,6 @@ void Bot::actionSabotage(__int64 moneyAvailable) {
         break;
     case GameMechanic::CheckSabotageResult::DeniedNoLaptop:
         redprintf("Bot::actionSabotage(): Cannot sabotage nemesis %s: Enemy has no laptop", (LPCTSTR)Sim.Players.Players[mNemesis].AirlineX);
-        break;
-    case GameMechanic::CheckSabotageResult::DeniedInvalidParam:
-        redprintf("Bot::actionSabotage(): Cannot sabotage nemesis %s: Invalid param", (LPCTSTR)Sim.Players.Players[mNemesis].AirlineX);
         break;
     case GameMechanic::CheckSabotageResult::DeniedTrust:
         redprintf("Bot::actionSabotage(): Cannot sabotage nemesis %s: Not enough trust", (LPCTSTR)Sim.Players.Players[mNemesis].AirlineX);
