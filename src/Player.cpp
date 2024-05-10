@@ -4889,19 +4889,25 @@ void PLAYER::RobotExecuteAction() {
         break;
 
     case ACTION_EMITSHARES: {
-        SLONG NeueAktien = (MaxAktien - AnzAktien) / 100 * 100;
-        GameMechanic::emitStock(*this, NeueAktien, 1);
+        SLONG NeueAktien = 100 * (MaxAktien - AnzAktien) / 100;
+        if ((NeueAktien > 0) && Kurse[0] >= 10) {
+            GameMechanic::emitStock(*this, NeueAktien, 1);
 
-        if (RobotUse(ROBOT_USE_REBUYSHARES)) {
-            // Direkt wieder die Hälfte aufkaufen:
-            GameMechanic::buyStock(*this, PlayerNum, NeueAktien / 2);
-        }
+            if (RobotUse(ROBOT_USE_REBUYSHARES)) {
+                // Direkt wieder die Hälfte aufkaufen:
+                SLONG freeAmount = AnzAktien;
+                for (SLONG c = 0; c < 4; c++) {
+                    freeAmount -= Sim.Players.Players[c].OwnsAktien[PlayerNum];
+                }
+                GameMechanic::buyStock(*this, PlayerNum, std::min(freeAmount, NeueAktien / 2));
+            }
 
-        if (RobotUse(ROBOT_USE_MAX20PERCENT) && OwnsAktien[PlayerNum] * 100 / AnzAktien > BTARGET_MEINANTEIL && Kurse[0] >= BTARGET_KURS) {
-            SLONG Sells = OwnsAktien[PlayerNum] - AnzAktien * BTARGET_MEINANTEIL / 100;
+            if (RobotUse(ROBOT_USE_MAX20PERCENT) && OwnsAktien[PlayerNum] * 100 / AnzAktien > BTARGET_MEINANTEIL && Kurse[0] >= BTARGET_KURS) {
+                SLONG Sells = OwnsAktien[PlayerNum] - AnzAktien * BTARGET_MEINANTEIL / 100;
 
-            if (Sells > 0) {
-                GameMechanic::sellStock(*this, PlayerNum, Sells);
+                if (Sells > 0) {
+                    GameMechanic::sellStock(*this, PlayerNum, Sells);
+                }
             }
         }
     }
