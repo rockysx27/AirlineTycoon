@@ -7537,7 +7537,7 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
     case ROBOT_USE_MUCH_FRACHT:
         /* SuperBot: Respects this flag */
         if (IsSuperBot() && Sim.Difficulty == DIFF_ADDON03) {
-            return true;
+            return true; /* higher priority also in free freight mission */
         }
         pFeatureDesc = "------"
                        "."
@@ -7693,7 +7693,7 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
     case ROBOT_USE_EXTREME_SABOTAGE:
         /* SuperBot: Respects this flag */
         if (IsSuperBot() && (Sim.Difficulty == DIFF_ADDON08 || Sim.Difficulty == DIFF_ATFS07)) {
-            return true;
+            return true; /* sabotage also in stock price missions */
         }
         pFeatureDesc = "------"
                        "."

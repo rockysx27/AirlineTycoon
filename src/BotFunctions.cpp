@@ -385,9 +385,6 @@ void Bot::grabFlights(BotPlaner &planer, bool areWeInOffice) {
     case DIFF_ADDON02:
         planer.setFreightBonus(5000 * 1000);
         break;
-    case DIFF_ADDON03:
-        planer.setFreeFreightBonus(5000 * 1000);
-        break;
     case DIFF_ADDON04:
         // planer.setDistanceFactor(1); TODO
         break;
@@ -405,6 +402,10 @@ void Bot::grabFlights(BotPlaner &planer, bool areWeInOffice) {
         break;
     default:
         break;
+    }
+
+    if (qPlayer.RobotUse(ROBOT_USE_FREE_FRACHT)) {
+        planer.setFreeFreightBonus(5000 * 1000);
     }
 
     mPlanerSolution = planer.planFlights(mPlanesForJobs, extraBufferTime);
