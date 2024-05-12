@@ -492,6 +492,9 @@ Bot::Prio Bot::condUpgradePlanes() {
     if (!haveDiscount()) {
         return Prio::None; /* wait until we have some discount */
     }
+    if (!mRoutes.empty() && mRoutes[mRoutesSortedByUtilization[0]].routeUtilization < 0.2) {
+        return Prio::None; /* prioritize new plane to achieve route utilization */
+    }
 
     if (mRunToFinalObjective == FinalPhase::SaveMoney) {
         return Prio::None;
@@ -1135,6 +1138,9 @@ Bot::Prio Bot::condBuyAds(__int64 &moneyAvailable) {
     }
     if (!haveDiscount()) {
         return Prio::None; /* wait until we have some discount */
+    }
+    if (!mRoutes.empty() && mRoutes[mRoutesSortedByUtilization[0]].routeUtilization < 0.2) {
+        return Prio::None; /* prioritize new plane to achieve route utilization */
     }
 
     if (mRunToFinalObjective == FinalPhase::SaveMoney) {
