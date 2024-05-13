@@ -7668,9 +7668,6 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
         break;
     case ROBOT_USE_NOCHITCHAT:
         /* SuperBot: Respects this flag */
-        if (IsSuperBot()) {
-            return false;
-        }
         pFeatureDesc = "------"
                        "."
                        "----------"

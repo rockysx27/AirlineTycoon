@@ -1615,13 +1615,14 @@ class /**/ CRobotAction {
     UBYTE TargetRoom{};
     SLONG Par1{}, Par2{};
     BOOL Running{FALSE};
+    SLONG Prio{};
 
     friend TEAKFILE &operator<<(TEAKFILE &File, const CRobotAction &r) {
-        File << r.ActionId << r.TargetRoom << r.Par1 << r.Par2 << r.Running;
+        File << r.ActionId << r.TargetRoom << r.Par1 << r.Par2 << r.Running << r.Prio;
         return (File);
     }
     friend TEAKFILE &operator>>(TEAKFILE &File, CRobotAction &r) {
-        File >> r.ActionId >> r.TargetRoom >> r.Par1 >> r.Par2 >> r.Running;
+        File >> r.ActionId >> r.TargetRoom >> r.Par1 >> r.Par2 >> r.Running >> r.Prio;
         return (File);
     }
 };

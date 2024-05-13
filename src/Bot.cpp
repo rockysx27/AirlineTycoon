@@ -41,8 +41,8 @@ SLONG kPlaneScoreMode = 0;
 SLONG kPlaneScoreForceBest = -1;
 SLONG kTestMode = 0;
 
-inline const char *getPrioName(Bot::Prio prio) {
-    switch (prio) {
+inline const char *getPrioName(SLONG prio) {
+    switch (static_cast<Bot::Prio>(prio)) {
     case Bot::Prio::Top:
         return "Top";
     case Bot::Prio::Higher:
@@ -498,8 +498,10 @@ void Bot::RobotPlan() {
 
     qRobotActions[1].ActionId = prioList[0].actionId;
     qRobotActions[1].Running = (prioList[0].prio >= Prio::Medium);
+    qRobotActions[1].Prio = static_cast<SLONG>(prioList[0].prio);
     qRobotActions[2].ActionId = prioList[1].actionId;
     qRobotActions[2].Running = (prioList[1].prio >= Prio::Medium);
+    qRobotActions[2].Prio = static_cast<SLONG>(prioList[1].prio);
 
     // hprintf("Bot::RobotPlan(): Action 0: %s", getRobotActionName(qRobotActions[0].ActionId));
     // greenprintf("Bot::RobotPlan(): Action 1: %s with prio %s", getRobotActionName(qRobotActions[1].ActionId), getPrioName(prioList[0].prio));
@@ -540,20 +542,20 @@ void Bot::RobotExecuteAction() {
     }
 
     /* handy references to player data (rw) */
-    auto &qRobotActions = qPlayer.RobotActions;
+    auto &qAction = qPlayer.RobotActions[0];
     auto &qWorkCountdown = qPlayer.WorkCountdown;
 
     LocalRandom.Rand(2); // Sicherheitshalber, damit wir immer genau ein Random ausführen
 
     mNumActionsToday += 1;
-    greenprintf("Bot::RobotExecuteAction(): Executing %s (#%d), current time: %02d:%02d, money: %s $ (available: %s $)",
-                getRobotActionName(qRobotActions[0].ActionId), mNumActionsToday, Sim.GetHour(), Sim.GetMinute(), (LPCTSTR)Insert1000erDots64(qPlayer.Money),
-                (LPCTSTR)Insert1000erDots64(getMoneyAvailable()));
+    greenprintf("Bot::RobotExecuteAction(): Executing %s (#%d, %s), current time: %02d:%02d, money: %s $ (available: %s $)",
+                getRobotActionName(qAction.ActionId), mNumActionsToday, getPrioName(qAction.Prio), Sim.GetHour(), Sim.GetMinute(),
+                (LPCTSTR)Insert1000erDots64(qPlayer.Money), (LPCTSTR)Insert1000erDots64(getMoneyAvailable()));
 
     mOnThePhone = 0;
 
     __int64 moneyAvailable = getMoneyAvailable();
-    switch (qRobotActions[0].ActionId) {
+    switch (qAction.ActionId) {
     case 0:
         qWorkCountdown = 2;
         break;
@@ -994,11 +996,11 @@ void Bot::RobotExecuteAction() {
         break;
 
     default:
-        redprintf("Bot::RobotExecuteAction(): Trying to execute invalid action: %s", getRobotActionName(qRobotActions[0].ActionId));
+        redprintf("Bot::RobotExecuteAction(): Trying to execute invalid action: %s", getRobotActionName(qAction.ActionId));
         // DebugBreak();
     }
 
-    mLastTimeInRoom[qRobotActions[0].ActionId] = Sim.Time;
+    mLastTimeInRoom[qAction.ActionId] = Sim.Time;
 
     if (qPlayer.RobotUse(ROBOT_USE_WORKQUICK_2) && qWorkCountdown > 2) {
         qWorkCountdown /= 2;

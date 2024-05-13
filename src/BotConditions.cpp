@@ -370,61 +370,57 @@ Bot::Prio Bot::condBuero() {
 }
 
 Bot::Prio Bot::condCallInternational() {
-    if (!hoursPassed(ACTION_CALL_INTERNATIONAL, 2)) {
-        return Prio::None;
-    }
     if (qPlayer.HasItem(ITEM_HANDY)) {
         return Prio::None; /* we rather use mobile to call */
     }
     if (!isOfficeUsable()) {
         return Prio::None; /* office is destroyed */
     }
-    if (canWeCallInternational()) {
-        return Prio::High;
+    if (!canWeCallInternational()) {
+        return Prio::None;
     }
-    return Prio::None;
+    if (!hoursPassed(ACTION_CALL_INTERNATIONAL, 2)) {
+        return qPlayer.RobotUse(ROBOT_USE_NOCHITCHAT) ? Prio::Low : Prio::None;
+    }
+    return Prio::High;
 }
 
 Bot::Prio Bot::condCallInternationalHandy() {
-    if (!hoursPassed(ACTION_CALL_INTER_HANDY, 2)) {
-        return Prio::None;
-    }
     if (!qPlayer.HasItem(ITEM_HANDY) || qPlayer.IsStuck != 0) {
         return Prio::None; /* cannot use mobile */
     }
-    if (canWeCallInternational()) {
-        return Prio::High;
+    if (!canWeCallInternational()) {
+        return Prio::None;
     }
-    return Prio::None;
+    if (!hoursPassed(ACTION_CALL_INTER_HANDY, 2)) {
+        return qPlayer.RobotUse(ROBOT_USE_NOCHITCHAT) ? Prio::Low : Prio::None;
+    }
+    return Prio::High;
 }
 
 Bot::Prio Bot::condCheckLastMinute() {
+    if (mPlanesForJobs.empty()) {
+        return Prio::None; /* no planes */
+    }
+    if (!mPlanerSolution.empty()) {
+        return Prio::None; /* previously grabbed flights still not scheduled */
+    }
+
+    auto res = canWePlanFlights();
+    if (HowToPlan::Office == res && Sim.GetHour() >= 17) {
+        return Prio::None; /* might be too late to reach office */
+    }
+    if (HowToPlan::None == res) {
+        return Prio::None;
+    }
+
     if (!hoursPassed(ACTION_CHECKAGENT1, 2)) {
-        return Prio::None;
+        return qPlayer.RobotUse(ROBOT_USE_NOCHITCHAT) ? Prio::Low : Prio::None;
     }
-
-    if (mPlanesForJobs.empty()) {
-        return Prio::None; /* no planes */
-    }
-    if (!mPlanerSolution.empty()) {
-        return Prio::None; /* previously grabbed flights still not scheduled */
-    }
-
-    auto res = canWePlanFlights();
-    if (HowToPlan::Office == res && Sim.GetHour() >= 17) {
-        return Prio::None; /* might be too late to reach office */
-    }
-    if (HowToPlan::None != res) {
-        return Prio::High;
-    }
-
-    return Prio::None;
+    return Prio::High;
 }
-Bot::Prio Bot::condCheckTravelAgency() {
-    if (!hoursPassed(ACTION_CHECKAGENT2, 2)) {
-        return Prio::None;
-    }
 
+Bot::Prio Bot::condCheckTravelAgency() {
     if (mPlanesForJobs.empty()) {
         return Prio::None; /* no planes */
     }
@@ -436,20 +432,22 @@ Bot::Prio Bot::condCheckTravelAgency() {
     if (HowToPlan::Office == res && Sim.GetHour() >= 17) {
         return Prio::None; /* might be too late to reach office */
     }
-    if (HowToPlan::None != res) {
-        return qPlayer.RobotUse(ROBOT_USE_MUCH_FRACHT) ? Prio::High : Prio::Higher;
+    if (HowToPlan::None == res) {
+        return Prio::None;
     }
 
     if (mItemAntiVirus == 0) {
         return Prio::Low; /* collect tarantula */
     }
 
-    return Prio::None;
-}
-Bot::Prio Bot::condCheckFreight() {
-    if (!hoursPassed(ACTION_CHECKAGENT3, 2)) {
-        return Prio::None;
+    if (!hoursPassed(ACTION_CHECKAGENT2, 2)) {
+        return qPlayer.RobotUse(ROBOT_USE_NOCHITCHAT) ? Prio::Low : Prio::None;
     }
+
+    return qPlayer.RobotUse(ROBOT_USE_MUCH_FRACHT) ? Prio::High : Prio::Higher;
+}
+
+Bot::Prio Bot::condCheckFreight() {
     if (!qPlayer.RobotUse(ROBOT_USE_FRACHT)) {
         return Prio::None;
     }
@@ -465,11 +463,15 @@ Bot::Prio Bot::condCheckFreight() {
     if (HowToPlan::Office == res && Sim.GetHour() >= 17) {
         return Prio::None; /* might be too late to reach office */
     }
-    if (HowToPlan::None != res) {
-        return qPlayer.RobotUse(ROBOT_USE_MUCH_FRACHT) ? Prio::Higher : Prio::High;
+    if (HowToPlan::None == res) {
+        return Prio::None;
     }
 
-    return Prio::None;
+    if (!hoursPassed(ACTION_CHECKAGENT3, 2)) {
+        return qPlayer.RobotUse(ROBOT_USE_NOCHITCHAT) ? Prio::Low : Prio::None;
+    }
+
+    return qPlayer.RobotUse(ROBOT_USE_MUCH_FRACHT) ? Prio::Higher : Prio::High;
 }
 
 Bot::Prio Bot::condUpgradePlanes() {
