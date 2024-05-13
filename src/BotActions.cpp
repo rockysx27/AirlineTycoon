@@ -583,7 +583,6 @@ void Bot::actionSabotage(__int64 moneyAvailable) {
     }
 
     if (!qPlayer.RobotUse(ROBOT_USE_EXTREME_SABOTAGE) || mNemesis == -1) {
-        redprintf("Bot::actionSabotage(): No nemesis");
         return;
     }
 

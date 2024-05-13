@@ -164,6 +164,7 @@ GameMechanic::CheckSabotage GameMechanic::checkPrerequisitesForSaboteurJob(PLAYE
         redprintf("GameMechanic::checkPrerequisitesForSaboteurJob(%s): Invalid victim id (%ld).", (LPCTSTR)qPlayer.AirlineX, victimID);
         return {CheckSabotageResult::DeniedInvalidParam, 0};
     }
+    auto &qOpfer = Sim.Players.Players[victimID];
 
     if (number > qPlayer.ArabTrust && fremdSabotage == FALSE) {
         redprintf("GameMechanic::checkPrerequisitesForSaboteurJob(%s): Not enough trust (have %ld, need %ld).", (LPCTSTR)qPlayer.AirlineX, qPlayer.ArabTrust,
@@ -178,20 +179,20 @@ GameMechanic::CheckSabotage GameMechanic::checkPrerequisitesForSaboteurJob(PLAYE
         }
 
         /* check security */
-        if (number == 1 && ((Sim.Players.Players[victimID].SecurityFlags & (1 << 6)) != 0U)) {
-            return {CheckSabotageResult::DeniedSecurity, 2096, Sim.Players.Players[victimID].AirlineX};
+        if (number == 1 && ((qOpfer.SecurityFlags & (1 << 6)) != 0U)) {
+            return {CheckSabotageResult::DeniedSecurity, 2096, qOpfer.AirlineX};
         }
-        if (number == 2 && ((Sim.Players.Players[victimID].SecurityFlags & (1 << 6)) != 0U)) {
-            return {CheckSabotageResult::DeniedSecurity, 2096, Sim.Players.Players[victimID].AirlineX};
+        if (number == 2 && ((qOpfer.SecurityFlags & (1 << 6)) != 0U)) {
+            return {CheckSabotageResult::DeniedSecurity, 2096, qOpfer.AirlineX};
         }
-        if (number == 3 && ((Sim.Players.Players[victimID].SecurityFlags & (1 << 7)) != 0U)) {
-            return {CheckSabotageResult::DeniedSecurity, 2097, Sim.Players.Players[victimID].AirlineX};
+        if (number == 3 && ((qOpfer.SecurityFlags & (1 << 7)) != 0U)) {
+            return {CheckSabotageResult::DeniedSecurity, 2097, qOpfer.AirlineX};
         }
-        if (number == 4 && ((Sim.Players.Players[victimID].SecurityFlags & (1 << 7)) != 0U)) {
-            return {CheckSabotageResult::DeniedSecurity, 2097, Sim.Players.Players[victimID].AirlineX};
+        if (number == 4 && ((qOpfer.SecurityFlags & (1 << 7)) != 0U)) {
+            return {CheckSabotageResult::DeniedSecurity, 2097, qOpfer.AirlineX};
         }
-        if (number == 5 && ((Sim.Players.Players[victimID].SecurityFlags & (1 << 6)) != 0U)) {
-            return {CheckSabotageResult::DeniedSecurity, 2096, Sim.Players.Players[victimID].AirlineX};
+        if (number == 5 && ((qOpfer.SecurityFlags & (1 << 6)) != 0U)) {
+            return {CheckSabotageResult::DeniedSecurity, 2096, qOpfer.AirlineX};
         }
 
         if (qPlayer.Money - SabotagePrice[number - 1] < DEBT_LIMIT && fremdSabotage == FALSE) {
@@ -209,17 +210,17 @@ GameMechanic::CheckSabotage GameMechanic::checkPrerequisitesForSaboteurJob(PLAYE
         }
 
         /* check security */
-        if (number == 1 && ((Sim.Players.Players[victimID].SecurityFlags & (1 << 0)) != 0U)) {
-            return {CheckSabotageResult::DeniedSecurity, 2090, Sim.Players.Players[victimID].AirlineX};
+        if (number == 1 && ((qOpfer.SecurityFlags & (1 << 0)) != 0U)) {
+            return {CheckSabotageResult::DeniedSecurity, 2090, qOpfer.AirlineX};
         }
-        if (number == 2 && ((Sim.Players.Players[victimID].SecurityFlags & (1 << 1)) != 0U)) {
-            return {CheckSabotageResult::DeniedSecurity, 2091, Sim.Players.Players[victimID].AirlineX};
+        if (number == 2 && ((qOpfer.SecurityFlags & (1 << 1)) != 0U)) {
+            return {CheckSabotageResult::DeniedSecurity, 2091, qOpfer.AirlineX};
         }
-        if (number == 3 && ((Sim.Players.Players[victimID].SecurityFlags & (1 << 0)) != 0U)) {
-            return {CheckSabotageResult::DeniedSecurity, 2090, Sim.Players.Players[victimID].AirlineX};
+        if (number == 3 && ((qOpfer.SecurityFlags & (1 << 0)) != 0U)) {
+            return {CheckSabotageResult::DeniedSecurity, 2090, qOpfer.AirlineX};
         }
-        if (number == 4 && ((Sim.Players.Players[victimID].SecurityFlags & (1 << 2)) != 0U)) {
-            return {CheckSabotageResult::DeniedSecurity, 2092, Sim.Players.Players[victimID].AirlineX};
+        if (number == 4 && ((qOpfer.SecurityFlags & (1 << 2)) != 0U)) {
+            return {CheckSabotageResult::DeniedSecurity, 2092, qOpfer.AirlineX};
         }
 
         if (qPlayer.Money - SabotagePrice2[number - 1] < DEBT_LIMIT && fremdSabotage == FALSE) {
@@ -227,7 +228,7 @@ GameMechanic::CheckSabotage GameMechanic::checkPrerequisitesForSaboteurJob(PLAYE
             return {CheckSabotageResult::DeniedNotEnoughMoney, 6000};
         }
 
-        if (number == 2 && (Sim.Players.Players[victimID].HasItem(ITEM_LAPTOP) == 0)) {
+        if (number == 2 && (qOpfer.HasItem(ITEM_LAPTOP) == 0)) {
             hprintf("GameMechanic::checkPrerequisitesForSaboteurJob(%s): Victim has no laptop", (LPCTSTR)qPlayer.AirlineX);
             return {CheckSabotageResult::DeniedNoLaptop, 1300};
         }
@@ -242,23 +243,23 @@ GameMechanic::CheckSabotage GameMechanic::checkPrerequisitesForSaboteurJob(PLAYE
         }
 
         /* check security */
-        if (number == 1 && ((Sim.Players.Players[victimID].SecurityFlags & (1 << 8)) != 0U)) {
-            return {CheckSabotageResult::DeniedSecurity, 2098, Sim.Players.Players[victimID].AirlineX};
+        if (number == 1 && ((qOpfer.SecurityFlags & (1 << 8)) != 0U)) {
+            return {CheckSabotageResult::DeniedSecurity, 2098, qOpfer.AirlineX};
         }
-        if (number == 2 && ((Sim.Players.Players[victimID].SecurityFlags & (1 << 5)) != 0U)) {
-            return {CheckSabotageResult::DeniedSecurity, 2095, Sim.Players.Players[victimID].AirlineX};
+        if (number == 2 && ((qOpfer.SecurityFlags & (1 << 5)) != 0U)) {
+            return {CheckSabotageResult::DeniedSecurity, 2095, qOpfer.AirlineX};
         }
-        if (number == 3 && ((Sim.Players.Players[victimID].SecurityFlags & (1 << 5)) != 0U)) {
-            return {CheckSabotageResult::DeniedSecurity, 2095, Sim.Players.Players[victimID].AirlineX};
+        if (number == 3 && ((qOpfer.SecurityFlags & (1 << 5)) != 0U)) {
+            return {CheckSabotageResult::DeniedSecurity, 2095, qOpfer.AirlineX};
         }
-        if (number == 4 && ((Sim.Players.Players[victimID].SecurityFlags & (1 << 3)) != 0U)) {
-            return {CheckSabotageResult::DeniedSecurity, 2093, Sim.Players.Players[victimID].AirlineX};
+        if (number == 4 && ((qOpfer.SecurityFlags & (1 << 3)) != 0U)) {
+            return {CheckSabotageResult::DeniedSecurity, 2093, qOpfer.AirlineX};
         }
-        if (number == 5 && ((Sim.Players.Players[victimID].SecurityFlags & (1 << 8)) != 0U)) {
-            return {CheckSabotageResult::DeniedSecurity, 2098, Sim.Players.Players[victimID].AirlineX};
+        if (number == 5 && ((qOpfer.SecurityFlags & (1 << 8)) != 0U)) {
+            return {CheckSabotageResult::DeniedSecurity, 2098, qOpfer.AirlineX};
         }
-        if (number == 6 && ((Sim.Players.Players[victimID].SecurityFlags & (1 << 4)) != 0U)) {
-            return {CheckSabotageResult::DeniedSecurity, 2094, Sim.Players.Players[victimID].AirlineX};
+        if (number == 6 && ((qOpfer.SecurityFlags & (1 << 4)) != 0U)) {
+            return {CheckSabotageResult::DeniedSecurity, 2094, qOpfer.AirlineX};
         }
 
         if (qPlayer.Money - SabotagePrice3[number - 1] < DEBT_LIMIT && fremdSabotage == FALSE) {
@@ -282,6 +283,7 @@ bool GameMechanic::activateSaboteurJob(PLAYER &qPlayer, BOOL fremdSabotage) {
     }
 
     auto victimID = qPlayer.ArabOpferSelection;
+    auto &qOpfer = Sim.Players.Players[victimID];
     if (type == 0) {
         if (number < 1 || number >= 6) {
             redprintf("GameMechanic::activateSaboteurJob(%s): Invalid job number (%ld).", (LPCTSTR)qPlayer.AirlineX, number);
@@ -293,15 +295,15 @@ bool GameMechanic::activateSaboteurJob(PLAYER &qPlayer, BOOL fremdSabotage) {
         }
 
         if (number == 1) {
-            Sim.Players.Players[victimID].SecurityNeeded |= (1 << 6);
+            qOpfer.SecurityNeeded |= (1 << 6);
         } else if (number == 2) {
-            Sim.Players.Players[victimID].SecurityNeeded |= (1 << 6);
+            qOpfer.SecurityNeeded |= (1 << 6);
         } else if (number == 3) {
-            Sim.Players.Players[victimID].SecurityNeeded |= (1 << 7);
+            qOpfer.SecurityNeeded |= (1 << 7);
         } else if (number == 4) {
-            Sim.Players.Players[victimID].SecurityNeeded |= (1 << 7);
+            qOpfer.SecurityNeeded |= (1 << 7);
         } else if (number == 5) {
-            Sim.Players.Players[victimID].SecurityNeeded |= (1 << 6);
+            qOpfer.SecurityNeeded |= (1 << 6);
         }
 
         qPlayer.ArabOpfer = victimID;
@@ -335,13 +337,13 @@ bool GameMechanic::activateSaboteurJob(PLAYER &qPlayer, BOOL fremdSabotage) {
         }
 
         if (number == 1) {
-            Sim.Players.Players[victimID].SecurityNeeded |= (1 << 0);
+            qOpfer.SecurityNeeded |= (1 << 0);
         } else if (number == 2) {
-            Sim.Players.Players[victimID].SecurityNeeded |= (1 << 1);
+            qOpfer.SecurityNeeded |= (1 << 1);
         } else if (number == 3) {
-            Sim.Players.Players[victimID].SecurityNeeded |= (1 << 0);
+            qOpfer.SecurityNeeded |= (1 << 0);
         } else if (number == 4) {
-            Sim.Players.Players[victimID].SecurityNeeded |= (1 << 2);
+            qOpfer.SecurityNeeded |= (1 << 2);
         }
 
         qPlayer.ArabOpfer = victimID;
@@ -379,13 +381,13 @@ bool GameMechanic::activateSaboteurJob(PLAYER &qPlayer, BOOL fremdSabotage) {
         }
 
         if (number == 1) {
-            Sim.Players.Players[victimID].SecurityNeeded |= (1 << 8);
+            qOpfer.SecurityNeeded |= (1 << 8);
         } else if (number == 2) {
-            Sim.Players.Players[victimID].SecurityNeeded |= (1 << 5);
+            qOpfer.SecurityNeeded |= (1 << 5);
         } else if (number == 3) {
-            Sim.Players.Players[victimID].SecurityNeeded |= (1 << 5);
+            qOpfer.SecurityNeeded |= (1 << 5);
         } else if (number == 4) {
-            Sim.Players.Players[victimID].SecurityNeeded |= (1 << 3);
+            qOpfer.SecurityNeeded |= (1 << 3);
         }
 
         qPlayer.ArabOpfer = victimID;
@@ -417,7 +419,8 @@ bool GameMechanic::activateSaboteurJob(PLAYER &qPlayer, BOOL fremdSabotage) {
         return false;
     }
 
-    hprintf("GameMechanic::activateSaboteurJob: %s %ld %ld %ld", (LPCTSTR)qPlayer.AirlineX, qPlayer.ArabMode, qPlayer.ArabMode2, qPlayer.ArabMode3);
+    hprintf("GameMechanic::activateSaboteurJob: %s=>%s %ld %ld %ld", (LPCTSTR)qPlayer.AirlineX, (LPCTSTR)qOpfer.AirlineX, qPlayer.ArabMode, qPlayer.ArabMode2,
+            qPlayer.ArabMode3);
     return true;
 }
 
@@ -2836,7 +2839,9 @@ void GameMechanic::executeSabotageMode1() {
             CPlane &qPlane = qOpfer.Planes[qPlayer.ArabPlane];
             SLONG e = qPlane.Flugplan.NextStart;
 
-            if (e != -1 && qPlane.Flugplan.Flug[e].Startdate * 24 + qPlane.Flugplan.Flug[e].Startzeit == Sim.Date * 24 + Sim.GetHour()) {
+            auto currentTime = qPlane.Flugplan.Flug[e].Startdate * 24 + qPlane.Flugplan.Flug[e].Startzeit;
+            auto sabotageTime = Sim.Date * 24 + Sim.GetHour() + 2;
+            if (e != -1 && currentTime == sabotageTime) {
                 ActNow = TRUE;
             }
         }
