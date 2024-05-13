@@ -41,8 +41,8 @@ SLONG kPlaneScoreMode = 0;
 SLONG kPlaneScoreForceBest = -1;
 SLONG kTestMode = 0;
 
-inline const char *getPrioName(SLONG prio) {
-    switch (static_cast<Bot::Prio>(prio)) {
+inline const char *getPrioName(Bot::Prio prio) {
+    switch (prio) {
     case Bot::Prio::Top:
         return "Top";
     case Bot::Prio::Higher:
@@ -64,6 +64,7 @@ inline const char *getPrioName(SLONG prio) {
     }
     return "INVALID";
 }
+inline const char *getPrioName(SLONG prio) { return getPrioName(static_cast<Bot::Prio>(prio)); }
 
 SLONG Bot::calcCurrentGainFromJobs() const {
     SLONG gain = 0;
@@ -459,6 +460,7 @@ void Bot::RobotPlan() {
         SLONG actionId{-1};
         Prio prio{Prio::None};
         SLONG secondaryScore{0};
+        SLONG walkingDistance{0};
     };
     std::vector<PrioListItem> prioList;
     for (auto &action : actions) {
@@ -473,12 +475,12 @@ void Bot::RobotPlan() {
         SLONG p = qPlayer.PlayerNum;
         SLONG room = Helper::getRoomFromAction(p, action);
         SLONG score = qPlayer.PlayerWalkRandom.Rand(0, 100);
+        prioList.emplace_back(PrioListItem{action, prio, score});
+
         if (prio >= Prio::Medium && room > 0 && (Sim.Time > 540000)) {
             /* factor in walking distance for more important actions */
-            score += Helper::getWalkDistance(p, room);
+            prioList.back().walkingDistance = Helper::getWalkDistance(p, room);
         }
-
-        prioList.emplace_back(PrioListItem{action, prio, score});
     }
 
     if (prioList.size() < 2) {
@@ -491,10 +493,15 @@ void Bot::RobotPlan() {
     /* sort by priority */
     std::sort(prioList.begin(), prioList.end(), [](const PrioListItem &a, const PrioListItem &b) {
         if (a.prio == b.prio) {
-            return (a.secondaryScore < b.secondaryScore);
+            return ((a.secondaryScore + a.walkingDistance) < (b.secondaryScore + b.walkingDistance));
         }
         return (a.prio > b.prio);
     });
+
+    /*for (const auto &qAction : prioList) {
+        hprintf("Bot::RobotPlan(): %s with prio %s (%d+%d)", getRobotActionName(qAction.actionId), getPrioName(qAction.prio), qAction.secondaryScore,
+                qAction.walkingDistance);
+    }*/
 
     qRobotActions[1].ActionId = prioList[0].actionId;
     qRobotActions[1].Running = (prioList[0].prio >= Prio::Medium);

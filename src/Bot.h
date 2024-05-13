@@ -67,7 +67,7 @@ class Bot {
         Medium, /* most main tasks that do not need higher priority */
         High,   /* important to do soon (grab flights, important investments) */
         Higher, /* important to do very soon (grab flights from travel agency) */
-        Top     /* survial at stake */
+        Top     /* survival at stake */
     };
     enum class AreWeBroke {
         No,

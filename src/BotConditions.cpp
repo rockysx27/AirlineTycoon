@@ -379,10 +379,10 @@ Bot::Prio Bot::condCallInternational() {
     if (!canWeCallInternational()) {
         return Prio::None;
     }
-    if (!hoursPassed(ACTION_CALL_INTERNATIONAL, 2)) {
-        return qPlayer.RobotUse(ROBOT_USE_NOCHITCHAT) ? Prio::Low : Prio::None;
+    if (hoursPassed(ACTION_CALL_INTERNATIONAL, 2)) {
+        return Prio::High;
     }
-    return Prio::High;
+    return qPlayer.RobotUse(ROBOT_USE_NOCHITCHAT) ? Prio::Low : Prio::None;
 }
 
 Bot::Prio Bot::condCallInternationalHandy() {
@@ -392,10 +392,10 @@ Bot::Prio Bot::condCallInternationalHandy() {
     if (!canWeCallInternational()) {
         return Prio::None;
     }
-    if (!hoursPassed(ACTION_CALL_INTER_HANDY, 2)) {
-        return qPlayer.RobotUse(ROBOT_USE_NOCHITCHAT) ? Prio::Low : Prio::None;
+    if (hoursPassed(ACTION_CALL_INTER_HANDY, 2)) {
+        return Prio::High;
     }
-    return Prio::High;
+    return qPlayer.RobotUse(ROBOT_USE_NOCHITCHAT) ? Prio::Low : Prio::None;
 }
 
 Bot::Prio Bot::condCheckLastMinute() {
@@ -414,10 +414,10 @@ Bot::Prio Bot::condCheckLastMinute() {
         return Prio::None;
     }
 
-    if (!hoursPassed(ACTION_CHECKAGENT1, 2)) {
-        return qPlayer.RobotUse(ROBOT_USE_NOCHITCHAT) ? Prio::Low : Prio::None;
+    if (hoursPassed(ACTION_CHECKAGENT1, 2)) {
+        return Prio::High;
     }
-    return Prio::High;
+    return qPlayer.RobotUse(ROBOT_USE_NOCHITCHAT) ? Prio::Low : Prio::None;
 }
 
 Bot::Prio Bot::condCheckTravelAgency() {
@@ -436,15 +436,13 @@ Bot::Prio Bot::condCheckTravelAgency() {
         return Prio::None;
     }
 
+    if (hoursPassed(ACTION_CHECKAGENT2, 2)) {
+        return qPlayer.RobotUse(ROBOT_USE_MUCH_FRACHT) ? Prio::High : Prio::Higher;
+    }
     if (mItemAntiVirus == 0) {
         return Prio::Low; /* collect tarantula */
     }
-
-    if (!hoursPassed(ACTION_CHECKAGENT2, 2)) {
-        return qPlayer.RobotUse(ROBOT_USE_NOCHITCHAT) ? Prio::Low : Prio::None;
-    }
-
-    return qPlayer.RobotUse(ROBOT_USE_MUCH_FRACHT) ? Prio::High : Prio::Higher;
+    return qPlayer.RobotUse(ROBOT_USE_NOCHITCHAT) ? Prio::Low : Prio::None;
 }
 
 Bot::Prio Bot::condCheckFreight() {
@@ -467,11 +465,10 @@ Bot::Prio Bot::condCheckFreight() {
         return Prio::None;
     }
 
-    if (!hoursPassed(ACTION_CHECKAGENT3, 2)) {
-        return qPlayer.RobotUse(ROBOT_USE_NOCHITCHAT) ? Prio::Low : Prio::None;
+    if (hoursPassed(ACTION_CHECKAGENT3, 2)) {
+        return qPlayer.RobotUse(ROBOT_USE_MUCH_FRACHT) ? Prio::Higher : Prio::High;
     }
-
-    return qPlayer.RobotUse(ROBOT_USE_MUCH_FRACHT) ? Prio::Higher : Prio::High;
+    return qPlayer.RobotUse(ROBOT_USE_NOCHITCHAT) ? Prio::Low : Prio::None;
 }
 
 Bot::Prio Bot::condUpgradePlanes() {
@@ -875,9 +872,6 @@ Bot::Prio Bot::condVisitNasa(__int64 &moneyAvailable) {
 
 Bot::Prio Bot::condVisitMisc() {
     /* misc action, can do as often as the bot likes */
-    if (qPlayer.RobotUse(ROBOT_USE_NOCHITCHAT)) {
-        return Prio::None;
-    }
     return Prio::Lowest;
 }
 

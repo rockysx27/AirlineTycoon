@@ -530,7 +530,7 @@ bool checkRoomOpen(SLONG roomId) {
     SLONG time = Sim.Time;
     switch (roomId) {
     case ACTION_VISITDUTYFREE:
-        return (time >= timeDutyOpen && ((Sim.Weekday != 5 && Sim.Weekday != 6) || time <= timeDutyClose - 60000));
+        return (time >= timeDutyOpen && ((Sim.Weekday != 5 && Sim.Weekday != 6) || time <= timeDutyClose));
     case ACTION_BUY_KEROSIN:
         [[fallthrough]];
     case ACTION_BUY_KEROSIN_TANKS:
@@ -538,15 +538,15 @@ bool checkRoomOpen(SLONG roomId) {
     case ACTION_VISITARAB:
         return (Sim.Difficulty >= DIFF_EASY || Sim.Difficulty == DIFF_FREEGAME) && (time >= timeArabOpen && Sim.Weekday != 6);
     case ACTION_CHECKAGENT1:
-        return (time <= timeLastClose - 60000 && Sim.Weekday != 5 && GlobalUse(USE_TRAVELHOLDING));
+        return (time <= timeLastClose && Sim.Weekday != 5 && GlobalUse(USE_TRAVELHOLDING));
     case ACTION_BUYUSEDPLANE:
         [[fallthrough]];
     case ACTION_VISITMUSEUM:
         return (time >= timeMuseOpen && Sim.Weekday != 5 && Sim.Weekday != 6);
     case ACTION_CHECKAGENT2:
-        return (time <= timeReisClose - 60000 && GlobalUse(USE_TRAVELHOLDING));
+        return (time <= timeReisClose && GlobalUse(USE_TRAVELHOLDING));
     case ACTION_BUYNEWPLANE:
-        return (time <= timeMaklClose - 60000);
+        return (time <= timeMaklClose);
     case ACTION_WERBUNG:
         [[fallthrough]];
     case ACTION_WERBUNG_ROUTES:
