@@ -854,11 +854,13 @@ bool BotPlaner::algo(int64_t timeBudget) {
     }
 
     /* apply existing solution to graph and plane state */
-    int oldGain = allPlaneGain();
-    int overallBestGain = oldGain;
     std::vector<std::vector<int>> overallBestPath(mPlaneStates.size());
     applySolutionToGraph();
     runPruneFreightJobs();
+
+    /* save pre-existing solution */
+    int oldGain = allPlaneGain();
+    int overallBestGain = oldGain;
     for (int planeIdx = 0; planeIdx < mPlaneStates.size(); planeIdx++) {
         savePath(planeIdx, overallBestPath[planeIdx]);
     }
@@ -971,5 +973,6 @@ bool BotPlaner::algo(int64_t timeBudget) {
         genSolutionsFromGraph(planeIdx);
     }
 
+    hprintf("Overall gain improved from %d to %d.", oldGain, overallBestGain);
     return (overallBestGain > oldGain);
 }
