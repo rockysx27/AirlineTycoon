@@ -21,6 +21,7 @@ const SLONG kPlaneMinimumZustand = 90;
 const SLONG kPlaneTargetZustand = 100;
 const SLONG kUsedPlaneMinimumScore = 40;
 const DOUBLE kMaxKerosinQualiZiel = 1.2;
+SLONG kOwnStockPosessionRatio = 25;
 const SLONG kStockEmissionMode = 2;
 const bool kReduceDividend = false;
 const SLONG kMaxSabotageHints = 99;
@@ -391,6 +392,10 @@ void Bot::RobotInit() {
             } else {
                 mDesignerPlane.Load(mDesignerPlaneFile);
             }
+        }
+
+        if (qPlayer.RobotUse(ROBOT_USE_MAX20PERCENT)) {
+            kOwnStockPosessionRatio = 20;
         }
 
         mFirstRun = false;
@@ -792,13 +797,20 @@ void Bot::RobotExecuteAction() {
         qWorkCountdown = 20 * 6;
         break;
 
-    case ACTION_BUYSHARES:
-        // buy shares from nemesis
-        if (condBuyShares(moneyAvailable, mNemesis) != Prio::None) {
-            actionBuyShares(moneyAvailable);
-        } else {
+    case ACTION_BUYSHARES: {
+        bool performedAction = false;
+        if (condBuyNemesisShares(moneyAvailable, mNemesis) != Prio::None) {
+            actionBuyNemesisShares(moneyAvailable);
+            performedAction = true;
+        }
+        if (condBuyOwnShares(moneyAvailable) != Prio::None) {
+            actionBuyOwnShares(moneyAvailable);
+            performedAction = true;
+        }
+        if (!performedAction) {
             redprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
+    }
         qWorkCountdown = 20 * 5;
         break;
 

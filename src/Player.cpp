@@ -1139,11 +1139,10 @@ SLONG PLAYER::GetMissionRating(bool bAnderer) {
         }
 
         for (SLONG c = 0; c <= 29; c++) {
-            if (SLONG(Statistiken[STAT_AKTIEN_ANZAHL].GetAtPastDay(c)) > 0) {
-                if (SLONG(Statistiken[STAT_AKTIEN_SA + PlayerNum].GetAtPastDay(c)) * 100 / SLONG(Statistiken[STAT_AKTIEN_ANZAHL].GetAtPastDay(c)) <=
-                    BTARGET_MEINANTEIL) {
-                    sum++;
-                }
+            auto anz = Statistiken[STAT_AKTIEN_SA + PlayerNum].GetAtPastDay(c);
+            auto gesamt = Statistiken[STAT_AKTIEN_ANZAHL].GetAtPastDay(c);
+            if ((gesamt > 0) && anz * 100 / gesamt <= BTARGET_MEINANTEIL) {
+                sum++;
             }
         }
 
@@ -1293,8 +1292,10 @@ BOOL PLAYER::HasWon() {
     }
     if (Sim.Difficulty == DIFF_ATFS07 && GetMissionRating() >= BTARGET_KURS) {
         for (SLONG c = 0; c <= 29; c++) {
-            if (Statistiken[STAT_AKTIEN_SA + PlayerNum].GetAtPastDay(c) * 100 / Statistiken[STAT_AKTIEN_ANZAHL].GetAtPastDay(c) > BTARGET_MEINANTEIL) {
-                return static_cast<BOOL>(false);
+            auto anz = Statistiken[STAT_AKTIEN_SA + PlayerNum].GetAtPastDay(c);
+            auto gesamt = Statistiken[STAT_AKTIEN_ANZAHL].GetAtPastDay(c);
+            if (anz * 100 / gesamt > BTARGET_MEINANTEIL) {
+                return (FALSE);
             }
         }
 
@@ -6442,7 +6443,7 @@ void PLAYER::UpdateStatistics() {
         break;
 
     case DIFF_ATFS07:
-        Statistiken[STAT_MISSIONSZIEL].SetAtPastDay(GetMissionRating() * 100 / 30);
+        Statistiken[STAT_MISSIONSZIEL].SetAtPastDay(GetMissionRating());
         break;
 
     case DIFF_ATFS08:
@@ -7725,7 +7726,10 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
                        "XXXXX-XX--";
         break;
     case ROBOT_USE_MAX20PERCENT:
-        /* SuperBot: Ignores this flag */
+        /* SuperBot: Respects this flag */
+        if (IsSuperBot()) {
+            return (Sim.Difficulty == DIFF_ATFS07);
+        }
         pFeatureDesc = "XXXXXX"
                        "!"
                        "XXXXXXXXXX"

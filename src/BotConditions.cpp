@@ -774,6 +774,7 @@ Bot::Prio Bot::condEmitShares() {
     if (howToGetMoney() == HowToGetMoney::EmitShares) {
         return Prio::Top;
     }
+
     if (!hoursPassed(ACTION_EMITSHARES, 24)) {
         return Prio::None;
     }
@@ -788,29 +789,45 @@ Bot::Prio Bot::condSellShares(__int64 &moneyAvailable) {
     if (!hoursPassed(ACTION_SELLSHARES, 1)) {
         return Prio::None;
     }
-
     auto res = howToGetMoney();
     if (res == HowToGetMoney::SellShares || res == HowToGetMoney::SellOwnShares || res == HowToGetMoney::SellAllOwnShares) {
         return Prio::Top;
+    }
+
+    if (!hoursPassed(ACTION_SELLSHARES, 24)) {
+        return Prio::None;
+    }
+    if (qPlayer.RobotUse(ROBOT_USE_MAX20PERCENT)) {
+        SLONG c = qPlayer.PlayerNum;
+        SLONG sells = (qPlayer.OwnsAktien[c] - qPlayer.AnzAktien * kOwnStockPosessionRatio / 100);
+        if (sells > 0) {
+            return Prio::Medium;
+        }
     }
     return Prio::None;
 }
 
 Bot::Prio Bot::condBuyShares(__int64 &moneyAvailable, SLONG dislike) {
-    if (!hoursPassed(ACTION_BUYSHARES, 4)) {
+    if (!hoursPassed(ACTION_BUYSHARES, 24)) {
         return Prio::None;
     }
+    return std::max(condBuyNemesisShares(moneyAvailable, dislike), condBuyOwnShares(moneyAvailable));
+}
+
+Bot::Prio Bot::condBuyNemesisShares(__int64 &moneyAvailable, SLONG dislike) {
+    return Prio::None; // TODO
+
+    moneyAvailable = getMoneyAvailable() - kMoneyReserveBuyNemesisShares;
     if (mRunToFinalObjective > FinalPhase::No) {
         return Prio::None;
     }
     if (qPlayer.RobotUse(ROBOT_USE_DONTBUYANYSHARES)) {
         return Prio::None;
     }
-    return std::max(condBuyNemesisShares(moneyAvailable, dislike), condBuyOwnShares(moneyAvailable));
-}
-Bot::Prio Bot::condBuyOwnShares(__int64 &moneyAvailable) {
-    moneyAvailable = getMoneyAvailable() - kMoneyReserveBuyOwnShares;
-    if (qPlayer.OwnsAktien[qPlayer.PlayerNum] >= qPlayer.AnzAktien / 4) {
+    if (dislike == -1) {
+        return Prio::None;
+    }
+    if (qPlayer.OwnsAktien[dislike] >= (Sim.Players.Players[dislike].AnzAktien / 2)) {
         return Prio::None;
     }
     if ((moneyAvailable >= 0) && (qPlayer.Credit == 0)) {
@@ -818,11 +835,19 @@ Bot::Prio Bot::condBuyOwnShares(__int64 &moneyAvailable) {
     }
     return Prio::None;
 }
-Bot::Prio Bot::condBuyNemesisShares(__int64 &moneyAvailable, SLONG dislike) {
-    return Prio::None; // TODO
 
-    moneyAvailable = getMoneyAvailable() - kMoneyReserveBuyNemesisShares;
-    if ((dislike != -1) && (moneyAvailable >= 0) && (qPlayer.Credit == 0)) {
+Bot::Prio Bot::condBuyOwnShares(__int64 &moneyAvailable) {
+    moneyAvailable = getMoneyAvailable() - kMoneyReserveBuyOwnShares;
+    if (mRunToFinalObjective > FinalPhase::No) {
+        return Prio::None;
+    }
+    if (qPlayer.RobotUse(ROBOT_USE_DONTBUYANYSHARES)) {
+        return Prio::None;
+    }
+    if (qPlayer.OwnsAktien[qPlayer.PlayerNum] >= (qPlayer.AnzAktien * kOwnStockPosessionRatio / 100)) {
+        return Prio::None;
+    }
+    if ((moneyAvailable >= 0) && (qPlayer.Credit == 0)) {
         return Prio::Low;
     }
     return Prio::None;
