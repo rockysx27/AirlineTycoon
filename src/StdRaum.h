@@ -256,4 +256,5 @@ class CStdRaum {
   private:
     void MenuPrevPage();
     void MenuNextPage();
+    void PersonalPageFlipped();
 };

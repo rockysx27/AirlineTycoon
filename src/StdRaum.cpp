@@ -6101,7 +6101,6 @@ void CStdRaum::MenuLeftClick(XY Pos) {
 
     case MENU_PERSONAL:
         if (MouseClickId == MENU_PERSONAL) {
-            auto &qWorker = Workers.Workers[MenuRemapper[MenuPage - 1]];
             if (MouseClickPar1 == -1 && MenuPage > 0) {
                 if (AtGetAsyncKeyState(ATKEY_CONTROL) / 256 != 0) {
                     MenuPage = std::max(0, MenuPage - 100);
@@ -6129,8 +6128,10 @@ void CStdRaum::MenuLeftClick(XY Pos) {
             }
             // Gehalt erhöhen/kürzen:
             else if (MouseClickPar1 == -5) {
+                auto &qWorker = Workers.Workers[MenuRemapper[MenuPage - 1]];
                 qWorker.Gehaltsaenderung(1);
             } else if (MouseClickPar1 == -6) {
+                auto &qWorker = Workers.Workers[MenuRemapper[MenuPage - 1]];
                 qWorker.Gehaltsaenderung(0);
             } else if (MouseClickPar1 == -7) {
                 // Anderes Flugzeug:
@@ -6142,62 +6143,7 @@ void CStdRaum::MenuLeftClick(XY Pos) {
                 MenuInfo2 = m1;
                 MenuInfo3 = m2;
             }
-
-            if (MenuPar2 == 1 && (qPlayer.HasBerater(BERATERTYP_PERSONAL) != 0) && MenuPage > 0 && (MouseClickPar1 == -1 || MouseClickPar1 == -2)) {
-                if (qWorker.Employer == WORKER_RESERVE) {
-                    // rausgeekelt:
-                    qPlayer.Messages.AddMessage(BERATERTYP_PERSONAL, bprintf(StandardTexte.GetS(TOKEN_ADVICE, 1004 + qWorker.Geschlecht), qWorker.Name.c_str()),
-                                                MESSAGE_COMMENT);
-                } else if (qWorker.Employer == WORKER_JOBLESS) {
-                    if (qWorker.Typ <= BERATERTYP_SICHERHEIT && (qPlayer.HasBerater(qWorker.Typ) != 0)) {
-                        if (qWorker.Typ == BERATERTYP_PERSONAL) {
-                            qPlayer.Messages.AddMessage(BERATERTYP_PERSONAL, StandardTexte.GetS(TOKEN_ADVICE, 1272), MESSAGE_COMMENT);
-                        } else if (qWorker.Talent <= qPlayer.HasBerater(qWorker.Typ)) {
-                            qPlayer.Messages.AddMessage(BERATERTYP_PERSONAL, StandardTexte.GetS(TOKEN_ADVICE, 1270), MESSAGE_COMMENT, SMILEY_BAD);
-                        } else {
-                            qPlayer.Messages.AddMessage(BERATERTYP_PERSONAL, StandardTexte.GetS(TOKEN_ADVICE, 1271), MESSAGE_COMMENT, SMILEY_GOOD);
-                        }
-                    } else if ((MenuRemapper[MenuPage - 1] * 7777 % 100) > qPlayer.HasBerater(BERATERTYP_PERSONAL)) {
-                        qPlayer.Messages.AddMessage(BERATERTYP_PERSONAL, StandardTexte.GetS(TOKEN_ADVICE, 1000), MESSAGE_COMMENT, SMILEY_NEUTRAL);
-                    } else {
-                        SLONG n = Workers.GetQualityRatio(MenuRemapper[MenuPage - 1]);
-                        SLONG Smiley = 0;
-
-                        if (qWorker.Talent <= 25) {
-                            n = 1006;
-                            Smiley = SMILEY_BAD;
-                        } else if (qWorker.Talent <= 45) {
-                            n = 1007;
-                            Smiley = SMILEY_BAD;
-                        } else if (n < -5) {
-                            n = 1001;
-                            Smiley = SMILEY_BAD;
-                        } else if (n > 5) {
-                            if (qWorker.Talent >= 90) {
-                                n = 1008;
-                                Smiley = SMILEY_GREAT;
-                            } else {
-                                n = 1003;
-                                Smiley = SMILEY_GOOD;
-                            }
-
-                        } else {
-                            n = 1002;
-                            Smiley = SMILEY_NEUTRAL;
-                        }
-
-                        qPlayer.Messages.AddMessage(BERATERTYP_PERSONAL, StandardTexte.GetS(TOKEN_ADVICE, n), MESSAGE_COMMENT, Smiley);
-                    }
-                } else {
-                    // kein text:
-                    qPlayer.Messages.AddMessage(BERATERTYP_PERSONAL, "", MESSAGE_COMMENT);
-                }
-            }
-
-            if (Sim.bNetwork != 0) {
-                qPlayer.NetUpdateWorkers();
-            }
-            MenuRepaint();
+            PersonalPageFlipped();
         }
         break;
 
@@ -7374,8 +7320,6 @@ void CStdRaum::MenuSetZoomStuff(const XY &MenuStartPos, DOUBLE MinimumZoom, BOOL
 // NewGamePopup::OnChar
 //--------------------------------------------------------------------------------------------
 void CStdRaum::OnChar(UINT nChar, UINT /*unused*/, UINT /*unused*/) {
-    PLAYER &qPlayer = Sim.Players.Players[PlayerNum];
-
     if (CalculatorIsOpen != 0) {
         CalcKey(nChar);
     } else if ((MenuIsOpen() != 0) && (CurrentMenu == MENU_RENAMEPLANE || CurrentMenu == MENU_RENAMEEDITPLANE || CurrentMenu == MENU_ENTERTCPIP ||
@@ -7425,10 +7369,7 @@ void CStdRaum::OnChar(UINT nChar, UINT /*unused*/, UINT /*unused*/) {
             change = true;
         }
         if (change) {
-            MenuRepaint();
-            if (Sim.bNetwork != 0) {
-                qPlayer.NetUpdateWorkers();
-            }
+            PersonalPageFlipped();
         }
     }
 }
@@ -7567,10 +7508,7 @@ void CStdRaum::OnKeyDown(UINT nChar, UINT /*nRepCnt*/, UINT /*nFlags*/) {
             break;
         }
         if (change) {
-            MenuRepaint();
-            if (Sim.bNetwork != 0) {
-                qPlayer.NetUpdateWorkers();
-            }
+            PersonalPageFlipped();
         }
         break;
     }
@@ -7635,5 +7573,65 @@ void CStdRaum::MenuNextPage() {
         MenuPage = std::min(MenuPageMax, MenuPage + 13);
     }
 
+    MenuRepaint();
+}
+
+void CStdRaum::PersonalPageFlipped() {
+    PLAYER &qPlayer = Sim.Players.Players[PlayerNum];
+    auto &qWorker = Workers.Workers[MenuRemapper[MenuPage - 1]];
+    if (MenuPar2 == 1 && (qPlayer.HasBerater(BERATERTYP_PERSONAL) != 0) && MenuPage > 0) {
+        if (qWorker.Employer == WORKER_RESERVE) {
+            // rausgeekelt:
+            qPlayer.Messages.AddMessage(BERATERTYP_PERSONAL, bprintf(StandardTexte.GetS(TOKEN_ADVICE, 1004 + qWorker.Geschlecht), qWorker.Name.c_str()),
+                                        MESSAGE_COMMENT);
+        } else if (qWorker.Employer == WORKER_JOBLESS) {
+            if (qWorker.Typ <= BERATERTYP_SICHERHEIT && (qPlayer.HasBerater(qWorker.Typ) != 0)) {
+                if (qWorker.Typ == BERATERTYP_PERSONAL) {
+                    qPlayer.Messages.AddMessage(BERATERTYP_PERSONAL, StandardTexte.GetS(TOKEN_ADVICE, 1272), MESSAGE_COMMENT);
+                } else if (qWorker.Talent <= qPlayer.HasBerater(qWorker.Typ)) {
+                    qPlayer.Messages.AddMessage(BERATERTYP_PERSONAL, StandardTexte.GetS(TOKEN_ADVICE, 1270), MESSAGE_COMMENT, SMILEY_BAD);
+                } else {
+                    qPlayer.Messages.AddMessage(BERATERTYP_PERSONAL, StandardTexte.GetS(TOKEN_ADVICE, 1271), MESSAGE_COMMENT, SMILEY_GOOD);
+                }
+            } else if ((MenuRemapper[MenuPage - 1] * 7777 % 100) > qPlayer.HasBerater(BERATERTYP_PERSONAL)) {
+                qPlayer.Messages.AddMessage(BERATERTYP_PERSONAL, StandardTexte.GetS(TOKEN_ADVICE, 1000), MESSAGE_COMMENT, SMILEY_NEUTRAL);
+            } else {
+                SLONG n = Workers.GetQualityRatio(MenuRemapper[MenuPage - 1]);
+                SLONG Smiley = 0;
+
+                if (qWorker.Talent <= 25) {
+                    n = 1006;
+                    Smiley = SMILEY_BAD;
+                } else if (qWorker.Talent <= 45) {
+                    n = 1007;
+                    Smiley = SMILEY_BAD;
+                } else if (n < -5) {
+                    n = 1001;
+                    Smiley = SMILEY_BAD;
+                } else if (n > 5) {
+                    if (qWorker.Talent >= 90) {
+                        n = 1008;
+                        Smiley = SMILEY_GREAT;
+                    } else {
+                        n = 1003;
+                        Smiley = SMILEY_GOOD;
+                    }
+
+                } else {
+                    n = 1002;
+                    Smiley = SMILEY_NEUTRAL;
+                }
+
+                qPlayer.Messages.AddMessage(BERATERTYP_PERSONAL, StandardTexte.GetS(TOKEN_ADVICE, n), MESSAGE_COMMENT, Smiley);
+            }
+        } else {
+            // kein text:
+            qPlayer.Messages.AddMessage(BERATERTYP_PERSONAL, "", MESSAGE_COMMENT);
+        }
+    }
+
+    if (Sim.bNetwork != 0) {
+        qPlayer.NetUpdateWorkers();
+    }
     MenuRepaint();
 }
