@@ -621,7 +621,7 @@ void Bot::actionSabotage(__int64 moneyAvailable) {
         redprintf("Bot::actionSabotage(): Cannot sabotage nemesis %s: Invalid param", (LPCTSTR)Sim.Players.Players[mNemesis].AirlineX);
         break;
     case GameMechanic::CheckSabotageResult::DeniedSaboteurBusy:
-        redprintf("Bot::actionSabotage(): Cannot sabotage nemesis %s: Saboteur busy", (LPCTSTR)Sim.Players.Players[mNemesis].AirlineX);
+        hprintf("Bot::actionSabotage(): Cannot sabotage nemesis %s: Saboteur busy", (LPCTSTR)Sim.Players.Players[mNemesis].AirlineX);
         break;
     case GameMechanic::CheckSabotageResult::DeniedSecurity:
         mNeedToShutdownSecurity = true;

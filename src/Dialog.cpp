@@ -3670,12 +3670,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                       Sim.Gamestate = GAMESTATE_BOOT; */
                     break;
                 } else {
-                    Sim.Players.Players[DialogPar1].IsOut = TRUE;
-
-                    for (SLONG c = 0; c < Sim.Players.Players.AnzEntries(); c++) {
-                        Sim.Players.Players[c].OwnsAktien[DialogPar1] = 0;
-                        Sim.Players.Players[DialogPar1].OwnsAktien[c] = 0;
-                    }
+                    GameMechanic::bankruptPlayer(Sim.Players.Players[DialogPar1]);
                 }
                 // absichtlich kein break, sondern nächster Spieler:
                 [[fallthrough]];

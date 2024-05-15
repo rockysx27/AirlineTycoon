@@ -18,10 +18,21 @@ SLONG StationPrices[10] = {1000000, 2000000, 3000000, 2000000, 10000000, 2000000
 void GameMechanic::bankruptPlayer(PLAYER &qPlayer) {
     qPlayer.IsOut = TRUE;
 
+    qPlayer.Planes.ReSize(0);
+    qPlayer.Money = 2 * DEBT_GAMEOVER;
+    qPlayer.Credit = 0;
+    for (SLONG c = 0; c < 4; c++) {
+        qPlayer.OwnsAktien[c] = 0;
+        qPlayer.AktienWert[c] = 0;
+    }
+    // Von dem Übernommenen hat keiner mehr Aktien:
     for (SLONG c = 0; c < Sim.Players.Players.AnzEntries(); c++) {
         Sim.Players.Players[c].OwnsAktien[qPlayer.PlayerNum] = 0;
-        qPlayer.OwnsAktien[c] = 0;
+        Sim.Players.Players[c].AktienWert[qPlayer.PlayerNum] = 0;
     }
+
+    // Leute rauswerfen:
+    qPlayer.SackWorkers();
 }
 
 bool GameMechanic::buyKerosinTank(PLAYER &qPlayer, SLONG type, SLONG amount) {
@@ -2537,7 +2548,6 @@ bool GameMechanic::setRouteTicketPriceBoth(PLAYER &qPlayer, SLONG routeA, SLONG 
 
 void GameMechanic::executeAirlineOvertake() {
     SLONG c = 0;
-    SLONG d = 0;
     PLAYER &Overtaker = Sim.Players.Players[Sim.OvertakerAirline];
     PLAYER &Overtaken = Sim.Players.Players[Sim.OvertakenAirline];
 
@@ -2574,7 +2584,7 @@ void GameMechanic::executeAirlineOvertake() {
             if (Overtaken.Planes.IsInAlbum(c) != 0) {
                 Overtaken.Planes[c].ClearSaldo();
 
-                for (d = 0; d < Overtaken.Planes[c].Flugplan.Flug.AnzEntries(); d++) {
+                for (SLONG d = 0; d < Overtaken.Planes[c].Flugplan.Flug.AnzEntries(); d++) {
                     Overtaken.Planes[c].Flugplan.Flug[d].ObjectType = 0;
                 }
 
@@ -2584,7 +2594,7 @@ void GameMechanic::executeAirlineOvertake() {
                 Overtaken.Planes[c].Flugplan.NextFlight = -1;
                 Overtaken.Planes[c].Flugplan.NextStart = -1;
 
-                for (d = 0; d < Sim.Persons.AnzEntries(); d++) {
+                for (SLONG d = 0; d < Sim.Persons.AnzEntries(); d++) {
                     if (Sim.Persons.IsInAlbum(d) != 0) {
                         if (Sim.Persons[d].FlightAirline == Sim.OvertakenAirline) {
                             Sim.Persons[d].State = PERSON_LEAVING;
@@ -2601,11 +2611,10 @@ void GameMechanic::executeAirlineOvertake() {
                     Overtaker.Planes.ReSize(Overtaker.Planes.AnzEntries() + 5);
                 }
 
-                d = (Overtaker.Planes += CPlane());
-                Overtaker.Planes[d] = Overtaken.Planes[c];
+                SLONG id = (Overtaker.Planes += CPlane());
+                Overtaker.Planes[id] = Overtaken.Planes[c];
             }
         }
-        Overtaken.Planes.ReSize(0);
 
         // Ggf. virtuelle Arbeiter erzeugen:
         if (Overtaken.Owner != 0) {
@@ -2641,21 +2650,13 @@ void GameMechanic::executeAirlineOvertake() {
                     Sim.Players.Players[c].OwnsAktien[Sim.OvertakerAirline] += Sim.Players.Players[c].OwnsAktien[Sim.OvertakenAirline];
                     Sim.Players.Players[c].AktienWert[Sim.OvertakerAirline] += Sim.Players.Players[c].AktienWert[Sim.OvertakenAirline];
                 }
-
-                Sim.Players.Players[c].OwnsAktien[Sim.OvertakenAirline] = 0;
-                Sim.Players.Players[c].AktienWert[Sim.OvertakenAirline] = 0;
             }
-        }
-
-        // Von dem Übernommenen hat keiner mehr Aktien:
-        for (c = 0; c < Sim.Players.Players.AnzEntries(); c++) {
-            Sim.Players.Players[c].OwnsAktien[Sim.OvertakenAirline] = 0;
         }
 
         // Gates übernehmen:
         for (c = 0; c < Overtaken.Gates.Gates.AnzEntries(); c++) {
             if (Overtaken.Gates.Gates[c].Miete != -1) {
-                for (d = 0; d < Overtaker.Gates.Gates.AnzEntries(); d++) {
+                for (SLONG d = 0; d < Overtaker.Gates.Gates.AnzEntries(); d++) {
                     if (Overtaker.Gates.Gates[d].Miete == -1) {
                         Overtaker.Gates.Gates[d].Miete = Overtaken.Gates.Gates[c].Miete;
                         Overtaker.Gates.Gates[d].Nummer = Overtaken.Gates.Gates[c].Nummer;
@@ -2675,7 +2676,7 @@ void GameMechanic::executeAirlineOvertake() {
                 Overtaken.RentRouten.RentRouten[c].Rang = 0;
             } else if (Overtaker.RentRouten.RentRouten[c].Rang != 0 && Overtaken.RentRouten.RentRouten[c].Rang != 0 &&
                        Overtaker.RentRouten.RentRouten[c].Rang > Overtaken.RentRouten.RentRouten[c].Rang) {
-                for (d = 0; d < Sim.Players.Players.AnzEntries(); d++) {
+                for (SLONG d = 0; d < Sim.Players.Players.AnzEntries(); d++) {
                     if ((Sim.Players.Players[d].IsOut == 0) && d != Sim.OvertakerAirline && d != Sim.OvertakenAirline &&
                         Sim.Players.Players[d].RentRouten.RentRouten[c].Rang > Overtaken.RentRouten.RentRouten[c].Rang) {
                         Sim.Players.Players[d].RentRouten.RentRouten[c].Rang--;
@@ -2694,7 +2695,7 @@ void GameMechanic::executeAirlineOvertake() {
                 Overtaken.RentCities.RentCities[c].Rang = 0;
             } else if (Overtaker.RentCities.RentCities[c].Rang != 0 && Overtaken.RentCities.RentCities[c].Rang != 0 &&
                        Overtaker.RentCities.RentCities[c].Rang > Overtaken.RentCities.RentCities[c].Rang) {
-                for (d = 0; d < Sim.Players.Players.AnzEntries(); d++) {
+                for (SLONG d = 0; d < Sim.Players.Players.AnzEntries(); d++) {
                     if ((Sim.Players.Players[d].IsOut == 0) && d != Sim.OvertakerAirline && d != Sim.OvertakenAirline &&
                         Sim.Players.Players[d].RentCities.RentCities[c].Rang > Overtaken.RentCities.RentCities[c].Rang) {
                         Sim.Players.Players[d].RentCities.RentCities[c].Rang--;
@@ -2707,16 +2708,12 @@ void GameMechanic::executeAirlineOvertake() {
         }
     } else if (Sim.Overtake == 2) // Liquidieren
     {
-        // Leute rauswerfen:
-        Sim.Players.Players[Sim.OvertakenAirline].SackWorkers();
-
         // Flugzeuge verkaufen:
         for (c = 0; c < Overtaken.Planes.AnzEntries(); c++) {
             if (Overtaken.Planes.IsInAlbum(c) != 0) {
-                Overtaken.Money += Overtaken.Planes[c].CalculatePrice();
+                GameMechanic::sellPlane(Overtaken, c);
             }
         }
-        Overtaken.Planes.ReSize(0);
 
         // Gates freigeben:
         for (c = 0; c < Overtaken.Gates.Gates.AnzEntries(); c++) {
@@ -2728,7 +2725,7 @@ void GameMechanic::executeAirlineOvertake() {
         // Routen freigeben:
         for (c = 0; c < Overtaken.RentRouten.RentRouten.AnzEntries(); c++) {
             if (Overtaken.RentRouten.RentRouten[c].Rang != 0) {
-                for (d = 0; d < Sim.Players.Players.AnzEntries(); d++) {
+                for (SLONG d = 0; d < Sim.Players.Players.AnzEntries(); d++) {
                     if ((Sim.Players.Players[d].IsOut == 0) && d != Sim.OvertakenAirline &&
                         Sim.Players.Players[d].RentRouten.RentRouten[c].Rang > Overtaken.RentRouten.RentRouten[c].Rang) {
                         Sim.Players.Players[d].RentRouten.RentRouten[c].Rang--;
@@ -2742,7 +2739,7 @@ void GameMechanic::executeAirlineOvertake() {
         // Cities freigeben
         for (c = 0; c < Overtaken.RentCities.RentCities.AnzEntries(); c++) {
             if (Overtaken.RentCities.RentCities[c].Rang != 0) {
-                for (d = 0; d < Sim.Players.Players.AnzEntries(); d++) {
+                for (SLONG d = 0; d < Sim.Players.Players.AnzEntries(); d++) {
                     if ((Sim.Players.Players[d].IsOut == 0) && d != Sim.OvertakenAirline &&
                         Sim.Players.Players[d].RentCities.RentCities[c].Rang > Overtaken.RentCities.RentCities[c].Rang) {
                         Sim.Players.Players[d].RentCities.RentCities[c].Rang--;
@@ -2756,32 +2753,29 @@ void GameMechanic::executeAirlineOvertake() {
         // Aktien verkaufen:
         for (c = 0; c < 4; c++) {
             if (Overtaken.OwnsAktien[c] != 0) {
-                Overtaken.Money += SLONG(Overtaken.OwnsAktien[c] * Sim.Players.Players[c].Kurse[0]);
-                Overtaken.OwnsAktien[c] = 0;
+                GameMechanic::sellStock(Overtaken, c, Overtaken.OwnsAktien[c]);
             }
         }
 
         // Geld verteilen
-        for (c = d = 0; c < 4; c++) {
-            if ((Sim.Players.Players[c].IsOut == 0) && (Sim.Players.Players[c].OwnsAktien[Sim.OvertakenAirline] != 0)) {
-                d += Sim.Players.Players[c].OwnsAktien[Sim.OvertakenAirline];
-            }
-        }
-
+        __int64 stockTotal = 0;
         for (c = 0; c < 4; c++) {
-            if ((Sim.Players.Players[c].IsOut == 0) && (Sim.Players.Players[c].OwnsAktien[Sim.OvertakenAirline] != 0)) {
-                Sim.Players.Players[c].ChangeMoney(
-                    __int64((Overtaken.Money - Overtaken.Credit) * static_cast<__int64>(Sim.Players.Players[c].OwnsAktien[Sim.OvertakenAirline]) / d), 3181,
-                    (LPCTSTR)Overtaken.AirlineX);
+            auto ownsStock = Sim.Players.Players[c].OwnsAktien[Sim.OvertakenAirline];
+            if ((Sim.Players.Players[c].IsOut == 0) && (ownsStock != 0)) {
+                stockTotal += ownsStock;
             }
         }
-        //                            Changed: ^ war SLONG und damit vermutlich für einen Bug verantwortlich
 
-        // Von dem Übernommenen hat keiner mehr Aktien:
-        for (c = 0; c < Sim.Players.Players.AnzEntries(); c++) {
-            Sim.Players.Players[c].OwnsAktien[Sim.OvertakenAirline] = 0;
+        __int64 moneyToDistribute = Overtaken.Money - Overtaken.Credit;
+        for (c = 0; c < 4; c++) {
+            __int64 ownsStock = Sim.Players.Players[c].OwnsAktien[Sim.OvertakenAirline];
+            if ((Sim.Players.Players[c].IsOut == 0) && (ownsStock != 0)) {
+                Sim.Players.Players[c].ChangeMoney(moneyToDistribute * ownsStock / stockTotal, 3181, (LPCTSTR)Overtaken.AirlineX);
+            }
         }
     }
+
+    GameMechanic::bankruptPlayer(Overtaken);
 
     Airport.CreateGateMapper();
 
