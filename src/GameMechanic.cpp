@@ -452,7 +452,7 @@ bool GameMechanic::takeOutCredit(PLAYER &qPlayer, __int64 amount) {
 }
 
 bool GameMechanic::payBackCredit(PLAYER &qPlayer, __int64 amount) {
-    if (amount < 1000 || amount > qPlayer.Credit) {
+    if (amount > qPlayer.Credit) {
         redprintf("GameMechanic::payBackCredit(%s): Invalid amount (requested %lld, max is %lld).", (LPCTSTR)qPlayer.AirlineX, amount, qPlayer.Credit);
         return false;
     }
