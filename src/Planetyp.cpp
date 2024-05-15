@@ -850,9 +850,11 @@ void CPlane::ExtendFlugplaene(SLONG PlayerNum) {
                 for (c = 0; c < AnzSource; c++) {
                     if (Flugplan.Flug[AnzOkay + c - AnzSource].ObjectType == 1 &&
                         (Sim.Players.Players[PlayerNum].RentRouten.RentRouten[Routen(Flugplan.Flug[AnzOkay + c - AnzSource].ObjectId)].Rang != 0U)) {
+
                         Flugplan.Flug[AnzOkay + c] = Flugplan.Flug[AnzOkay + c - AnzSource];
                         Flugplan.Flug[AnzOkay + c].Startzeit += RapportL;
                         Flugplan.Flug[AnzOkay + c].Landezeit += RapportL;
+                        Flugplan.Flug[AnzOkay + c].FlightBooked = FALSE;
                         while (Flugplan.Flug[AnzOkay + c].Landezeit > 24) {
                             Flugplan.Flug[AnzOkay + c].Landezeit -= 24;
                             Flugplan.Flug[AnzOkay + c].Landedate++;
@@ -909,6 +911,7 @@ void CPlane::FlugplaeneFortfuehren(SLONG PlayerNum) {
                 Flugplan.Flug[c].PArrived = 0;
                 Flugplan.Flug[c].HoursBefore = 48;
                 Flugplan.Flug[c].Ticketpreis = Sim.Players.Players[PlayerNum].RentRouten.RentRouten[Routen(Flugplan.Flug[c].ObjectId)].Ticketpreis; // new
+                Flugplan.Flug[c].FlightBooked = FALSE;
 
                 // Zeiten ggf. anpassen (Feintuning)
                 if (Flugplan.Flug[c].Startdate < LastDate || (Flugplan.Flug[c].Startdate == LastDate && Flugplan.Flug[c].Startzeit < LastTime)) {

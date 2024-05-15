@@ -1824,6 +1824,7 @@ void CPlaner::HandleLButtonDown() {
                             c = qPlan.Flug.AnzEntries() - 1;
                         }
 
+                        qPlan.Flug[c] = {};
                         qPlan.Flug[c].Okay = 0;
                         qPlan.Flug[c].Startdate = Date;
                         qPlan.Flug[c].Startzeit = Time;
@@ -2007,6 +2008,7 @@ void CPlaner::HandleLButtonDown() {
                                 tmpObjectId = qPlan.Flug[c].ObjectId;
                             };
 
+                            qPlan.Flug[c] = {};
                             qPlan.Flug[c].Okay = 0;
                             qPlan.Flug[c].Startdate = Date;
                             qPlan.Flug[c].Startzeit = Time;
@@ -2561,6 +2563,7 @@ void CPlaner::HandleLButtonUp() {
                                 c = qPlan.Flug.AnzEntries() - 1;
                             }
 
+                            qPlan.Flug[c] = {};
                             qPlan.Flug[c].Okay = 0;
                             qPlan.Flug[c].Startdate = Date;
                             qPlan.Flug[c].Startzeit = Time;
@@ -2910,6 +2913,7 @@ void CPlaner::HandleLButtonDouble() {
                                 c++;
 
                                 if (c < qPlan.Flug.AnzEntries()) {
+                                    qPlan.Flug[c] = {};
                                     qPlan.Flug[c].Okay = 0;
 
                                     if (c > 0) {
