@@ -372,6 +372,12 @@ void Bot::RobotInit() {
             }
         }
 
+        if (qPlayer.RobotUse(ROBOT_USE_FORCEROUTES)) {
+            mDoRoutes = true;
+            std::swap(mPlanesForJobsUnassigned, mPlanesForRoutesUnassigned);
+            hprintf("Bot::RobotInit(): Switching to routes (forced).");
+        }
+
         if (qPlayer.RobotUse(ROBOT_USE_GROSSESKONTO)) {
             /* immediately start saving money */
             mRunToFinalObjective = FinalPhase::SaveMoney;
@@ -1079,7 +1085,13 @@ TEAKFILE &operator<<(TEAKFILE &File, const Bot &bot) {
     }
 
     File << bot.mLongTermStrategy;
-    File << bot.mBestPlaneTypeId << bot.mBestUsedPlaneIdx << bot.mBuyPlaneForRouteId << bot.mUsePlaneForRouteId;
+    File << bot.mBestPlaneTypeId << bot.mBestUsedPlaneIdx << bot.mBuyPlaneForRouteId << bot.mPlaneTypeForNewRoute;
+
+    File << static_cast<SLONG>(bot.mPlanesForNewRoute.size());
+    for (const auto &i : bot.mPlanesForNewRoute) {
+        File << i;
+    }
+
     File << bot.mWantToRentRouteId;
     File << bot.mFirstRun << bot.mDayStarted << bot.mDoRoutes;
     File << static_cast<SLONG>(bot.mRunToFinalObjective) << bot.mMoneyForFinalObjective;
@@ -1200,7 +1212,14 @@ TEAKFILE &operator>>(TEAKFILE &File, Bot &bot) {
 
     SLONG runToFinalObjective = 0;
     File >> bot.mLongTermStrategy;
-    File >> bot.mBestPlaneTypeId >> bot.mBestUsedPlaneIdx >> bot.mBuyPlaneForRouteId >> bot.mUsePlaneForRouteId;
+    File >> bot.mBestPlaneTypeId >> bot.mBestUsedPlaneIdx >> bot.mBuyPlaneForRouteId >> bot.mPlaneTypeForNewRoute;
+
+    File >> size;
+    bot.mPlanesForNewRoute.resize(size);
+    for (SLONG i = 0; i < size; i++) {
+        File >> bot.mPlanesForNewRoute[i];
+    }
+
     File >> bot.mWantToRentRouteId;
     File >> bot.mFirstRun >> bot.mDayStarted >> bot.mDoRoutes;
     File >> runToFinalObjective >> bot.mMoneyForFinalObjective;

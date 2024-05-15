@@ -30,11 +30,18 @@ struct RouteScore {
     DOUBLE score{};
     SLONG routeId{-1};
     SLONG planeTypeId{-1};
-    SLONG planeId{-1};
-    SLONG numPlanes{-1};
+    std::vector<SLONG> planeId;
+    SLONG numPlanesToBuy{-1};
+
+    bool operator<(const RouteScore &other) const {
+        if (planeId.size() == other.planeId.size()) {
+            return score > other.score;
+        }
+        return (planeId.size() > other.planeId.size());
+    }
 };
 
-template <typename T> inline void eraseFirst(T &l, int val) {
+template <typename T> inline bool eraseFirst(T &l, int val) {
     auto it = l.begin();
     while (it != l.end() && *it != val) {
         it++;
@@ -42,7 +49,9 @@ template <typename T> inline void eraseFirst(T &l, int val) {
     if (it != l.end()) {
         std::iter_swap(it, l.end() - 1);
         l.resize(l.size() - 1);
+        return true;
     }
+    return false;
 }
 
 void Bot::actionStartDay(__int64 moneyAvailable) {
@@ -65,10 +74,7 @@ void Bot::actionStartDayLaptop(__int64 moneyAvailable) {
         requestPlanRoutes(true);
     } else if (qPlayer.RobotUse(ROBOT_USE_ROUTES)) {
         /* logic for switching to routes */
-        if (qPlayer.RobotUse(ROBOT_USE_FORCEROUTES)) {
-            mDoRoutes = true;
-            hprintf("Bot::actionStartDay(): Switching to routes (forced).");
-        } else if (mBestPlaneTypeId != -1) {
+        if (mBestPlaneTypeId != -1) {
             const auto &bestPlaneType = PlaneTypes[mBestPlaneTypeId];
             SLONG costRouteAd = gWerbePrice[1 * 6 + 5];
             __int64 moneyNeeded = 2 * costRouteAd + bestPlaneType.Preis;
@@ -967,18 +973,13 @@ void Bot::actionFindBestRoute() {
     auto bestPlanes = findBestAvailablePlaneType(true); // TODO: Technically not possible to check plane types here
 
     mWantToRentRouteId = -1;
-    mBuyPlaneForRouteId = -1;
-    mUsePlaneForRouteId = -1;
+    mPlaneTypeForNewRoute = -1;
+    mPlanesForNewRoute.clear();
 
-    /* use existing plane for mission where we need to use routes immediately */
+    /* check existing planes */
     std::vector<std::pair<SLONG, __int64>> existingPlaneIds;
-    if (qPlayer.RobotUse(ROBOT_USE_FORCEROUTES)) {
-        for (const auto id : mPlanesForJobsUnassigned) {
-            auto &qPlane = qPlayer.Planes[id];
-            __int64 score = qPlane.ptPassagiere * qPlane.ptPassagiere / qPlane.ptVerbrauch;
-            existingPlaneIds.emplace_back(id, score);
-        }
-        for (const auto id : mPlanesForJobs) {
+    if (mRoutes.empty()) {
+        for (const auto id : mPlanesForRoutesUnassigned) {
             auto &qPlane = qPlayer.Planes[id];
             __int64 score = qPlane.ptPassagiere * qPlane.ptPassagiere / qPlane.ptVerbrauch;
             existingPlaneIds.emplace_back(id, score);
@@ -996,7 +997,6 @@ void Bot::actionFindBestRoute() {
         SLONG distance = Cities.CalcDistance(Routen[c].VonCity, Routen[c].NachCity);
 
         SLONG planeTypeId = -1;
-        SLONG useExistingPlaneId = -1;
         for (SLONG i : bestPlanes) {
             SLONG duration = Cities.CalcFlugdauer(Routen[c].VonCity, Routen[c].NachCity, PlaneTypes[i].Geschwindigkeit);
             if (distance <= PlaneTypes[i].Reichweite * 1000 && duration < 24) {
@@ -1006,13 +1006,12 @@ void Bot::actionFindBestRoute() {
         }
 
         /* also check existing planes if they can be used for routes */
+        std::vector<SLONG> useExistingPlaneId;
         for (const auto &i : existingPlaneIds) {
             auto &qPlane = qPlayer.Planes[i.first];
             SLONG duration = Cities.CalcFlugdauer(Routen[c].VonCity, Routen[c].NachCity, qPlane.ptGeschwindigkeit);
             if (distance <= qPlane.ptReichweite * 1000 && duration < 24) {
-                planeTypeId = qPlane.TypeId;
-                useExistingPlaneId = i.first;
-                break;
+                useExistingPlaneId.push_back(i.first);
             }
         }
 
@@ -1025,18 +1024,13 @@ void Bot::actionFindBestRoute() {
         score *= (Cities.CalcDistance(Routen[c].VonCity, Routen[c].NachCity) / 1000);
         score /= Routen[c].Miete;
 
-        /* calculate how many planes would be need to get 10% route utilization */
-        /* TODO: What about factor 4.27 */
-        SLONG roundTripDuration = getRouteTurnAroundDuration(Routen[c], planeTypeId);
-        SLONG numTripsPerWeek = 24 * 7 / roundTripDuration;
-        SLONG passengersPerWeek = ceil_div(7 * Routen[c].AnzPassagiere(), 10);
-        SLONG numPlanesRequired = ceil_div(passengersPerWeek, numTripsPerWeek * PlaneTypes[planeTypeId].Passagiere);
-
-        // Ist die Route für die Mission wichtig?
+        /* is this route important for our mission */
         if (qPlayer.RobotUse(ROBOT_USE_ROUTEMISSION)) {
+            auto homeAirport = static_cast<ULONG>(Sim.HomeAirportId);
             for (SLONG d = 0; d < 6; d++) {
-                if ((Routen[c].VonCity == static_cast<ULONG>(Sim.HomeAirportId) && Routen[c].NachCity == static_cast<ULONG>(Sim.MissionCities[d])) ||
-                    (Routen[c].NachCity == static_cast<ULONG>(Sim.HomeAirportId) && Routen[c].VonCity == static_cast<ULONG>(Sim.MissionCities[d]))) {
+                auto missionCity = static_cast<ULONG>(Sim.MissionCities[d]);
+                if ((Routen[c].VonCity == homeAirport && Routen[c].NachCity == missionCity) ||
+                    (Routen[c].NachCity == homeAirport && Routen[c].VonCity == missionCity)) {
 
                     hprintf("Bot::actionFindBestRoute(): Route %s is important for mission, increasing score.", Helper::getRouteName(Routen[c]).c_str());
                     score *= 10;
@@ -1044,24 +1038,37 @@ void Bot::actionFindBestRoute() {
             }
         }
 
-        if (useExistingPlaneId != -1) {
-            numPlanesRequired--;
-        }
+        /* calculate how many planes would be need to get desired route utilization */
+        /* TODO: What about factor 4.27 */
+        SLONG roundTripDuration = getRouteTurnAroundDuration(Routen[c], planeTypeId);
+        SLONG numTripsPerWeek = 24 * 7 / roundTripDuration;
+        SLONG passengersPerWeek = 7 * Routen[c].AnzPassagiere();
+        SLONG minTarget = ceil_div(passengersPerWeek * 10, 100); /* to not loose the route */
+        SLONG finalTarget = ceil_div(passengersPerWeek * kMaximumRouteUtilization, 100);
+        SLONG numPlanesTarget = ceil_div(minTarget, numTripsPerWeek * PlaneTypes[planeTypeId].Passagiere);
+        SLONG numPlanesTotal = ceil_div(finalTarget, numTripsPerWeek * PlaneTypes[planeTypeId].Passagiere);
 
-        bestRoutes.emplace_back(RouteScore{score, c, planeTypeId, useExistingPlaneId, numPlanesRequired});
+        /* account for the fact that we already have suitable planes */
+        if (useExistingPlaneId.size() > numPlanesTotal) {
+            /* only have to use the best n planes */
+            useExistingPlaneId.resize(numPlanesTotal);
+        }
+        SLONG planesToBuy = std::max(0, numPlanesTarget - static_cast<SLONG>(useExistingPlaneId.size()));
+
+        bestRoutes.emplace_back(RouteScore{score, c, planeTypeId, useExistingPlaneId, planesToBuy});
     }
 
     /* sort routes by score */
-    std::sort(bestRoutes.begin(), bestRoutes.end(), [](const RouteScore &a, const RouteScore &b) { return a.score > b.score; });
+    std::sort(bestRoutes.begin(), bestRoutes.end());
 
-    for (const auto &i : bestRoutes) {
-        if (i.planeId != -1) {
-            const auto &qPlane = qPlayer.Planes[i.planeId];
-            hprintf("Bot::actionFindBestRoute(): Score of route %s (using existing plane %s, need %ld) is: %.2f",
-                    Helper::getRouteName(Routen[i.routeId]).c_str(), Helper::getPlaneName(qPlane).c_str(), i.numPlanes, i.score);
+    for (const auto &candidate : bestRoutes) {
+        if (!candidate.planeId.empty()) {
+            hprintf("Bot::actionFindBestRoute(): Score of route %s (using %ld existing planes, need %ld) is: %.2f",
+                    Helper::getRouteName(Routen[candidate.routeId]).c_str(), candidate.planeId.size(), candidate.numPlanesToBuy, candidate.score);
         } else {
-            hprintf("Bot::actionFindBestRoute(): Score of route %s (using plane type %s, need %ld) is: %.2f", Helper::getRouteName(Routen[i.routeId]).c_str(),
-                    (LPCTSTR)PlaneTypes[i.planeTypeId].Name, i.numPlanes, i.score);
+            hprintf("Bot::actionFindBestRoute(): Score of route %s (using plane type %s, need %ld) is: %.2f",
+                    Helper::getRouteName(Routen[candidate.routeId]).c_str(), (LPCTSTR)PlaneTypes[candidate.planeTypeId].Name, candidate.numPlanesToBuy,
+                    candidate.score);
         }
     }
 
@@ -1069,20 +1076,17 @@ void Bot::actionFindBestRoute() {
     __int64 moneyAvailable = qPlayer.Money + getWeeklyOpSaldo();
     for (const auto &candidate : bestRoutes) {
         __int64 planeCost = PlaneTypes[candidate.planeTypeId].Preis;
-        if (candidate.numPlanes * planeCost > moneyAvailable) {
+        if (candidate.numPlanesToBuy * planeCost > moneyAvailable) {
             hprintf("Bot::actionFindBestRoute(): We cannot afford route %s (plane costs %ld, need %ld), our available money is %lld",
-                    Helper::getRouteName(Routen[candidate.routeId]).c_str(), planeCost, candidate.numPlanes, moneyAvailable);
+                    Helper::getRouteName(Routen[candidate.routeId]).c_str(), planeCost, candidate.numPlanesToBuy, moneyAvailable);
             continue;
         }
         hprintf("Bot::actionFindBestRoute(): Best route (using plane type %s) is: ", (LPCTSTR)PlaneTypes[candidate.planeTypeId].Name);
         Helper::printRoute(Routen[candidate.routeId]);
 
         mWantToRentRouteId = candidate.routeId;
-        if (candidate.planeId == -1) {
-            mBuyPlaneForRouteId = candidate.planeTypeId; /* buy new plane */
-        } else {
-            mUsePlaneForRouteId = candidate.planeId; /* use existing plane */
-        }
+        mPlaneTypeForNewRoute = candidate.planeTypeId; /* buy new plane */
+        mPlanesForNewRoute = candidate.planeId;        /* use existing planes */
         return;
     }
 
@@ -1091,10 +1095,8 @@ void Bot::actionFindBestRoute() {
 
 void Bot::actionRentRoute() {
     auto routeA = mWantToRentRouteId;
-    assert(routeA != -1);
-    assert(mBuyPlaneForRouteId != -1 || mUsePlaneForRouteId != -1);
-
     mWantToRentRouteId = -1;
+    assert(routeA != -1);
 
     /* find route in reverse direction */
     SLONG routeB = -1;
@@ -1109,27 +1111,29 @@ void Bot::actionRentRoute() {
         return;
     }
 
+    /* rent route */
     if (!GameMechanic::rentRoute(qPlayer, routeA)) {
         redprintf("Bot::actionRentRoute: Failed to rent route.");
         return;
     }
+    mRoutes.emplace_back(routeA, routeB, mPlaneTypeForNewRoute);
+    hprintf("Bot::actionRentRoute(): Renting route %s (using plane type %s): ", Helper::getRouteName(getRoute(mRoutes.back())).c_str(),
+            (LPCTSTR)PlaneTypes[mPlaneTypeForNewRoute].Name);
+    mPlaneTypeForNewRoute = -1;
 
-    if (mBuyPlaneForRouteId != -1) {
-        mRoutes.emplace_back(routeA, routeB, mBuyPlaneForRouteId);
-        hprintf("Bot::actionRentRoute(): Renting route %s (using plane type %s, need to buy): ", Helper::getRouteName(getRoute(mRoutes.back())).c_str(),
-                (LPCTSTR)PlaneTypes[mBuyPlaneForRouteId].Name);
-    } else {
-        assert(qPlayer.Planes.IsInAlbum(mUsePlaneForRouteId));
-        const auto &qPlane = qPlayer.Planes[mUsePlaneForRouteId];
-        mRoutes.emplace_back(routeA, routeB, qPlane.TypeId);
-        hprintf("Bot::actionRentRoute(): Renting route %s (using plane type %s, using existing plane %s): ",
-                Helper::getRouteName(getRoute(mRoutes.back())).c_str(), (LPCTSTR)PlaneTypes[qPlane.TypeId].Name, Helper::getPlaneName(qPlane).c_str());
+    /* use existing planes */
+    for (auto id : mPlanesForNewRoute) {
+        const auto &qPlane = qPlayer.Planes[id];
+        hprintf("Bot::actionRentRoute(): Using existing plane: %s", Helper::getPlaneName(qPlane).c_str());
 
-        eraseFirst(mPlanesForJobs, mUsePlaneForRouteId);
-        eraseFirst(mPlanesForJobsUnassigned, mUsePlaneForRouteId);
-        mPlanesForRoutesUnassigned.push_back(mUsePlaneForRouteId);
-        requestPlanRoutes(false);
+        mRoutes.back().planeIds.push_back(id);
+        mPlanesForRoutes.push_back(id);
+        bool erased = eraseFirst(mPlanesForRoutesUnassigned, id);
+        if (!erased) {
+            redprintf("Bot::actionRentRoute(): Plane with ID = %ld should have been in unassigned list", id);
+        }
     }
+    mPlanesForNewRoute.clear();
 
     updateRouteInfo();
     requestPlanRoutes(false);

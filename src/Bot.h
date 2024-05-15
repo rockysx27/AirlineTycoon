@@ -259,7 +259,8 @@ class Bot {
     SLONG mBestPlaneTypeId{-1};
     SLONG mBestUsedPlaneIdx{-1};
     SLONG mBuyPlaneForRouteId{-1};
-    SLONG mUsePlaneForRouteId{-1};
+    SLONG mPlaneTypeForNewRoute{-1};
+    std::vector<SLONG> mPlanesForNewRoute;
     SLONG mWantToRentRouteId{-1};
     bool mFirstRun{true};
     bool mDayStarted{false};

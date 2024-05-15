@@ -145,8 +145,7 @@ void BotPlaner::printGraph(const Graph &g) {
             if (g.adjMatrix[i][j].cost < 0) {
                 continue;
             }
-            std::cout << "node" << i << " -> "
-                      << "node" << j << " [";
+            std::cout << "node" << i << " -> " << "node" << j << " [";
             std::cout << "label=\"" << g.adjMatrix[i][j].cost << " $, " << g.adjMatrix[i][j].duration << " h\"";
             for (int n = 0; n < 3 && n < curInfo.bestNeighbors.size(); n++) {
                 if (curInfo.bestNeighbors[n] == j) {
@@ -717,21 +716,27 @@ bool BotPlaner::applySolution(PLAYER &qPlayer, const SolutionList &solutions) {
         }
     }
 
-    /* apply solution */
+#ifdef PRINT_DETAIL
     Helper::ScheduleInfo overallInfo;
     SLONG totalDiff = 0;
+#endif
+
+    /* apply solution */
     for (const auto &solution : solutions) {
         int planeId = solution.planeId;
 
+#ifdef PRINT_DETAIL
         auto oldInfo = Helper::calculateScheduleInfo(qPlayer, planeId);
+#endif
+
         applySolutionForPlane(qPlayer, planeId, solution);
 
+#ifdef PRINT_DETAIL
         auto newInfo = Helper::calculateScheduleInfo(qPlayer, planeId);
         overallInfo += newInfo;
         SLONG diff = newInfo.gain - oldInfo.gain;
         totalDiff += diff;
 
-#ifdef PRINT_DETAIL
         Helper::checkPlaneSchedule(qPlayer, planeId, false);
         if (diff > 0) {
             hprintf("%s: Improved gain: %d => %d (+%d)", (LPCTSTR)qPlayer.Planes[planeId].Name, oldInfo.gain, newInfo.gain, diff);
@@ -751,7 +756,7 @@ bool BotPlaner::applySolution(PLAYER &qPlayer, const SolutionList &solutions) {
     }
 #endif
 
-#ifdef PRINT_OVERALL
+#ifdef PRINT_DETAIL
     overallInfo.printDetails();
 #endif
 

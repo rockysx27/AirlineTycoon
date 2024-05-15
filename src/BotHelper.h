@@ -148,7 +148,7 @@ struct ScheduleInfo {
                 (LPCTSTR)getWeekday(scheduleEnd), scheduleEnd.getHour(), numPlanes, Insert1000erDots(gain).c_str());
     }
     void printDetails() {
-        hprintf("====================");
+        hprintf("vvvvvvvvvvvvvvvvvvvv");
         printGain();
 
         if (uhrigFlights > 0) {
@@ -178,7 +178,7 @@ struct ScheduleInfo {
             }
         }
         printf("\n");
-        hprintf("====================");
+        hprintf("^^^^^^^^^^^^^^^^^^^^");
     }
 };
 

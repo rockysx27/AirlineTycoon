@@ -389,7 +389,7 @@ void Bot::grabFlights(BotPlaner &planer, bool areWeInOffice) {
         // planer.setDistanceFactor(1); TODO
         break;
     case DIFF_ADDON06:
-        planer.setConstBonus(1000 * 1000);
+        // planer.setConstBonus(1000 * 1000); TODO
         break;
     case DIFF_ADDON09:
         planer.setUhrigBonus(1000 * 1000);
@@ -771,12 +771,12 @@ void Bot::planRoutes() {
     for (auto &qRoute : mRoutes) {
         SLONG fromCity = Cities.find(getRoute(qRoute).VonCity);
         SLONG toCity = Cities.find(getRoute(qRoute).NachCity);
-        SLONG durationA = kDurationExtra + Cities.CalcFlugdauer(fromCity, toCity, PlaneTypes[qRoute.planeTypeId].Geschwindigkeit);
-        SLONG durationB = kDurationExtra + Cities.CalcFlugdauer(toCity, fromCity, PlaneTypes[qRoute.planeTypeId].Geschwindigkeit);
-        // TODO: SLONG roundTripDuration = durationA + durationB;
-        // TODO: int timeSlot = 0;
         for (auto planeId : qRoute.planeIds) {
             const auto &qPlane = qPlayer.Planes[planeId];
+            SLONG durationA = kDurationExtra + Cities.CalcFlugdauer(fromCity, toCity, qPlane.ptGeschwindigkeit);
+            SLONG durationB = kDurationExtra + Cities.CalcFlugdauer(toCity, fromCity, qPlane.ptGeschwindigkeit);
+            // TODO: SLONG roundTripDuration = durationA + durationB;
+            // TODO: int timeSlot = 0;
 
 #ifdef PRINT_ROUTE_DETAILS
             hprintf("Bot::planRoutes(): =================== Plane %s ===================", Helper::getPlaneName(qPlane).c_str());
