@@ -319,6 +319,8 @@ Bot::Prio Bot::condAll(SLONG actionId) {
         return condStartDayLaptop();
     case ACTION_VISITADS:
         return condVisitAds();
+    case ACTION_OVERTAKE_AIRLINE:
+        return condOvertakeAirline();
     default:
         redprintf("Bot.cpp: Default case should not be reached.");
         return Prio::None;
@@ -784,29 +786,6 @@ Bot::Prio Bot::condEmitShares() {
     return Prio::None;
 }
 
-Bot::Prio Bot::condSellShares(__int64 &moneyAvailable) {
-    moneyAvailable = getMoneyAvailable();
-    if (!hoursPassed(ACTION_SELLSHARES, 1)) {
-        return Prio::None;
-    }
-    auto res = howToGetMoney();
-    if (res == HowToGetMoney::SellShares || res == HowToGetMoney::SellOwnShares || res == HowToGetMoney::SellAllOwnShares) {
-        return Prio::Top;
-    }
-
-    if (!hoursPassed(ACTION_SELLSHARES, 24)) {
-        return Prio::None;
-    }
-    if (qPlayer.RobotUse(ROBOT_USE_MAX20PERCENT)) {
-        SLONG c = qPlayer.PlayerNum;
-        SLONG sells = (qPlayer.OwnsAktien[c] - qPlayer.AnzAktien * kOwnStockPosessionRatio / 100);
-        if (sells > 0) {
-            return Prio::Medium;
-        }
-    }
-    return Prio::None;
-}
-
 Bot::Prio Bot::condBuyShares(__int64 &moneyAvailable, SLONG dislike) {
     if (!hoursPassed(ACTION_BUYSHARES, 24)) {
         return Prio::None;
@@ -815,8 +794,6 @@ Bot::Prio Bot::condBuyShares(__int64 &moneyAvailable, SLONG dislike) {
 }
 
 Bot::Prio Bot::condBuyNemesisShares(__int64 &moneyAvailable, SLONG dislike) {
-    return Prio::None; // TODO
-
     moneyAvailable = getMoneyAvailable() - kMoneyReserveBuyNemesisShares;
     if (mRunToFinalObjective > FinalPhase::No) {
         return Prio::None;
@@ -828,7 +805,7 @@ Bot::Prio Bot::condBuyNemesisShares(__int64 &moneyAvailable, SLONG dislike) {
         return Prio::None;
     }
     if (qPlayer.OwnsAktien[dislike] >= (Sim.Players.Players[dislike].AnzAktien / 2)) {
-        return Prio::None;
+        return Prio::None; /* we already own 50% of enemy stock */
     }
     if ((moneyAvailable >= 0) && (qPlayer.Credit == 0)) {
         return Prio::Low;
@@ -849,6 +826,46 @@ Bot::Prio Bot::condBuyOwnShares(__int64 &moneyAvailable) {
     }
     if ((moneyAvailable >= 0) && (qPlayer.Credit == 0)) {
         return Prio::Low;
+    }
+    return Prio::None;
+}
+
+Bot::Prio Bot::condOvertakeAirline() {
+    if (!hoursPassed(ACTION_OVERTAKE_AIRLINE, 24)) {
+        return Prio::None;
+    }
+    for (SLONG p = 0; p < 4; p++) {
+        auto &qTarget = Sim.Players.Players[p];
+        if (p == qPlayer.PlayerNum || qTarget.IsOut != 0) {
+            continue;
+        }
+        if (GameMechanic::OvertakeAirlineResult::Ok != GameMechanic::canOvertakeAirline(qPlayer, p)) {
+            continue;
+        }
+        return Prio::High;
+    }
+    return Prio::None;
+}
+
+Bot::Prio Bot::condSellShares(__int64 &moneyAvailable) {
+    moneyAvailable = getMoneyAvailable();
+    if (!hoursPassed(ACTION_SELLSHARES, 1)) {
+        return Prio::None;
+    }
+    auto res = howToGetMoney();
+    if (res == HowToGetMoney::SellShares || res == HowToGetMoney::SellOwnShares || res == HowToGetMoney::SellAllOwnShares) {
+        return Prio::Top;
+    }
+
+    if (!hoursPassed(ACTION_SELLSHARES, 24)) {
+        return Prio::None;
+    }
+    if (qPlayer.RobotUse(ROBOT_USE_MAX20PERCENT)) {
+        SLONG c = qPlayer.PlayerNum;
+        SLONG sells = (qPlayer.OwnsAktien[c] - qPlayer.AnzAktien * kOwnStockPosessionRatio / 100);
+        if (sells > 0) {
+            return Prio::Medium;
+        }
     }
     return Prio::None;
 }

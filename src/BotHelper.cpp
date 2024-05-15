@@ -588,6 +588,8 @@ SLONG getRoomFromAction(SLONG PlayerNum, SLONG actionId) {
     case ACTION_BUYSHARES:
         [[fallthrough]];
     case ACTION_SELLSHARES:
+        [[fallthrough]];
+    case ACTION_OVERTAKE_AIRLINE:
         return ROOM_BANK;
     case ACTION_CHECKAGENT1:
         return ROOM_LAST_MINUTE;

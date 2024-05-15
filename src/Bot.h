@@ -138,10 +138,11 @@ class Bot {
     Prio condTakeOutLoan();
     Prio condDropMoney(__int64 &moneyAvailable);
     Prio condEmitShares();
-    Prio condSellShares(__int64 &moneyAvailable);
     Prio condBuyShares(__int64 &moneyAvailable, SLONG dislike);
     Prio condBuyNemesisShares(__int64 &moneyAvailable, SLONG dislike);
     Prio condBuyOwnShares(__int64 &moneyAvailable);
+    Prio condOvertakeAirline();
+    Prio condSellShares(__int64 &moneyAvailable);
     Prio condVisitMech();
     Prio condVisitNasa(__int64 &moneyAvailable);
     Prio condVisitMisc();
@@ -183,6 +184,7 @@ class Bot {
     void actionEmitShares();
     void actionBuyNemesisShares(__int64 moneyAvailable);
     void actionBuyOwnShares(__int64 moneyAvailable);
+    void actionOvertakeAirline();
     void actionSellShares(__int64 moneyAvailable);
     void actionVisitMech();
     void actionVisitDutyFree(__int64 moneyAvailable);

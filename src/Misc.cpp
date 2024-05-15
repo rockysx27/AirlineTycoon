@@ -2088,6 +2088,8 @@ const char *getRobotActionName(SLONG a) {
         return "ACTION_STARTDAY_LAPTOP";
     case ACTION_VISITADS:
         return "ACTION_VISITADS";
+    case ACTION_OVERTAKE_AIRLINE:
+        return "ACTION_OVERTAKE_AIRLINE";
     default:
         hprintf("Misc.cpp: Default case should not be reached.");
         DebugBreak();

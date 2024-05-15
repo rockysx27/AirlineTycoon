@@ -33,7 +33,7 @@ const SLONG kMoneyReserveBuyTanks = 200 * 1000;
 const SLONG kMoneyReserveIncreaseDividend = 100 * 1000;
 const SLONG kMoneyReservePaybackCredit = 1500 * 1000;
 const SLONG kMoneyReserveBuyOwnShares = 2000 * 1000;
-const SLONG kMoneyReserveBuyNemesisShares = 6000 * 1000;
+const SLONG kMoneyReserveBuyNemesisShares = 80 * 1e6;
 const SLONG kMoneyReserveBossOffice = 10 * 1000;
 const SLONG kMoneyReserveExpandAirport = 1000 * 1000;
 const SLONG kMoneyReserveSabotage = 200 * 1000;
@@ -450,7 +450,7 @@ void Bot::RobotPlan() {
                        ACTION_SELLSHARES, ACTION_BUYSHARES, ACTION_VISITMECH, ACTION_VISITNASA, ACTION_VISITTELESCOPE, ACTION_VISITMAKLER, ACTION_VISITARAB,
                        ACTION_VISITRICK, ACTION_VISITKIOSK, ACTION_VISITDUTYFREE, ACTION_VISITAUFSICHT, ACTION_EXPANDAIRPORT, ACTION_VISITROUTEBOX,
                        ACTION_VISITROUTEBOX2, ACTION_VISITSECURITY, ACTION_VISITSECURITY2, ACTION_VISITDESIGNER, ACTION_WERBUNG_ROUTES, ACTION_WERBUNG,
-                       ACTION_VISITADS};
+                       ACTION_VISITADS, ACTION_OVERTAKE_AIRLINE};
 
     if (qRobotActions[0].ActionId != ACTION_NONE || qRobotActions[1].ActionId != ACTION_NONE) {
         hprintf("Bot.cpp: Leaving RobotPlan() (actions already planned)\n");
@@ -812,6 +812,15 @@ void Bot::RobotExecuteAction() {
         }
     }
         qWorkCountdown = 20 * 5;
+        break;
+
+    case ACTION_OVERTAKE_AIRLINE:
+        if (condOvertakeAirline() != Prio::None) {
+            actionOvertakeAirline();
+        } else {
+            redprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+        }
+        qWorkCountdown = 20 * 6;
         break;
 
     case ACTION_VISITMECH:
