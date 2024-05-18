@@ -739,6 +739,9 @@ void BLOCK::LinkeSeiteInhalt(XY TitleArea, XY ClientArea) {
                                     !(Plan.Flug[c].Startdate > Sim.Date || Plan.Flug[c].Startzeit > Sim.GetHour() + 1)) {
                                     Bitmap.BlitFromT(FlugplanBms[17], ClientArea + XY(24 - 8 + px, py + 4));
                                 }
+                                if (d > 0 && d == (Plan.Flug[c].Startzeit + 1) % 24 && (Plan.Flug[c].FlightBooked)) {
+                                    Bitmap.BlitFromT(FlugplanBms[17], ClientArea + XY(24 + px, py + 4));
+                                }
                                 if (Plan.Flug[c].VonCity == static_cast<ULONG>(Sim.HomeAirportId) && d == Plan.Flug[c].Startzeit &&
                                     (Plan.Flug[c].ObjectType == 1 || Plan.Flug[c].ObjectType == 2) && (Plan.Flug[c].GateWarning != 0U)) {
                                     Bitmap.BlitFromT(FlugplanBms[18], ClientArea + XY(24 + px, py + 4));

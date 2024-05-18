@@ -204,7 +204,6 @@ class Bot {
     void planFlights();
     std::pair<SLONG, SLONG> kerosineQualiOptimization(__int64 moneyAvailable, DOUBLE targetFillRatio) const;
     /* routes */
-    SLONG getRouteTurnAroundDuration(const CRoute &qRoute, SLONG planeTypeId) const;
     void checkLostRoutes();
     void updateRouteInfo();
     void requestPlanRoutes(bool areWeInOffice);

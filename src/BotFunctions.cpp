@@ -602,12 +602,6 @@ std::pair<SLONG, SLONG> Bot::kerosineQualiOptimization(__int64 moneyAvailable, D
     return res;
 }
 
-SLONG Bot::getRouteTurnAroundDuration(const CRoute &qRoute, SLONG planeTypeId) const {
-    SLONG durationA = kDurationExtra + Cities.CalcFlugdauer(qRoute.VonCity, qRoute.NachCity, PlaneTypes[planeTypeId].Geschwindigkeit);
-    SLONG durationB = kDurationExtra + Cities.CalcFlugdauer(qRoute.NachCity, qRoute.VonCity, PlaneTypes[planeTypeId].Geschwindigkeit);
-    return (durationA + durationB);
-}
-
 void Bot::checkLostRoutes() {
     if (mRoutes.empty()) {
         return;
@@ -771,86 +765,104 @@ void Bot::planRoutes() {
     for (auto &qRoute : mRoutes) {
         SLONG fromCity = Cities.find(getRoute(qRoute).VonCity);
         SLONG toCity = Cities.find(getRoute(qRoute).NachCity);
+        auto routeIdA = Routen.GetIdFromIndex(qRoute.routeId);
+        auto routeIdB = Routen.GetIdFromIndex(qRoute.routeReverseId);
+
+        SLONG timeSlotIdx = 0;
         for (auto planeId : qRoute.planeIds) {
             const auto &qPlane = qPlayer.Planes[planeId];
-            SLONG durationA = kDurationExtra + Cities.CalcFlugdauer(fromCity, toCity, qPlane.ptGeschwindigkeit);
-            SLONG durationB = kDurationExtra + Cities.CalcFlugdauer(toCity, fromCity, qPlane.ptGeschwindigkeit);
-            // TODO: SLONG roundTripDuration = durationA + durationB;
-            // TODO: int timeSlot = 0;
+            SLONG duration = kDurationExtra + Cities.CalcFlugdauer(fromCity, toCity, qPlane.ptGeschwindigkeit);
+            assert(duration == kDurationExtra + Cities.CalcFlugdauer(toCity, fromCity, qPlane.ptGeschwindigkeit));
+            SLONG maxNumTimeSlots = (2 * duration) / 3;
 
 #ifdef PRINT_ROUTE_DETAILS
             hprintf("Bot::planRoutes(): =================== Plane %s ===================", Helper::getPlaneName(qPlane).c_str());
             Helper::printFlightJobs(qPlayer, planeId);
 #endif
 
-            /* re-plan anything after 3 days because of spurious route flights appearing */
-            GameMechanic::killFlightPlanFrom(qPlayer, planeId, Sim.Date + 3, 0);
-
             /* where is the plane right now and when can it be in the origin city? */
+            PlaneTime scheduleFromTime = {Sim.Date, Sim.GetHour() + 2};
             PlaneTime availTime;
             SLONG availCity{};
-            std::tie(availTime, availCity) = Helper::getPlaneAvailableTimeLoc(qPlane, {}, {});
+            std::tie(availTime, availCity) = Helper::getPlaneAvailableTimeLoc(qPlane, scheduleFromTime, scheduleFromTime);
             availCity = Cities.find(availCity);
 #ifdef PRINT_ROUTE_DETAILS
             hprintf("Bot::planRoutes(): Plane %s is in %s @ %s %ld", Helper::getPlaneName(qPlane).c_str(), (LPCTSTR)Cities[availCity].Kuerzel,
                     (LPCTSTR)Helper::getWeekday(availTime.getDate()), availTime.getHour());
 #endif
 
-            /* leave room for auto flight, if necessary */
-            if (availCity != fromCity && availCity != toCity) {
+            /* planes on same route fly with 3 hours inbetween */
+            SLONG offset = 3 * ((timeSlotIdx++) % maxNumTimeSlots);
+            SLONG hours = availTime.getDate() * 24 + availTime.getHour();
+            SLONG timeSlot = ceil_div(hours - offset, duration);
+            bool useRouteA = (0 == (timeSlot % 2));
+            hours = timeSlot * duration + offset;
+            PlaneTime startTime = {hours / 24, hours % 24};
+
+            /* find insertion point */
+            auto &qFlightPlan = qPlane.Flugplan.Flug;
+            SLONG numCorrectlyScheduled = 0;
+            for (SLONG d = 0; d < qFlightPlan.AnzEntries(); d++) {
+                const auto &qFPE = qFlightPlan[d];
+                if (PlaneTime{qFPE.Startdate, qFPE.Startzeit} < startTime) {
+                    continue;
+                }
+                /* check whether this FPE is correct */
+                if (PlaneTime{qFPE.Startdate, qFPE.Startzeit} > startTime) {
+                    break;
+                }
+                if (qFPE.ObjectType != 1) {
+                    break;
+                }
+                if ((useRouteA && qFPE.ObjectId != routeIdA) || (!useRouteA && qFPE.ObjectId != routeIdB)) {
+                    break;
+                }
+                numCorrectlyScheduled++;
+                useRouteA = !useRouteA;
+                startTime += duration;
+            }
+            hprintf("Bot::planRoutes(): Plane %s: %ld instances of route %s were correctly scheduled (until %s %ld)", Helper::getPlaneName(qPlane).c_str(),
+                    numCorrectlyScheduled, Helper::getRouteName(getRoute(qRoute)).c_str(), (LPCTSTR)Helper::getWeekday(startTime.getDate()),
+                    startTime.getHour());
+
+            /* plane is not on the route yet */
+            if (numCorrectlyScheduled == 0 && availCity != fromCity) {
+                /* leave room for auto flight */
                 SLONG autoFlightDuration = kDurationExtra + Cities.CalcFlugdauer(availCity, fromCity, qPlane.ptGeschwindigkeit);
                 availTime += autoFlightDuration;
+                while (startTime < availTime) {
+                    startTime += 2 * duration;
+                }
                 hprintf("Bot::planRoutes(): Plane %s: Adding buffer of %ld hours for auto flight from %s to %s", Helper::getPlaneName(qPlane).c_str(),
                         autoFlightDuration, (LPCTSTR)Cities[availCity].Kuerzel, (LPCTSTR)Cities[fromCity].Kuerzel);
             }
 
-            if (availTime.getDate() >= Sim.Date + 5) {
+            if (startTime.getDate() >= Sim.Date + 6) {
                 continue;
             }
 
-            /* planes on same route fly with 3 hours inbetween */
-            // TODO:
-            // SLONG h = availTime.getDate() * 24 + availTime.getHour();
-            // h = ceil_div(h, roundTripDuration) * roundTripDuration;
-            // h += (3 * (timeSlot++)) % 24;
-            // availTime = {h / 24, h % 24};
-            // hprintf("BotPlaner::planRoutes(): Plane %s: Setting availTime to %s %ld to meet timeSlot=%ld", Helper::getPlaneName(qPlane).c_str(),
-            //         (LPCTSTR)Helper::getWeekday(availTime.getDate()), availTime.getHour(), timeSlot - 1);
+            /* kill everyting after insertion point */
+            GameMechanic::killFlightPlanFrom(qPlayer, planeId, startTime.getDate(), startTime.getHour());
 
-            // Helper::printFlightJobs(qPlayer, planeId);
-
-            /* if in B, schedule one instance of B=>A */
+            /* schedule route jobs */
             SLONG numScheduled = 0;
-            PlaneTime curTime = availTime;
-            if (availCity == toCity) {
-                if (!GameMechanic::planRouteJob(qPlayer, planeId, qRoute.routeReverseId, curTime.getDate(), curTime.getHour())) {
+            auto currentTime = startTime;
+            while (currentTime.getDate() < Sim.Date + 6) {
+                auto routeId = useRouteA ? qRoute.routeId : qRoute.routeReverseId;
+                if (!GameMechanic::planRouteJob(qPlayer, planeId, routeId, currentTime.getDate(), currentTime.getHour())) {
                     redprintf("Bot::planRoutes(): GameMechanic::planRouteJob returned error!");
                     return;
                 }
-                curTime += durationB;
                 numScheduled++;
-            }
-
-            /* always schedule A=>B and B=>A, for the next 5 days */
-            while (curTime.getDate() < Sim.Date + 5) {
-                if (!GameMechanic::planRouteJob(qPlayer, planeId, qRoute.routeId, curTime.getDate(), curTime.getHour())) {
-                    redprintf("Bot::planRoutes(): GameMechanic::planRouteJob returned error!");
-                    return;
-                }
-                curTime += durationA;
-                if (!GameMechanic::planRouteJob(qPlayer, planeId, qRoute.routeReverseId, curTime.getDate(), curTime.getHour())) {
-                    redprintf("Bot::planRoutes(): GameMechanic::planRouteJob returned error!");
-                    return;
-                }
-                curTime += durationB;
-                numScheduled++;
+                useRouteA = !useRouteA;
+                currentTime += duration;
             }
             hprintf("Bot::planRoutes(): Scheduled route %s %ld times for plane %s, starting at %s %ld", Helper::getRouteName(getRoute(qRoute)).c_str(),
-                    numScheduled, Helper::getPlaneName(qPlane).c_str(), (LPCTSTR)Helper::getWeekday(availTime.getDate()), availTime.getHour());
+                    numScheduled, Helper::getPlaneName(qPlane).c_str(), (LPCTSTR)Helper::getWeekday(currentTime.getDate()), currentTime.getHour());
             Helper::checkPlaneSchedule(qPlayer, planeId, false);
         }
     }
-    Helper::checkFlightJobs(qPlayer, false, true);
+    Helper::checkFlightJobs(qPlayer, false, false);
 
     /* adjust ticket prices */
     for (auto &qRoute : mRoutes) {

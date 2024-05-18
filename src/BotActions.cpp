@@ -1040,7 +1040,8 @@ void Bot::actionFindBestRoute() {
 
         /* calculate how many planes would be need to get desired route utilization */
         /* TODO: What about factor 4.27 */
-        SLONG roundTripDuration = getRouteTurnAroundDuration(Routen[c], planeTypeId);
+        SLONG duration = kDurationExtra + Cities.CalcFlugdauer(Routen[c].VonCity, Routen[c].NachCity, PlaneTypes[planeTypeId].Geschwindigkeit);
+        SLONG roundTripDuration = 2 * duration;
         SLONG numTripsPerWeek = 24 * 7 / roundTripDuration;
         SLONG passengersPerWeek = 7 * Routen[c].AnzPassagiere();
         SLONG minTarget = ceil_div(passengersPerWeek * 10, 100); /* to not loose the route */
