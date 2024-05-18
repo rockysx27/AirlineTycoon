@@ -4,6 +4,7 @@
 #include "BotPlaner.h"
 
 #include <algorithm>
+#include <iostream>
 
 const bool kAlwaysReplan = true;
 const float kSchedulingMinScoreRatio = 16.0f;
@@ -290,7 +291,7 @@ Bot::Bot(PLAYER &player) : qPlayer(player) {}
 void Bot::printStatisticsLine(CString prefix, bool printHeader) {
     if (printHeader) {
         hprintf("%s: Tag, Geld, Kredit, Available, Saldo, Gewinn, Verlust, Auftraege, Fracht, Routen, Kerosin, Wartung, Planetype, Passagiere, "
-                "PassZufrieden, Firmenwert, Flugzeuge, AnzRouten",
+                "PassZufrieden, Firmenwert, Flugzeuge, AnzRouten, Image",
                 (LPCTSTR)prefix);
     }
     SLONG count = 0;
@@ -302,12 +303,14 @@ void Bot::printStatisticsLine(CString prefix, bool printHeader) {
         }
     }
     auto balance = qPlayer.BilanzWoche.Hole();
-    hprintf("%s: %d, %lld, %lld, %lld, %lld, %lld, %lld, %lld, %lld, %lld, %lld, %lld, %ld, %lld, %lld, %lld, %lld, %lld", (LPCTSTR)prefix, Sim.Date,
-            qPlayer.Money, qPlayer.Credit, getMoneyAvailable(), balance.GetOpSaldo(), balance.GetOpGewinn(), balance.GetOpVerlust(), balance.Auftraege,
-            balance.FrachtAuftraege, balance.Tickets, balance.KerosinFlug + balance.KerosinVorrat, balance.Wartung, count,
-            qPlayer.Statistiken[STAT_PASSAGIERE].GetAtPastDay(1), qPlayer.Statistiken[STAT_ZUFR_PASSAGIERE].GetAtPastDay(1),
-            qPlayer.Statistiken[STAT_FIRMENWERT].GetAtPastDay(1), qPlayer.Statistiken[STAT_FLUGZEUGE].GetAtPastDay(1),
-            qPlayer.Statistiken[STAT_ROUTEN].GetAtPastDay(1));
+    std::cout << (LPCTSTR)prefix << ": " << Sim.Date << ", " << qPlayer.Money << ", " << qPlayer.Credit << ", " << getMoneyAvailable() << ", ";
+    std::cout << balance.GetOpSaldo() << ", " << balance.GetOpGewinn() << ", " << balance.GetOpVerlust() << ", " << balance.Auftraege << ", ";
+    std::cout << balance.FrachtAuftraege << ", " << balance.Tickets << ", " << balance.KerosinFlug + balance.KerosinVorrat << ", " << balance.Wartung << ", ";
+    std::cout << count << ", ";
+    std::cout << qPlayer.Statistiken[STAT_PASSAGIERE].GetAtPastDay(1) << ", " << qPlayer.Statistiken[STAT_ZUFR_PASSAGIERE].GetAtPastDay(1) << ", ";
+    std::cout << qPlayer.Statistiken[STAT_FIRMENWERT].GetAtPastDay(1) << ", " << qPlayer.Statistiken[STAT_FLUGZEUGE].GetAtPastDay(1) << ", ";
+    std::cout << qPlayer.Statistiken[STAT_ROUTEN].GetAtPastDay(1) << ", " << qPlayer.Image;
+    std::cout << std::endl;
 }
 
 void Bot::RobotInit() {
