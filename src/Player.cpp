@@ -6306,6 +6306,9 @@ void PLAYER::UpdateStatistics() {
     value += TankInhalt * Sim.HoleKerosinPreis(2);         // Current value of stored kerosene (assuming worst quality)
     value += static_cast<__int64>(std::round(Tank * 600)); // Value of tank itself (assuming cheapest tank)
 
+    // calculate 'value' of company image by how often best ad campaign you would need to buy (adCampaignSize := 5)
+    value += Image * 10000 * 55 / (5 + 6);
+
     Statistiken[STAT_FIRMENWERT].SetAtPastDay(value);
     // Statistiken[STAT_FIRMENWERT].SetAtPastDay (0, SLONG(value));
 
