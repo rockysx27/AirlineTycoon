@@ -291,7 +291,7 @@ Bot::Bot(PLAYER &player) : qPlayer(player) {}
 void Bot::printStatisticsLine(CString prefix, bool printHeader) {
     if (printHeader) {
         hprintf("%s: Tag, Geld, Kredit, Available, Saldo, Gewinn, Verlust, Auftraege, Fracht, Routen, Kerosin, Wartung, Planetype, Passagiere, "
-                "PassZufrieden, Firmenwert, Flugzeuge, AnzRouten, Image",
+                "PassZufrieden, Firmenwert, Flugzeuge, AnzRouten, Image, ZielSA, ZielFL, ZielPT, ZielHA",
                 (LPCTSTR)prefix);
     }
     SLONG count = 0;
@@ -310,6 +310,9 @@ void Bot::printStatisticsLine(CString prefix, bool printHeader) {
     std::cout << qPlayer.Statistiken[STAT_PASSAGIERE].GetAtPastDay(1) << ", " << qPlayer.Statistiken[STAT_ZUFR_PASSAGIERE].GetAtPastDay(1) << ", ";
     std::cout << qPlayer.Statistiken[STAT_FIRMENWERT].GetAtPastDay(1) << ", " << qPlayer.Statistiken[STAT_FLUGZEUGE].GetAtPastDay(1) << ", ";
     std::cout << qPlayer.Statistiken[STAT_ROUTEN].GetAtPastDay(1) << ", " << qPlayer.Image;
+    for (SLONG i = 0; i < 4; i++) {
+        std::cout << ", " << Sim.Players.Players[i].Statistiken[STAT_MISSIONSZIEL].GetAtPastDay(1);
+    }
     std::cout << std::endl;
 }
 

@@ -594,6 +594,21 @@ BotPlaner::SolutionList BotPlaner::planFlights(const std::vector<int> &planeIdsI
     if (mConstBonus != 0) {
         hprintf("BotPlaner::planFlights(): Using mConstBonus = %d", mConstBonus);
     }
+    if (mMinScoreRatio != 1.0f) {
+        hprintf("BotPlaner::planFlights(): Using mMinScoreRatio = %f", mMinScoreRatio);
+    }
+    if (mMinScoreRatioLastMinute != 1.0f) {
+        hprintf("BotPlaner::planFlights(): Using mMinScoreRatioLastMinute = %f", mMinScoreRatioLastMinute);
+    }
+    if (mFreightBonus != 0) {
+        hprintf("BotPlaner::planFlights(): Using mFreightBonus = %d", mFreightBonus);
+    }
+    if (mFreeFreightBonus != 0) {
+        hprintf("BotPlaner::planFlights(): Using mFreeFreightBonus = %d", mFreeFreightBonus);
+    }
+    if (mMinSpeedRatio != 0.0f) {
+        hprintf("BotPlaner::planFlights(): Using mMinSpeedRatio = %f", mMinSpeedRatio);
+    }
 
 #ifdef PRINT_DETAIL
     hprintf("BotPlaner::planFlights(): Current time: %d", Sim.GetHour());

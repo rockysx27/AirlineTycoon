@@ -386,7 +386,8 @@ void Bot::grabFlights(BotPlaner &planer, bool areWeInOffice) {
         planer.setFreightBonus(5000 * 1000);
         break;
     case DIFF_ADDON04:
-        // planer.setDistanceFactor(1); TODO
+        planer.setDistanceFactor(1);
+        planer.setMinSpeedRatio(0.6f);
         break;
     case DIFF_ADDON06:
         // planer.setConstBonus(1000 * 1000); TODO

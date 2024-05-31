@@ -468,6 +468,9 @@ ScheduleInfo calculateScheduleInfo(const PLAYER &qPlayer, SLONG planeId) {
             info.tons += qPlane.ptPassagiere / 10;
         }
     }
+    if (info.scheduleStart.getDate() == INT_MAX) {
+        info.scheduleStart = {Sim.Date, 0};
+    }
     return info;
 }
 

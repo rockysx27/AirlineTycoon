@@ -122,6 +122,7 @@ class BotPlaner {
     void setFreeFreightBonus(int val) { mFreeFreightBonus = val; }
     void setMinScoreRatio(float val) { mMinScoreRatio = val; }
     void setMinScoreRatioLastMinute(float val) { mMinScoreRatioLastMinute = val; }
+    void setMinSpeedRatio(float val) { mMinSpeedRatio = val; }
 
     SolutionList planFlights(const std::vector<int> &planeIdsInput, int extraBufferTime);
     static bool applySolution(PLAYER &qPlayer, const SolutionList &solutions);
@@ -276,6 +277,7 @@ class BotPlaner {
     float mMinScoreRatioLastMinute{1.0f};
     int mFreightBonus{0};
     int mFreeFreightBonus{0};
+    float mMinSpeedRatio{0.0f};
 
     /* state */
     std::vector<const CPlane *> mPlaneTypeToPlane;

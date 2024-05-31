@@ -764,6 +764,18 @@ bool BotPlaner::runAddNodeToBestPlaneInner(int jobIdxToInsert) {
             continue;
         }
 
+        /* for "miles and more" mission: Check actual speed for this job (distance / hours) */
+        if (mMinSpeedRatio > 0.0f) {
+            const auto &job = mJobList[jobIdxToInsert];
+            float distance = Cities.CalcDistance(job.getStartCity(), job.getDestCity());
+            float speedActual = distance / g.nodeInfo[nodeToInsert].duration;
+            float speedPerfect = 1000 * qPlanes[mPlaneStates[planeIdx].planeId].ptGeschwindigkeit;
+            float ratio = speedActual / speedPerfect;
+            if (ratio < mMinSpeedRatio) {
+                continue;
+            }
+        }
+
         /* iterate over nodes and make room */
         int currentNode = planeIdx;
         bool first = true;
