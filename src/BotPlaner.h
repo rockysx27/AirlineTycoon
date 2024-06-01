@@ -27,7 +27,6 @@ class Graph {
     struct Node {
         int jobIdx{-1};
         int score{0};
-        float scoreRatio{0};
         int duration{0};
         int earliest{0};
         int latest{INT_MAX};
@@ -114,12 +113,12 @@ class BotPlaner {
     void addJobSource(JobOwner jobOwner, std::vector<int> intJobSource);
 
     /* score weighting factors */
-    void setDistanceFactor(int val) { mDistanceFactor = val; }
-    void setPassengerFactor(int val) { mPassengerFactor = val; }
-    void setUhrigBonus(int val) { mUhrigBonus = val; }
-    void setConstBonus(int val) { mConstBonus = val; }
-    void setFreightBonus(int val) { mFreightBonus = val; }
-    void setFreeFreightBonus(int val) { mFreeFreightBonus = val; }
+    void setDistanceFactor(int val) { mFactors.distanceFactor = val; }
+    void setPassengerFactor(int val) { mFactors.passengerFactor = val; }
+    void setUhrigBonus(int val) { mFactors.uhrigBonus = val; }
+    void setConstBonus(int val) { mFactors.constBonus = val; }
+    void setFreightBonus(int val) { mFactors.freightBonus = val; }
+    void setFreeFreightBonus(int val) { mFactors.freeFreightBonus = val; }
     void setMinScoreRatio(float val) { mMinScoreRatio = val; }
     void setMinScoreRatioLastMinute(float val) { mMinScoreRatioLastMinute = val; }
     void setMinSpeedRatio(float val) { mMinSpeedRatio = val; }
@@ -138,6 +137,15 @@ class BotPlaner {
         int numNodes{0};
         int currentPremium{0};
         int currentCost{0};
+    };
+
+    struct Factors {
+        int distanceFactor{0};
+        int passengerFactor{0};
+        int uhrigBonus{0};
+        int constBonus{0};
+        int freightBonus{0};
+        int freeFreightBonus{0};
     };
 
     class FlightJob {
@@ -191,10 +199,11 @@ class BotPlaner {
         }
         std::string getName() const { return isFreight() ? Helper::getFreightName(fracht) : Helper::getJobName(auftrag); }
 
+        std::pair<int, float> calculateScore(const Factors &f, int hours, int cost, int numRequired);
+
         int id{};
         int sourceId{-1};
         JobOwner owner;
-        int score{0};
         float scoreRatio{0};
 
       private:
@@ -219,8 +228,8 @@ class BotPlaner {
     void printGraph(const Graph &g);
 
     /* preparation */
-    void findPlaneTypes();
     void collectAllFlightJobs(const std::vector<int> &planeIds);
+    void findPlaneTypes();
     std::vector<Graph> prepareGraph();
 
     /* in BotPlanerAlgo.cpp */
@@ -269,19 +278,17 @@ class BotPlaner {
     PlaneTime mScheduleFromTime;
 
     /* score weighting factors */
-    int mDistanceFactor{0};
-    int mPassengerFactor{0};
-    int mUhrigBonus{0};
-    int mConstBonus{0};
+    Factors mFactors;
+
+    /* score thresholds */
     float mMinScoreRatio{1.0f};
     float mMinScoreRatioLastMinute{1.0f};
-    int mFreightBonus{0};
-    int mFreeFreightBonus{0};
     float mMinSpeedRatio{0.0f};
 
     /* state */
     std::vector<const CPlane *> mPlaneTypeToPlane;
     std::vector<FlightJob> mJobList;
+    std::vector<int> mJobListSorted;
     std::unordered_map<int, int> mExistingJobsById;
     std::unordered_map<int, int> mExistingFreightJobsById;
     std::vector<PlaneState> mPlaneStates;

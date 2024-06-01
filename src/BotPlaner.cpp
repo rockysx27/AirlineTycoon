@@ -67,6 +67,30 @@ BotPlaner::FlightJob::FlightJob(int i, int j, CFracht a, JobOwner o) : id(i), so
     destCity = Cities.find(fracht.NachCity);
 }
 
+std::pair<int, float> BotPlaner::FlightJob::calculateScore(const Factors &f, int hours, int cost, int numRequired) {
+    int score = f.constBonus;
+    score += f.distanceFactor * Cities.CalcDistance(getStartCity(), getDestCity());
+
+    if (isFreight()) {
+        score += fracht.Praemie;
+        score += f.freightBonus;
+        if (fracht.Praemie == 0) {
+            score += f.freeFreightBonus;
+        }
+    } else {
+        score += auftrag.Praemie;
+        score += f.passengerFactor * auftrag.Personen;
+        score += f.uhrigBonus * auftrag.bUhrigFlight;
+    }
+
+    score -= cost;
+
+    float _scoreRatio = 1.0f * score / (cost * numRequired); // TODO: hours
+    scoreRatio = std::max(scoreRatio, _scoreRatio);
+
+    return {score, _scoreRatio};
+}
+
 BotPlaner::BotPlaner(PLAYER &player, const CPlanes &planes) : qPlayer(player), qPlanes(planes) {}
 
 void BotPlaner::addJobSource(JobOwner jobOwner, std::vector<int> intJobSource) {
@@ -181,14 +205,6 @@ void BotPlaner::collectAllFlightJobs(const std::vector<int> &planeIds) {
             }
             if (job.Date <= Sim.Date + kScheduleForNextDays) {
                 mJobList.emplace_back(source.jobs->GetIdFromIndex(i), source.sourceId, job, source.owner);
-                int score = job.Praemie;
-                score += mDistanceFactor * Cities.CalcDistance(job.VonCity, job.NachCity);
-                score += mPassengerFactor * job.Personen;
-                score += mUhrigBonus * job.bUhrigFlight;
-                score += mConstBonus;
-
-                mJobList.back().score = score;
-                mJobList.back().scoreRatio = 1.0f * score / CalculateFlightCostNoTank(job.VonCity, job.NachCity, 8000, 700);
             }
         }
         /* job source B: Freight */
@@ -202,16 +218,6 @@ void BotPlaner::collectAllFlightJobs(const std::vector<int> &planeIds) {
             }
             if (job.Date <= Sim.Date + kScheduleForNextDays) {
                 mJobList.emplace_back(source.freight->GetIdFromIndex(i), source.sourceId, job, source.owner);
-                int score = job.Praemie;
-                score += mDistanceFactor * Cities.CalcDistance(job.VonCity, job.NachCity);
-                score += mConstBonus;
-                score += mFreightBonus;
-                if (job.Praemie == 0) {
-                    score += mFreeFreightBonus;
-                }
-
-                mJobList.back().score = score;
-                mJobList.back().scoreRatio = 1.0f * score / CalculateFlightCostNoTank(job.VonCity, job.NachCity, 8000, 700);
                 mJobList.back().setNumToTransport(job.TonsLeft);
                 assert(job.TonsLeft <= job.Tons);
             }
@@ -232,16 +238,12 @@ void BotPlaner::collectAllFlightJobs(const std::vector<int> &planeIds) {
             if (qFPE.ObjectType == 2) {
                 const auto &job = qPlayer.Auftraege[qFPE.ObjectId];
                 mJobList.emplace_back(qFPE.ObjectId, -1, job, JobOwner::Planned);
-                mJobList.back().score = job.Praemie;
-                mJobList.back().scoreRatio = 1.0f * job.Praemie / CalculateFlightCostNoTank(job.VonCity, job.NachCity, 8000, 700);
             } else if (qFPE.ObjectType == 4) {
                 if (jobs.find(qFPE.ObjectId) == jobs.end()) {
                     jobs[qFPE.ObjectId] = mJobList.size();
 
                     const auto &job = qPlayer.Frachten[qFPE.ObjectId];
                     mJobList.emplace_back(qFPE.ObjectId, -1, job, JobOwner::PlannedFreight);
-                    mJobList.back().score = job.Praemie;
-                    mJobList.back().scoreRatio = 1.0f * job.Praemie / CalculateFlightCostNoTank(job.VonCity, job.NachCity, 8000, 700);
                     mJobList.back().setNumToTransport(qPlanes[i].ptPassagiere / 10);
                 } else {
                     mJobList[jobs[qFPE.ObjectId]].addNumToTransport(qPlanes[i].ptPassagiere / 10);
@@ -249,14 +251,6 @@ void BotPlaner::collectAllFlightJobs(const std::vector<int> &planeIds) {
             }
         }
     }
-
-    /* sort list of jobs */
-    std::sort(mJobList.begin(), mJobList.end(), [](const FlightJob &a, const FlightJob &b) {
-        if (a.wasTaken() != b.wasTaken()) {
-            return a.wasTaken();
-        }
-        return a.scoreRatio > b.scoreRatio;
-    });
 
     for (int i = 0; i < mJobList.size(); i++) {
         auto &job = mJobList[i];
@@ -335,9 +329,12 @@ std::vector<Graph> BotPlaner::prepareGraph() {
             int distance = 0;
             calcCostAndDuration(job.getStartCity(), job.getDestCity(), *plane, false, cost, duration, distance);
 
+            /* calculate job score for this plane type */
+            int score = 0;
+            int scoreRatio = 0.f;
+            std::tie(score, scoreRatio) = mJobList[jobIdx].calculateScore(mFactors, duration, cost, numRequired);
+
             /* check job score */
-            int score = job.score - cost;
-            int scoreRatio = 1.0f * job.score / (cost * numRequired);
             auto minScore = (job.getBisDate() == Sim.Date) ? mMinScoreRatioLastMinute : mMinScoreRatio;
             if (!job.wasTaken() && scoreRatio < minScore) {
                 continue; /* job was not taken yet and does not have required minimum score */
@@ -353,7 +350,6 @@ std::vector<Graph> BotPlaner::prepareGraph() {
                     qNodeInfo.earliest = job.getDate();
                     qNodeInfo.latest = job.getBisDate();
                     qNodeInfo.score = score;
-                    qNodeInfo.scoreRatio = scoreRatio;
                     qNodeInfo.duration = duration + kDurationExtra;
                 }
             }
@@ -582,29 +578,29 @@ bool BotPlaner::applySolutionForPlane(PLAYER &qPlayer, int planeId, const BotPla
 BotPlaner::SolutionList BotPlaner::planFlights(const std::vector<int> &planeIdsInput, int extraBufferTime) {
     auto t_begin = std::chrono::steady_clock::now();
 
-    if (mDistanceFactor != 0) {
-        hprintf("BotPlaner::planFlights(): Using mDistanceFactor = %d", mDistanceFactor);
+    if (mFactors.distanceFactor != 0) {
+        hprintf("BotPlaner::planFlights(): Using mDistanceFactor = %d", mFactors.distanceFactor);
     }
-    if (mPassengerFactor != 0) {
-        hprintf("BotPlaner::planFlights(): Using mPassengerFactor = %d", mPassengerFactor);
+    if (mFactors.passengerFactor != 0) {
+        hprintf("BotPlaner::planFlights(): Using mPassengerFactor = %d", mFactors.passengerFactor);
     }
-    if (mUhrigBonus != 0) {
-        hprintf("BotPlaner::planFlights(): Using mUhrigBonus = %d", mUhrigBonus);
+    if (mFactors.uhrigBonus != 0) {
+        hprintf("BotPlaner::planFlights(): Using mUhrigBonus = %d", mFactors.uhrigBonus);
     }
-    if (mConstBonus != 0) {
-        hprintf("BotPlaner::planFlights(): Using mConstBonus = %d", mConstBonus);
+    if (mFactors.constBonus != 0) {
+        hprintf("BotPlaner::planFlights(): Using mConstBonus = %d", mFactors.constBonus);
+    }
+    if (mFactors.freightBonus != 0) {
+        hprintf("BotPlaner::planFlights(): Using mFreightBonus = %d", mFactors.freightBonus);
+    }
+    if (mFactors.freeFreightBonus != 0) {
+        hprintf("BotPlaner::planFlights(): Using mFreeFreightBonus = %d", mFactors.freeFreightBonus);
     }
     if (mMinScoreRatio != 1.0f) {
         hprintf("BotPlaner::planFlights(): Using mMinScoreRatio = %f", mMinScoreRatio);
     }
     if (mMinScoreRatioLastMinute != 1.0f) {
         hprintf("BotPlaner::planFlights(): Using mMinScoreRatioLastMinute = %f", mMinScoreRatioLastMinute);
-    }
-    if (mFreightBonus != 0) {
-        hprintf("BotPlaner::planFlights(): Using mFreightBonus = %d", mFreightBonus);
-    }
-    if (mFreeFreightBonus != 0) {
-        hprintf("BotPlaner::planFlights(): Using mFreeFreightBonus = %d", mFreeFreightBonus);
     }
     if (mMinSpeedRatio != 0.0f) {
         hprintf("BotPlaner::planFlights(): Using mMinSpeedRatio = %f", mMinSpeedRatio);
@@ -673,6 +669,18 @@ BotPlaner::SolutionList BotPlaner::planFlights(const std::vector<int> &planeIdsI
 
     /* prepare graph */
     mGraphs = prepareGraph();
+
+    /* create sorted list of jobs */
+    mJobListSorted.reserve(mJobList.size());
+    for (int i = 0; i < mJobList.size(); i++) {
+        mJobListSorted.push_back(i);
+    }
+    std::sort(mJobListSorted.begin(), mJobListSorted.end(), [&](int a, int b) {
+        if (mJobList[a].wasTaken() != mJobList[b].wasTaken()) {
+            return mJobList[a].wasTaken();
+        }
+        return mJobList[a].scoreRatio > mJobList[b].scoreRatio;
+    });
 
     /* start algo */
     auto t_current = std::chrono::steady_clock::now();

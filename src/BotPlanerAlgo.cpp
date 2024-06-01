@@ -908,15 +908,16 @@ bool BotPlaner::algo(int64_t timeBudget) {
         }
 
         int numToAdd = kNumBestToAdd * mPlaneStates.size();
-        for (int i = 0; i < mJobList.size() && (numToAdd > 0); i++) {
-            if (mJobList[i].isScheduled()) {
-                assert(mJobList[i].scheduledOK());
+        for (int i = 0; i < mJobListSorted.size() && (numToAdd > 0); i++) {
+            int idx = mJobListSorted[i];
+            if (mJobList[idx].isScheduled()) {
+                assert(mJobList[idx].scheduledOK());
                 continue;
             }
             if (getRandInt(1, 100) <= kJobSelectRandomization) {
                 continue;
             }
-            if (runAddNodeToBestPlane(i)) {
+            if (runAddNodeToBestPlane(idx)) {
                 numToAdd--;
             }
         }
