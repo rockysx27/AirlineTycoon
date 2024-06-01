@@ -1481,12 +1481,13 @@ GameMechanic::PickUpItemResult GameMechanic::pickUpItem(PLAYER &qPlayer, SLONG i
         }
         return PickUpItemResult::NotAllowed;
     case ITEM_GLKOHLE:
+        /* TODO: How can we check whether this office is destroyed?
         if (room != ROOM_BURO_A && room != ROOM_BURO_B && room != ROOM_BURO_C && room != ROOM_BURO_D) {
             return PickUpItemResult::ConditionsNotMet;
         }
         if (Sim.Players.Players[(room - ROOM_BURO_A) / 10].OfficeState != 2) {
             return PickUpItemResult::ConditionsNotMet;
-        }
+        }*/
         if (Sim.ItemKohle != 0) {
             qPlayer.BuyItem(ITEM_GLKOHLE);
             Sim.ItemKohle = 0;
