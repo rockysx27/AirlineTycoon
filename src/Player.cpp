@@ -6279,9 +6279,11 @@ void PLAYER::UpdateStatistics() {
     // STAT_FIRMENWERT:
     value = 0;
     for (c = 0; c < Planes.AnzEntries(); c++) { // Flugzeuge
-        if (Planes.IsInAlbum(c) != 0) {
-            value += Planes[c].CalculatePrice();
+        if (Planes.IsInAlbum(c) == 0) {
+            continue;
         }
+
+        value += Planes[c].CalculatePrice();
 
         // Add value of plane upgrades
         CPlane &qPlane = Planes[c];
