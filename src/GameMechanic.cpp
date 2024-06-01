@@ -2817,10 +2817,6 @@ void GameMechanic::executeSabotageMode1() {
         }
 
         if (qPlayer.ArabActive != TRUE) {
-            if (qPlayer.ArabTimeout-- <= 0) {
-                hprintf("GameMechanic::executeSabotageMode1: Job from %s expires", (LPCTSTR)qPlayer.AirlineX);
-                qPlayer.ArabMode = 0; // apparently, this plane does not fly anymore
-            }
             continue;
         }
 
@@ -2833,8 +2829,8 @@ void GameMechanic::executeSabotageMode1() {
             CPlane &qPlane = qOpfer.Planes[qPlayer.ArabPlane];
             SLONG e = qPlane.Flugplan.NextStart;
 
-            auto currentTime = qPlane.Flugplan.Flug[e].Startdate * 24 + qPlane.Flugplan.Flug[e].Startzeit;
-            auto sabotageTime = Sim.Date * 24 + Sim.GetHour() + 2;
+            auto sabotageTime = qPlane.Flugplan.Flug[e].Startdate * 24 + qPlane.Flugplan.Flug[e].Startzeit;
+            auto currentTime = Sim.Date * 24 + Sim.GetHour();
             if (e != -1 && currentTime == sabotageTime) {
                 ActNow = TRUE;
             }
