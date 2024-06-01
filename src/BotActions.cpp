@@ -582,7 +582,7 @@ void Bot::actionSabotage(__int64 moneyAvailable) {
             mItemAntiVirus = 3;
         }
     }
-    if (qPlayer.HasItem(ITEM_ZANGE) == 0) {
+    if (qPlayer.HasItem(ITEM_ZANGE) == 0 && Sim.ItemZange == 1) {
         if (GameMechanic::PickUpItemResult::PickedUp == GameMechanic::pickUpItem(qPlayer, ITEM_ZANGE)) {
             hprintf("Bot::actionSabotage(): Picked up item pliers");
         }
@@ -592,25 +592,32 @@ void Bot::actionSabotage(__int64 moneyAvailable) {
         return;
     }
 
-    /* decide which saboge. Default: Spiked coffee */
+    /* decide which saboge. Default: Spiked coffee
+     * money/hints already checked in condition */
     SLONG jobType = 1;
     SLONG jobNumber = 1;
-    if (Sim.Difficulty == DIFF_ADDON08 || Sim.Difficulty == DIFF_ATFS07) {
-        /* sabotage planes to damage enemy stock price in stock price competitions */
-        jobType = 0;
+
+    /* sabotage planes to damage enemy stock price in stock price competitions */
+    bool stockPriceSabotage = (Sim.Difficulty == DIFF_ADDON08 || Sim.Difficulty == DIFF_ATFS07);
+    /* sabotage plane tire to delay next start in miles&more mission */
+    bool delaySabotage = (Sim.Difficulty == DIFF_ADDON04);
+
+    if (stockPriceSabotage || delaySabotage) {
         std::array<SLONG, 5> hintArray{2, 4, 10, 20, 100};
-        for (jobNumber = 4; jobNumber >= 1; jobNumber--) {
-            auto minCost = SabotagePrice[jobNumber - 1];
-            SLONG hints = hintArray[jobNumber - 1];
-            if ((jobNumber <= qPlayer.ArabTrust) && (qPlayer.ArabHints + hints <= kMaxSabotageHints) && (minCost <= moneyAvailable)) {
-                break;
-            }
+        jobType = 0;
+        jobNumber = std::min((stockPriceSabotage ? 4 : 3), qPlayer.ArabTrust);
+        auto minCost = SabotagePrice[jobNumber - 1];
+        SLONG hints = hintArray[jobNumber - 1];
+        if (qPlayer.ArabHints + hints > kMaxSabotageHints) {
+            return; /* wait until we won't be caught */
         }
-        if (jobNumber < 1) {
-            return;
+        if (minCost > moneyAvailable) {
+            return; /* wait until we have enough money */
         }
 
-        qPlayer.ArabPlaneSelection = Sim.Players.Players[mNemesis].Planes.GetRandomUsedIndex(&LocalRandom);
+        const auto &qNemesisPlanes = Sim.Players.Players[mNemesis].Planes;
+        qPlayer.ArabPlaneSelection = qNemesisPlanes.GetRandomUsedIndex(&LocalRandom);
+        hprintf("Bot::actionSabotage(): Selecting plane %s", Helper::getPlaneName(qNemesisPlanes[qPlayer.ArabPlaneSelection]).c_str());
     }
 
     /* exceute sabotage */

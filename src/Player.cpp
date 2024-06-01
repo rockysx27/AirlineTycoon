@@ -7695,8 +7695,13 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
         break;
     case ROBOT_USE_EXTREME_SABOTAGE:
         /* SuperBot: Respects this flag */
-        if (IsSuperBot() && (Sim.Difficulty == DIFF_ADDON08 || Sim.Difficulty == DIFF_ATFS07)) {
-            return true; /* sabotage also in stock price missions */
+        if (IsSuperBot()) {
+            if (Sim.Difficulty == DIFF_ADDON08 || Sim.Difficulty == DIFF_ATFS07) {
+                return true; /* sabotage also in stock price missions */
+            }
+            if (Sim.Difficulty == DIFF_ADDON04) {
+                return true; /* sabotage also in miles&more mission */
+            }
         }
         pFeatureDesc = "------"
                        "."
