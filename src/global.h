@@ -164,6 +164,7 @@ extern BOOL bgJustDidLotsOfWork; // Gegen Sprünge nach Load/Save
 extern BOOL bLeaveGameLoop;      // Hauptschleife verlassen?
 extern BOOL bFirstClass;
 extern SLONG gAutoQuitOnDay; // Exit game on specified game
+extern SLONG gAutoBotDiff;
 
 //--------------------------------------------------------------------------------------------
 // Das Spiel höchstpersönlich:
@@ -394,6 +395,7 @@ extern const char TOKEN_MISC[];
 extern const char TOKEN_MUSEUM[];
 extern const char TOKEN_MONEY[];
 extern const char TOKEN_NASA[];
+extern const char TOKEN_NEWGAME[];
 extern const char TOKEN_PASSENGER[];
 extern const char TOKEN_PERSONAL[];
 extern const char TOKEN_PLANE[];

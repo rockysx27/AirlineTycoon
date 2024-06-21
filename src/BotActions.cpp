@@ -498,11 +498,11 @@ void Bot::actionVisitHR() {
         }
     }
     if (mNumEmployees > nWorkers) {
-        hprintf("Bot::actionStartDay(): We lost %ld employees", mNumEmployees - nWorkers);
+        hprintf("Bot::actionVisitHR(): We lost %ld employees", mNumEmployees - nWorkers);
     }
     mNumEmployees = nWorkers;
     if (salaryIncreases > 0) {
-        hprintf("Bot::actionStartDay(): Increases salary of %ld employees", salaryIncreases);
+        hprintf("Bot::actionVisitHR(): Increases salary of %ld employees", salaryIncreases);
     }
 }
 

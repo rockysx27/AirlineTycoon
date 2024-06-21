@@ -6617,7 +6617,7 @@ void PLAYER::BroadcastPosition(bool bForce) {
     }
 }
 
-bool PLAYER::IsSuperBot() const { return (Owner == 1) && (3 == PlayerNum); }
+bool PLAYER::IsSuperBot() const { return (Owner == 1) && (BotLevel > 0); }
 
 //============================================================================================
 // PLAYERS::
@@ -7016,6 +7016,7 @@ TEAKFILE &operator<<(TEAKFILE &File, const PLAYER &Player) {
                     File << Player.NumFracht << Player.NumFrachtFree;
                     File << Player.NumMiles << Player.NumServicePoints;
                     File << Player.bWasInMuseumToday << Player.bHasPlanesUpgradedToday;
+                    File << Player.BotLevel;
                     File << Player.NumOrderFlights << Player.NumOrderFlightsToday;
                     File << Player.NumOrderFlightsToday2 << Player.IsStuck;
 
@@ -7160,6 +7161,7 @@ TEAKFILE &operator>>(TEAKFILE &File, PLAYER &Player) {
                     File >> Player.NumFracht >> Player.NumFrachtFree;
                     File >> Player.NumMiles >> Player.NumServicePoints;
                     File >> Player.bWasInMuseumToday >> Player.bHasPlanesUpgradedToday;
+                    File >> Player.BotLevel;
                     File >> Player.NumOrderFlights >> Player.NumOrderFlightsToday;
                     File >> Player.NumOrderFlightsToday2 >> Player.IsStuck;
 
@@ -7728,7 +7730,7 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
     case ROBOT_USE_PETROLAIR:
         /* SuperBot: Respects this flag */
         if (IsSuperBot()) {
-            return true;
+            return (BotLevel > 1);
         }
         pFeatureDesc = "XXXXXX"
                        "!"
@@ -7748,7 +7750,7 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
     case ROBOT_USE_TANKS:
         /* SuperBot: Respects this flag */
         if (IsSuperBot()) {
-            return true;
+            return (BotLevel > 1);
         }
         pFeatureDesc = "------"
                        "."

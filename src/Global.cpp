@@ -161,6 +161,7 @@ BOOL bgJustDidLotsOfWork = FALSE; // Gegen Sprünge nach Load/Save
 BOOL bLeaveGameLoop = FALSE;      // Hauptschleife verlassen?
 BOOL bFirstClass = FALSE;
 SLONG gAutoQuitOnDay = -1;
+SLONG gAutoBotDiff = 0;
 
 //--------------------------------------------------------------------------------------------
 // Das Spiel höchstpersönlich:
@@ -411,6 +412,7 @@ const char TOKEN_MISC[] = "Misc";
 const char TOKEN_MUSEUM[] = "Muse";
 const char TOKEN_MONEY[] = "Mony";
 const char TOKEN_NASA[] = "Nasa";
+const char TOKEN_NEWGAME[] = "NewG";
 const char TOKEN_PASSENGER[] = "Pass";
 const char TOKEN_PERSONAL[] = "Pers";
 const char TOKEN_PLANE[] = "Plne";

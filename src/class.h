@@ -2171,6 +2171,7 @@ class PLAYER {
     TEAKRAND PlayerWalkRandom;
     TEAKRAND PlayerExtraRandom;
     BOOL bHasPlanesUpgradedToday{};
+    SLONG BotLevel{0};
 
   public:
     PLAYER();

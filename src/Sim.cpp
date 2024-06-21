@@ -47,8 +47,6 @@ char chRegKeyOld[] = R"(Software\Spellbound Software\Airline Tycoon Evolution\1.
 extern SLONG NewgameWantsToLoad;
 extern SLONG gTimerCorrection;
 
-const char TOKEN_NEWGAME[] = "NewG";
-
 void CalcPlayerMaximums(bool bForce);
 
 // Daten des aktuellen Savegames beim laden:

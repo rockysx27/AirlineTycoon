@@ -233,20 +233,18 @@ BOOL CTakeOffApp::InitInstance(int argc, char *argv[]) {
     for (int i = 0; i < argc; i++) {
         char *Argument = argv[i];
         if (stricmp(Argument, "/quick") == 0) {
-            gQuickTestRun = 1;
             CheatAutoSkip = 1;
+            gQuickTestRun = 1;
             i++;
             if (i < argc) {
                 gQuickTestRun = 2 + atoi(argv[i]);
             }
         }
         if (stricmp(Argument, "/testbot") == 0) {
-            gQuickTestRun = 1;
             gAutoQuitOnDay = 99;
-            CheatAutoSkip = 1;
             i++;
             if (i < argc) {
-                kTestMode = atoi(argv[i]);
+                gAutoBotDiff = atoi(argv[i]);
             }
         }
     }
@@ -2386,4 +2384,11 @@ void CTakeOffApp::LadeWeitereStandardTexte() {
 
     StandardTexte.AddText(TOKEN_MISC, 1152, "E::Mission %li: %s (%s)D::Mission %li: %s (%s)");
     StandardTexte.AddText(TOKEN_MISC, 1153, "E::Free game: %s (%s)D::Freies Spiel: %s (%s)");
+
+    StandardTexte.AddText(TOKEN_NEWGAME, 5000, "E::Human playerD::Kein Computer");
+    StandardTexte.AddText(TOKEN_NEWGAME, 5001, "E::classicD::klassisch");
+    StandardTexte.AddText(TOKEN_NEWGAME, 5002, "E::casualD::einfach");
+    StandardTexte.AddText(TOKEN_NEWGAME, 5003, "E::normalD::normal");
+    StandardTexte.AddText(TOKEN_NEWGAME, 5004, "E::brutalD::brutal");
+    StandardTexte.AddText(TOKEN_NEWGAME, 5005, "E::Choose bot levelD::Computerstufe ausw\xE4hlen");
 }

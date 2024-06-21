@@ -20,7 +20,7 @@ extern const SLONG kSmallestAdCampaign;
 extern const SLONG kMinimumImage;
 extern SLONG kMaximumRouteUtilization;
 extern const SLONG kMaximumPlaneUtilization;
-extern const DOUBLE kMaxTicketPriceFactor;
+extern DOUBLE kMaxTicketPriceFactor;
 extern const SLONG kTargetEmployeeHappiness;
 extern const SLONG kMinimumEmployeeSkill;
 extern const SLONG kPlaneMinimumZustand;

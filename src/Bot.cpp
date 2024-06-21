@@ -15,7 +15,7 @@ const SLONG kSmallestAdCampaign = 4;
 const SLONG kMinimumImage = -4;
 SLONG kMaximumRouteUtilization = 90;
 const SLONG kMaximumPlaneUtilization = 70;
-const DOUBLE kMaxTicketPriceFactor = 3.2;
+DOUBLE kMaxTicketPriceFactor = 3.2;
 const SLONG kTargetEmployeeHappiness = 90;
 const SLONG kMinimumEmployeeSkill = 70;
 const SLONG kPlaneMinimumZustand = 90;
@@ -410,6 +410,14 @@ void Bot::RobotInit() {
             kOwnStockPosessionRatio = 20;
         }
 
+        /* bot level */
+        hprintf("Bot::RobotInit(): We are %s with bot level = %s.", (LPCTSTR)qPlayer.AirlineX, StandardTexte.GetS(TOKEN_NEWGAME, 5001 + qPlayer.BotLevel));
+        if (qPlayer.BotLevel <= 1) {
+            kMaxTicketPriceFactor = std::min(kMaxTicketPriceFactor, 1.0);
+        } else if (qPlayer.BotLevel <= 2) {
+            kMaxTicketPriceFactor = std::min(kMaxTicketPriceFactor, 2.0);
+        }
+
         mFirstRun = false;
     }
 
@@ -520,11 +528,13 @@ void Bot::RobotPlan() {
                 qAction.walkingDistance);
     }*/
 
+    auto condRun = (qPlayer.BotLevel >= 3 ? Prio::Medium : (qPlayer.BotLevel >= 2 ? Prio::High : Prio::Top));
+
     qRobotActions[1].ActionId = prioList[0].actionId;
-    qRobotActions[1].Running = (prioList[0].prio >= Prio::Medium);
+    qRobotActions[1].Running = (prioList[0].prio >= condRun);
     qRobotActions[1].Prio = static_cast<SLONG>(prioList[0].prio);
     qRobotActions[2].ActionId = prioList[1].actionId;
-    qRobotActions[2].Running = (prioList[1].prio >= Prio::Medium);
+    qRobotActions[2].Running = (prioList[1].prio >= condRun);
     qRobotActions[2].Prio = static_cast<SLONG>(prioList[1].prio);
 
     // hprintf("Bot::RobotPlan(): Action 0: %s", getRobotActionName(qRobotActions[0].ActionId));
