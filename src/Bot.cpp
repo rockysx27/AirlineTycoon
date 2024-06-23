@@ -15,7 +15,7 @@ const SLONG kSmallestAdCampaign = 4;
 const SLONG kMinimumImage = -4;
 SLONG kMaximumRouteUtilization = 90;
 const SLONG kMaximumPlaneUtilization = 70;
-DOUBLE kMaxTicketPriceFactor = 3.2;
+DOUBLE kMaxTicketPriceFactor = 3.5;
 const SLONG kTargetEmployeeHappiness = 90;
 const SLONG kMinimumEmployeeSkill = 70;
 const SLONG kPlaneMinimumZustand = 90;
@@ -290,7 +290,8 @@ Bot::Bot(PLAYER &player) : qPlayer(player) {}
 
 void Bot::printStatisticsLine(CString prefix, bool printHeader) {
     if (printHeader) {
-        hprintf("%s: Tag, Geld, Kredit, Available, Saldo, Gewinn, Verlust, Auftraege, Fracht, Routen, Kerosin, Wartung, Planetype, Passagiere, "
+        hprintf("%s: Tag, Geld, Kredit, Available, Saldo, Gewinn, Verlust, Auftraege, Fracht, Routen, KerosinFlug, KerosinVorrat, KerosinGespart, Wartung, "
+                "Planetype, Passagiere, "
                 "PassZufrieden, Firmenwert, Flugzeuge, AnzRouten, Image, ZielSA, ZielFL, ZielPT, ZielHA",
                 (LPCTSTR)prefix);
     }
@@ -305,7 +306,8 @@ void Bot::printStatisticsLine(CString prefix, bool printHeader) {
     auto balance = qPlayer.BilanzWoche.Hole();
     std::cout << (LPCTSTR)prefix << ": " << Sim.Date << ", " << qPlayer.Money << ", " << qPlayer.Credit << ", " << getMoneyAvailable() << ", ";
     std::cout << balance.GetOpSaldo() << ", " << balance.GetOpGewinn() << ", " << balance.GetOpVerlust() << ", " << balance.Auftraege << ", ";
-    std::cout << balance.FrachtAuftraege << ", " << balance.Tickets << ", " << balance.KerosinFlug + balance.KerosinVorrat << ", " << balance.Wartung << ", ";
+    std::cout << balance.FrachtAuftraege << ", " << balance.Tickets << ", " << balance.KerosinFlug << ", " << balance.KerosinVorrat << ", ";
+    std::cout << balance.KerosinGespart << ", " << balance.Wartung << ", ";
     std::cout << count << ", ";
     std::cout << qPlayer.Statistiken[STAT_PASSAGIERE].GetAtPastDay(1) << ", " << qPlayer.Statistiken[STAT_ZUFR_PASSAGIERE].GetAtPastDay(1) << ", ";
     std::cout << qPlayer.Statistiken[STAT_FIRMENWERT].GetAtPastDay(1) << ", " << qPlayer.Statistiken[STAT_FLUGZEUGE].GetAtPastDay(1) << ", ";
