@@ -12,8 +12,8 @@ class CRentRoute;
 class PLAYER;
 
 extern const bool kAlwaysReplan;
-extern const float kSchedulingMinScoreRatio;
-extern const float kSchedulingMinScoreRatioLastMinute;
+extern float kSchedulingMinScoreRatio;
+extern float kSchedulingMinScoreRatioLastMinute;
 extern SLONG kSwitchToRoutesNumPlanesMin;
 extern SLONG kSwitchToRoutesNumPlanesMax;
 extern const SLONG kSmallestAdCampaign;

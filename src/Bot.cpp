@@ -7,8 +7,8 @@
 #include <iostream>
 
 const bool kAlwaysReplan = true;
-const float kSchedulingMinScoreRatio = 16.0f;
-const float kSchedulingMinScoreRatioLastMinute = 5.0f;
+float kSchedulingMinScoreRatio = 16.0f;
+float kSchedulingMinScoreRatioLastMinute = 5.0f;
 SLONG kSwitchToRoutesNumPlanesMin = 2;
 SLONG kSwitchToRoutesNumPlanesMax = 4;
 const SLONG kSmallestAdCampaign = 4;
@@ -416,8 +416,12 @@ void Bot::RobotInit() {
         hprintf("Bot::RobotInit(): We are %s with bot level = %s.", (LPCTSTR)qPlayer.AirlineX, StandardTexte.GetS(TOKEN_NEWGAME, 5001 + qPlayer.BotLevel));
         if (qPlayer.BotLevel <= 1) {
             kMaxTicketPriceFactor = std::min(kMaxTicketPriceFactor, 1.0);
+            kSchedulingMinScoreRatio = std::min(3.0f, kSchedulingMinScoreRatio);
+            kSchedulingMinScoreRatioLastMinute = std::min(3.0f, kSchedulingMinScoreRatioLastMinute);
         } else if (qPlayer.BotLevel <= 2) {
             kMaxTicketPriceFactor = std::min(kMaxTicketPriceFactor, 2.0);
+            kSchedulingMinScoreRatio = std::min(5.0f, kSchedulingMinScoreRatio);
+            kSchedulingMinScoreRatioLastMinute = std::min(5.0f, kSchedulingMinScoreRatioLastMinute);
         }
 
         mFirstRun = false;
