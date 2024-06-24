@@ -13,6 +13,7 @@ SLONG kSwitchToRoutesNumPlanesMin = 2;
 SLONG kSwitchToRoutesNumPlanesMax = 4;
 const SLONG kSmallestAdCampaign = 4;
 const SLONG kMinimumImage = -4;
+const SLONG kMinimumOwnRouteUtilization = 0.2;
 SLONG kMaximumRouteUtilization = 90;
 const SLONG kMaximumPlaneUtilization = 70;
 DOUBLE kMaxTicketPriceFactor = 3.5;
@@ -1189,7 +1190,7 @@ TEAKFILE &operator<<(TEAKFILE &File, const Bot &bot) {
     File << static_cast<SLONG>(bot.mRoutes.size());
     for (const auto &i : bot.mRoutes) {
         File << i.routeId << i.routeReverseId << i.planeTypeId;
-        File << i.routeUtilization << i.image;
+        File << i.routeUtilization << i.routeOwnUtilization << i.image;
         File << i.planeUtilization << i.planeUtilizationFC;
         File << i.ticketCostFactor;
 
@@ -1199,8 +1200,8 @@ TEAKFILE &operator<<(TEAKFILE &File, const Bot &bot) {
         }
     }
 
-    File << static_cast<SLONG>(bot.mRoutesSortedByUtilization.size());
-    for (const auto &i : bot.mRoutesSortedByUtilization) {
+    File << static_cast<SLONG>(bot.mRoutesSortedByOwnUtilization.size());
+    for (const auto &i : bot.mRoutesSortedByOwnUtilization) {
         File << i;
     }
 
@@ -1320,7 +1321,7 @@ TEAKFILE &operator>>(TEAKFILE &File, Bot &bot) {
     for (SLONG i = 0; i < bot.mRoutes.size(); i++) {
         Bot::RouteInfo info;
         File >> info.routeId >> info.routeReverseId >> info.planeTypeId;
-        File >> info.routeUtilization >> info.image;
+        File >> info.routeUtilization >> info.routeOwnUtilization >> info.image;
         File >> info.planeUtilization >> info.planeUtilizationFC;
         File >> info.ticketCostFactor;
 
@@ -1334,9 +1335,9 @@ TEAKFILE &operator>>(TEAKFILE &File, Bot &bot) {
     }
 
     File >> size;
-    bot.mRoutesSortedByUtilization.resize(size);
+    bot.mRoutesSortedByOwnUtilization.resize(size);
     for (SLONG i = 0; i < size; i++) {
-        File >> bot.mRoutesSortedByUtilization[i];
+        File >> bot.mRoutesSortedByOwnUtilization[i];
     }
 
     File >> size;

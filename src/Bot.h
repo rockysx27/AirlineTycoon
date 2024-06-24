@@ -18,6 +18,7 @@ extern SLONG kSwitchToRoutesNumPlanesMin;
 extern SLONG kSwitchToRoutesNumPlanesMax;
 extern const SLONG kSmallestAdCampaign;
 extern const SLONG kMinimumImage;
+extern const SLONG kMinimumOwnRouteUtilization;
 extern SLONG kMaximumRouteUtilization;
 extern const SLONG kMaximumPlaneUtilization;
 extern DOUBLE kMaxTicketPriceFactor;
@@ -86,6 +87,13 @@ class Bot {
         LowerRepairTargets, /* reduce amount pre-allocated for repairs */
         CancelPlaneUpgrades /* reduce amount pre-allocated for upgrades */
     };
+    enum class RoutesNextStep {
+        None, /* not doing anything specific to routes */
+        RentNewRoute,
+        BuyMorePlanes,
+        ImproveRouteUtilization,
+        BuyAdsForRoute
+    };
     enum class FinalPhase {
         No,
         SaveMoney, /* stop investing towards other targets */
@@ -98,6 +106,7 @@ class Bot {
         SLONG routeReverseId{-1};
         SLONG planeTypeId{-1};
         SLONG routeUtilization{};
+        SLONG routeOwnUtilization{};
         SLONG image{};
         SLONG planeUtilization{};
         SLONG planeUtilizationFC{};
@@ -116,6 +125,7 @@ class Bot {
     AreWeBroke areWeBroke() const;
     HowToGetMoney howToGetMoney();
     __int64 howMuchMoneyCanWeGet(bool extremMeasures);
+    std::pair<Bot::RoutesNextStep, SLONG> routesNextStep() const;
     bool canWeCallInternational();
     Prio condAll(SLONG actionId);
     Prio condStartDay();
@@ -289,7 +299,7 @@ class Bot {
 
     /* routes */
     std::vector<RouteInfo> mRoutes;
-    std::vector<SLONG> mRoutesSortedByUtilization;
+    std::vector<SLONG> mRoutesSortedByOwnUtilization;
     std::vector<SLONG> mRoutesSortedByImage;
 
     /* crew */

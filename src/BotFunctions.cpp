@@ -652,7 +652,18 @@ void Bot::updateRouteInfo() {
     /* copy most import information from routes */
     for (auto &route : mRoutes) {
         route.image = getRentRoute(route).Image;
-        route.routeUtilization = getRentRoute(route).RoutenAuslastung;
+        route.routeOwnUtilization = getRentRoute(route).RoutenAuslastung;
+        route.routeUtilization = 0;
+        for (SLONG i = 0; i < Sim.Players.Players.AnzEntries(); i++) {
+            const auto &qqPlayer = Sim.Players.Players[i];
+            const auto &qRentRoute = qqPlayer.RentRouten.RentRouten[route.routeId];
+            route.routeUtilization += qRentRoute.RoutenAuslastung;
+
+            if (qRentRoute.RoutenAuslastung > 0 && i != qPlayer.PlayerNum) {
+                hprintf("Bot::updateRouteInfo(): Route %s: We (%ld utilization) are competing with %s (%ld utilization)",
+                        Helper::getRouteName(getRoute(route)).c_str(), route.routeOwnUtilization, (LPCTSTR)qqPlayer.AirlineX, qRentRoute.RoutenAuslastung);
+            }
+        }
         route.planeUtilization = getRentRoute(route).Auslastung;
         route.planeUtilizationFC = getRentRoute(route).AuslastungFC;
 
@@ -664,27 +675,27 @@ void Bot::updateRouteInfo() {
         }
         luxusSumme /= route.planeIds.size();
 
-        hprintf("Bot::updateRouteInfo(): Route %s has image=%ld and utilization=%ld (%ld planes with average utilization=%ld/%ld and luxus=%.2f)",
-                Helper::getRouteName(getRoute(route)).c_str(), route.image, route.routeUtilization, route.planeIds.size(), route.planeUtilization,
-                route.planeUtilizationFC, luxusSumme);
+        hprintf("Bot::updateRouteInfo(): Route %s has image=%ld and utilization=%ld/%ld (%ld planes with average utilization=%ld/%ld and luxus=%.2f)",
+                Helper::getRouteName(getRoute(route)).c_str(), route.image, route.routeOwnUtilization, route.routeUtilization, route.planeIds.size(),
+                route.planeUtilization, route.planeUtilizationFC, luxusSumme);
     }
 
     /* sort routes by utilization and by image */
-    mRoutesSortedByUtilization.resize(mRoutes.size());
+    mRoutesSortedByOwnUtilization.resize(mRoutes.size());
     mRoutesSortedByImage.resize(mRoutes.size());
     for (SLONG i = 0; i < mRoutes.size(); i++) {
-        mRoutesSortedByUtilization[i] = i;
+        mRoutesSortedByOwnUtilization[i] = i;
         mRoutesSortedByImage[i] = i;
     }
-    std::sort(mRoutesSortedByUtilization.begin(), mRoutesSortedByUtilization.end(),
-              [&](SLONG a, SLONG b) { return mRoutes[a].routeUtilization < mRoutes[b].routeUtilization; });
+    std::sort(mRoutesSortedByOwnUtilization.begin(), mRoutesSortedByOwnUtilization.end(),
+              [&](SLONG a, SLONG b) { return mRoutes[a].routeOwnUtilization < mRoutes[b].routeOwnUtilization; });
     std::sort(mRoutesSortedByImage.begin(), mRoutesSortedByImage.end(), [&](SLONG a, SLONG b) { return mRoutes[a].image < mRoutes[b].image; });
 
     auto lowImage = mRoutesSortedByImage[0];
-    auto lowUtil = mRoutesSortedByUtilization[0];
+    auto lowUtil = mRoutesSortedByOwnUtilization[0];
     hprintf("Bot::updateRouteInfo(): Route %s has lowest image: %ld", Helper::getRouteName(getRoute(mRoutes[lowImage])).c_str(), mRoutes[lowImage].image);
-    hprintf("Bot::updateRouteInfo(): Route %s has lowest utilization: %ld", Helper::getRouteName(getRoute(mRoutes[lowUtil])).c_str(),
-            mRoutes[lowUtil].routeUtilization);
+    hprintf("Bot::updateRouteInfo(): Route %s has lowest utilization: %ld/%ld", Helper::getRouteName(getRoute(mRoutes[lowUtil])).c_str(),
+            mRoutes[lowUtil].routeOwnUtilization, mRoutes[lowUtil].routeUtilization);
 
     /* do something about underutilized routes */
     if (mRoutes[lowUtil].routeUtilization < kMaximumRouteUtilization) {
@@ -727,7 +738,7 @@ void Bot::planRoutes() {
     /* assign planes to routes */
     SLONG numUnassigned = mPlanesForRoutesUnassigned.size();
     for (SLONG i = 0; i < numUnassigned; i++) {
-        if (mRoutes[mRoutesSortedByUtilization[0]].routeUtilization >= kMaximumRouteUtilization) {
+        if (mRoutes[mRoutesSortedByOwnUtilization[0]].routeUtilization >= kMaximumRouteUtilization) {
             break; /* No more underutilized routes */
         }
 
@@ -741,7 +752,7 @@ void Bot::planRoutes() {
         }
 
         SLONG targetRouteIdx = -1;
-        for (SLONG routeIdx : mRoutesSortedByUtilization) {
+        for (SLONG routeIdx : mRoutesSortedByOwnUtilization) {
             auto &qRoute = mRoutes[routeIdx];
             if (qRoute.routeUtilization >= kMaximumRouteUtilization) {
                 break; /* No more underutilized routes */
