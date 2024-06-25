@@ -77,6 +77,11 @@ SLONG Bot::calcCurrentGainFromJobs() const {
     return gain;
 }
 
+SLONG Bot::calcRouteImageNeeded(const Bot::RouteInfo &routeInfo) const {
+    auto routeImageTarget = std::min(100, (800 - qPlayer.Image) / 4);
+    return (routeImageTarget - routeInfo.image);
+}
+
 void Bot::removePlaneFromRoute(SLONG planeId) {
     for (auto &route : mRoutes) {
         auto it = route.planeIds.begin();
@@ -292,7 +297,7 @@ Bot::Bot(PLAYER &player) : qPlayer(player) {}
 void Bot::printStatisticsLine(CString prefix, bool printHeader) {
     if (printHeader) {
         printf("%s: Tag, Geld, Kredit, Available, ", (LPCTSTR)prefix);
-        printf("SaldoTag, Saldo, Gewinn, Verlust, ");
+        printf("SaldoGesamt, Saldo, Gewinn, Verlust, ");
         printf("Routen, Auftraege, Fracht, ");
         printf("KerosinFlug, KerosinVorrat, Essen, ");
         printf("Strafe, Wartung, Umbau, ");
@@ -1198,6 +1203,7 @@ TEAKFILE &operator<<(TEAKFILE &File, const Bot &bot) {
         for (const auto &j : i.planeIds) {
             File << j;
         }
+        File << i.canUpgrade;
     }
 
     File << static_cast<SLONG>(bot.mRoutesSortedByOwnUtilization.size());
@@ -1205,10 +1211,7 @@ TEAKFILE &operator<<(TEAKFILE &File, const Bot &bot) {
         File << i;
     }
 
-    File << static_cast<SLONG>(bot.mRoutesSortedByImage.size());
-    for (const auto &i : bot.mRoutesSortedByImage) {
-        File << i;
-    }
+    File << static_cast<SLONG>(bot.mRoutesNextStep) << bot.mImproveRouteId;
 
     File << bot.mNumEmployees;
 
@@ -1330,6 +1333,7 @@ TEAKFILE &operator>>(TEAKFILE &File, Bot &bot) {
         for (SLONG i = 0; i < info.planeIds.size(); i++) {
             File >> info.planeIds[i];
         }
+        File >> info.canUpgrade;
 
         bot.mRoutes[i] = info;
     }
@@ -1340,11 +1344,9 @@ TEAKFILE &operator>>(TEAKFILE &File, Bot &bot) {
         File >> bot.mRoutesSortedByOwnUtilization[i];
     }
 
-    File >> size;
-    bot.mRoutesSortedByImage.resize(size);
-    for (SLONG i = 0; i < size; i++) {
-        File >> bot.mRoutesSortedByImage[i];
-    }
+    SLONG routesNextStep = 0;
+    File >> routesNextStep >> bot.mImproveRouteId;
+    bot.mRoutesNextStep = static_cast<Bot::RoutesNextStep>(routesNextStep);
 
     File >> bot.mNumEmployees;
 

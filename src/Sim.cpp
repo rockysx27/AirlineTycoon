@@ -7,6 +7,8 @@
 #include <filesystem>
 #include <numeric>
 
+#include "BotHelper.h"
+
 // Für Menschen     Für Computer
 // Money   Credit   Money    Credit
 static SLONG InitMoney[] = {1500000, 0,        2000000, 0,                                                        // DIFF_FREEGAME
@@ -2280,7 +2282,7 @@ void SIM::NewDay() {
     Date++;
     Time = 0;
     UpdateSeason();
-    hprintf("Sim.cpp: Start of new day: %ld", Date);
+    hprintf("Sim.cpp: Start of new day: %ld (%s)", Date, (LPCTSTR)Helper::getWeekday(Sim.Date));
 
     // In den Reisebüros die Zettel nachfüllen:
     gFrachten.Random.SRand(Date);

@@ -196,57 +196,6 @@ __int64 Bot::howMuchMoneyCanWeGet(bool extremMeasures) {
     return moneyForecast;
 }
 
-std::pair<Bot::RoutesNextStep, SLONG> Bot::routesNextStep() const {
-    if (!mDoRoutes) {
-        return {RoutesNextStep::None, -1};
-    }
-    if (!mDayStarted) {
-        return {RoutesNextStep::None, -1}; /* routes not updated */
-    }
-
-    int routeToImprove = -1;
-    int utilization = -1;
-    for (auto i : mRoutesSortedByOwnUtilization) {
-        if (mRoutes[i].routeUtilization < kMaximumRouteUtilization) {
-            routeToImprove = i;
-            utilization = mRoutes[i].routeUtilization;
-            break;
-        }
-    }
-
-    /* Step 1: No routes underutilized, rent new route */
-    if (routeToImprove == -1) {
-        return {RoutesNextStep::RentNewRoute, -1};
-    }
-
-    /* Step 2: Buy first plane for underutilized route */
-    if (mRoutes[routeToImprove].planeIds.empty()) {
-        return {RoutesNextStep::BuyMorePlanes, routeToImprove};
-    }
-
-    /* Step 3: Increase route image */
-    auto minCost = gWerbePrice[1 * 6 + kSmallestAdCampaign];
-    SLONG imageDelta = UBYTE(minCost / 30000);
-    if (!mRoutesSortedByOwnUtilization.empty()) {
-        SLONG idx = mRoutesSortedByImage[0];
-        if (idx < mRoutes.size() && mRoutes[idx].image + imageDelta <= 100) {
-            return {RoutesNextStep::BuyAdsForRoute, idx};
-        }
-    }
-
-    /* Step 4: Buy more planes */
-    if (utilization < kMinimumOwnRouteUtilization) {
-        /* prioritize new plane to achieve route utilization */
-        return {RoutesNextStep::BuyMorePlanes, routeToImprove};
-    }
-
-    /* Step 5: Either buy more planes or improve plane luxury */
-    if (utilization < kMaximumRouteUtilization) {
-        return {RoutesNextStep::ImproveRouteUtilization, routeToImprove};
-    }
-    return {RoutesNextStep::None, -1};
-}
-
 bool Bot::canWeCallInternational() {
     if (!qPlayer.RobotUse(ROBOT_USE_ABROAD)) {
         return false;
@@ -541,18 +490,22 @@ Bot::Prio Bot::condUpgradePlanes() {
     if (!isOfficeUsable()) {
         return Prio::None; /* office is destroyed */
     }
-    if (!haveDiscount()) {
-        return Prio::None; /* wait until we have some discount */
-    }
-    if (RoutesNextStep::ImproveRouteUtilization != routesNextStep().first) {
-        return Prio::None;
-    }
 
-    if (mRunToFinalObjective == FinalPhase::SaveMoney) {
-        return Prio::None;
-    }
-    if (!qPlayer.RobotUse(ROBOT_USE_LUXERY) && mRunToFinalObjective > FinalPhase::No) {
-        return Prio::None; /* not a mission where final objective is plane upgrades */
+    bool nearEnd = (mRunToFinalObjective > FinalPhase::No);
+    if (qPlayer.RobotUse(ROBOT_USE_LUXERY) && nearEnd) { /* mission where final objective is plane upgrades */
+        if (mRunToFinalObjective == FinalPhase::SaveMoney) {
+            return Prio::None;
+        }
+    } else {
+        if (nearEnd) {
+            return Prio::None;
+        }
+        if (!haveDiscount()) {
+            return Prio::None; /* wait until we have some discount */
+        }
+        if (RoutesNextStep::UpgradePlanes != mRoutesNextStep) {
+            return Prio::None;
+        }
     }
 
     /* Plane upgrades happen asynchronously. Therefore, we earmark money in the variable mMoneyReservedForUpgrades.
@@ -597,8 +550,8 @@ Bot::Prio Bot::condBuyNewPlane(__int64 &moneyAvailable) {
         return Prio::None; /* no plane purchase planned */
     }
 
-    auto res = routesNextStep().first;
-    if (mDoRoutes && RoutesNextStep::BuyMorePlanes != res && RoutesNextStep::ImproveRouteUtilization != res) {
+    auto res = mRoutesNextStep;
+    if (mDoRoutes && RoutesNextStep::BuyMorePlanes != res) {
         return Prio::None;
     }
 
@@ -1106,7 +1059,7 @@ Bot::Prio Bot::condVisitRouteBoxPlanning() {
     if (mWantToRentRouteId != -1) {
         return Prio::None; /* we already want to rent a route */
     }
-    if (RoutesNextStep::RentNewRoute == routesNextStep().first) {
+    if (RoutesNextStep::RentNewRoute == mRoutesNextStep) {
         return Prio::Medium;
     }
     return Prio::None;
@@ -1129,7 +1082,7 @@ Bot::Prio Bot::condVisitRouteBoxRenting(__int64 &moneyAvailable) {
     if (!Helper::checkRoomOpen(ACTION_WERBUNG_ROUTES)) {
         return Prio::None; /* let's wait until we are able to buy ads for the route */
     }
-    if (mWantToRentRouteId != -1 && RoutesNextStep::RentNewRoute == routesNextStep().first) {
+    if (mWantToRentRouteId != -1 && RoutesNextStep::RentNewRoute == mRoutesNextStep) {
         return Prio::High;
     }
     return Prio::None;
@@ -1204,9 +1157,8 @@ Bot::Prio Bot::condBuyAdsForRoutes(__int64 &moneyAvailable) {
         return Prio::None;
     }
 
-    auto res = routesNextStep();
-    if (res.first == RoutesNextStep::BuyAdsForRoute) {
-        return (mRoutes[res.second].image < 80) ? Prio::High : Prio::Medium;
+    if (mRoutesNextStep == RoutesNextStep::BuyAdsForRoute) {
+        return (mRoutes[mImproveRouteId].image < 80) ? Prio::High : Prio::Medium;
     }
     return Prio::None;
 }
@@ -1220,18 +1172,22 @@ Bot::Prio Bot::condBuyAds(__int64 &moneyAvailable) {
     if (!qPlayer.RobotUse(ROBOT_USE_WERBUNG)) {
         return Prio::None;
     }
-    if (!haveDiscount()) {
-        return Prio::None; /* wait until we have some discount */
-    }
-    if (!mRoutes.empty() && mRoutes[mRoutesSortedByOwnUtilization[0]].routeOwnUtilization < kMinimumOwnRouteUtilization) {
-        return Prio::None; /* prioritize new plane to achieve route utilization */
-    }
 
-    if (mRunToFinalObjective == FinalPhase::SaveMoney) {
-        return Prio::None;
-    }
-    if (!qPlayer.RobotUse(ROBOT_USE_MUCHWERBUNG) && mRunToFinalObjective > FinalPhase::No) {
-        return Prio::None; /* not a mission where we need to buy ads */
+    bool nearEnd = (mRunToFinalObjective > FinalPhase::No);
+    if (qPlayer.RobotUse(ROBOT_USE_MUCHWERBUNG) && nearEnd) { /* mission where we need to buy ads */
+        if (mRunToFinalObjective == FinalPhase::SaveMoney) {
+            return Prio::None;
+        }
+    } else {
+        if (nearEnd) {
+            return Prio::None;
+        }
+        if (!haveDiscount()) {
+            return Prio::None; /* wait until we have some discount */
+        }
+        if (mRoutesNextStep != RoutesNextStep::ImproveAirlineImage) {
+            return Prio::None;
+        }
     }
 
     auto minCost = gWerbePrice[0 * 6 + kSmallestAdCampaign];

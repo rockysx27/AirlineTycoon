@@ -309,9 +309,19 @@ void Bot::actionBuyNewPlane(__int64 /*moneyAvailable*/) {
     }
     for (auto i : GameMechanic::buyPlane(qPlayer, bestPlaneTypeId, 1)) {
         assert(i >= 0x1000000);
-        hprintf("Bot::actionBuyNewPlane(): Bought plane %s", Helper::getPlaneName(qPlayer.Planes[i]).c_str());
+        const auto &qPlane = qPlayer.Planes[i];
+        hprintf("Bot::actionBuyNewPlane(): Bought plane %s", Helper::getPlaneName(qPlane).c_str());
         if (mDoRoutes) {
-            mPlanesForRoutesUnassigned.push_back(i);
+            if (mRoutesNextStep == RoutesNextStep::BuyMorePlanes) {
+                assert(mImproveRouteId != -1);
+                auto &qRoute = mRoutes[mImproveRouteId];
+                qRoute.planeIds.push_back(i);
+                mPlanesForRoutes.push_back(i);
+                hprintf("Bot::actionBuyNewPlane(): Assigning new plane %s to route %s", Helper::getPlaneName(qPlane).c_str(),
+                        Helper::getRouteName(getRoute(qRoute)).c_str());
+            } else {
+                mPlanesForRoutesUnassigned.push_back(i);
+            }
             requestPlanRoutes(false);
         } else {
             if (checkPlaneAvailable(i, true)) {
@@ -1148,47 +1158,53 @@ void Bot::actionRentRoute() {
 }
 
 void Bot::actionBuyAdsForRoutes(__int64 moneyAvailable) {
-    if (mRoutesSortedByImage.empty()) {
+    if (mRoutesNextStep != RoutesNextStep::BuyAdsForRoute) {
+        redprintf("Bot::actionBuyAdsForRoutes(): Conditions not met anymore.");
         return;
     }
 
-    auto prioEntry = condBuyAdsForRoutes(moneyAvailable);
-    while (condBuyAdsForRoutes(moneyAvailable) == prioEntry) {
-        const auto &qRoute = mRoutes[mRoutesSortedByImage[0]];
+    assert(mImproveRouteId != -1);
+    const auto &qRoute = mRoutes[mImproveRouteId];
 
-        SLONG cost = 0;
-        SLONG adCampaignSize = 5;
-        for (; adCampaignSize >= kSmallestAdCampaign; adCampaignSize--) {
-            cost = gWerbePrice[1 * 6 + adCampaignSize];
-            SLONG imageDelta = (cost / 30000);
-            if (getRentRoute(qRoute).Image + imageDelta > 100) {
-                continue;
-            }
-            if (cost <= moneyAvailable) {
-                break;
-            }
-        }
-        if (adCampaignSize < kSmallestAdCampaign) {
-            return;
-        }
-        SLONG oldImage = getRentRoute(qRoute).Image;
-        hprintf("Bot::actionBuyAdsForRoutes(): Buying advertisement for route %s for %ld $", Helper::getRouteName(getRoute(qRoute)).c_str(), cost);
-        GameMechanic::buyAdvertisement(qPlayer, 1, adCampaignSize, qRoute.routeId);
-        moneyAvailable = getMoneyAvailable();
+    const SLONG largestAdCampaign = 5;
 
-        hprintf("Bot::actionBuyAdsForRoutes(): Route image improved (%ld => %ld)", oldImage, getRentRoute(qRoute).Image);
-        updateRouteInfo();
+    SLONG cost = 0;
+    SLONG adCampaignSize = kSmallestAdCampaign;
+    for (; adCampaignSize <= largestAdCampaign; adCampaignSize++) {
+        cost = gWerbePrice[1 * 6 + adCampaignSize];
+        SLONG imageDelta = (cost / 30000);
+        if (cost > moneyAvailable) {
+            adCampaignSize -= 1;
+            break;
+        }
+        if (getRentRoute(qRoute).Image + imageDelta > 100) {
+            break;
+        }
     }
+    if (adCampaignSize < kSmallestAdCampaign) {
+        return; /* not enough money */
+    }
+    adCampaignSize = std::min(adCampaignSize, largestAdCampaign);
+
+    SLONG oldImage = getRentRoute(qRoute).Image;
+    hprintf("Bot::actionBuyAdsForRoutes(): Buying advertisement for route %s for %ld $", Helper::getRouteName(getRoute(qRoute)).c_str(), cost);
+    GameMechanic::buyAdvertisement(qPlayer, 1, adCampaignSize, qRoute.routeId);
+    moneyAvailable = getMoneyAvailable();
+
+    hprintf("Bot::actionBuyAdsForRoutes(): Route image improved (%ld => %ld)", oldImage, getRentRoute(qRoute).Image);
+    updateRouteInfo();
 }
 
 void Bot::actionBuyAds(__int64 moneyAvailable) {
+    assert(kSmallestAdCampaign >= 1);
     for (SLONG adCampaignSize = 5; adCampaignSize >= kSmallestAdCampaign; adCampaignSize--) {
         SLONG cost = gWerbePrice[0 * 6 + adCampaignSize];
-        while (moneyAvailable > cost) {
-            SLONG imageDelta = cost / 10000 * (adCampaignSize + 6) / 55;
-            if (qPlayer.Image + imageDelta > 1000) {
-                break;
-            }
+        SLONG imageDelta = cost / 10000 * (adCampaignSize + 6) / 55;
+
+        SLONG cost2 = gWerbePrice[0 * 6 + (adCampaignSize - 1)];
+        SLONG imageDelta2 = cost2 / 10000 * ((adCampaignSize - 1) + 6) / 55;
+
+        while (moneyAvailable > cost && qPlayer.Image < 1000 && (qPlayer.Image + imageDelta2 < 1000)) {
             SLONG oldImage = qPlayer.Image;
             hprintf("Bot::actionBuyAds(): Buying advertisement for airline for %ld $", cost);
             GameMechanic::buyAdvertisement(qPlayer, 0, adCampaignSize);

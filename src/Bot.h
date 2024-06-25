@@ -91,8 +91,9 @@ class Bot {
         None, /* not doing anything specific to routes */
         RentNewRoute,
         BuyMorePlanes,
-        ImproveRouteUtilization,
-        BuyAdsForRoute
+        BuyAdsForRoute,
+        UpgradePlanes,
+        ImproveAirlineImage
     };
     enum class FinalPhase {
         No,
@@ -112,6 +113,7 @@ class Bot {
         SLONG planeUtilizationFC{};
         DOUBLE ticketCostFactor{2}; /* 0.5: discount / 1: flight cost / 2: normal price / 4: deluxe price */
         std::vector<SLONG> planeIds;
+        bool canUpgrade{false};
     };
 
     /* in BotConditions.cpp */
@@ -125,7 +127,6 @@ class Bot {
     AreWeBroke areWeBroke() const;
     HowToGetMoney howToGetMoney();
     __int64 howMuchMoneyCanWeGet(bool extremMeasures);
-    std::pair<Bot::RoutesNextStep, SLONG> routesNextStep() const;
     bool canWeCallInternational();
     Prio condAll(SLONG actionId);
     Prio condStartDay();
@@ -216,6 +217,7 @@ class Bot {
     /* routes */
     void checkLostRoutes();
     void updateRouteInfo();
+    std::pair<Bot::RoutesNextStep, SLONG> routesNextStep() const;
     void requestPlanRoutes(bool areWeInOffice);
     void planRoutes();
 
@@ -235,6 +237,7 @@ class Bot {
         return planes;
     }
     SLONG calcCurrentGainFromJobs() const;
+    SLONG calcRouteImageNeeded(const RouteInfo &routeInfo) const;
     void removePlaneFromRoute(SLONG planeId);
     bool checkPlaneLists();
     bool findPlanesNotAvailableForService(std::vector<SLONG> &listAvailable, std::deque<SLONG> &listUnassigned);
@@ -300,7 +303,8 @@ class Bot {
     /* routes */
     std::vector<RouteInfo> mRoutes;
     std::vector<SLONG> mRoutesSortedByOwnUtilization;
-    std::vector<SLONG> mRoutesSortedByImage;
+    RoutesNextStep mRoutesNextStep{RoutesNextStep::None};
+    SLONG mImproveRouteId{-1};
 
     /* crew */
     SLONG mNumEmployees{0};
