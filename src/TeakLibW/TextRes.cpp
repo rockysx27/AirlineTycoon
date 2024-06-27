@@ -5,7 +5,7 @@
 const char *ExcTextResNotOpened = "TextRes not opened!";
 const char *ExcTextResStaticOverflow = "TextRes is too SLONG: %lx:%lx";
 const char *ExcTextResFormat = "Bad TextRes format: %s (%li)";
-const char *ExcTextResNotFound = "TextRes not found: %lx:%lx";
+const char *ExcTextResNotFound = "The following translation was not found: %s>>%li";
 
 SLONG gLanguage;
 
@@ -220,8 +220,11 @@ char *TEXTRES::GetP(ULONG group, ULONG id) {
 char *TEXTRES::GetS(ULONG group, ULONG id) {
     char *buffer = TEXTRES::FindS(group, id);
     if (buffer == nullptr) {
-        TeakLibW_Exception(FNL, ExcTextResNotFound, group, id);
-        return nullptr;
+        long long lGroup = group;
+        AT_Log(ExcTextResNotFound, reinterpret_cast<char *>(&lGroup), id);
+
+        char *defaultText = _strdup("MISSING");
+        return defaultText;
     }
     return buffer;
 }
