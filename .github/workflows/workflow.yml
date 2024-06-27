@@ -34,21 +34,21 @@ jobs:
         if [ "${{ github.ref }}" == "refs/heads/main" ]; then
             echo "Setting production environment variables..."
             echo "build-type=Release" >> "$GITHUB_OUTPUT"
-            echo "release-name=$VERSION Release" >> "$GITHUB_OUTPUT"
+            echo "release-name=ATD Version $VERSION Release" >> "$GITHUB_OUTPUT"
             echo "artifact-name=AT-$VERSION" >> "$GITHUB_OUTPUT"
-            echo "release-tag=$VERSION" >> "$GITHUB_OUTPUT"
+            echo "release-tag=v$VERSION" >> "$GITHUB_OUTPUT"
         elif [ "${{ github.ref }}" == "refs/heads/develop" ]; then
             echo "Setting development environment variables..."
             echo "build-type=Release" >> "$GITHUB_OUTPUT"
-            echo "release-name=$VERSION PreRelease" >> "$GITHUB_OUTPUT"
+            echo "release-name=ATD Version $VERSION Pre-Release" >> "$GITHUB_OUTPUT"
             echo "artifact-name=AT-$VERSION-preview" >> "$GITHUB_OUTPUT"
-            echo "release-tag=$VERSION-preview" >> "$GITHUB_OUTPUT"
+            echo "release-tag=v$VERSION-preview" >> "$GITHUB_OUTPUT"
         else
             echo "Setting branch environment variables..."
             echo "build-type=Debug" >> "$GITHUB_OUTPUT"
-            echo "release-name=$VERSION Preview" >> "$GITHUB_OUTPUT"
+            echo "release-name=ATD Version $VERSION Preview" >> "$GITHUB_OUTPUT"
             echo "artifact-name=AT-$VERSION-${{ github.sha }}" >> "$GITHUB_OUTPUT"
-            echo "release-tag=$VERSION-${{ github.sha }}" >> "$GITHUB_OUTPUT"
+            echo "release-tag=v$VERSION-${{ github.sha }}" >> "$GITHUB_OUTPUT"
         fi
         cat $GITHUB_OUTPUT
 
