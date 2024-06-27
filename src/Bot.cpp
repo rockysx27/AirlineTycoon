@@ -290,11 +290,79 @@ Bot::Bot(PLAYER &player) : qPlayer(player) {}
 
 void Bot::printStatisticsLine(CString prefix, bool printHeader) {
     if (printHeader) {
-        hprintf("%s: Tag, Geld, Kredit, Available, Saldo, Gewinn, Verlust, Auftraege, Fracht, Routen, KerosinFlug, KerosinVorrat, KerosinGespart, Wartung, "
-                "Planetype, Passagiere, "
-                "PassZufrieden, Firmenwert, Flugzeuge, AnzRouten, Image, ZielSA, ZielFL, ZielPT, ZielHA",
-                (LPCTSTR)prefix);
+        printf("%s: Tag, Geld, Kredit, Available, ", (LPCTSTR)prefix);
+        printf("SaldoTag, Saldo, Gewinn, Verlust, ");
+        printf("Routen, Auftraege, Fracht, ");
+        printf("KerosinFlug, KerosinVorrat, Essen, ");
+        printf("Strafe, Wartung, Umbau, ");
+        printf("Personal, Gatemiete, Citymiete, Routenmiete, ");
+        printf("HabenZinsen, HabenRendite, KreditNeu, ");
+        printf("SollZinsen, SollRendite, KreditTilgung, Steuer, ");
+        printf("Aktienverkauf, AktienEmission, AktienEmissionKompErh, ");
+        printf("AktienEmissionKompGez, Aktienkauf, AktienEmissionFee, ");
+        printf("FlugzeugVerkauf, Takeovers, FlugzeugKauf, FlugzeugUpgrades, ");
+        printf("ExpansionCity, ExpansionRouten, ExpansionGates, ExpansionTanks, ");
+        printf("SabotageGeklaut, SabotageKomp, ");
+        printf("Sabotage, SabotageStrafe, SabotageSchaden, ");
+        printf("BodyguardRabatt, GeldErhalten, SonstigeEinnahmen, ");
+        printf("PanneSchaden, SecurityKosten, WerbeKosten, ");
+        printf("GeldGeschickt, SonstigeAusgaben, KerosinGespart, ");
+        printf("Image, ");
+
+        printf("Flugzeuge, Passagiere, PassagiereHome, Aktienkurs, ");
+        printf("Flüge, Aufträge, LastMinute, ");
+        printf("Firmenwert, PassZufrieden, PassUnzufrieden, PersonalZufrieden, ");
+        printf("Verspätung, Unfälle, Sabotiert, ");
+        printf("Mitarbeiter, Niederlassungen, AnzRouten, Gehalt, ");
+        printf("AktienGesamt, AktienSA, AktienFL, AktienPT, AktienHA, ");
+        printf("Frachtaufträge, Frachttonnen, ");
+        printf("ZielSA, ZielFL, ZielPT, ZielHA, ");
+        hprintf("Planetype");
     }
+    std::cout << (LPCTSTR)prefix << ": ";
+
+    std::vector<__int64> values;
+    auto balanceAvg = qPlayer.BilanzWoche.Hole();
+    auto balance = qPlayer.BilanzGesamt;
+    values.insert(values.end(), {Sim.Date, qPlayer.Money, qPlayer.Credit, getMoneyAvailable()});
+    values.insert(values.end(), {balance.GetOpSaldo(), balanceAvg.GetOpSaldo(), balanceAvg.GetOpGewinn(), balanceAvg.GetOpVerlust()});
+    values.insert(values.end(), {balance.Tickets, balance.Auftraege, balance.FrachtAuftraege});
+    values.insert(values.end(), {balance.KerosinFlug, balance.KerosinVorrat, balance.Essen});
+    values.insert(values.end(), {balance.Vertragsstrafen, balance.Wartung, balance.FlugzeugUmbau});
+    values.insert(values.end(), {balance.Personal, balance.Gatemiete, balance.Citymiete, balance.Routenmiete});
+    values.insert(values.end(), {balance.HabenZinsen, balance.HabenRendite, balance.KreditNeu});
+    values.insert(values.end(), {balance.SollZinsen, balance.SollRendite, balance.KreditTilgung, balance.Steuer});
+    values.insert(values.end(), {balance.Aktienverkauf, balance.AktienEmission, balance.AktienEmissionKompErh});
+    values.insert(values.end(), {balance.AktienEmissionKompGez, balance.Aktienkauf, balance.AktienEmissionFee});
+    values.insert(values.end(), {balance.FlugzeugVerkauf, balance.Takeovers, balance.FlugzeugKauf, balance.FlugzeugUpgrades});
+    values.insert(values.end(), {balance.ExpansionCity, balance.ExpansionRouten, balance.ExpansionGates, balance.ExpansionTanks});
+    values.insert(values.end(), {balance.SabotageGeklaut, balance.SabotageKomp});
+    values.insert(values.end(), {balance.Sabotage, balance.SabotageStrafe, balance.SabotageSchaden});
+    values.insert(values.end(), {balance.BodyguardRabatt, balance.GeldErhalten, balance.SonstigeEinnahmen});
+    values.insert(values.end(), {balance.PanneSchaden, balance.SecurityKosten, balance.WerbeKosten});
+    values.insert(values.end(), {balance.GeldGeschickt, balance.SonstigeAusgaben, balance.KerosinGespart});
+    values.insert(values.end(), {qPlayer.Image});
+
+    std::vector<SLONG> valuesStat;
+    valuesStat.insert(valuesStat.end(), {STAT_FLUGZEUGE, STAT_PASSAGIERE, STAT_PASSAGIERE_HOME, STAT_AKTIENKURS});
+    valuesStat.insert(valuesStat.end(), {STAT_FLUEGE, STAT_AUFTRAEGE, STAT_LMAUFTRAEGE});
+    valuesStat.insert(valuesStat.end(), {STAT_FIRMENWERT, STAT_ZUFR_PASSAGIERE, STAT_UNZUFR_PASSAGIERE, STAT_ZUFR_PERSONAL});
+    valuesStat.insert(valuesStat.end(), {STAT_VERSPAETUNG, STAT_UNFAELLE, STAT_SABOTIERT});
+    valuesStat.insert(valuesStat.end(), {STAT_MITARBEITER, STAT_NIEDERLASSUNGEN, STAT_ROUTEN, STAT_GEHALT});
+    valuesStat.insert(valuesStat.end(), {STAT_AKTIEN_ANZAHL, STAT_AKTIEN_SA, STAT_AKTIEN_FL, STAT_AKTIEN_PT, STAT_AKTIEN_HA});
+    valuesStat.insert(valuesStat.end(), {STAT_FRACHTEN, STAT_TONS});
+
+    for (auto i : values) {
+        std::cout << i << ", ";
+    }
+    for (auto i : valuesStat) {
+        std::cout << qPlayer.Statistiken[i].GetAtPastDay(1) << ", ";
+    }
+
+    for (SLONG i = 0; i < 4; i++) {
+        std::cout << Sim.Players.Players[i].Statistiken[STAT_MISSIONSZIEL].GetAtPastDay(1) << ", ";
+    }
+
     SLONG count = 0;
     for (SLONG i = 0; i < qPlayer.Planes.AnzEntries(); i++) {
         if (qPlayer.Planes.IsInAlbum(i)) {
@@ -303,19 +371,7 @@ void Bot::printStatisticsLine(CString prefix, bool printHeader) {
             }
         }
     }
-    auto balance = qPlayer.BilanzWoche.Hole();
-    std::cout << (LPCTSTR)prefix << ": " << Sim.Date << ", " << qPlayer.Money << ", " << qPlayer.Credit << ", " << getMoneyAvailable() << ", ";
-    std::cout << balance.GetOpSaldo() << ", " << balance.GetOpGewinn() << ", " << balance.GetOpVerlust() << ", " << balance.Auftraege << ", ";
-    std::cout << balance.FrachtAuftraege << ", " << balance.Tickets << ", " << balance.KerosinFlug << ", " << balance.KerosinVorrat << ", ";
-    std::cout << balance.KerosinGespart << ", " << balance.Wartung << ", ";
-    std::cout << count << ", ";
-    std::cout << qPlayer.Statistiken[STAT_PASSAGIERE].GetAtPastDay(1) << ", " << qPlayer.Statistiken[STAT_ZUFR_PASSAGIERE].GetAtPastDay(1) << ", ";
-    std::cout << qPlayer.Statistiken[STAT_FIRMENWERT].GetAtPastDay(1) << ", " << qPlayer.Statistiken[STAT_FLUGZEUGE].GetAtPastDay(1) << ", ";
-    std::cout << qPlayer.Statistiken[STAT_ROUTEN].GetAtPastDay(1) << ", " << qPlayer.Image;
-    for (SLONG i = 0; i < 4; i++) {
-        std::cout << ", " << Sim.Players.Players[i].Statistiken[STAT_MISSIONSZIEL].GetAtPastDay(1);
-    }
-    std::cout << std::endl;
+    std::cout << count << std::endl;
 }
 
 void Bot::RobotInit() {
