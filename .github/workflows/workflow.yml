@@ -180,8 +180,7 @@ jobs:
         # SENTRY_URL: https://sentry.io/
       run: |
         curl -sL https://github.com/getsentry/sentry-cli/releases/download/2.32.1/sentry-cli-Windows-x86_64.exe > sentry-cli.exe
-        ./sentry-cli.exe debug-files upload ./${{ needs.env.outputs.cmake-build-dir }}/${{ matrix.build_type }}/AT.pdb
-        ./sentry-cli.exe debug-files upload ./${{ needs.env.outputs.cmake-build-dir }}/${{ matrix.build_type }}/AT.exe
+        ./sentry-cli.exe debug-files upload ${{ needs.env.outputs.cmake-build-dir }}/${{ matrix.build_type }}/
 
 
     - name: Publish artifact
