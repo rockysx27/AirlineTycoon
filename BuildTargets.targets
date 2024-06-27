@@ -8,7 +8,7 @@
       <Command>xcopy "$(SolutionDir)patch" "$(SolutionDir)BUILD\AT\$(Configuration)\patch" /E /I /Y</Command>
     -->
 
-    <Target Name="PreparePatchFiles">
+    <Target Name="PreparePatchFiles" DependsOnTargets="Build">
         <ItemGroup>
             <PatchFiles Include="$(SolutionDir)patch/*.*"/>
 
