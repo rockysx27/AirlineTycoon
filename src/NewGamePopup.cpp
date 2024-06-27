@@ -1001,16 +1001,18 @@ void NewGamePopup::OnPaint() {
                 if (GridPos.IfIsWithin(1, bFirstClass != 0 ? 13 : 14, 20, bFirstClass != 0 ? 13 : 14)) {
                     SetMouseLook(CURSOR_EXIT, 0, ROOM_TITLE, 999);
                 }
-            } else if (PageNum == 1 || PageNum == 2 || PageNum == 12 || PageNum == 122 || PageNum == 14 || PageNum == 18) {
+            } else if (PageNum == 1 || PageNum == 12 || PageNum == 122 || isPlayerSelect(PageNum)) {
                 //"Abbrechen"
                 if (Line == 15 && Column >= 0 && Column <= 10) {
-                    if ((PageNum >= 0 && PageNum <= 2) || PageNum == 12 || PageNum == 122 || PageNum == 14) {
+                    if ((PageNum >= 0 && PageNum <= 2) || PageNum == 12 || PageNum == 122 || PageNum == 14 || PageNum == SELECT_BOT_SINGLEPLAYER ||
+                        PageNum == SELECT_BOT_CAMPAIGN) {
                         SetMouseLook(CURSOR_HOT, 0, -100, 0);
                     }
                 }
                 //"Los!"
                 if (Line == 15 && Column >= 14 && Column < 24) {
-                    if (PageNum == 12 || PageNum == 122 || PageNum == 14 || PageNum == 1 || (PageNum == 2 && (NamesOK != 0))) {
+                    if (PageNum == 12 || PageNum == 122 || PageNum == 14 || PageNum == 1 || (PageNum == 2 && (NamesOK != 0)) ||
+                        PageNum == SELECT_BOT_SINGLEPLAYER || PageNum == SELECT_BOT_CAMPAIGN) {
                         SetMouseLook(CURSOR_HOT, 0, -100, 0);
                     }
                 } else if (PageNum == 1 && Line >= 2 && Line <= 2 + Sim.MaxDifficulty) {
