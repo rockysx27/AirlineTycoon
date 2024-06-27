@@ -170,7 +170,7 @@ jobs:
         cat $GITHUB_OUTPUT
 
     - name: Upload sentry debug files
-      shell: bash
+      shell: pwsh
       # Only publish on main/dev build & windows
       if: matrix.name == 'windows' && (github.ref_name == 'main' || github.ref_name == 'develop') && vars.SENTRY_ORG != ''
       env:
@@ -179,10 +179,9 @@ jobs:
         SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
         # SENTRY_URL: https://sentry.io/
       run: |
-        curl -sL https://sentry.io/get-cli/ | bash
-        sentry-cli login
-        sentry-cli debug-files upload ./${{ needs.env.outputs.cmake-build-dir }}/${{ matrix.build_type }}/AT.pdb
-        sentry-cli debug-files upload ./${{ needs.env.outputs.cmake-build-dir }}/${{ matrix.build_type }}/AT.exe
+        curl -sL https://github.com/getsentry/sentry-cli/releases/download/2.32.1/sentry-cli-Windows-x86_64.exe > sentry-cli.exe
+        ./sentry-cli.exe debug-files upload ./${{ needs.env.outputs.cmake-build-dir }}/${{ matrix.build_type }}/AT.pdb
+        ./sentry-cli.exe debug-files upload ./${{ needs.env.outputs.cmake-build-dir }}/${{ matrix.build_type }}/AT.exe
 
 
     - name: Publish artifact
