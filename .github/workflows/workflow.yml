@@ -171,8 +171,8 @@ jobs:
 
     - name: Upload sentry debug files
       shell: bash
-      # Only publish on main build & windows
-      if: matrix.name == 'windows' && github.ref_name == 'main' && vars.SENTRY_ORG != ''
+      # Only publish on main/dev build & windows
+      if: matrix.name == 'windows' && (github.ref_name == 'main' || github.ref_name == 'develop') && vars.SENTRY_ORG != ''
       env:
         SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         SENTRY_ORG: ${{ vars.SENTRY_ORG }}
