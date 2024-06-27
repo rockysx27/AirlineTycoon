@@ -703,7 +703,7 @@ void Bot::actionEmitShares() {
 void Bot::actionBuyNemesisShares(__int64 moneyAvailable) {
     auto amount = calcAmountToBuy(mNemesis, 50, moneyAvailable);
     if (amount > 0) {
-        hprintf("Bot::actionBuyShares(): Buying nemesis stock: %ld", amount);
+        hprintf("Bot::actionBuyNemesisShares(): Buying nemesis stock: %ld", amount);
         GameMechanic::buyStock(qPlayer, mNemesis, amount);
         moneyAvailable = getMoneyAvailable();
     }
@@ -712,7 +712,7 @@ void Bot::actionBuyNemesisShares(__int64 moneyAvailable) {
 void Bot::actionBuyOwnShares(__int64 moneyAvailable) {
     auto amount = calcAmountToBuy(qPlayer.PlayerNum, kOwnStockPosessionRatio, moneyAvailable);
     if (amount > 0) {
-        hprintf("Bot::actionBuyShares(): Buying own stock: %ld", amount);
+        hprintf("Bot::actionBuyOwnShares(): Buying own stock: %ld", amount);
         GameMechanic::buyStock(qPlayer, qPlayer.PlayerNum, amount);
         moneyAvailable = getMoneyAvailable();
     }

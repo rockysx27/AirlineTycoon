@@ -4040,19 +4040,10 @@ void PLAYER::RobotExecuteAction() {
         [[fallthrough]];
     case ACTION_BUERO:
         // Logik für wechsel zu Routen und sparen für Rakete oder Flugzeug:
-        // MP: Logik sieht kaputt aus. DoRoutes ist niemals > 20
         if (DoRoutes == 0) {
             if (RobotUse(ROBOT_USE_SUGGESTROUTES) || (PlayerNum + 30 < Sim.Date && Planes.GetNumUsed() > 6) ||
                 (PlayerNum + 15 < Sim.Date &&
                  (Sim.Players.Players[(PlayerNum + 3) % 4].DoRoutes == 1 || Sim.Players.Players[(PlayerNum + 3) % 4].DoRoutes > 20))) {
-                SLONG c = 0;
-                SLONG Anz = 0;
-
-                for (c = RentRouten.RentRouten.AnzEntries() - 1; c >= 0; c--) {
-                    if ((Routen.IsInAlbum(c) != 0) && (RentRouten.RentRouten[c].Rang != 0U)) {
-                        Anz++;
-                    }
-                }
 
                 if (Image < 150) {
                     WantToDoRoutes = TRUE;
@@ -4060,7 +4051,7 @@ void PLAYER::RobotExecuteAction() {
                     if (GetAnzBits(Sim.Players.Players[Sim.localPlayer].ConnectFlags) > PlayerNum) {
                         DoRoutes = TRUE;
                     }
-                } else if (Anz > 2) {
+                } else {
                     DoRoutes = TRUE;
                 }
             }
@@ -5369,7 +5360,7 @@ void PLAYER::RobotExecuteAction() {
             }
 
             // Neue Route kaufen:
-            if (((DoRoutes != 0) || (WantToDoRoutes != 0)) && SLONG(Planes.GetNumUsed()) > (Anz / 2) * 3 / 2 && Anz < SLONG(Routen.GetNumUsed())) {
+            if ((DoRoutes != 0) && SLONG(Planes.GetNumUsed()) > (Anz / 2) * 3 / 2 && Anz < SLONG(Routen.GetNumUsed())) {
 
                 IsBuyable = GameMechanic::getBuyableRoutes(*this);
 
@@ -5456,7 +5447,7 @@ void PLAYER::RobotExecuteAction() {
 
     case ACTION_WERBUNG:
         if (!RobotUse(ROBOT_USE_GROSSESKONTO)) {
-            if (((DoRoutes != 0) || (WantToDoRoutes != 0)) && Money > 500000) {
+            if ((DoRoutes != 0) && Money > 500000) {
                 for (SLONG c = 0; c < RentRouten.RentRouten.AnzEntries(); c++) {
                     if (RentRouten.RentRouten[c].Rang != 0U) {
                         if (RentRouten.RentRouten[c].Image < 70 || (RentRouten.RentRouten[c].Image < 80 && (SavesForPlane == 0) && (SavesForRocket == 0)) ||
@@ -5473,7 +5464,7 @@ void PLAYER::RobotExecuteAction() {
                  (Money > 150000 && RobotUse(ROBOT_USE_MUCHWERBUNG) &&
                   (Image + 10 < Sim.Players.Players[(PlayerNum + 1) % 3].Image || (dislike != -1 && Image + 10 < Sim.Players.Players[dislike].Image)))) ||
                 (Image < 1000 && Money - Credit > 4000000 && (SavesForPlane == 0) && (SavesForRocket == 0))) {
-                if ((DoRoutes != 0) || RobotUse(ROBOT_USE_HARDWERBUNG)) {
+                if (((DoRoutes != 0) || (WantToDoRoutes != 0)) || RobotUse(ROBOT_USE_HARDWERBUNG)) {
                     if (Sim.Date % 4 == 0) {
                         n = 0;
                     } else {
