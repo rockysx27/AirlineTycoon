@@ -223,7 +223,7 @@ char *TEXTRES::GetS(ULONG group, ULONG id) {
         long long lGroup = group;
         AT_Log(ExcTextResNotFound, reinterpret_cast<char *>(&lGroup), id);
 
-        char *defaultText = _strdup("MISSING");
+        char *defaultText = strdup("MISSING");
         return defaultText;
     }
     return buffer;
