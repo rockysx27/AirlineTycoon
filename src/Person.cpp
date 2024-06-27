@@ -3209,7 +3209,10 @@ void PERSON::PersonReachedTarget() {
 //--------------------------------------------------------------------------------------------
 const CFlugplanEintrag *PERSON::GetFlugplanEintrag() const {
     if (FlightAirline >= 0 && FlightAirline <= 3) {
-        return (&Sim.Players.Players[static_cast<SLONG>(FlightAirline)].Planes[FlightPlaneId].Flugplan.Flug[static_cast<SLONG>(FlightPlaneIndex)]);
+        const auto &qPlayer = Sim.Players.Players[static_cast<SLONG>(FlightAirline)];
+        if (qPlayer.IsOut == 0) {
+            return (&qPlayer.Planes[FlightPlaneId].Flugplan.Flug[static_cast<SLONG>(FlightPlaneIndex)]);
+        }
     }
 
     return (nullptr);
