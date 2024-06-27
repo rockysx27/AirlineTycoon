@@ -302,7 +302,7 @@ Bot::Prio Bot::condAll(SLONG actionId) {
     case ACTION_SET_DIVIDEND:
         return condIncreaseDividend(moneyAvailable);
     case ACTION_BUYSHARES:
-        return condBuyShares(moneyAvailable, mNemesis);
+        return condBuyShares(moneyAvailable);
     case ACTION_SELLSHARES:
         return condSellShares(moneyAvailable);
     case ACTION_WERBUNG_ROUTES:
@@ -796,14 +796,14 @@ Bot::Prio Bot::condEmitShares() {
     return Prio::None;
 }
 
-Bot::Prio Bot::condBuyShares(__int64 &moneyAvailable, SLONG dislike) {
+Bot::Prio Bot::condBuyShares(__int64 &moneyAvailable) {
     if (!hoursPassed(ACTION_BUYSHARES, 24)) {
         return Prio::None;
     }
-    return std::max(condBuyNemesisShares(moneyAvailable, dislike), condBuyOwnShares(moneyAvailable));
+    return std::max(condBuyNemesisShares(moneyAvailable), condBuyOwnShares(moneyAvailable));
 }
 
-Bot::Prio Bot::condBuyNemesisShares(__int64 &moneyAvailable, SLONG dislike) {
+Bot::Prio Bot::condBuyNemesisShares(__int64 &moneyAvailable) {
     moneyAvailable = getMoneyAvailable() - kMoneyReserveBuyNemesisShares;
     if (mRunToFinalObjective > FinalPhase::No) {
         return Prio::None;
@@ -811,14 +811,16 @@ Bot::Prio Bot::condBuyNemesisShares(__int64 &moneyAvailable, SLONG dislike) {
     if (qPlayer.RobotUse(ROBOT_USE_DONTBUYANYSHARES)) {
         return Prio::None;
     }
-    if (dislike == -1) {
+    if ((moneyAvailable < 0) || (qPlayer.Credit != 0)) {
         return Prio::None;
     }
-    if (qPlayer.OwnsAktien[dislike] >= (Sim.Players.Players[dislike].AnzAktien / 2)) {
-        return Prio::None; /* we already own 50% of enemy stock */
-    }
-    if ((moneyAvailable >= 0) && (qPlayer.Credit == 0)) {
-        return Prio::Low;
+    for (SLONG dislike = 0; dislike < 4; dislike++) {
+        if (dislike == qPlayer.PlayerNum) {
+            continue;
+        }
+        if (qPlayer.OwnsAktien[dislike] < (Sim.Players.Players[dislike].AnzAktien / 2)) {
+            return Prio::Low; /* we own less than 50% of enemy stock */
+        }
     }
     return Prio::None;
 }

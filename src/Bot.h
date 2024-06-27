@@ -149,8 +149,8 @@ class Bot {
     Prio condTakeOutLoan();
     Prio condDropMoney(__int64 &moneyAvailable);
     Prio condEmitShares();
-    Prio condBuyShares(__int64 &moneyAvailable, SLONG dislike);
-    Prio condBuyNemesisShares(__int64 &moneyAvailable, SLONG dislike);
+    Prio condBuyShares(__int64 &moneyAvailable);
+    Prio condBuyNemesisShares(__int64 &moneyAvailable);
     Prio condBuyOwnShares(__int64 &moneyAvailable);
     Prio condOvertakeAirline();
     Prio condSellShares(__int64 &moneyAvailable);

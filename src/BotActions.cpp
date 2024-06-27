@@ -633,34 +633,34 @@ void Bot::actionSabotage(__int64 moneyAvailable) {
     /* exceute sabotage */
     GameMechanic::setSaboteurTarget(qPlayer, mNemesis);
     auto res = GameMechanic::checkPrerequisitesForSaboteurJob(qPlayer, jobType, jobNumber, FALSE).result;
+    const auto nemesisName = Sim.Players.Players[mNemesis].AirlineX;
     switch (res) {
     case GameMechanic::CheckSabotageResult::Ok:
         GameMechanic::activateSaboteurJob(qPlayer, FALSE);
-        hprintf("Bot::actionSabotage(): Sabotaging nemesis %s (jobType = %ld, jobNumber = %ld)", (LPCTSTR)Sim.Players.Players[mNemesis].AirlineX, jobType,
-                jobNumber);
+        hprintf("Bot::actionSabotage(): Sabotaging nemesis %s (jobType = %ld, jobNumber = %ld)", (LPCTSTR)nemesisName, jobType, jobNumber);
         mNemesisSabotaged = mNemesis; /* ensures that we do not sabotage him again tomorrow */
         break;
     case GameMechanic::CheckSabotageResult::DeniedInvalidParam:
-        redprintf("Bot::actionSabotage(): Cannot sabotage nemesis %s: Invalid param", (LPCTSTR)Sim.Players.Players[mNemesis].AirlineX);
+        redprintf("Bot::actionSabotage(): Cannot sabotage nemesis %s: Invalid param", (LPCTSTR)nemesisName);
         break;
     case GameMechanic::CheckSabotageResult::DeniedSaboteurBusy:
-        hprintf("Bot::actionSabotage(): Cannot sabotage nemesis %s: Saboteur busy", (LPCTSTR)Sim.Players.Players[mNemesis].AirlineX);
+        hprintf("Bot::actionSabotage(): Cannot sabotage nemesis %s: Saboteur busy", (LPCTSTR)nemesisName);
         break;
     case GameMechanic::CheckSabotageResult::DeniedSecurity:
         mNeedToShutdownSecurity = true;
-        hprintf("Bot::actionSabotage(): Cannot sabotage nemesis %s: Blocked by security", (LPCTSTR)Sim.Players.Players[mNemesis].AirlineX);
+        hprintf("Bot::actionSabotage(): Cannot sabotage nemesis %s: Blocked by security", (LPCTSTR)nemesisName);
         break;
     case GameMechanic::CheckSabotageResult::DeniedNotEnoughMoney:
-        redprintf("Bot::actionSabotage(): Cannot sabotage nemesis %s: Not enough money", (LPCTSTR)Sim.Players.Players[mNemesis].AirlineX);
+        redprintf("Bot::actionSabotage(): Cannot sabotage nemesis %s: Not enough money", (LPCTSTR)nemesisName);
         break;
     case GameMechanic::CheckSabotageResult::DeniedNoLaptop:
-        redprintf("Bot::actionSabotage(): Cannot sabotage nemesis %s: Enemy has no laptop", (LPCTSTR)Sim.Players.Players[mNemesis].AirlineX);
+        redprintf("Bot::actionSabotage(): Cannot sabotage nemesis %s: Enemy has no laptop", (LPCTSTR)nemesisName);
         break;
     case GameMechanic::CheckSabotageResult::DeniedTrust:
-        redprintf("Bot::actionSabotage(): Cannot sabotage nemesis %s: Not enough trust", (LPCTSTR)Sim.Players.Players[mNemesis].AirlineX);
+        redprintf("Bot::actionSabotage(): Cannot sabotage nemesis %s: Not enough trust", (LPCTSTR)nemesisName);
         break;
     default:
-        redprintf("Bot::actionSabotage(): Cannot sabotage nemesis %s: Unknown error", (LPCTSTR)Sim.Players.Players[mNemesis].AirlineX);
+        redprintf("Bot::actionSabotage(): Cannot sabotage nemesis %s: Unknown error", (LPCTSTR)nemesisName);
     }
 }
 
@@ -701,11 +701,16 @@ void Bot::actionEmitShares() {
 }
 
 void Bot::actionBuyNemesisShares(__int64 moneyAvailable) {
-    auto amount = calcAmountToBuy(mNemesis, 50, moneyAvailable);
-    if (amount > 0) {
-        hprintf("Bot::actionBuyNemesisShares(): Buying nemesis stock: %ld", amount);
-        GameMechanic::buyStock(qPlayer, mNemesis, amount);
-        moneyAvailable = getMoneyAvailable();
+    for (SLONG dislike = 0; dislike < 4; dislike++) {
+        if (dislike == qPlayer.PlayerNum) {
+            continue;
+        }
+        auto amount = calcAmountToBuy(dislike, 50, moneyAvailable);
+        if (amount > 0) {
+            hprintf("Bot::actionBuyNemesisShares(): Buying enemy stock from %s: %ld", (LPCTSTR)Sim.Players.Players[dislike].AirlineX, amount);
+            GameMechanic::buyStock(qPlayer, dislike, amount);
+            moneyAvailable = getMoneyAvailable() - kMoneyReserveBuyNemesisShares;
+        }
     }
 }
 
@@ -1199,8 +1204,6 @@ void Bot::actionBuyAds(__int64 moneyAvailable) {
     assert(kSmallestAdCampaign >= 1);
     for (SLONG adCampaignSize = 5; adCampaignSize >= kSmallestAdCampaign; adCampaignSize--) {
         SLONG cost = gWerbePrice[0 * 6 + adCampaignSize];
-        SLONG imageDelta = cost / 10000 * (adCampaignSize + 6) / 55;
-
         SLONG cost2 = gWerbePrice[0 * 6 + (adCampaignSize - 1)];
         SLONG imageDelta2 = cost2 / 10000 * ((adCampaignSize - 1) + 6) / 55;
 

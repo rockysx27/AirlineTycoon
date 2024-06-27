@@ -889,7 +889,7 @@ void Bot::RobotExecuteAction() {
 
     case ACTION_BUYSHARES: {
         bool performedAction = false;
-        if (condBuyNemesisShares(moneyAvailable, mNemesis) != Prio::None) {
+        if (condBuyNemesisShares(moneyAvailable) != Prio::None) {
             actionBuyNemesisShares(moneyAvailable);
             performedAction = true;
         }
