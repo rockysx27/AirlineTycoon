@@ -1046,6 +1046,26 @@ void Bot::actionFindBestRoute() {
         score *= (Cities.CalcDistance(Routen[c].VonCity, Routen[c].NachCity) / 1000);
         score /= Routen[c].Miete;
 
+        /* current utilization of route */
+        SLONG routeUtilization = 0;
+        for (SLONG i = 0; i < Sim.Players.Players.AnzEntries(); i++) {
+            const auto &qqPlayer = Sim.Players.Players[i];
+            const auto &qRentRoute = qqPlayer.RentRouten.RentRouten[c];
+            routeUtilization += qRentRoute.RoutenAuslastung;
+        }
+        if (routeUtilization > 0) {
+            routeUtilization += 20; /* offset, we can expect the enemy to increase their share */
+            routeUtilization = std::min(100, routeUtilization);
+        }
+
+        /* adjust score based on utilization */
+        auto scoreOld = score;
+        score = score * (100.0 - routeUtilization) / 100.0;
+        if (std::abs(scoreOld - score) > 0.01) {
+            hprintf("Bot::actionFindBestRoute(): Route %s is already used, reducing score: %.2f => %.2f", Helper::getRouteName(Routen[c]).c_str(), scoreOld,
+                    score);
+        }
+
         /* is this route important for our mission */
         if (qPlayer.RobotUse(ROBOT_USE_ROUTEMISSION)) {
             auto homeAirport = static_cast<ULONG>(Sim.HomeAirportId);
