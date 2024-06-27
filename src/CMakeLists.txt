@@ -135,8 +135,7 @@ add_executable (AT
 )
 
 set_target_properties(AT PROPERTIES
-                      RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}"
-)
+                      RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}")
 
 set_target_properties(
     AT PROPERTIES
@@ -149,6 +148,9 @@ if(MSVC)
     target_compile_features(AT PUBLIC cxx_std_17)
     target_compile_options(AT PUBLIC "/Zc:__cplusplus")
     target_compile_options(AT PUBLIC "/std:c++17")
+
+    set_target_properties(AT PROPERTIES
+                            RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 
     # Release configurations
     target_compile_definitions(AT PRIVATE "$<$<CONFIG:Release>:SENTRY;WIN32;_WINDOWS>")
