@@ -39,6 +39,7 @@
   <ImportGroup Label="PropertySheets">
     <Import Project="do_not_import_user.props" Condition="exists('do_not_import_user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+  <Import Project="..\BuildTargets.targets" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
     <LocalDebuggerWorkingDirectory Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)BUILD\</LocalDebuggerWorkingDirectory>
@@ -104,14 +105,18 @@
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
     </ProjectReference>
     <PostBuildEvent>
-      <Command>$(SolutionDir)BUILD\AT\$(Configuration)\AT.exe /updatepatchesonly &amp;&amp; copy "$(SolutionDir)BUILD\AT\$(Configuration)\AT.exe" "$(SolutionDir)BUILD\Deployment\AT.exe" || set errorlevel=0</Command>
-      <Message>Copying AT.exe to Deployment folder</Message>
+      <Command>
+      </Command>
+      <Message>
+      </Message>
     </PostBuildEvent>
     <PreBuildEvent>
-      <Command>xcopy "$(SolutionDir)patch" "$(SolutionDir)BUILD\AT\$(Configuration)\patch" /E /I /Y</Command>
+      <Command>
+      </Command>
     </PreBuildEvent>
     <PreBuildEvent>
-      <Message>Copy all patch files into the build directory</Message>
+      <Message>
+      </Message>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -155,20 +160,24 @@
       <ImportLibrary>$(SolutionDir)BUILD/AT/$(Configuration)/AT.lib</ImportLibrary>
       <ProgramDataBaseFile>$(SolutionDir)BUILD\AT\$(Configuration)\AT.pdb</ProgramDataBaseFile>
       <SubSystem>Windows</SubSystem>
-      <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
+      <DelayLoadDLLs>SDL2*;%(DelayLoadDLLs)</DelayLoadDLLs>
     </Link>
     <ProjectReference>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
     </ProjectReference>
     <PostBuildEvent>
-      <Command>$(SolutionDir)BUILD\AT\$(Configuration)\AT.exe /updatepatchesonly &amp;&amp; copy "$(SolutionDir)BUILD\AT\$(Configuration)\AT.exe" "$(SolutionDir)BUILD\Deployment\AT.exe" || set errorlevel=0</Command>
-      <Message>Copying AT.exe to Deployment folder</Message>
+      <Command>
+      </Command>
+      <Message>
+      </Message>
     </PostBuildEvent>
     <PreBuildEvent>
-      <Command>xcopy "$(SolutionDir)patch" "$(SolutionDir)BUILD\AT\$(Configuration)\patch" /E /I /Y</Command>
+      <Command>
+      </Command>
     </PreBuildEvent>
     <PreBuildEvent>
-      <Message>Copy all patch files into the build directory</Message>
+      <Message>
+      </Message>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -486,6 +495,9 @@
     <ClInclude Include="Werbung.h" />
     <ClInclude Include="Werkstat.h" />
     <ClInclude Include="World.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\BuildTargets.targets" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
