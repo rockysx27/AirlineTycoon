@@ -7565,11 +7565,16 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
                        "-X--------";
         break;
     case ROBOT_USE_IMAGEBONUS:
-        /* SuperBot: Cheat not used */
-        pFeatureDesc = "------"
+        /* SuperBot: Cheat not used
+         * We enable it for normal bots whenever they use routes */
+        if (IsSuperBot()) {
+            return false;
+        }
+        return (DoRoutes > 0);
+        /*pFeatureDesc = "------"
                        "."
                        "-----X----"
-                       "----------";
+                       "----------";*/
         break;
     case ROBOT_USE_GOODPLANES:
         /* SuperBot: Ignores this flag */

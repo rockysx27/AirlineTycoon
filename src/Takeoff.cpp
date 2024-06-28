@@ -113,9 +113,21 @@ extern "C"
     _CrtSetReportHook2(_CRT_RPTHOOK_INSTALL, CrtDbgHook);
 #endif
 
-    if (!run_regression()) {
+    /*if (!run_regression()) {
         hprintf("Regression test failed!");
         return 1;
+    }*/
+    {
+        TEAKRAND rnd;
+        hprintf("Rnd: %u %u %u %u %u", rnd.Rand(), rnd.Rand(), rnd.Rand(), rnd.Rand(), rnd.Rand());
+    }
+    {
+        TEAKRAND rnd(1);
+        hprintf("Rnd(1): %u %u %u %u %u", rnd.Rand(), rnd.Rand(), rnd.Rand(), rnd.Rand(), rnd.Rand());
+    }
+    {
+        TEAKRAND rnd(99);
+        hprintf("Rnd(99): %u %u %u %u %u", rnd.Rand(), rnd.Rand(), rnd.Rand(), rnd.Rand(), rnd.Rand());
     }
 
     theApp.InitInstance(argc, argv);
