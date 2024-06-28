@@ -148,10 +148,7 @@ if(MSVC)
     target_compile_features(AT PUBLIC cxx_std_17)
     target_compile_options(AT PUBLIC "/Zc:__cplusplus")
     target_compile_options(AT PUBLIC "/std:c++17")
-    target_compile_options(AT PUBLIC "$<$<CONFIG:Release>:/O2 /Ob2 /Zi /Ot /GF /Oi /Oy>")
-
-    target_link_options(AT PUBLIC "/DEBUG:FULL")
-
+    
     set_target_properties(AT PROPERTIES
                             RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 
