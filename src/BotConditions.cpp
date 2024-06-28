@@ -660,7 +660,7 @@ Bot::Prio Bot::condBuyKerosine(__int64 &moneyAvailable) {
 }
 
 Bot::Prio Bot::condBuyKerosineTank(__int64 &moneyAvailable) {
-    moneyAvailable = getMoneyAvailable();
+    moneyAvailable = getMoneyAvailable() - kMoneyReserveBuyTanks;
     if (!hoursPassed(ACTION_BUY_KEROSIN_TANKS, 24)) {
         return Prio::None;
     }
@@ -680,7 +680,6 @@ Bot::Prio Bot::condBuyKerosineTank(__int64 &moneyAvailable) {
         return Prio::None;
     }
     auto nTankTypes = sizeof(TankSize) / sizeof(TankSize[0]);
-    moneyAvailable -= kMoneyReserveBuyTanks;
     if (moneyAvailable > TankPrice[nTankTypes - 1]) {
         moneyAvailable = TankPrice[nTankTypes - 1]; /* do not spend more than 1x largest tank at once*/
     }
@@ -1193,8 +1192,7 @@ Bot::Prio Bot::condBuyAds(__int64 &moneyAvailable) {
     }
 
     auto minCost = gWerbePrice[0 * 6 + kSmallestAdCampaign];
-    moneyAvailable -= minCost;
-    if (moneyAvailable >= 0) {
+    if (moneyAvailable >= minCost) {
         if ((mRunToFinalObjective == FinalPhase::TargetRun) && qPlayer.RobotUse(ROBOT_USE_MUCHWERBUNG)) {
             return Prio::High;
         }

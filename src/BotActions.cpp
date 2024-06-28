@@ -557,7 +557,6 @@ void Bot::actionBuyKerosine(__int64 moneyAvailable) {
         auto amountOld = qPlayer.TankInhalt;
         GameMechanic::buyKerosin(qPlayer, 1, res.first);
         GameMechanic::buyKerosin(qPlayer, 2, res.second);
-        moneyAvailable = getMoneyAvailable();
         mKerosineLevelLastChecked = qPlayer.TankInhalt;
 
         hprintf("Bot::actionBuyKerosine(): Kerosine quantity: %ld => %ld", amountOld, qPlayer.TankInhalt);
@@ -573,7 +572,7 @@ void Bot::actionBuyKerosineTank(__int64 moneyAvailable) {
             SLONG amount = std::min(3LL, moneyAvailable / TankPrice[i]);
             hprintf("Bot::actionBuyKerosineTank(): Buying %ld times tank type %ld", amount, i);
             GameMechanic::buyKerosinTank(qPlayer, i, amount);
-            moneyAvailable = getMoneyAvailable();
+            moneyAvailable = getMoneyAvailable() - kMoneyReserveBuyTanks;
             break;
         }
     }
@@ -689,14 +688,13 @@ void Bot::actionEmitShares() {
     SLONG newStock = (qPlayer.MaxAktien - qPlayer.AnzAktien) / 100 * 100;
     hprintf("Bot::actionEmitShares(): Emitting stock: %ld", newStock);
     GameMechanic::emitStock(qPlayer, newStock, kStockEmissionMode);
-    auto moneyAvailable = getMoneyAvailable();
 
     // Direkt wieder auf ein Viertel aufkaufen
+    auto moneyAvailable = getMoneyAvailable() - kMoneyReserveBuyOwnShares;
     auto amount = calcAmountToBuy(qPlayer.PlayerNum, kOwnStockPosessionRatio, moneyAvailable);
     if (amount > 0) {
         hprintf("Bot::actionEmitShares(): Buying own stock: %ld", amount);
         GameMechanic::buyStock(qPlayer, qPlayer.PlayerNum, amount);
-        moneyAvailable = getMoneyAvailable();
     }
 }
 
@@ -709,7 +707,6 @@ void Bot::actionBuyNemesisShares(__int64 moneyAvailable) {
         if (amount > 0) {
             hprintf("Bot::actionBuyNemesisShares(): Buying enemy stock from %s: %ld", (LPCTSTR)Sim.Players.Players[dislike].AirlineX, amount);
             GameMechanic::buyStock(qPlayer, dislike, amount);
-            moneyAvailable = getMoneyAvailable() - kMoneyReserveBuyNemesisShares;
         }
     }
 }
@@ -719,7 +716,6 @@ void Bot::actionBuyOwnShares(__int64 moneyAvailable) {
     if (amount > 0) {
         hprintf("Bot::actionBuyOwnShares(): Buying own stock: %ld", amount);
         GameMechanic::buyStock(qPlayer, qPlayer.PlayerNum, amount);
-        moneyAvailable = getMoneyAvailable();
     }
 }
 
@@ -850,7 +846,7 @@ void Bot::actionVisitMech() {
                 GameMechanic::setPlaneTargetZustand(qPlayer, iter.first, qPlane.TargetZustand + 1);
                 keepGoing = true;
                 mMoneyReservedForRepairs += cost;
-                moneyAvailable = getMoneyAvailable();
+                moneyAvailable = getMoneyAvailable() - kMoneyReserveRepairs;
             }
             if (moneyAvailable < 0) {
                 break;
@@ -1214,7 +1210,6 @@ void Bot::actionBuyAdsForRoutes(__int64 moneyAvailable) {
     SLONG oldImage = getRentRoute(qRoute).Image;
     hprintf("Bot::actionBuyAdsForRoutes(): Buying advertisement for route %s for %ld $", Helper::getRouteName(getRoute(qRoute)).c_str(), cost);
     GameMechanic::buyAdvertisement(qPlayer, 1, adCampaignSize, qRoute.routeId);
-    moneyAvailable = getMoneyAvailable();
 
     hprintf("Bot::actionBuyAdsForRoutes(): Route image improved (%ld => %ld)", oldImage, getRentRoute(qRoute).Image);
     updateRouteInfo();
