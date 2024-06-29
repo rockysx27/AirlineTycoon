@@ -121,13 +121,9 @@ extern "C"
         TEAKRAND rnd;
         hprintf("Rnd: %u %u %u %u %u", rnd.Rand(), rnd.Rand(), rnd.Rand(), rnd.Rand(), rnd.Rand());
     }
-    {
-        TEAKRAND rnd(1);
-        hprintf("Rnd(1): %u %u %u %u %u", rnd.Rand(), rnd.Rand(), rnd.Rand(), rnd.Rand(), rnd.Rand());
-    }
-    {
-        TEAKRAND rnd(99);
-        hprintf("Rnd(99): %u %u %u %u %u", rnd.Rand(), rnd.Rand(), rnd.Rand(), rnd.Rand(), rnd.Rand());
+    for (int seed = 0; seed < 10; seed++) {
+        TEAKRAND rnd(seed);
+        hprintf("Rnd(%d): %u %u %u %u %u", seed, rnd.Rand(), rnd.Rand(), rnd.Rand(), rnd.Rand(), rnd.Rand());
     }
 
     theApp.InitInstance(argc, argv);
@@ -250,10 +246,12 @@ BOOL CTakeOffApp::InitInstance(int argc, char *argv[]) {
             i++;
             if (i < argc) {
                 gQuickTestRun = 2 + atoi(argv[i]);
+                if (gQuickTestRun == 1) {
+                    gAutoQuitOnDay = 99; /* auto-quit in freegame */
+                }
             }
         }
         if (stricmp(Argument, "/testbot") == 0) {
-            gAutoQuitOnDay = 99;
             i++;
             if (i < argc) {
                 gAutoBotDiff = atoi(argv[i]);

@@ -520,8 +520,7 @@ class TEAKRAND {
   private:
     ULONG Seed{};
 
-    std::mt19937 mMT{std::random_device{}()};
-    // std::mt19937 mMT{};
+    std::mt19937 mMT{};
 };
 
 template <typename T> class TXY {
