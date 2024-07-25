@@ -188,10 +188,10 @@ class Bot {
     void actionBuyKerosine(__int64 moneyAvailable);
     void actionBuyKerosineTank(__int64 moneyAvailable);
     void actionSabotage(__int64 moneyAvailable);
-    SLONG calcBuyShares(__int64 moneyAvailable, DOUBLE kurs) const;
-    SLONG calcSellShares(__int64 moneyToGet, DOUBLE kurs) const;
-    SLONG calcNumOfFreeShares(SLONG playerId) const;
-    SLONG calcAmountToBuy(SLONG buyFromPlayerId, SLONG desiredRatio, SLONG moneyAvailable) const;
+    __int64 calcBuyShares(__int64 moneyAvailable, DOUBLE kurs) const;
+    __int64 calcSellShares(__int64 moneyToGet, DOUBLE kurs) const;
+    __int64 calcNumOfFreeShares(SLONG playerId) const;
+    __int64 calcAmountToBuy(SLONG buyFromPlayerId, SLONG desiredRatio, __int64 moneyAvailable) const;
     void actionEmitShares();
     void actionBuyNemesisShares(__int64 moneyAvailable);
     void actionBuyOwnShares(__int64 moneyAvailable);
