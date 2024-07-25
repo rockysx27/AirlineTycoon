@@ -748,6 +748,10 @@ bool GameMechanic::buyStock(PLAYER &qPlayer, SLONG airlineNum, SLONG amount) {
     }
 
     auto &qPlayerBuyFrom = Sim.Players.Players[airlineNum];
+    if (qPlayerBuyFrom.IsOut != 0) {
+        redprintf("GameMechanic::buyStock(%s): Airline already gone.", (LPCTSTR)qPlayer.AirlineX);
+        return false;
+    }
 
     /* Anzahl freier Aktien */
     SLONG freeAmount = qPlayerBuyFrom.AnzAktien;
@@ -821,6 +825,10 @@ bool GameMechanic::sellStock(PLAYER &qPlayer, SLONG airlineNum, SLONG amount) {
     }
 
     auto &qPlayerSellFrom = Sim.Players.Players[airlineNum];
+    if (qPlayerSellFrom.IsOut != 0) {
+        redprintf("GameMechanic::buyStock(%s): Airline already gone.", (LPCTSTR)qPlayer.AirlineX);
+        return false;
+    }
 
     /* aktualisiere Aktienwert */
     {
@@ -2829,11 +2837,12 @@ void GameMechanic::executeSabotageMode1() {
         if (arabMode == 3 && qOpfer.Planes[qPlayer.ArabPlane].Ort >= 0) {
             CPlane &qPlane = qOpfer.Planes[qPlayer.ArabPlane];
             SLONG e = qPlane.Flugplan.NextStart;
-
-            auto sabotageTime = qPlane.Flugplan.Flug[e].Startdate * 24 + qPlane.Flugplan.Flug[e].Startzeit;
-            auto currentTime = Sim.Date * 24 + Sim.GetHour();
-            if (e != -1 && currentTime == sabotageTime) {
-                ActNow = TRUE;
+            if (e != -1) {
+                auto sabotageTime = qPlane.Flugplan.Flug[e].Startdate * 24 + qPlane.Flugplan.Flug[e].Startzeit;
+                auto currentTime = Sim.Date * 24 + Sim.GetHour();
+                if (currentTime == sabotageTime) {
+                    ActNow = TRUE;
+                }
             }
         }
 

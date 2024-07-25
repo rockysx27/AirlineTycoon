@@ -9,7 +9,7 @@
 #include <chrono>
 #include <filesystem>
 #include <locale>
-#include <ostream>
+#include <sstream>
 
 #ifdef _DEBUG
 #undef THIS_FILE
