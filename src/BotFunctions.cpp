@@ -652,6 +652,9 @@ void Bot::updateRouteInfo() {
         route.routeUtilization = 0;
         for (SLONG i = 0; i < Sim.Players.Players.AnzEntries(); i++) {
             const auto &qqPlayer = Sim.Players.Players[i];
+            if (qqPlayer.IsOut != 0) {
+                continue;
+            }
             const auto &qRentRoute = qqPlayer.RentRouten.RentRouten[route.routeId];
             route.routeUtilization += qRentRoute.RoutenAuslastung;
 

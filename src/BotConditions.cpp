@@ -814,10 +814,11 @@ Bot::Prio Bot::condBuyNemesisShares(__int64 &moneyAvailable) {
         return Prio::None;
     }
     for (SLONG dislike = 0; dislike < 4; dislike++) {
-        if (dislike == qPlayer.PlayerNum) {
+        auto &qTarget = Sim.Players.Players[dislike];
+        if (dislike == qPlayer.PlayerNum || qTarget.IsOut != 0) {
             continue;
         }
-        if (qPlayer.OwnsAktien[dislike] < (Sim.Players.Players[dislike].AnzAktien / 2)) {
+        if (qPlayer.OwnsAktien[dislike] < (qTarget.AnzAktien / 2)) {
             return Prio::Low; /* we own less than 50% of enemy stock */
         }
     }

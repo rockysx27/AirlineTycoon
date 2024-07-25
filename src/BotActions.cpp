@@ -630,9 +630,14 @@ void Bot::actionSabotage(__int64 moneyAvailable) {
     }
 
     /* exceute sabotage */
-    GameMechanic::setSaboteurTarget(qPlayer, mNemesis);
+    const auto &nemesisName = Sim.Players.Players[mNemesis].AirlineX;
+    auto ret = GameMechanic::setSaboteurTarget(qPlayer, mNemesis);
+    if (ret != mNemesis) {
+        redprintf("Bot::actionSabotage(): Cannot sabotage nemesis %s: Cannot set as target", (LPCTSTR)nemesisName);
+        return;
+    }
+
     auto res = GameMechanic::checkPrerequisitesForSaboteurJob(qPlayer, jobType, jobNumber, FALSE).result;
-    const auto nemesisName = Sim.Players.Players[mNemesis].AirlineX;
     switch (res) {
     case GameMechanic::CheckSabotageResult::Ok:
         GameMechanic::activateSaboteurJob(qPlayer, FALSE);
@@ -700,12 +705,13 @@ void Bot::actionEmitShares() {
 
 void Bot::actionBuyNemesisShares(__int64 moneyAvailable) {
     for (SLONG dislike = 0; dislike < 4; dislike++) {
-        if (dislike == qPlayer.PlayerNum) {
+        auto &qTarget = Sim.Players.Players[dislike];
+        if (dislike == qPlayer.PlayerNum || qTarget.IsOut != 0) {
             continue;
         }
         auto amount = calcAmountToBuy(dislike, 50, moneyAvailable);
         if (amount > 0) {
-            hprintf("Bot::actionBuyNemesisShares(): Buying enemy stock from %s: %ld", (LPCTSTR)Sim.Players.Players[dislike].AirlineX, amount);
+            hprintf("Bot::actionBuyNemesisShares(): Buying enemy stock from %s: %ld", (LPCTSTR)qTarget.AirlineX, amount);
             GameMechanic::buyStock(qPlayer, dislike, amount);
         }
     }
@@ -1046,8 +1052,10 @@ void Bot::actionFindBestRoute() {
         SLONG routeUtilization = 0;
         for (SLONG i = 0; i < Sim.Players.Players.AnzEntries(); i++) {
             const auto &qqPlayer = Sim.Players.Players[i];
-            const auto &qRentRoute = qqPlayer.RentRouten.RentRouten[c];
-            routeUtilization += qRentRoute.RoutenAuslastung;
+            if (qqPlayer.IsOut == 0) {
+                const auto &qRentRoute = qqPlayer.RentRouten.RentRouten[c];
+                routeUtilization += qRentRoute.RoutenAuslastung;
+            }
         }
         if (routeUtilization > 0) {
             routeUtilization += 20; /* offset, we can expect the enemy to increase their share */
