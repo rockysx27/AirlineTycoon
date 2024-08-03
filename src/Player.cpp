@@ -7416,13 +7416,9 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
         break;
     case ROBOT_USE_ROUTES:
         /* SuperBot: Respects this flag */
-        if (IsSuperBot()) {
-            /* no logic to put designer planes on routes */
-            return (!RobotUse(ROBOT_USE_DESIGNER_BUY));
-        }
-        pFeatureDesc = "------"
-                       "."
-                       "----------"
+        pFeatureDesc = "---XXX"
+                       "X"
+                       "X--XXX-X-X"
                        "----------";
         break;
     case ROBOT_USE_SUGGESTROUTES:
