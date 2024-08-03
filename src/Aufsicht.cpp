@@ -89,7 +89,7 @@ CAufsicht::CAufsicht(BOOL bHandy, ULONG PlayerNum) : CStdRaum(bHandy, PlayerNum,
                         for (e = qPlan.Flug.AnzEntries() - 1; e >= 0; e--) {
                             if (qPlan.Flug[e].ObjectType == 1) {
                                 if (qPlayer.RentRouten.RentRouten[Routen(qPlan.Flug[e].ObjectId)].Rang != 0U) {
-                                    if (qPlayer.RentRouten.RentRouten[Routen(qPlan.Flug[e].ObjectId)].Auslastung > 20) {
+                                    if (qPlayer.RentRouten.RentRouten[Routen(qPlan.Flug[e].ObjectId)].RoutenAuslastung > 20) {
                                         ULONG a = Routen[qPlan.Flug[e].ObjectId].VonCity;
                                         ULONG b = Routen[qPlan.Flug[e].ObjectId].NachCity;
 
