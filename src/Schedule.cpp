@@ -655,7 +655,8 @@ void CFlugplanEintrag::BookFlight(CPlane *Plane, SLONG PlayerNum) {
     Plane->SummePassagiere += PassagiereFC;
 
     // Insgesamt geflogene Meilen:
-    qPlayer.NumMiles += Cities.CalcDistance(VonCity, NachCity) / 1609;
+    SLONG miles = Cities.CalcDistance(VonCity, NachCity) / 1609;
+    qPlayer.NumMiles += miles;
 
     // Für den Statistik-Screen:
     if (ObjectType == 1 || ObjectType == 2) {
@@ -966,6 +967,16 @@ void CFlugplanEintrag::BookFlight(CPlane *Plane, SLONG PlayerNum) {
         Limit(SLONG(-1000), qPlayerX.Image, SLONG(1000));
     }
 
+    if (ObjectType == 1) {
+        hprintf("Schedule.cpp: %s: %s $ (+%s $)  (%ld miles, %u * %s $ + %u * %s $ from tickets)", (LPCTSTR)qPlayer.AirlineX,
+                (LPCTSTR)Insert1000erDots64(Saldo), (LPCTSTR)Insert1000erDots64(delta), miles, Passagiere, (LPCTSTR)Insert1000erDots(Ticketpreis), PassagiereFC,
+                (LPCTSTR)Insert1000erDots(TicketpreisFC));
+    } else {
+        hprintf("Schedule.cpp: %s: %s $ (+%s $)  (%ld miles, %u + %u passengers)", (LPCTSTR)qPlayer.AirlineX, (LPCTSTR)Insert1000erDots64(Saldo),
+                (LPCTSTR)Insert1000erDots64(delta), miles, Passagiere, PassagiereFC);
+    }
+    Helper::printFPE(*this);
+
     // Flugzeugabnutzung verbuchen:
     double faktorDistanz = (1 + 10.0 * Cities.CalcDistance(VonCity, NachCity) / 40040174);
     double faktorBaujahr = (2015 - Plane->Baujahr);
@@ -973,17 +984,19 @@ void CFlugplanEintrag::BookFlight(CPlane *Plane, SLONG PlayerNum) {
     // auto ZustandAlt = Plane->Zustand;
     if (KerosinGesamtQuali > 1.0) {
         faktorKerosin += 10 * (KerosinGesamtQuali - 1.0) * (KerosinGesamtQuali - 1.0);
-        hprintf("Player %li: Schlechtes Kerosin (%.2f) reduziert Flugzeugzustand um %d statt um %d", PlayerNum, KerosinGesamtQuali,
+        hprintf("Schedule.cpp: %s: Schlechtes Kerosin (%.2f) reduziert Flugzeugzustand um %d statt um %d", (LPCTSTR)qPlayer.AirlineX, KerosinGesamtQuali,
                 (int)(faktorDistanz * faktorBaujahr * faktorKerosin / 15), (int)(faktorDistanz * faktorBaujahr / 15));
     }
     auto ZustandAlt = Plane->Zustand;
     Plane->Zustand = UBYTE(Plane->Zustand - faktorDistanz * faktorBaujahr * faktorKerosin / 15);
-    hprintf("Player %li: Plane %s (%s): Zustand: %u => %u (worst = %u), faktorDistanz = %f, faktorBaujahr = %f, faktorKerosin = %f", PlayerNum,
-            (LPCTSTR)Plane->Name, (Plane->TypeId == -1) ? "Designer" : (LPCTSTR)PlaneTypes[Plane->TypeId].Name, ZustandAlt, Plane->Zustand, Plane->WorstZustand,
-            faktorDistanz, faktorBaujahr, faktorKerosin);
+    hprintf("Schedule.cpp: %s: Plane %s (%s): Zustand: %u => %u (worst = %u), faktorDistanz = %f, faktorBaujahr = %f, faktorKerosin = %f",
+            (LPCTSTR)qPlayer.AirlineX, (LPCTSTR)Plane->Name, (Plane->TypeId == -1) ? "Designer" : (LPCTSTR)PlaneTypes[Plane->TypeId].Name, ZustandAlt,
+            Plane->Zustand, Plane->WorstZustand, faktorDistanz, faktorBaujahr, faktorKerosin);
     if (Plane->Zustand > 200) {
         Plane->Zustand = 0;
     }
+
+    hprintf("");
 }
 
 //--------------------------------------------------------------------------------------------

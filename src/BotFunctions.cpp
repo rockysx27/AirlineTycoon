@@ -730,13 +730,13 @@ void Bot::updateRouteInfo() {
         mBuyPlaneForRouteId = mRoutes[mImproveRouteId].planeTypeId;
         /* if RoutesNextStep changes to something else, we won't reset
          * mBuyPlaneForRouteId so that we keep hiring new employees. */
-        hprintf("Bot::updateRouteInfo(): Need to buy another %s for route %s: ", (LPCTSTR)PlaneTypes[mBuyPlaneForRouteId].Name, routeName.c_str());
+        hprintf("Bot::updateRouteInfo(): Need to buy another %s for route %s", (LPCTSTR)PlaneTypes[mBuyPlaneForRouteId].Name, routeName.c_str());
         break;
     case RoutesNextStep::BuyAdsForRoute:
-        hprintf("Bot::updateRouteInfo(): Need to buy ads for route %s with image %ld: ", routeName.c_str(), mRoutes[mImproveRouteId].image);
+        hprintf("Bot::updateRouteInfo(): Need to buy ads for route %s with image %ld", routeName.c_str(), mRoutes[mImproveRouteId].image);
         break;
     case RoutesNextStep::UpgradePlanes:
-        hprintf("Bot::updateRouteInfo(): Need to upgrade planes of route %s: ", routeName.c_str());
+        hprintf("Bot::updateRouteInfo(): Need to upgrade planes of route %s", routeName.c_str());
         break;
     case RoutesNextStep::ImproveAirlineImage:
         hprintf("Bot::updateRouteInfo(): Need to improve airline image");
