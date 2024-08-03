@@ -609,6 +609,9 @@ class CRentRoute {
     SLONG RoutenAuslastung{};               // Soviel % des Routenbedarfes deckt man im Schnitt
     SLONG HeuteBefoerdert{};                // Soviele Passagiere haben wir heute hier befördert
     std::array<SLONG, 7> WocheBefoerdert{}; // Soviele Passagiere haben wir in den letzten 7 Tagen befördert
+    SLONG AuslastungBot{};                  // Auslastung mit anderer Filterkonstante für den Bot
+    SLONG AuslastungFirstClassBot{};        // Auslastung mit anderer Filterkonstante für den Bot
+    SLONG RoutenAuslastungBot{};            // Auslastung mit anderer Filterkonstante für den Bot
     UBYTE Image{};                          // Die Bekanntheit; beginnt bei 0, kann durch Werbung oder Geduld auf 100 gesteigert werden
     SLONG Miete{};                          // Soviel zahlt der Spieler wegen der Versteigerung
     SLONG Ticketpreis{};                    // Soviel kostet ein Ticket

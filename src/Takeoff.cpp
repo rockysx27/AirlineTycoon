@@ -243,18 +243,23 @@ BOOL CTakeOffApp::InitInstance(int argc, char *argv[]) {
         if (stricmp(Argument, "/quick") == 0) {
             CheatAutoSkip = 1;
             gQuickTestRun = 1;
+            gAutoBotDiff = 3;
+
             i++;
             if (i < argc) {
                 gQuickTestRun = 2 + atoi(argv[i]);
-                if (gQuickTestRun == 1) {
-                    gAutoQuitOnDay = 99; /* auto-quit in freegame */
-                }
+            }
+
+            if (gQuickTestRun == 1) {
+                gAutoQuitOnDay = 99; /* auto-quit in freegame */
             }
         }
         if (stricmp(Argument, "/testbot") == 0) {
+            gAutoBotDiff = 3;
+
             i++;
             if (i < argc) {
-                gAutoBotDiff = atoi(argv[i]);
+                // kDefaultTicketPriceFactor = atoi(argv[i]) / 10.0;
             }
         }
     }

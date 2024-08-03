@@ -821,6 +821,27 @@ void CFlugplanEintrag::BookFlight(CPlane *Plane, SLONG PlayerNum) {
             qRRoute.AuslastungFC = 0;
         }
 
+        //  MP: Auslastung der Route für den Bot:
+        {
+            if (Plane->MaxPassagiere > 0) {
+                auto ratio = Passagiere * 100 / Plane->MaxPassagiere;
+                if (qRRoute.AuslastungBot == 0) {
+                    qRRoute.AuslastungBot = ratio;
+                } else {
+                    qRRoute.AuslastungBot = (qRRoute.AuslastungBot + ratio) / 2;
+                }
+            }
+
+            if (Plane->MaxPassagiereFC > 0) {
+                auto ratio = PassagiereFC * 100 / Plane->MaxPassagiereFC;
+                if (qRRoute.AuslastungFirstClassBot == 0) {
+                    qRRoute.AuslastungFirstClassBot = ratio;
+                } else {
+                    qRRoute.AuslastungFirstClassBot = (qRRoute.AuslastungFirstClassBot + ratio) / 2;
+                }
+            }
+        }
+
         Routen[ObjectId].Bedarf -= Passagiere;
         if (Routen[ObjectId].Bedarf < 0) {
             Routen[ObjectId].Bedarf = 0;

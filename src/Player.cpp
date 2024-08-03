@@ -1476,6 +1476,16 @@ void PLAYER::NewDay() {
                 qRentRoute.RoutenAuslastung = 100;
             }
 
+            // MP: Berechne Auslastung der Route für den Bot
+            SLONG summe = 0;
+            for (SLONG i = 0; i < kRouteAvgDays; i++) {
+                summe += qRentRoute.WocheBefoerdert[i];
+            }
+            qRentRoute.RoutenAuslastungBot = summe * 100 / (Routen[c].AnzPassagiere() * kRouteAvgDays);
+            if (qRentRoute.RoutenAuslastungBot > 100) {
+                qRentRoute.RoutenAuslastungBot = 100;
+            }
+
             qRentRoute.HeuteBefoerdert = 0;
 
             if (qRentRoute.RoutenAuslastung < 10) {
@@ -1837,6 +1847,9 @@ void PLAYER::RouteWegnehmen(SLONG Routenindex, SLONG NeuerBesitzer) {
         qPlayer.RentRouten.RentRouten[Routenindex].LastFlown = 30;
         qPlayer.RentRouten.RentRouten[Routenindex].AvgFlown = 30;
         qPlayer.RentRouten.RentRouten[Routenindex].Auslastung = 0;
+        qPlayer.RentRouten.RentRouten[Routenindex].AuslastungFC = 0;
+        qPlayer.RentRouten.RentRouten[Routenindex].AuslastungBot = 0;
+        qPlayer.RentRouten.RentRouten[Routenindex].AuslastungFirstClassBot = 0;
 
         qPlayer.RentRouten.RentRouten[Routenindex].TageMitVerlust = 0;
 

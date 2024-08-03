@@ -1057,7 +1057,7 @@ void Bot::actionFindBestRoute() {
             const auto &qqPlayer = Sim.Players.Players[i];
             if (qqPlayer.IsOut == 0) {
                 const auto &qRentRoute = qqPlayer.RentRouten.RentRouten[c];
-                routeUtilization += qRentRoute.RoutenAuslastung;
+                routeUtilization += qRentRoute.RoutenAuslastungBot;
             }
         }
         if (routeUtilization > 0) {
@@ -1167,6 +1167,7 @@ void Bot::actionRentRoute() {
         return;
     }
     mRoutes.emplace_back(routeA, routeB, mPlaneTypeForNewRoute);
+    mRoutes.back().ticketCostFactor = kDefaultTicketPriceFactor;
     hprintf("Bot::actionRentRoute(): Renting route %s (using plane type %s): ", Helper::getRouteName(getRoute(mRoutes.back())).c_str(),
             (LPCTSTR)PlaneTypes[mPlaneTypeForNewRoute].Name);
     mPlaneTypeForNewRoute = -1;

@@ -648,7 +648,7 @@ void Bot::updateRouteInfo() {
     /* copy most import information from routes */
     for (auto &route : mRoutes) {
         route.image = getRentRoute(route).Image;
-        route.routeOwnUtilization = getRentRoute(route).RoutenAuslastung;
+        route.routeOwnUtilization = getRentRoute(route).RoutenAuslastungBot;
         route.routeUtilization = 0;
         for (SLONG i = 0; i < Sim.Players.Players.AnzEntries(); i++) {
             const auto &qqPlayer = Sim.Players.Players[i];
@@ -656,15 +656,15 @@ void Bot::updateRouteInfo() {
                 continue;
             }
             const auto &qRentRoute = qqPlayer.RentRouten.RentRouten[route.routeId];
-            route.routeUtilization += qRentRoute.RoutenAuslastung;
+            route.routeUtilization += qRentRoute.RoutenAuslastungBot;
 
-            if (qRentRoute.RoutenAuslastung > 0 && i != qPlayer.PlayerNum) {
+            if (qRentRoute.RoutenAuslastungBot > 0 && i != qPlayer.PlayerNum) {
                 hprintf("Bot::updateRouteInfo(): Route %s: We (%ld utilization) are competing with %s (%ld utilization)",
-                        Helper::getRouteName(getRoute(route)).c_str(), route.routeOwnUtilization, (LPCTSTR)qqPlayer.AirlineX, qRentRoute.RoutenAuslastung);
+                        Helper::getRouteName(getRoute(route)).c_str(), route.routeOwnUtilization, (LPCTSTR)qqPlayer.AirlineX, qRentRoute.RoutenAuslastungBot);
             }
         }
-        route.planeUtilization = getRentRoute(route).Auslastung;
-        route.planeUtilizationFC = getRentRoute(route).AuslastungFC;
+        route.planeUtilization = getRentRoute(route).AuslastungBot;
+        route.planeUtilizationFC = getRentRoute(route).AuslastungFirstClassBot;
 
         DOUBLE luxusSumme = 0;
         route.canUpgrade = false;
@@ -758,7 +758,7 @@ std::pair<Bot::RoutesNextStep, SLONG> Bot::routesNextStep() const {
     /* find route with lowest utilization that can be improved */
     int routeToImprove = -1;
     for (auto i : mRoutesSortedByOwnUtilization) {
-        if (mRoutes[i].routeUtilization < kMaximumRouteUtilization) {
+        if (mRoutes[i].routeUtilization < 90 && mRoutes[i].routeOwnUtilization < kMaximumRouteUtilization) {
             routeToImprove = i;
             break;
         }
@@ -969,6 +969,10 @@ void Bot::planRoutes() {
 
     /* adjust ticket prices */
     for (auto &qRoute : mRoutes) {
+        if (qRoute.planeIds.empty()) {
+            continue;
+        }
+
         SLONG priceOld = getRentRoute(qRoute).Ticketpreis;
         DOUBLE factorOld = qRoute.ticketCostFactor;
         SLONG costs = CalculateFlightCost(getRoute(qRoute).VonCity, getRoute(qRoute).NachCity, 800, 800, -1) * 3 / 180 * 2;
