@@ -4538,6 +4538,8 @@ void PLAYER::RobotExecuteAction() {
                 SLONG targetMode = 0;
                 GameMechanic::CheckSabotage ret = {};
 
+                GameMechanic::setSaboteurTarget(*this, dislike);
+
                 for (SLONG pass = 1; pass <= 2 + 3 * static_cast<SLONG>(RobotUse(ROBOT_USE_EXTREME_SABOTAGE)); pass++) {
                     switch (Sim.GetHour() % 3) {
                     case 0:
@@ -7416,10 +7418,10 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
         break;
     case ROBOT_USE_ROUTES:
         /* SuperBot: Respects this flag */
-        pFeatureDesc = "---XXX"
+        pFeatureDesc = "---X-X"
                        "X"
-                       "X--XXX-X-X"
-                       "----------";
+                       "----XX-X-X"
+                       "XXXXXXXXXX";
         break;
     case ROBOT_USE_SUGGESTROUTES:
         /* SuperBot: Ignores this flag (what is the difference to ROBOT_USE_ROUTEMISSION?) */
