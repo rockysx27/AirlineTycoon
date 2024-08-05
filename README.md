@@ -37,19 +37,18 @@ Statistics screen:
 * Showing far more categories where money was spent
 * Accurate summation of money spent
    * Fixed many bugs where especially money earned / spent by competitor would not show up in balance
-* Information visible depends on skill of financial advisor (for yourself) or skill of spy (competitors)
-* Unlimited statistics: Store statistics data for each day without limit
+* Whether or not values are shown depends on skill of financial advisor (for your airline) or skill of spy (regarding competitors)
+* Unlimited statistics: Store statistics data for each day since beginning of the game
 * Fix rendering of graph when zooming out
 * Fix display of mission target
 * Added more categories to statistics: Number of freight jobs, total tons transported and income from freight jobs
 
 Information menu:
-* Much more information on balance sheet
-* New financial summary
-* Showing multiple balance sheets for day / week / overall
-* Showing business operations and operating balance
+* Much more information on balance sheet depending on skill of your financial advisor
+* New financial summary for quick assessment of the financial health of your airline (e.g. operating profit)
+* Multiple balance sheets (for previous day / week / overall)
 * More information from spy (e.g. weekly balance and financial summary for each competitor)
-* Showing information from kerosene advisor (quality/value of kerosene, money saved through tanks)
+* Detailed information from kerosene advisor (quality / value of kerosene, money saved by using tanks)
 
 Keyboard navigation:
 * Allow Enter/Backspace in calculator
@@ -64,20 +63,20 @@ Keyboard navigation:
 
 Employees:
 * More pilots/attendants available for hire
-* Slightly increase competence of randomly generated employees
+* Slightly increase competence of randomly generated personal
 * Generate randomized advisors as well
-* Replace employees if not hired within 7 days
-* Sort list by skill
+* Regenerate unemployed personal if not hired within 7 days (prevents buildup of low-skill personal in long games)
+* List automatically sorted by skill
 * Update worker happiness based on salary
     * Chance to increase/decrease happiness each day based on how much salary is higher/lower than original salary
-* The 10% change when increasing/decreasing salary now always refers to 10% of original salary
+* The 10% change when increasing/decreasing salary now always refers to the original salary
 * Regularly increase worker happiness if company image is great
 
 Kerosene:
-* Impact of bad kerosene depends on ratio of bad kerosene in tank
-* Do not remember selected kerosene quality for auto purchase
-* Adjust impact of bad kerosene: Quadratic function now
-    * Strong increase in plane damage due to bad kerosene
+* Do not remember selected kerosene quality for auto purchase (was an undocumented and convoluted 'feature')
+* Adjust impact of bad kerosene:
+    * Depends on ratio of bad kerosene in tank (quadratic function now instead of yes/no)
+    * Amount of plane damage due to bad kerosene increased
     * Not so easy anymore to save enormous amounts of money, but still possible to save a little
 * Offer much larger kerosene tanks
 * Kerosene advisor gives hints to save money
@@ -103,14 +102,14 @@ Bug fixes:
     * All cost will show up in plane repair cost total
     * Always rotate list of plane saldo for past 7 days
 * Consider also number of first class passengers for statistics
-* Do not show route utilization by defeated players
+* Do not show route utilization for defeated players
 * Fixed random crash (during checking of flight plans)
 * Bug fixed in calculation in maximum amount of stock that can be emitted
-    * Bug limited max amount of stock to around 2.1 Mio
-    * Buffer overflow is fixed now, but the originally intended limit of 250 Mio. was changed to 2.5 Mio.
-* Fixed counting of Uhrig flights for mission 9th addon mission
-* Fixed game moving flights automatically that are already locked
-    * Could previously cause double-booking of flights
+    * Bug limited max amount of stock to around 2.1 million
+    * Intger overflow is fixed now, but the originally intended limit of 250 million was changed to 2.5 million
+* Fixed counting of Uhrig flights for 9th addon mission
+* Fixed game shifting flights on its own even if they are already locked
+    * Could previously cause double-booking of flights (income and cost booked twice)
 * Fixed crash in plane designer when attaching enginges to left side of tail
 
 AI:
@@ -126,6 +125,8 @@ AI:
     * Align calculation of arab trust for player and computer
 * Remove strange reduction of flight cost in calculation of image change (was a disadvantage for computer player)
 * Computer player pays real cost for plane upgrades
+* Fixed bug that prevented computer players from using routes in most games
+    * Computer players will switch to routes in most games eventually
 
 Misc:
 * Reduce (~ half) cost of plane security upgrades
@@ -140,4 +141,4 @@ Misc:
 * Change tooltip of savegames (number of days played)
 * Implement actual random generator using Mersenne twister
 * Company value includes value of kerosene stored in tanks and tanks themselves
-
+* Company value includes value of plane upgrades
