@@ -2050,7 +2050,7 @@ class PLAYER {
     SLONG NumAuftraege{};  // Zahl der geflogenen Aufträge
     SLONG NumPassengers{}; // Zahl der Passagieren, die man befördert hat
     __int64 Gewinn{};
-    SLONG ConnectFlags{};          // Flags für Städte, die verbunden wurden
+    SLONG NumMissionRoutes{};      // Flags für Städte, die verbunden wurden
     SLONG RocketFlags{};           // Flags für die Raketenbauteile
     SLONG LastRocketFlags{};       // Vom Tag davor
     SLONG NumFracht{};             // Soviele tonnnen wurden bisher transportiert

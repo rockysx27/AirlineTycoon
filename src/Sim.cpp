@@ -736,7 +736,7 @@ void SIM::ChooseStartup() {
         qPlayer.NumPassengers = 0;
         qPlayer.NumAuftraege = 0;
         qPlayer.Gewinn = 0;
-        qPlayer.ConnectFlags = 0;
+        qPlayer.NumMissionRoutes = 0;
         qPlayer.RocketFlags = 0;
         qPlayer.LastRocketFlags = 0;
         qPlayer.SpeedCount = 0;

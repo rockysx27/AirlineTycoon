@@ -944,7 +944,7 @@ SLONG PLAYER::GetMissionRating(bool bAnderer) {
         break;
 
     case DIFF_NORMAL:
-        return (ConnectFlags);
+        return (NumMissionRoutes);
         break;
 
     case DIFF_HARD:
@@ -1192,6 +1192,8 @@ SLONG PLAYER::GetMissionRating(bool bAnderer) {
 // Did this player win the mission?
 //------------------------------------------------------------------------------
 BOOL PLAYER::HasWon() {
+    auto MissionRating = GetMissionRating();
+
     if (Sim.Difficulty == DIFF_TUTORIAL && NumAuftraege >= 10) {
         return (TRUE);
     }
@@ -1201,7 +1203,7 @@ BOOL PLAYER::HasWon() {
     if (Sim.Difficulty == DIFF_EASY && Gewinn >= TARGET_GEWINN) {
         return (TRUE);
     }
-    if (Sim.Difficulty == DIFF_NORMAL && ConnectFlags >= TARGET_FLAGS) {
+    if (Sim.Difficulty == DIFF_NORMAL && NumMissionRoutes >= TARGET_FLAGS) {
         return (TRUE);
     }
     if (Sim.Difficulty == DIFF_HARD && Image >= TARGET_IMAGE) {
@@ -1210,7 +1212,7 @@ BOOL PLAYER::HasWon() {
     if (Sim.Difficulty == DIFF_FINAL && GetAnzBits(RocketFlags) >= 10) {
         return (TRUE);
     }
-    if (Sim.Difficulty == DIFF_ADDON01 && GetMissionRating() == 0) {
+    if (Sim.Difficulty == DIFF_ADDON01 && MissionRating == 0) {
         return (TRUE);
     }
     if (Sim.Difficulty == DIFF_ADDON02 && NumFracht >= TARGET_FRACHT) {
@@ -1248,19 +1250,16 @@ BOOL PLAYER::HasWon() {
         return (TRUE);
     }
     if (Sim.Difficulty == DIFF_ADDON07) {
-        if (Planes.GetNumUsed() < 2) {
-            return (FALSE);
-        }
-
+        SLONG anz = 0;
         for (SLONG d = 0; d < Planes.AnzEntries(); d++) {
             if (Planes.IsInAlbum(d) != 0) {
-                if (Planes[d].Zustand < 90) {
-                    return (FALSE);
+                if (Planes[d].Zustand >= 90) {
+                    anz++;
                 }
             }
         }
 
-        return (TRUE);
+        return (anz >= 2);
     }
     if (Sim.Difficulty == DIFF_ADDON08 && Kurse[0] >= TARGET_SHARES) {
         return (TRUE);
@@ -1275,22 +1274,22 @@ BOOL PLAYER::HasWon() {
     if (Sim.Difficulty == DIFF_ATFS01 && Money >= BTARGET_KONTO) {
         return (TRUE);
     }
-    if (Sim.Difficulty == DIFF_ATFS02 && Planes.GetNumUsed() >= 5 && GetMissionRating() >= Planes.GetNumUsed()) {
+    if (Sim.Difficulty == DIFF_ATFS02 && MissionRating >= 5) {
         return (TRUE);
     }
-    if (Sim.Difficulty == DIFF_ATFS03 && Planes.GetNumUsed() >= 4 && GetMissionRating() >= BTARGET_PASSAVG) {
+    if (Sim.Difficulty == DIFF_ATFS03 && Planes.GetNumUsed() >= 4 && MissionRating >= BTARGET_PASSAVG) {
         return (TRUE);
     }
     if (Sim.Difficulty == DIFF_ATFS04 && Planes.GetNumUsed() >= 5 && DaysWithoutSabotage >= BTARGET_DAYSSABO) {
         return (TRUE);
     }
     if (Sim.Difficulty == DIFF_ATFS05) {
-        return static_cast<BOOL>(GetMissionRating() >= 3);
+        return static_cast<BOOL>(MissionRating >= 3);
     }
     if (Sim.Difficulty == DIFF_ATFS06 && Planes.GetNumUsed() >= 5 && DaysWithoutSabotage >= BTARGET_DAYSSABO) {
         return (TRUE);
     }
-    if (Sim.Difficulty == DIFF_ATFS07 && GetMissionRating() >= BTARGET_KURS) {
+    if (Sim.Difficulty == DIFF_ATFS07 && MissionRating >= BTARGET_KURS) {
         for (SLONG c = 0; c <= 29; c++) {
             auto anz = Statistiken[STAT_AKTIEN_SA + PlayerNum].GetAtPastDay(c);
             auto gesamt = Statistiken[STAT_AKTIEN_ANZAHL].GetAtPastDay(c);
@@ -1302,7 +1301,7 @@ BOOL PLAYER::HasWon() {
         return (TRUE);
     }
     if (Sim.Difficulty == DIFF_ATFS08) {
-        return static_cast<BOOL>(GetMissionRating() >= 5);
+        return static_cast<BOOL>(MissionRating >= 5);
     }
     if (Sim.Difficulty == DIFF_ATFS09) {
         for (SLONG c = 0; c < 4; c++) {
@@ -4061,7 +4060,7 @@ void PLAYER::RobotExecuteAction() {
                 if (Image < 150) {
                     WantToDoRoutes = TRUE;
 
-                    if (GetAnzBits(Sim.Players.Players[Sim.localPlayer].ConnectFlags) > PlayerNum) {
+                    if (Sim.Players.Players[Sim.localPlayer].NumMissionRoutes > PlayerNum) {
                         DoRoutes = TRUE;
                     }
                 } else {
@@ -6394,7 +6393,7 @@ void PLAYER::UpdateStatistics() {
         break;
 
     case DIFF_NORMAL:
-        Statistiken[STAT_MISSIONSZIEL].SetAtPastDay(ConnectFlags * 100 / TARGET_FLAGS);
+        Statistiken[STAT_MISSIONSZIEL].SetAtPastDay(NumMissionRoutes * 100 / TARGET_FLAGS);
         break;
 
     case DIFF_HARD:
@@ -6411,10 +6410,6 @@ void PLAYER::UpdateStatistics() {
 
     case DIFF_ADDON05:
         Statistiken[STAT_MISSIONSZIEL].SetAtPastDay(NumServicePoints * 100 / TARGET_SERVICE);
-        break;
-
-    case DIFF_ADDON07:
-        Statistiken[STAT_MISSIONSZIEL].SetAtPastDay(GetMissionRating());
         break;
 
     case DIFF_ADDON08:
@@ -6451,10 +6446,6 @@ void PLAYER::UpdateStatistics() {
 
     case DIFF_ATFS06:
         Statistiken[STAT_MISSIONSZIEL].SetAtPastDay(DaysWithoutSabotage * 100 / BTARGET_DAYSSABO);
-        break;
-
-    case DIFF_ATFS07:
-        Statistiken[STAT_MISSIONSZIEL].SetAtPastDay(GetMissionRating());
         break;
 
     case DIFF_ATFS08:
@@ -7071,7 +7062,7 @@ TEAKFILE &operator<<(TEAKFILE &File, const PLAYER &Player) {
     }
 
     File << Player.HasFlownRoutes << Player.NumPassengers << Player.NumAuftraege;
-    File << Player.Gewinn << Player.ConnectFlags;
+    File << Player.Gewinn << Player.NumMissionRoutes;
     File << Player.RocketFlags << Player.LastRocketFlags;
     File << Player.Statistiken;
 
@@ -7254,7 +7245,7 @@ TEAKFILE &operator>>(TEAKFILE &File, PLAYER &Player) {
     }
 
     File >> Player.HasFlownRoutes >> Player.NumPassengers >> Player.NumAuftraege;
-    File >> Player.Gewinn >> Player.ConnectFlags;
+    File >> Player.Gewinn >> Player.NumMissionRoutes;
     File >> Player.RocketFlags >> Player.LastRocketFlags;
     File >> Player.Statistiken;
 
