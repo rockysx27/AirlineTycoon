@@ -111,6 +111,12 @@ Bug fixes:
 * Fixed game shifting flights on its own even if they are already locked
     * Could previously cause double-booking of flights (income and cost booked twice)
 * Fixed crash in plane designer when attaching enginges to left side of tail
+* Timeout for sabotage: Jobs cancelled if it was not possible to execute job for some time
+    * Can happen if selected plane is not used anymore by owner
+    * Without this fix in a situation like this the player would never be able to use sabotage again
+* Fixed bug where player can 'survive' being overtaken by skipping dialog at the right moment
+* Use correct route utilization for 4th classic mission
+    * Previously, even though boss said that routes must be 20% utilized, game would check for 20% plane utilization
 
 AI:
 * Uses now same credit limit
@@ -127,6 +133,8 @@ AI:
 * Computer player pays real cost for plane upgrades
 * Fixed bug that prevented computer players from using routes in most games
     * Computer players will switch to routes in most games eventually
+    * Regular computer players however use a small cheat that regularly improved their image
+* Fixed bug where computer player buys or sells more stock than available
 
 Misc:
 * Reduce (~ half) cost of plane security upgrades
@@ -142,3 +150,5 @@ Misc:
 * Implement actual random generator using Mersenne twister
 * Company value includes value of kerosene stored in tanks and tanks themselves
 * Company value includes value of plane upgrades
+  Company value includes value of airline image (money required to reach current image)
+* Make planes in main menu comically long
