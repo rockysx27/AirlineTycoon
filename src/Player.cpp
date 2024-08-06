@@ -224,9 +224,11 @@ void PLAYER::ChangeMoney(__int64 Money, SLONG Reason, const CString &Par1, char 
 
     if (PlayerNum == 3) {
         if (Money > 0) {
-            hprintf("ChangeMoney: player %li: Erhält %s $ wegen %li", PlayerNum, (LPCTSTR)Insert1000erDots(Money), Reason);
+            hprintf("ChangeMoney: %s: Erhält %s $ wegen %s (%ld)", (LPCTSTR)AirlineX, (LPCTSTR)Insert1000erDots(Money),
+                    (LPCTSTR)bprintf(StandardTexte.GetS(TOKEN_MONEY, Reason), (LPCTSTR)Par1, Par2), Reason);
         } else if (Money < 0) {
-            hprintf("ChangeMoney: player %li: Gibt %s $ für %li aus", PlayerNum, (LPCTSTR)Insert1000erDots(-Money), Reason);
+            hprintf("ChangeMoney: %s: Gibt %s $ für %s (%ld) aus", (LPCTSTR)AirlineX, (LPCTSTR)Insert1000erDots(-Money),
+                    (LPCTSTR)bprintf(StandardTexte.GetS(TOKEN_MONEY, Reason), (LPCTSTR)Par1, Par2), Reason);
         }
     }
 
@@ -1721,8 +1723,8 @@ void PLAYER::NewDay() {
                     }
 
                     SLONG delta = salary + costImprovement + costRepairs;
-                    hprintf("Player.cpp: Repair of plane %s (%u => %u; worst %u => %u) costs: %ld+%ld+%ld=%ld", (LPCTSTR)Planes[c].Name, OldZustand,
-                            Planes[c].Zustand, OldWorst, Planes[c].WorstZustand, salary, costImprovement, costRepairs, delta);
+                    hprintf("Player.cpp: %s: Repair of plane %s (%u => %u; worst %u => %u) costs: %ld+%ld+%ld=%ld", (LPCTSTR)AirlineX, (LPCTSTR)Planes[c].Name,
+                            OldZustand, Planes[c].Zustand, OldWorst, Planes[c].WorstZustand, salary, costImprovement, costRepairs, delta);
                     if (delta < 0) {
                         delta = 0;
                         redprintf("Player.cpp: Repair cost for Player %li negative!", PlayerNum);
