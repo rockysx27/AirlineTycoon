@@ -491,21 +491,23 @@ Bot::Prio Bot::condUpgradePlanes() {
         return Prio::None; /* office is destroyed */
     }
 
-    bool nearEnd = (mRunToFinalObjective > FinalPhase::No);
-    if (qPlayer.RobotUse(ROBOT_USE_LUXERY) && nearEnd) { /* mission where final objective is plane upgrades */
-        if (mRunToFinalObjective == FinalPhase::SaveMoney) {
-            return Prio::None;
-        }
-    } else {
-        if (nearEnd) {
-            return Prio::None;
-        }
+    if (mRunToFinalObjective == FinalPhase::SaveMoney) {
+        return Prio::None;
+    }
+
+    if (mRunToFinalObjective == FinalPhase::No) {
         if (!haveDiscount()) {
             return Prio::None; /* wait until we have some discount */
         }
         if (RoutesNextStep::UpgradePlanes != mRoutesNextStep) {
             return Prio::None;
         }
+    } else if (mRunToFinalObjective == FinalPhase::TargetRun) {
+        if (!qPlayer.RobotUse(ROBOT_USE_LUXERY)) { /* unless mission is plane upgrades */
+            return Prio::None;
+        }
+    } else {
+        assert(false);
     }
 
     /* Plane upgrades happen asynchronously. Therefore, we earmark money in the variable mMoneyReservedForUpgrades.

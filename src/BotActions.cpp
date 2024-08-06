@@ -188,7 +188,7 @@ void Bot::actionUpgradePlanes() {
         planes = getAllPlanes();
     }
 
-    bool onlySecurity = (Sim.Difficulty == DIFF_ATFS02);
+    bool onlySecurity = (Sim.Difficulty == DIFF_ATFS02) && (mRunToFinalObjective == FinalPhase::TargetRun);
 
     /* cancel all currently planned plane ugprades */
     mMoneyReservedForUpgrades = 0;
