@@ -91,6 +91,7 @@ CString getWeekday(const PlaneTime &time);
 struct FreightInfo {
     std::vector<CString> planeNames;
     std::vector<SLONG> tonsPerPlane;
+    std::vector<CFlugplanEintrag> FPEs;
     SLONG tonsOpen{0};
     SLONG smallestDecrement{INT_MAX};
 };

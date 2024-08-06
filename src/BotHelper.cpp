@@ -293,6 +293,7 @@ SLONG _checkPlaneSchedule(const PLAYER &qPlayer, const CPlane &qPlane, std::unor
                 SLONG tons = qPlane.ptPassagiere / 10;
                 freightTons[id].planeNames.push_back(qPlane.Name);
                 freightTons[id].tonsPerPlane.push_back(tons);
+                freightTons[id].FPEs.push_back(qFPE);
                 freightTons[id].tonsOpen -= tons;
                 freightTons[id].smallestDecrement = std::min(freightTons[id].smallestDecrement, tons);
             }
@@ -494,21 +495,24 @@ SLONG checkFlightJobs(const PLAYER &qPlayer, bool alwaysPrint, bool verboseInfo)
     for (const auto &iter : freightTons) {
         const auto &qAuftrag = qPlayer.Frachten[iter.first];
         const auto &info = iter.second;
-        std::stringstream ss;
-        for (SLONG i = 0; i < info.planeNames.size(); i++) {
-            ss << info.tonsPerPlane[i] << "t on " << info.planeNames[i].c_str();
-            if (i < info.planeNames.size() - 1) {
 
-                ss << ", ";
-            }
-        }
+        bool printInfo = false;
         if (info.tonsOpen > 0) {
-            redprintf("Helper::checkPlaneSchedule(): There are still %d tons open for job %s (%s)", info.tonsOpen, getFreightName(qAuftrag).c_str(),
-                      ss.str().c_str());
+            printInfo = true;
+            redprintf("Helper::checkPlaneSchedule(): There are still %d tons open for job %s", info.tonsOpen, getFreightName(qAuftrag).c_str());
         }
         if ((-info.tonsOpen) >= info.smallestDecrement) {
-            redprintf("Helper::checkPlaneSchedule(): At least one instance of job %s (%s) can be removed (overscheduled: %ld, smallest: %ld)",
-                      getFreightName(qAuftrag).c_str(), ss.str().c_str(), (-info.tonsOpen), info.smallestDecrement);
+            printInfo = true;
+            redprintf("Helper::checkPlaneSchedule(): At least one instance of job %s can be removed (overscheduled: %ld, smallest: %ld)",
+                      getFreightName(qAuftrag).c_str(), (-info.tonsOpen), info.smallestDecrement);
+        }
+
+        if (printInfo) {
+            assert(info.planeNames.size() == info.FPEs.size());
+            for (SLONG i = 0; i < info.FPEs.size(); i++) {
+                hprintf("%ld t on %s:", info.tonsPerPlane[i], info.planeNames[i].c_str());
+                Helper::printFPE(info.FPEs[i]);
+            }
         }
     }
 
