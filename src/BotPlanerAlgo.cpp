@@ -288,7 +288,7 @@ int BotPlaner::applySolutionToGraph() {
             }
 
             if (qFPE.Okay != 0) {
-                redprintf("BotPlaner::applySolutionToGraph(): Not scheduled correctly, skipping: %ld", qFPE.ObjectId);
+                orangeprintf("BotPlaner::applySolutionToGraph(): Not scheduled correctly, skipping: %ld", qFPE.ObjectId);
                 skippedNode = true;
                 numJobsSkipped++;
                 continue;
@@ -877,12 +877,12 @@ bool BotPlaner::algo(int64_t timeBudget) {
     int numJobsSkipped = applySolutionToGraph();
     if (numJobsSkipped > 0) {
         existingSolutionsHasProblems = true;
-        redprintf("BotPlaner::algo(): Existing plane schedules had problems: %d jobs skipped", numJobsSkipped);
+        orangeprintf("BotPlaner::algo(): Existing plane schedules had problems: %d jobs skipped", numJobsSkipped);
     }
     int nRemoved = runPruneFreightJobs();
     if (nRemoved > 0) {
         existingSolutionsHasProblems = true;
-        redprintf("BotPlaner::algo(): Existing plane schedules had problems: %d freight jobs pruned", nRemoved);
+        orangeprintf("BotPlaner::algo(): Existing plane schedules had problems: %d freight jobs pruned", nRemoved);
     }
 
     /* save pre-existing solution */

@@ -215,8 +215,8 @@ SLONG _checkPlaneSchedule(const PLAYER &qPlayer, const CPlane &qPlane, std::unor
 
             if (qFPE.Okay != 0) {
                 nIncorrect++;
-                redprintf("Helper::checkPlaneSchedule(): Route (%s) for plane %s is not scheduled correctly", getRouteName(qAuftrag).c_str(),
-                          (LPCTSTR)qPlane.Name);
+                orangeprintf("Helper::checkPlaneSchedule(): Route (%s) for plane %s is not scheduled correctly", getRouteName(qAuftrag).c_str(),
+                             (LPCTSTR)qPlane.Name);
             }
 
             if (qPlane.ptReichweite * 1000 < Cities.CalcDistance(qAuftrag.VonCity, qAuftrag.NachCity)) {
@@ -255,7 +255,8 @@ SLONG _checkPlaneSchedule(const PLAYER &qPlayer, const CPlane &qPlane, std::unor
 
             if (qFPE.Okay != 0) {
                 nIncorrect++;
-                redprintf("Helper::checkPlaneSchedule(): Job (%s) for plane %s is not scheduled correctly", getJobName(qAuftrag).c_str(), (LPCTSTR)qPlane.Name);
+                orangeprintf("Helper::checkPlaneSchedule(): Job (%s) for plane %s is not scheduled correctly", getJobName(qAuftrag).c_str(),
+                             (LPCTSTR)qPlane.Name);
             }
 
             if (qPlane.ptReichweite * 1000 < Cities.CalcDistance(qAuftrag.VonCity, qAuftrag.NachCity)) {
@@ -271,8 +272,8 @@ SLONG _checkPlaneSchedule(const PLAYER &qPlayer, const CPlane &qPlane, std::unor
 
             if (qFPE.Startdate > qAuftrag.BisDate) {
                 nIncorrect++;
-                redprintf("Helper::checkPlaneSchedule(): Job (%s) starts too late (%s instead of %s) for plane %s", getJobName(qAuftrag).c_str(),
-                          (LPCTSTR)getWeekday(qFPE.Startdate), (LPCTSTR)getWeekday(qAuftrag.BisDate), (LPCTSTR)qPlane.Name);
+                orangeprintf("Helper::checkPlaneSchedule(): Job (%s) starts too late (%s instead of %s) for plane %s", getJobName(qAuftrag).c_str(),
+                             (LPCTSTR)getWeekday(qFPE.Startdate), (LPCTSTR)getWeekday(qAuftrag.BisDate), (LPCTSTR)qPlane.Name);
             }
 
             if (qPlane.ptPassagiere < SLONG(qAuftrag.Personen)) {
@@ -305,8 +306,8 @@ SLONG _checkPlaneSchedule(const PLAYER &qPlayer, const CPlane &qPlane, std::unor
 
             if (qFPE.Okay != 0) {
                 nIncorrect++;
-                redprintf("Helper::checkPlaneSchedule(): Freight job (%s) for plane %s is not scheduled correctly", getFreightName(qAuftrag).c_str(),
-                          (LPCTSTR)qPlane.Name);
+                orangeprintf("Helper::checkPlaneSchedule(): Freight job (%s) for plane %s is not scheduled correctly", getFreightName(qAuftrag).c_str(),
+                             (LPCTSTR)qPlane.Name);
             }
 
             if (qPlane.ptReichweite * 1000 < Cities.CalcDistance(qAuftrag.VonCity, qAuftrag.NachCity)) {
@@ -322,8 +323,8 @@ SLONG _checkPlaneSchedule(const PLAYER &qPlayer, const CPlane &qPlane, std::unor
 
             if (qFPE.Startdate > qAuftrag.BisDate) {
                 nIncorrect++;
-                redprintf("Helper::checkPlaneSchedule(): Freight job (%s) starts too late (%s instead of %s) for plane %s", getFreightName(qAuftrag).c_str(),
-                          (LPCTSTR)getWeekday(qFPE.Startdate), (LPCTSTR)getWeekday(qAuftrag.BisDate), (LPCTSTR)qPlane.Name);
+                orangeprintf("Helper::checkPlaneSchedule(): Freight job (%s) starts too late (%s instead of %s) for plane %s", getFreightName(qAuftrag).c_str(),
+                             (LPCTSTR)getWeekday(qFPE.Startdate), (LPCTSTR)getWeekday(qAuftrag.BisDate), (LPCTSTR)qPlane.Name);
             }
         }
     }

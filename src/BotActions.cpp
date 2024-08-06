@@ -1192,7 +1192,7 @@ void Bot::actionRentRoute() {
 
 void Bot::actionBuyAdsForRoutes(__int64 moneyAvailable) {
     if (mRoutesNextStep != RoutesNextStep::BuyAdsForRoute) {
-        redprintf("Bot::actionBuyAdsForRoutes(): Conditions not met anymore.");
+        orangeprintf("Bot::actionBuyAdsForRoutes(): Conditions not met anymore.");
         return;
     }
 

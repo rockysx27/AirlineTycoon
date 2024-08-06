@@ -70,6 +70,20 @@ void HDU::HercPrintfRed(const char *format, ...) {
     fflush(Log);
 }
 
+void HDU::HercPrintfOrange(const char *format, ...) {
+    if (Log == nullptr) {
+        return;
+    }
+    static SLONG numWarnings = 0;
+    fprintf(Log, "\e[1;33mWARN %d: ", numWarnings++);
+    va_list args;
+    va_start(args, format);
+    vfprintf(Log, format, args);
+    va_end(args);
+    fprintf(Log, "\e[m\n");
+    fflush(Log);
+}
+
 void HDU::HercPrintfGreen(const char *format, ...) {
     if (Log == nullptr) {
         return;

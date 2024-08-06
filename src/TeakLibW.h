@@ -865,6 +865,7 @@ class HDU {
     void HercPrintf(SLONG, const char *Format, ...);
     void HercPrintf(const char *Format, ...);
     void HercPrintfRed(const char *Format, ...);
+    void HercPrintfOrange(const char *Format, ...);
     void HercPrintfGreen(const char *Format, ...);
     void LogPosition(const char *, SLONG);
 
@@ -877,6 +878,7 @@ extern HDU Hdu;
 #define hprintf Hdu.HercPrintf
 #define hprintvar(x) Hdu.HercPrintf("%d\n", x)
 #define redprintf Hdu.HercPrintfRed
+#define orangeprintf Hdu.HercPrintfOrange
 #define greenprintf Hdu.HercPrintfGreen
 
 class XID {

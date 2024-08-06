@@ -450,11 +450,11 @@ void Bot::planFlights() {
     SLONG newGain = calcCurrentGainFromJobs();
     SLONG diff = newGain - oldGain;
     if (diff > 0) {
-        hprintf("Total gain improved: %s $ (+%s $)", Insert1000erDots(newGain).c_str(), Insert1000erDots(diff).c_str());
+        hprintf("Bot::planFlights(): Total gain improved: %s $ (+%s $)", Insert1000erDots(newGain).c_str(), Insert1000erDots(diff).c_str());
     } else if (diff == 0) {
-        hprintf("Total gain did not change: %s $", Insert1000erDots(newGain).c_str());
+        hprintf("Bot::planFlights(): Total gain did not change: %s $", Insert1000erDots(newGain).c_str());
     } else {
-        hprintf("Total gain got worse: %s $ (%s $)", Insert1000erDots(newGain).c_str(), Insert1000erDots(diff).c_str());
+        hprintf("Bot::planFlights(): Total gain got worse: %s $ (%s $)", Insert1000erDots(newGain).c_str(), Insert1000erDots(diff).c_str());
     }
     Helper::checkFlightJobs(qPlayer, false, true);
 
@@ -486,8 +486,8 @@ void Bot::planFlights() {
         num++;
     }
     if (mMoneyReservedForFines > 0) {
-        redprintf("Bot::planFlights(): %ld jobs not planned, need to reserve %s $ for future fines, available money: %s $", num,
-                  (LPCTSTR)Insert1000erDots64(mMoneyReservedForFines), (LPCTSTR)Insert1000erDots64(getMoneyAvailable()));
+        orangeprintf("Bot::planFlights(): %ld jobs not planned, need to reserve %s $ for future fines, available money: %s $", num,
+                     (LPCTSTR)Insert1000erDots64(mMoneyReservedForFines), (LPCTSTR)Insert1000erDots64(getMoneyAvailable()));
     }
 
     forceReplanning();

@@ -2,6 +2,8 @@
 #include "AtNet.h"
 #include "Sabotage.h"
 
+#include "BotHelper.h"
+
 #include <array>
 
 SLONG TankSize[4] = {100000, 1000000, 10000000, 100000000};
@@ -2948,18 +2950,26 @@ void GameMechanic::executeSabotageMode1() {
             }
 
             SLONG e = qPlane.Flugplan.NextStart;
+            hprintf("Moving for tire sabotage:");
+            Helper::printFPE(qPlane.Flugplan.Flug[e]);
 
             qPlane.Flugplan.Flug[e].Startzeit++;
+            qPlane.Flugplan.Flug[e].Landezeit++;
+            if (qPlane.Flugplan.Flug[e].Startzeit == 24) {
+                qPlane.Flugplan.Flug[e].Startzeit = 0;
+                qPlane.Flugplan.Flug[e].Startdate++;
+            }
+            if (qPlane.Flugplan.Flug[e].Landezeit == 24) {
+                qPlane.Flugplan.Flug[e].Landezeit = 0;
+                qPlane.Flugplan.Flug[e].Landedate++;
+            }
+
             qPlane.Flugplan.UpdateNextFlight();
             qPlane.Flugplan.UpdateNextStart();
             if (!bFremdsabotage) {
                 qPlayer.Statistiken[STAT_VERSPAETUNG].AddAtPastDay(1);
             }
 
-            if (qPlane.Flugplan.Flug[e].Startzeit == 24) {
-                qPlane.Flugplan.Flug[e].Startzeit = 0;
-                qPlane.Flugplan.Flug[e].Startdate++;
-            }
             qPlane.CheckFlugplaene(qPlayer.ArabOpfer);
             qOpfer.UpdateAuftragsUsage();
             qOpfer.UpdateFrachtauftragsUsage();
