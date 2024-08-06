@@ -91,7 +91,8 @@ class GameMechanic {
     /* HR */
     static void increaseAllSalaries(PLAYER &qPlayer);
     static void decreaseAllSalaries(PLAYER &qPlayer);
-    enum class EndStrikeMode { Salary, Threat, Drunk };
+    static void planStrike(PLAYER &qPlayer);
+    enum class EndStrikeMode { Salary, Threat, Drunk, Waiting };
     static void endStrike(PLAYER &qPlayer, EndStrikeMode mode);
 
     /* Ads */

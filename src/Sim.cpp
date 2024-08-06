@@ -1508,7 +1508,7 @@ void SIM::DoTimeStep() {
                          qPlayer.DaysWithoutStrike > 7) ||
                         (Workers.GetAverageHappyness(localPlayer) - static_cast<SLONG>(Workers.GetMinHappyness(localPlayer) < 0) * 10 < 0 &&
                          qPlayer.DaysWithoutStrike > 3)) {
-                        qPlayer.StrikePlanned = TRUE;
+                        GameMechanic::planStrike(qPlayer);
                     }
                 }
             }
@@ -1518,7 +1518,7 @@ void SIM::DoTimeStep() {
                 if (Players.Players[c].IsOut == 0) {
                     PLAYER &qPlayer = Players.Players[c];
 
-                    if ((qPlayer.StrikePlanned != 0) && GetHour() > 6 && GetHour() < 18 && CallItADay == FALSE) {
+                    if ((qPlayer.StrikePlanned != 0) && GetHour() > 9 && GetHour() < 18 && CallItADay == FALSE) {
                         SLONG c = 0;
                         SLONG AnyPlanes = FALSE;
 
@@ -1566,15 +1566,14 @@ void SIM::DoTimeStep() {
 
                             Headlines.AddOverride(1, bprintf(StandardTexte.GetS(TOKEN_MISC, 2090), qPlayer.AirlineX.c_str()), GetIdFromString("STREIK"),
                                                   25 + static_cast<SLONG>(c == localPlayer) * 10);
+                            hprintf("Sim.cpp: %s: Strike started @%02ld:%02ld (for %ld hours)", (LPCTSTR)qPlayer.AirlineX, Sim.GetHour(), Sim.GetMinute(),
+                                    qPlayer.StrikeHours);
                         }
                     } else if (qPlayer.StrikeHours != 0) {
                         qPlayer.StrikeHours--;
 
                         if (qPlayer.StrikeHours == 0 && (qPlayer.Owner == 0 || (qPlayer.Owner == 1 && !qPlayer.RobotUse(ROBOT_USE_FAKE_PERSONAL)))) {
-                            qPlayer.StrikeNotified = FALSE; // Dem Spieler bei nächster Gelegenheit bescheid sagen
-                            qPlayer.StrikeEndType = 3;      // Streik beendet durch abwarten
-
-                            Workers.AddHappiness(c, -10);
+                            GameMechanic::endStrike(qPlayer, GameMechanic::EndStrikeMode::Waiting);
                         }
                     }
                 }

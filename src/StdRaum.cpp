@@ -1844,9 +1844,6 @@ void CStdRaum::StartDialog(SLONG DialogPartner, BOOL Medium, SLONG DialogPar1, S
                 MakeSayWindow(0, TOKEN_RICK, 6001, pFontPartner);
             } else {
                 MakeSayWindow(0, TOKEN_RICK, 6000, pFontPartner);
-
-                Sim.Players.Players[Sim.localPlayer].StrikeEndCountdown = 10;
-                Sim.Players.Players[Sim.localPlayer].StrikeEndType = 3;
             }
         } else {
             MakeSayWindow(0, TOKEN_RICK, 5000 + rand() % 9, pFontPartner);

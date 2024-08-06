@@ -1104,6 +1104,12 @@ void GameMechanic::increaseAllSalaries(PLAYER &qPlayer) {
 
 void GameMechanic::decreaseAllSalaries(PLAYER &qPlayer) { Workers.Gehaltsaenderung(0, qPlayer.PlayerNum); }
 
+void GameMechanic::planStrike(PLAYER &qPlayer) {
+    hprintf("GameMechanic::planStrike(%s): %02ld:%02ld", (LPCTSTR)qPlayer.AirlineX, Sim.GetHour(), Sim.GetMinute());
+    qPlayer.StrikePlanned = TRUE;
+    qPlayer.StrikeEndType = 0;
+}
+
 void GameMechanic::endStrike(PLAYER &qPlayer, EndStrikeMode mode) {
     if (qPlayer.StrikeEndType != 0) {
         redprintf("GameMechanic::endStrike(%s): Strike already ended.", (LPCTSTR)qPlayer.AirlineX);
@@ -1114,16 +1120,30 @@ void GameMechanic::endStrike(PLAYER &qPlayer, EndStrikeMode mode) {
         qPlayer.StrikeEndType = 2; // Streik beendet durch Gehaltserhöhung
         qPlayer.StrikeEndCountdown = 2;
         increaseAllSalaries(qPlayer);
+        hprintf("GameMechanic::endStrike(%s): @%02ld:%02ld via salary increase.", (LPCTSTR)qPlayer.AirlineX, Sim.GetHour(), Sim.GetMinute());
     } else if (mode == EndStrikeMode::Threat) {
         qPlayer.StrikeEndType = 1; // Streik beendet durch Drohung
         qPlayer.StrikeEndCountdown = 4;
         Workers.AddHappiness(qPlayer.PlayerNum, -20);
+        hprintf("GameMechanic::endStrike(%s): @%02ld:%02ld via threat.", (LPCTSTR)qPlayer.AirlineX, Sim.GetHour(), Sim.GetMinute());
     } else if (mode == EndStrikeMode::Drunk) {
         if (qPlayer.TrinkerTrust == TRUE) {
             qPlayer.StrikeEndType = 3; // Streik beendet durch Trinker
             qPlayer.StrikeEndCountdown = 4;
+            hprintf("GameMechanic::endStrike(%s): @%02ld:%02ld via help from the drunk.", (LPCTSTR)qPlayer.AirlineX, Sim.GetHour(), Sim.GetMinute());
         } else {
             redprintf("GameMechanic::endStrike(%s): Drunk does not trust player.", (LPCTSTR)qPlayer.AirlineX);
+        }
+    } else if (mode == EndStrikeMode::Waiting) {
+        if (qPlayer.StrikeHours == 0) {
+            if (qPlayer.Owner == 0) {
+                qPlayer.StrikeNotified = FALSE; // Dem Spieler bei nächster Gelegenheit bescheid sagen
+            }
+            qPlayer.StrikeEndType = 4; // Streik beendet durch abwarten
+            Workers.AddHappiness(qPlayer.PlayerNum, -10);
+            hprintf("GameMechanic::endStrike(%s): @%02ld:%02ld by waiting.", (LPCTSTR)qPlayer.AirlineX, Sim.GetHour(), Sim.GetMinute());
+        } else {
+            redprintf("GameMechanic::endStrike(%s): Strike hours not yet over.", (LPCTSTR)qPlayer.AirlineX);
         }
     } else {
         redprintf("GameMechanic::endStrike: Invalid EndStrikeMode (%ld).", (LPCTSTR)qPlayer.AirlineX, mode);

@@ -652,7 +652,7 @@ void Bot::RobotExecuteAction() {
     LocalRandom.Rand(2); // Sicherheitshalber, damit wir immer genau ein Random ausführen
 
     mNumActionsToday += 1;
-    greenprintf("Bot::RobotExecuteAction(): Executing %s (#%d, %s), current time: %02d:%02d, money: %s $ (available: %s $)",
+    greenprintf("Bot::RobotExecuteAction(): Executing %s (#%d, %s), current time: %02ld:%02ld, money: %s $ (available: %s $)",
                 getRobotActionName(qAction.ActionId), mNumActionsToday, getPrioName(qAction.Prio), Sim.GetHour(), Sim.GetMinute(),
                 (LPCTSTR)Insert1000erDots64(qPlayer.Money), (LPCTSTR)Insert1000erDots64(getMoneyAvailable()));
 
