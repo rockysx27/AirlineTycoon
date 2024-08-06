@@ -69,16 +69,20 @@ BotPlaner::FlightJob::FlightJob(int i, int j, CFracht a, JobOwner o) : id(i), so
 
 std::pair<int, float> BotPlaner::FlightJob::calculateScore(const Factors &f, int hours, int cost, int numRequired) {
     int score = f.constBonus;
+
+    score += getPremium();
+    if (isScheduled()) {
+        score += getPenalty();
+    }
+
     score += f.distanceFactor * Cities.CalcDistance(getStartCity(), getDestCity());
 
     if (isFreight()) {
-        score += fracht.Praemie;
         score += f.freightBonus;
         if (fracht.Praemie == 0) {
             score += f.freeFreightBonus;
         }
     } else {
-        score += auftrag.Praemie;
         score += f.passengerFactor * auftrag.Personen;
         score += f.uhrigBonus * auftrag.bUhrigFlight;
     }
@@ -317,7 +321,8 @@ std::vector<Graph> BotPlaner::prepareGraph() {
             /* freight job way too big for plane? */
             int numRequired = 1;
             if (job.isFreight()) {
-                numRequired = ceil_div(job.getNumStillNeeded(), plane->ptPassagiere / 10);
+                /* we have to use getNumToTransport() instead of getNumStillNeeded() since existing instances might not be scheduled correctly */
+                numRequired = ceil_div(job.getNumToTransport(), plane->ptPassagiere / 10);
             }
             if (numRequired > kFreightMaxFlights) {
                 continue;
@@ -685,7 +690,7 @@ BotPlaner::SolutionList BotPlaner::planFlights(const std::vector<int> &planeIdsI
     /* start algo */
     auto t_current = std::chrono::steady_clock::now();
     auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(t_current - t_begin).count();
-    bool improved = algo(timeBudgetMS - diff);
+    bool needToApplySolution = algo(timeBudgetMS - diff);
 
     /* check statistics */
     int nPreviouslyOwnedScheduled = 0;
@@ -712,8 +717,8 @@ BotPlaner::SolutionList BotPlaner::planFlights(const std::vector<int> &planeIdsI
     hprintf("Elapsed time in total: %lld ms", delta);
 #endif
 
-    if (!improved) {
-        hprintf("Scheduling algo did not improve anything, returning empty solution.");
+    if (!needToApplySolution) {
+        hprintf("Do not need to apply, returning empty solution.");
         return {};
     }
 

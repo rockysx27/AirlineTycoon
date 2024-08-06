@@ -153,6 +153,7 @@ class BotPlaner {
         FlightJob(int i, int j, CAuftrag a, JobOwner o);
         FlightJob(int i, int j, CFracht a, JobOwner o);
         int getNumStillNeeded() const { return numStillNeeded; }
+        int getNumToTransport() const { return numToTransport; }
         void setNumToTransport(int val) { numToTransport = numStillNeeded = val; }
         void addNumToTransport(int val) {
             numToTransport += val;
@@ -170,6 +171,7 @@ class BotPlaner {
         inline int getDate() const { return isFreight() ? fracht.Date : auftrag.Date; }
         inline int getBisDate() const { return isFreight() ? fracht.BisDate : auftrag.BisDate; }
         inline int getPremium() const { return isFreight() ? fracht.Praemie : auftrag.Praemie; }
+        inline int getPenalty() const { return isFreight() ? fracht.Strafe : auftrag.Strafe; }
         inline int getPersonen() const { return isFreight() ? 0 : auftrag.Personen; }
         inline int getTonsOpen() const { return isFreight() ? fracht.TonsOpen : 0; }
         inline int getTonsLeft() const { return isFreight() ? fracht.TonsLeft : 0; }
@@ -249,7 +251,7 @@ class BotPlaner {
     bool shiftRight(Graph &g, int nodeToShift, int shiftT, bool commit);
     int makeRoom(Graph &g, int nodeToMoveLeft, int nodeToMoveRight);
     void genSolutionsFromGraph(int planeIdx);
-    void applySolutionToGraph();
+    int applySolutionToGraph();
     bool canInsert(const Graph &g, int currentNode, int nextNode) const;
     int findBestNeighbor(const Graph &g, int currentNode, int choice) const;
     void insertNode(Graph &g, int planeIdx, int currentNode, int nextNode);

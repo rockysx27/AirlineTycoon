@@ -267,7 +267,8 @@ int BotPlaner::makeRoom(Graph &g, int nodeToMoveLeft, int nodeToMoveRight) {
     return gapTime;
 }
 
-void BotPlaner::applySolutionToGraph() {
+int BotPlaner::applySolutionToGraph() {
+    int numJobsSkipped = 0;
     for (int p = 0; p < mPlaneStates.size(); p++) {
         auto &qPlaneState = mPlaneStates[p];
         auto &g = mGraphs[qPlaneState.planeTypeId];
@@ -289,6 +290,7 @@ void BotPlaner::applySolutionToGraph() {
             if (qFPE.Okay != 0) {
                 redprintf("BotPlaner::applySolutionToGraph(): Not scheduled correctly, skipping: %ld", qFPE.ObjectId);
                 skippedNode = true;
+                numJobsSkipped++;
                 continue;
             }
 
@@ -298,6 +300,7 @@ void BotPlaner::applySolutionToGraph() {
                     auto it = mExistingJobsById.find(qFPE.ObjectId);
                     if (it == mExistingJobsById.end()) {
                         redprintf("BotPlaner::applySolutionToGraph(): Unknown job in flight plan: %ld", qFPE.ObjectId);
+                        numJobsSkipped++;
                         continue;
                     }
                     int jobIdx = it->second;
@@ -306,6 +309,7 @@ void BotPlaner::applySolutionToGraph() {
                     auto it = mExistingFreightJobsById.find(qFPE.ObjectId);
                     if (it == mExistingFreightJobsById.end()) {
                         redprintf("BotPlaner::applySolutionToGraph(): Unknown freight job in flight plan: %ld", qFPE.ObjectId);
+                        numJobsSkipped++;
                         continue;
                     }
                     int jobIdx = it->second;
@@ -315,7 +319,8 @@ void BotPlaner::applySolutionToGraph() {
                     }
                     if (g.nodeInfo[nextNode].jobIdx != jobIdx) {
                         redprintf("BotPlaner::applySolutionToGraph(): Not enough node instances for freight job: %s", mJobList[jobIdx].getName().c_str());
-                        return;
+                        numJobsSkipped++;
+                        continue;
                     }
                 }
 
@@ -337,6 +342,7 @@ void BotPlaner::applySolutionToGraph() {
             }
         }
     }
+    return numJobsSkipped;
 }
 
 void BotPlaner::genSolutionsFromGraph(int planeIdx) {
@@ -866,9 +872,18 @@ bool BotPlaner::algo(int64_t timeBudget) {
     }
 
     /* apply existing solution to graph and plane state */
+    bool existingSolutionsHasProblems = false;
     std::vector<std::vector<int>> overallBestPath(mPlaneStates.size());
-    applySolutionToGraph();
-    runPruneFreightJobs();
+    int numJobsSkipped = applySolutionToGraph();
+    if (numJobsSkipped > 0) {
+        existingSolutionsHasProblems = true;
+        redprintf("BotPlaner::algo(): Existing plane schedules had problems: %d jobs skipped", numJobsSkipped);
+    }
+    int nRemoved = runPruneFreightJobs();
+    if (nRemoved > 0) {
+        existingSolutionsHasProblems = true;
+        redprintf("BotPlaner::algo(): Existing plane schedules had problems: %d freight jobs pruned", nRemoved);
+    }
 
     /* save pre-existing solution */
     int oldGain = allPlaneGain();
@@ -987,5 +1002,6 @@ bool BotPlaner::algo(int64_t timeBudget) {
     }
 
     hprintf("Overall gain improved from %d to %d.", oldGain, overallBestGain);
-    return (overallBestGain > oldGain);
+    bool needToApplySolution = (overallBestGain > oldGain) || existingSolutionsHasProblems;
+    return needToApplySolution;
 }
