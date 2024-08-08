@@ -3500,7 +3500,7 @@ void CStdRaum::OnPaint() { OnPaint(FALSE); }
 void CStdRaum::OnPaint(BOOL /*bHandyDialog*/) {
     ReferenceCursorPos = gMousePosition;
 
-    if ((PleaseCancelTextBubble != 0) && (bHandy == 0)) {
+    if ((PleaseCancelTextBubble != 0) && (bHandy == 0) || (CheatAutoSkip != 0)) {
         PleaseCancelTextBubble = FALSE;
         if (IsDialogOpen() != 0) {
             PreLButtonDown(WasLButtonDownPoint);
