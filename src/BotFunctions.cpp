@@ -684,9 +684,9 @@ void Bot::updateRouteInfo() {
                 route.planeUtilization, route.planeUtilizationFC, luxusSumme);
     }
 
+    mRoutesSortedByOwnUtilization.resize(mRoutes.size());
     if (!mRoutes.empty()) {
         /* sort routes by utilization and by image */
-        mRoutesSortedByOwnUtilization.resize(mRoutes.size());
         SLONG lowImage = 0;
         for (SLONG i = 0; i < mRoutes.size(); i++) {
             mRoutesSortedByOwnUtilization[i] = i;
