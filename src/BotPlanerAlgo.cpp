@@ -45,7 +45,7 @@ void BotPlaner::printForPlane(const char *txt, int planeIdx, bool printOnErrorOn
     auto &planeState = mPlaneStates[planeIdx];
     genSolutionsFromGraph(planeIdx);
     takeJobs(planeState.currentSolution);
-    GameMechanic::killFlightPlanFrom(qPlayer, planeState.planeId, mScheduleFromTime.getDate(), mScheduleFromTime.getHour());
+    GameMechanic::clearFlightPlanFrom(qPlayer, planeState.planeId, mScheduleFromTime.getDate(), mScheduleFromTime.getHour());
     bool ok = applySolutionForPlane(qPlayer, planeState.planeId, planeState.currentSolution);
     Helper::checkPlaneSchedule(qPlayer, qPlanes[planeState.planeId], printOnErrorOnly && ok);
 #endif
@@ -288,7 +288,8 @@ int BotPlaner::applySolutionToGraph() {
             }
 
             if (qFPE.Okay != 0) {
-                orangeprintf("BotPlaner::applySolutionToGraph(): Not scheduled correctly, skipping: %ld", qFPE.ObjectId);
+                orangeprintf("BotPlaner::applySolutionToGraph(): Not scheduled correctly, skipping:");
+                Helper::printFPE(qFPE);
                 skippedNode = true;
                 numJobsSkipped++;
                 continue;
@@ -299,7 +300,9 @@ int BotPlaner::applySolutionToGraph() {
                 if (qFPE.ObjectType == 2) {
                     auto it = mExistingJobsById.find(qFPE.ObjectId);
                     if (it == mExistingJobsById.end()) {
-                        redprintf("BotPlaner::applySolutionToGraph(): Unknown job in flight plan: %ld", qFPE.ObjectId);
+                        redprintf("BotPlaner::applySolutionToGraph(): Unknown job in flight plan:");
+                        Helper::printFPE(qFPE);
+                        skippedNode = true;
                         numJobsSkipped++;
                         continue;
                     }
@@ -308,7 +311,9 @@ int BotPlaner::applySolutionToGraph() {
                 } else {
                     auto it = mExistingFreightJobsById.find(qFPE.ObjectId);
                     if (it == mExistingFreightJobsById.end()) {
-                        redprintf("BotPlaner::applySolutionToGraph(): Unknown freight job in flight plan: %ld", qFPE.ObjectId);
+                        redprintf("BotPlaner::applySolutionToGraph(): Unknown freight job in flight plan:");
+                        Helper::printFPE(qFPE);
+                        skippedNode = true;
                         numJobsSkipped++;
                         continue;
                     }
@@ -318,7 +323,9 @@ int BotPlaner::applySolutionToGraph() {
                         nextNode++;
                     }
                     if (g.nodeInfo[nextNode].jobIdx != jobIdx) {
-                        redprintf("BotPlaner::applySolutionToGraph(): Not enough node instances for freight job: %s", mJobList[jobIdx].getName().c_str());
+                        redprintf("BotPlaner::applySolutionToGraph(): Not enough node instances for freight job:");
+                        mJobList[jobIdx].printInfo();
+                        skippedNode = true;
                         numJobsSkipped++;
                         continue;
                     }
@@ -327,7 +334,9 @@ int BotPlaner::applySolutionToGraph() {
                 /* check duration of any previous automatic flight */
                 auto actualDuration = g.adjMatrix[currentNode][nextNode].duration;
                 if (!(autoFlightDuration == actualDuration || (skippedNode && autoFlightDuration > actualDuration))) {
-                    redprintf("BotPlaner::applySolutionToGraph(): Duration of automatic flight does not match before FPE: %ld", qFPE.ObjectId);
+                    redprintf("BotPlaner::applySolutionToGraph(): Duration of automatic flight does not match before FPE:");
+                    Helper::printFPE(qFPE);
+                    hprintf("Is %d in plan, but %d in graph", autoFlightDuration, actualDuration);
                 }
 
                 insertNode(g, p, currentNode, nextNode);
@@ -766,7 +775,8 @@ bool BotPlaner::runAddNodeToBestPlaneInner(int jobIdxToInsert) {
             nodeToInsert++;
         }
         if (g.nodeInfo[nodeToInsert].jobIdx != jobIdxToInsert) {
-            redprintf("BotPlaner::runAddNodeToBestPlaneInner(): Not enough node instances for freight job: %s", mJobList[jobIdxToInsert].getName().c_str());
+            redprintf("BotPlaner::runAddNodeToBestPlaneInner(): Not enough node instances for freight job:");
+            mJobList[jobIdxToInsert].printInfo();
             continue;
         }
 

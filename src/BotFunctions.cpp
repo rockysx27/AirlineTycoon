@@ -362,15 +362,6 @@ void Bot::grabFlights(BotPlaner &planer, bool areWeInOffice) {
         return;
     }
 
-    int extraBufferTime = kAvailTimeExtra;
-    if (!areWeInOffice && HowToPlan::Office == res) {
-        extraBufferTime += 1;
-        if (Sim.GetMinute() >= 30) {
-            extraBufferTime += 1;
-        }
-        hprintf("Bot::grabFlights(): Extra time planned for walking to office: %d", extraBufferTime);
-    }
-
     planer.setMinScoreRatio(kSchedulingMinScoreRatio);
     planer.setMinScoreRatioLastMinute(kSchedulingMinScoreRatioLastMinute);
 
@@ -409,7 +400,16 @@ void Bot::grabFlights(BotPlaner &planer, bool areWeInOffice) {
         planer.setFreeFreightBonus(5000 * 1000);
     }
 
-    mPlanerSolution = planer.planFlights(mPlanesForJobs, extraBufferTime);
+    int extraBufferTime = kAvailTimeExtra;
+    if (!areWeInOffice && HowToPlan::Office == res) {
+        extraBufferTime += 1;
+        if (Sim.GetMinute() >= 30) {
+            extraBufferTime += 1;
+        }
+        hprintf("Bot::grabFlights(): Extra time planned for walking to office: %d", extraBufferTime);
+    }
+
+    mPlanerSolution = planer.generateSolution(mPlanesForJobs, extraBufferTime);
     if (!mPlanerSolution.empty()) {
         requestPlanFlights(areWeInOffice);
     }
@@ -441,7 +441,7 @@ void Bot::planFlights() {
         redprintf("Bot::planFlights(): Solution does not apply! Need to re-plan.");
 
         BotPlaner planer(qPlayer, qPlayer.Planes);
-        mPlanerSolution = planer.planFlights(mPlanesForJobs, kAvailTimeExtra);
+        mPlanerSolution = planer.generateSolution(mPlanesForJobs, kAvailTimeExtra);
         if (!mPlanerSolution.empty()) {
             BotPlaner::applySolution(qPlayer, mPlanerSolution);
         }
@@ -634,7 +634,7 @@ void Bot::checkLostRoutes() {
                 /* route is gone! move planes from route back into the "unassigned" pile */
                 for (auto planeId : route.planeIds) {
                     mPlanesForRoutesUnassigned.push_back(planeId);
-                    GameMechanic::killFlightPlan(qPlayer, planeId);
+                    GameMechanic::clearFlightPlan(qPlayer, planeId);
                     hprintf("Bot::checkLostRoutes(): Plane %s does not have a route anymore.", Helper::getPlaneName(qPlayer.Planes[planeId]).c_str());
                 }
             }
@@ -945,7 +945,7 @@ void Bot::planRoutes() {
             }
 
             /* kill everyting after insertion point */
-            GameMechanic::killFlightPlanFrom(qPlayer, planeId, startTime.getDate(), startTime.getHour());
+            GameMechanic::clearFlightPlanFrom(qPlayer, planeId, startTime.getDate(), startTime.getHour());
 
             /* schedule route jobs */
             SLONG numScheduled = 0;

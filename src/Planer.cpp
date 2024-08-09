@@ -3022,7 +3022,7 @@ void CPlaner::AutoPlan(SLONG mode) {
         bot.addJobSource(BotPlaner::JobOwner::BacklogFreight, {});
         bot.setMinScoreRatio(1);
         bot.setMinScoreRatioLastMinute(1);
-        auto solutions = bot.planFlights(planeIds, kAvailTimeExtra);
+        auto solutions = bot.generateSolution(planeIds, kAvailTimeExtra);
         bot.applySolution(qPlayer, solutions);
         Helper::checkFlightJobs(qPlayer, true, true);
         return;
@@ -3033,7 +3033,7 @@ void CPlaner::AutoPlan(SLONG mode) {
         bot.addJobSource(BotPlaner::JobOwner::InternationalFreight, cities);
         bot.setMinScoreRatio(1);
         bot.setMinScoreRatioLastMinute(1);
-        auto solutions = bot.planFlights(planeIds, kAvailTimeExtra);
+        auto solutions = bot.generateSolution(planeIds, kAvailTimeExtra);
         bot.applySolution(qPlayer, solutions);
         Helper::checkFlightJobs(qPlayer, true, true);
         return;

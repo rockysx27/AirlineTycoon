@@ -6570,7 +6570,7 @@ void CStdRaum::MenuLeftClick(XY Pos) {
 
         case MENU_REQUEST_KILLPLAN:
             if (MouseClickArea == -101 && MouseClickId == MENU_REQUEST && MouseClickPar1 == 1) {
-                GameMechanic::killFlightPlan(qPlayer, MenuPar2);
+                GameMechanic::clearFlightPlan(qPlayer, MenuPar2);
             }
             if (MouseClickArea == -101 && MouseClickId == MENU_REQUEST && MouseClickPar1 > 0) {
                 MenuStop();

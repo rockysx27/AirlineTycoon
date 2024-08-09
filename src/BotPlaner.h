@@ -123,7 +123,7 @@ class BotPlaner {
     void setMinScoreRatioLastMinute(float val) { mMinScoreRatioLastMinute = val; }
     void setMinSpeedRatio(float val) { mMinSpeedRatio = val; }
 
-    SolutionList planFlights(const std::vector<int> &planeIdsInput, int extraBufferTime);
+    SolutionList generateSolution(const std::vector<int> &planeIdsInput, int extraBufferTime);
     static bool applySolution(PLAYER &qPlayer, const SolutionList &solutions);
 
   private:
@@ -152,13 +152,21 @@ class BotPlaner {
       public:
         FlightJob(int i, int j, CAuftrag a, JobOwner o);
         FlightJob(int i, int j, CFracht a, JobOwner o);
-        int getNumStillNeeded() const { return numStillNeeded; }
-        int getNumToTransport() const { return numToTransport; }
-        void setNumToTransport(int val) { numToTransport = numStillNeeded = val; }
-        void addNumToTransport(int val) {
+        inline int getNumStillNeeded() const { return numStillNeeded; }
+        inline int getNumToTransport() const { return numToTransport; }
+        inline int getNumLocked() const { return numLocked; }
+        inline int getNumNotLocked() const { return numNotLocked; }
+        inline void setNumToTransport(int val) { numToTransport = numStillNeeded = val; }
+        inline void addNumToTransport(int val) {
             numToTransport += val;
             numStillNeeded = numToTransport;
         }
+        inline void reduceNumToTransport(int val) {
+            numToTransport -= val;
+            numStillNeeded = numToTransport;
+        }
+        inline void addNumLocked(int val) { numLocked += val; }
+        inline void addNumNotLocked(int val) { numNotLocked += val; }
         inline bool wasTaken() const {
             return owner == JobOwner::Planned || owner == JobOwner::PlannedFreight || owner == JobOwner::Backlog || owner == JobOwner::BacklogFreight;
         }
@@ -199,7 +207,9 @@ class BotPlaner {
                 numStillNeeded = 1;
             }
         }
+
         std::string getName() const { return isFreight() ? Helper::getFreightName(fracht) : Helper::getJobName(auftrag); }
+        void printInfo() const;
 
         std::pair<int, float> calculateScore(const Factors &f, int hours, int cost, int numRequired);
 
@@ -211,8 +221,10 @@ class BotPlaner {
       private:
         CAuftrag auftrag;
         CFracht fracht;
-        int numStillNeeded{1};
-        int numToTransport{1};
+        int numStillNeeded{1}; /* used in heuristic: how much to still plan (after mScheduleFromTime) */
+        int numToTransport{1}; /* used in heuristic: how much to plan in total (after mScheduleFromTime) */
+        int numLocked{0};      /* used for checking: how much is planned before mScheduleFromTime */
+        int numNotLocked{0};   /* used for checking: how much is planned after mScheduleFromTime (intially) */
         bool incompleteFreight{false};
         int startCity{-1};
         int destCity{-1};

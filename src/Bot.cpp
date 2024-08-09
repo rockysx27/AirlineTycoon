@@ -247,7 +247,7 @@ bool Bot::findPlanesNotAvailableForService(std::vector<SLONG> &listAvailable, st
         if (mode > 0) {
             listUnassigned.push_back(id);
             if (mode == 2) {
-                GameMechanic::killFlightPlan(qPlayer, id);
+                GameMechanic::clearFlightPlan(qPlayer, id);
             }
 
             /* remove plane from route */

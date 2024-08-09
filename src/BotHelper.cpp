@@ -286,7 +286,7 @@ SLONG _checkPlaneSchedule(const PLAYER &qPlayer, const CPlane &qPlane, std::unor
         if (qFPE.ObjectType == 4) {
             auto &qAuftrag = qPlayer.Frachten[id];
 
-            if (!qFPE.FlightBooked) {
+            if (!qFPE.FlightBooked && qFPE.Okay == 0) {
                 if (freightTons.find(id) == freightTons.end()) {
                     freightTons[id].tonsOpen = qAuftrag.TonsLeft;
                 }
@@ -499,7 +499,7 @@ SLONG checkFlightJobs(const PLAYER &qPlayer, bool alwaysPrint, bool verboseInfo)
         bool printInfo = false;
         if (info.tonsOpen > 0) {
             printInfo = true;
-            redprintf("Helper::checkPlaneSchedule(): There are still %d tons open for job %s", info.tonsOpen, getFreightName(qAuftrag).c_str());
+            orangeprintf("Helper::checkPlaneSchedule(): There are still %d tons open for job %s", info.tonsOpen, getFreightName(qAuftrag).c_str());
         }
         if ((-info.tonsOpen) >= info.smallestDecrement) {
             printInfo = true;
@@ -510,7 +510,7 @@ SLONG checkFlightJobs(const PLAYER &qPlayer, bool alwaysPrint, bool verboseInfo)
         if (printInfo) {
             assert(info.planeNames.size() == info.FPEs.size());
             for (SLONG i = 0; i < info.FPEs.size(); i++) {
-                hprintf("%ld t on %s:", info.tonsPerPlane[i], info.planeNames[i].c_str());
+                hprintf("+ %ld t on %s", info.tonsPerPlane[i], info.planeNames[i].c_str());
                 Helper::printFPE(info.FPEs[i]);
             }
         }

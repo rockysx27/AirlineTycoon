@@ -2151,23 +2151,65 @@ bool GameMechanic::killFreightJob(PLAYER &qPlayer, SLONG par1, bool payFine) {
     return true;
 }
 
-bool GameMechanic::killFlightPlan(PLAYER &qPlayer, SLONG planeId) { return killFlightPlanFrom(qPlayer, planeId, Sim.Date, Sim.GetHour() + 2); }
-
-bool GameMechanic::killFlightPlanFrom(PLAYER &qPlayer, SLONG planeId, SLONG date, SLONG hours) {
+bool GameMechanic::removeFromFlightPlan(PLAYER &qPlayer, SLONG planeId, SLONG idx) {
     if (!qPlayer.Planes.IsInAlbum(planeId)) {
-        redprintf("GameMechanic::killFlightPlanFrom(%s): Invalid planeId (%ld).", (LPCTSTR)qPlayer.AirlineX, planeId);
+        redprintf("GameMechanic::removeFromFlightPlan(%s): Invalid planeId (%ld).", (LPCTSTR)qPlayer.AirlineX, planeId);
+        return false;
+    }
+
+    CFlugplan &qPlan = qPlayer.Planes[planeId].Flugplan;
+    if (idx < 0 || idx >= qPlan.Flug.AnzEntries()) {
+        redprintf("GameMechanic::removeFromFlightPlan(%s): Invalid index (%ld).", (LPCTSTR)qPlayer.AirlineX, idx);
+        return false;
+    }
+
+    auto &qFPE = qPlan.Flug[idx];
+
+    if (qFPE.Startdate == Sim.Date && qFPE.Startzeit <= Sim.GetHour() + 1) {
+        redprintf("GameMechanic::removeFromFlightPlan(%s): Flight is already locked.", (LPCTSTR)qPlayer.AirlineX);
+        return false;
+    }
+
+    qFPE = {};
+
+    qPlan.UpdateNextFlight();
+    qPlan.UpdateNextStart();
+
+    if (Sim.bNetwork != 0) {
+        SLONG key = planeId;
+
+        if (key < 0x1000000) {
+            key = qPlayer.Planes.GetIdFromIndex(key);
+        }
+
+        qPlayer.NetUpdateFlightplan(key);
+    }
+
+    qPlayer.UpdateAuftragsUsage();
+    qPlayer.UpdateFrachtauftragsUsage();
+    qPlayer.Planes[planeId].CheckFlugplaene(qPlayer.PlayerNum, FALSE);
+    qPlayer.Blocks.RepaintAll = TRUE;
+
+    return true;
+}
+
+bool GameMechanic::clearFlightPlan(PLAYER &qPlayer, SLONG planeId) { return clearFlightPlanFrom(qPlayer, planeId, Sim.Date, Sim.GetHour() + 2); }
+
+bool GameMechanic::clearFlightPlanFrom(PLAYER &qPlayer, SLONG planeId, SLONG date, SLONG hours) {
+    if (!qPlayer.Planes.IsInAlbum(planeId)) {
+        redprintf("GameMechanic::clearFlightPlanFrom(%s): Invalid planeId (%ld).", (LPCTSTR)qPlayer.AirlineX, planeId);
         return false;
     }
     if (date < Sim.Date) {
-        redprintf("GameMechanic::killFlightPlanFrom(%s): Date must not be in the past (%ld).", (LPCTSTR)qPlayer.AirlineX, date);
+        redprintf("GameMechanic::clearFlightPlanFrom(%s): Date must not be in the past (%ld).", (LPCTSTR)qPlayer.AirlineX, date);
         return false;
     }
     if (hours < 0) {
-        redprintf("GameMechanic::killFlightPlanFrom(%s): Offset must not be negative (%ld).", (LPCTSTR)qPlayer.AirlineX, hours);
+        redprintf("GameMechanic::clearFlightPlanFrom(%s): Offset must not be negative (%ld).", (LPCTSTR)qPlayer.AirlineX, hours);
         return false;
     }
     if (date == Sim.Date && hours <= Sim.GetHour() + 1) {
-        hprintf("GameMechanic::killFlightPlanFrom(%s): Increasing hours to current time + 2 (was %ld).", (LPCTSTR)qPlayer.AirlineX, hours);
+        hprintf("GameMechanic::clearFlightPlanFrom(%s): Increasing hours to current time + 2 (was %ld).", (LPCTSTR)qPlayer.AirlineX, hours);
         hours = Sim.GetHour() + 2;
     }
 
@@ -2948,7 +2990,6 @@ void GameMechanic::executeSabotageMode1() {
             if (qFPE.ObjectType == 1) {
                 qOpfer.RentRouten.RentRouten[Routen(qFPE.ObjectId)].Image = qOpfer.RentRouten.RentRouten[Routen(qFPE.ObjectId)].Image * 90 / 100;
             }
-
             SLONG e = qPlane.Flugplan.NextStart;
             hprintf("Moving for tire sabotage:");
             Helper::printFPE(qPlane.Flugplan.Flug[e]);
