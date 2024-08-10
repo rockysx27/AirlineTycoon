@@ -318,12 +318,14 @@ int BotPlaner::applySolutionToGraph() {
                         continue;
                     }
                     int jobIdx = it->second;
+                    int count = 0;
                     nextNode = g.getNode(jobIdx);
                     while (nextNode < g.nNodes && g.nodeState[nextNode].cameFrom != -1 && g.nodeInfo[nextNode].jobIdx == jobIdx) {
                         nextNode++;
+                        count++;
                     }
-                    if (g.nodeInfo[nextNode].jobIdx != jobIdx) {
-                        redprintf("BotPlaner::applySolutionToGraph(): Not enough node instances for freight job:");
+                    if ((nextNode >= g.nNodes) || g.nodeInfo[nextNode].jobIdx != jobIdx) {
+                        redprintf("BotPlaner::applySolutionToGraph(): Not enough node instances for freight job (have %d):", count);
                         mJobList[jobIdx].printInfo();
                         skippedNode = true;
                         numJobsSkipped++;

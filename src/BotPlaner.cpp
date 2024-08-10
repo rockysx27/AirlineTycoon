@@ -398,8 +398,8 @@ std::vector<Graph> BotPlaner::prepareGraph() {
                 auto tons = std::max(job.getNumToTransport(), job.getNumNotLocked());
                 numRequired = ceil_div(tons, (plane->ptPassagiere / 10));
             }
-            if (numRequired > kFreightMaxFlights) {
-                continue;
+            if (!job.wasTaken() && (numRequired > kFreightMaxFlights)) {
+                continue; /* job was not taken yet and required too many flights */
             }
 
             /* calculate cost, duration and distance */
@@ -415,7 +415,7 @@ std::vector<Graph> BotPlaner::prepareGraph() {
 
             /* check job score */
             auto minScore = (job.getBisDate() == Sim.Date) ? mMinScoreRatioLastMinute : mMinScoreRatio;
-            if (!job.wasTaken() && scoreRatio < minScore) {
+            if (!job.wasTaken() && (scoreRatio < minScore)) {
                 continue; /* job was not taken yet and does not have required minimum score */
             }
 
