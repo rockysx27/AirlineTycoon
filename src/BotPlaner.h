@@ -152,6 +152,14 @@ class BotPlaner {
       public:
         FlightJob(int i, int j, CAuftrag a, JobOwner o);
         FlightJob(int i, int j, CFracht a, JobOwner o);
+
+        inline int getId() const { return id; }
+        inline void rewriteId(int i) { id = i; }
+        inline int getSourceId() const { return sourceId; }
+        inline JobOwner getOwner() const { return owner; }
+        inline void setOwner(JobOwner o) { owner = o; }
+        inline float getScoreRatio() const { return scoreRatio; }
+
         inline int getNumStillNeeded() const { return numStillNeeded; }
         inline int getNumToTransport() const { return numToTransport; }
         inline int getNumLocked() const { return numLocked; }
@@ -213,14 +221,14 @@ class BotPlaner {
 
         std::pair<int, float> calculateScore(const Factors &f, int hours, int cost, int numRequired);
 
+      private:
+        CAuftrag auftrag;
+        CFracht fracht;
         int id{};
         int sourceId{-1};
         JobOwner owner;
         float scoreRatio{0};
 
-      private:
-        CAuftrag auftrag;
-        CFracht fracht;
         int numStillNeeded{1}; /* used in heuristic: how much to still plan (after mScheduleFromTime) */
         int numToTransport{1}; /* used in heuristic: how much to plan in total (after mScheduleFromTime) */
         int numLocked{0};      /* used for checking: how much is planned before mScheduleFromTime */

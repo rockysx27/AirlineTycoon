@@ -79,15 +79,14 @@ void BotPlaner::FlightJob::printInfo() const {
 }
 
 std::pair<int, float> BotPlaner::FlightJob::calculateScore(const Factors &f, int hours, int cost, int numRequired) {
-    int score = f.constBonus;
+    int score = getPremium() - cost;
 
-    score += getPremium();
-    if (isScheduled()) {
+    if (wasTaken()) {
         score += getPenalty();
     }
 
+    score += f.constBonus;
     score += f.distanceFactor * Cities.CalcDistance(getStartCity(), getDestCity());
-
     if (isFreight()) {
         score += f.freightBonus;
         if (fracht.Praemie == 0) {
@@ -98,9 +97,7 @@ std::pair<int, float> BotPlaner::FlightJob::calculateScore(const Factors &f, int
         score += f.uhrigBonus * auftrag.bUhrigFlight;
     }
 
-    score -= cost;
-
-    float _scoreRatio = 1.0f * score / (cost * numRequired); // TODO: hours
+    float _scoreRatio = 1.0f * score / (hours * numRequired);
     scoreRatio = std::max(scoreRatio, _scoreRatio);
 
     return {score, _scoreRatio};
@@ -290,9 +287,9 @@ void BotPlaner::collectAllFlightJobs(const std::vector<int> &planeIds) {
                 auto &jobListRef = mJobList[jobs[qFPE.ObjectId]];
 
                 /* possible that it is BacklogFreight when not all instances of the job were scheduled */
-                if (jobListRef.owner != JobOwner::PlannedFreight) {
-                    assert(jobListRef.owner == JobOwner::BacklogFreight);
-                    jobListRef.owner = JobOwner::PlannedFreight;
+                if (jobListRef.getOwner() != JobOwner::PlannedFreight) {
+                    assert(jobListRef.getOwner() == JobOwner::BacklogFreight);
+                    jobListRef.setOwner(JobOwner::PlannedFreight);
                 }
 
                 if (qFPE.Okay != 0) {
@@ -314,11 +311,11 @@ void BotPlaner::collectAllFlightJobs(const std::vector<int> &planeIds) {
 
     for (int i = 0; i < mJobList.size(); i++) {
         auto &job = mJobList[i];
-        if (job.owner == JobOwner::Planned) {
-            mExistingJobsById[job.id] = i;
+        if (job.getOwner() == JobOwner::Planned) {
+            mExistingJobsById[job.getId()] = i;
         }
-        if (job.owner == JobOwner::PlannedFreight) {
-            mExistingFreightJobsById[job.id] = i;
+        if (job.getOwner() == JobOwner::PlannedFreight) {
+            mExistingFreightJobsById[job.getId()] = i;
 
             /* there is an AT bug where sometimes tons left is too high */
             int tonsOpen = std::min(job.getTonsOpen(), job.getTonsLeft());
@@ -496,26 +493,26 @@ bool BotPlaner::takeJobs(Solution &currentSolution) {
         /* take jobs that have not been taken yet */
         if (!job.wasTaken()) {
             int outAuftragsId = -1;
-            switch (job.owner) {
+            switch (job.getOwner()) {
             case JobOwner::TravelAgency:
-                GameMechanic::takeFlightJob(qPlayer, job.id, outAuftragsId);
+                GameMechanic::takeFlightJob(qPlayer, job.getId(), outAuftragsId);
                 break;
             case JobOwner::LastMinute:
-                GameMechanic::takeLastMinuteJob(qPlayer, job.id, outAuftragsId);
+                GameMechanic::takeLastMinuteJob(qPlayer, job.getId(), outAuftragsId);
                 break;
             case JobOwner::Freight:
-                GameMechanic::takeFreightJob(qPlayer, job.id, outAuftragsId);
+                GameMechanic::takeFreightJob(qPlayer, job.getId(), outAuftragsId);
                 break;
             case JobOwner::International:
-                assert(job.sourceId != -1);
-                GameMechanic::takeInternationalFlightJob(qPlayer, job.sourceId, job.id, outAuftragsId);
+                assert(job.getSourceId() != -1);
+                GameMechanic::takeInternationalFlightJob(qPlayer, job.getSourceId(), job.getId(), outAuftragsId);
                 break;
             case JobOwner::InternationalFreight:
-                assert(job.sourceId != -1);
-                GameMechanic::takeInternationalFreightJob(qPlayer, job.sourceId, job.id, outAuftragsId);
+                assert(job.getSourceId() != -1);
+                GameMechanic::takeInternationalFreightJob(qPlayer, job.getSourceId(), job.getId(), outAuftragsId);
                 break;
             default:
-                redprintf("BotPlaner::takeJobs(): Unknown job source: %d", job.owner);
+                redprintf("BotPlaner::takeJobs(): Unknown job source: %d", job.getOwner());
                 return false;
             }
 
@@ -524,14 +521,14 @@ bool BotPlaner::takeJobs(Solution &currentSolution) {
                 ok = false;
                 continue;
             }
-            job.id = outAuftragsId;
+            job.rewriteId(outAuftragsId);
             if (job.isFreight()) {
-                job.owner = JobOwner::BacklogFreight;
+                job.setOwner(JobOwner::BacklogFreight);
             } else {
-                job.owner = JobOwner::Backlog;
+                job.setOwner(JobOwner::Backlog);
             }
         }
-        jobScheduled.objectId = job.id;
+        jobScheduled.objectId = job.getId();
     }
     return ok;
 }
@@ -780,7 +777,7 @@ BotPlaner::SolutionList BotPlaner::generateSolution(const std::vector<int> &plan
         if (mJobList[a].wasTaken() != mJobList[b].wasTaken()) {
             return mJobList[a].wasTaken();
         }
-        return mJobList[a].scoreRatio > mJobList[b].scoreRatio;
+        return mJobList[a].getScoreRatio() > mJobList[b].getScoreRatio();
     });
 
 #ifdef PRINT_DETAIL

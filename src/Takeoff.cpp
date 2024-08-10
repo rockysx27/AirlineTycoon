@@ -259,7 +259,7 @@ BOOL CTakeOffApp::InitInstance(int argc, char *argv[]) {
 
             i++;
             if (i < argc) {
-                // kDefaultTicketPriceFactor = atoi(argv[i]) / 10.0;
+                kSchedulingMinScoreRatioLastMinute = atoi(argv[i]);
             }
         }
     }
