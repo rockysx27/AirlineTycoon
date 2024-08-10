@@ -675,6 +675,9 @@ Bot::Prio Bot::condBuyKerosineTank(__int64 &moneyAvailable) {
     if (!haveDiscount()) {
         return Prio::None; /* wait until we have some discount */
     }
+    if (!mDoRoutes || mRoutes.size() < kNumRoutesStartBuyingTanks) {
+        return Prio::None; /* wait until we started using routes */
+    }
     if (mRunToFinalObjective > FinalPhase::No) {
         return Prio::None;
     }

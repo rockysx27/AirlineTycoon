@@ -25,6 +25,7 @@ const SLONG kPlaneMinimumZustand = 90;
 const SLONG kPlaneTargetZustand = 100;
 const SLONG kUsedPlaneMinimumScore = 40;
 const DOUBLE kMaxKerosinQualiZiel = 1.2;
+SLONG kNumRoutesStartBuyingTanks = 3;
 SLONG kOwnStockPosessionRatio = 25;
 const SLONG kStockEmissionMode = 2;
 const bool kReduceDividend = false;

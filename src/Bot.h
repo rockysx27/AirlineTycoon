@@ -30,6 +30,7 @@ extern const SLONG kPlaneMinimumZustand;
 extern const SLONG kPlaneTargetZustand;
 extern const SLONG kUsedPlaneMinimumScore;
 extern const DOUBLE kMaxKerosinQualiZiel;
+extern SLONG kNumRoutesStartBuyingTanks;
 extern SLONG kOwnStockPosessionRatio;
 extern const SLONG kStockEmissionMode;
 extern const bool kReduceDividend;

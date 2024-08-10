@@ -259,7 +259,7 @@ BOOL CTakeOffApp::InitInstance(int argc, char *argv[]) {
 
             i++;
             if (i < argc) {
-                kSchedulingMinScoreRatioLastMinute = atoi(argv[i]);
+                // kNumRoutesStartBuyingTanks = atoi(argv[i]);
             }
         }
     }
