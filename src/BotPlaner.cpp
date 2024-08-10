@@ -195,7 +195,7 @@ void BotPlaner::printGraph(const Graph &g) {
     std::cout << "}" << std::endl;
 }
 
-void BotPlaner::collectAllFlightJobs(const std::vector<int> &planeIds) {
+void BotPlaner::collectAllFlightJobs(const std::vector<int> &planeIds, const std::vector<int> &planeIdsExtra) {
     mJobList.clear();
 
     /* jobs already in planer */
@@ -258,14 +258,39 @@ void BotPlaner::collectAllFlightJobs(const std::vector<int> &planeIds) {
     mJobSources.clear();
 
     /* add jobs that will be re-planned */
-    for (auto i : planeIds) {
-        const auto &qFlightPlan = qPlanes[i].Flugplan.Flug;
+    auto iter = planeIds.begin();
+    auto iterExtra = planeIdsExtra.begin();
+    bool first = true;
+    while (true) {
+        if (!first) {
+            if (iter != planeIds.end()) {
+                iter++;
+            } else {
+                iterExtra++;
+            }
+        }
+        first = false;
+
+        /* extra planes are not re-scheduled. Schedule is kept as-is. We do have to count freight tons of existing jobs. */
+        bool extraPlane = false;
+
+        int planeId = -1;
+        if (iter != planeIds.end()) {
+            planeId = *iter;
+        } else if (iterExtra != planeIdsExtra.end()) {
+            planeId = *iterExtra;
+            extraPlane = true;
+        } else {
+            break;
+        }
+
+        const auto &qFlightPlan = qPlanes[planeId].Flugplan.Flug;
         for (const auto &qFPE : qFlightPlan) {
             if (qFPE.FlightBooked != 0) {
                 continue;
             }
 
-            bool canBeReplanned = (PlaneTime{qFPE.Startdate, qFPE.Startzeit} >= mScheduleFromTime);
+            bool canBeReplanned = !extraPlane && (PlaneTime{qFPE.Startdate, qFPE.Startzeit} >= mScheduleFromTime);
 
             if (qFPE.ObjectType == 2 && canBeReplanned) {
                 assert(qFPE.ObjectId >= 0x1000000);
@@ -274,37 +299,45 @@ void BotPlaner::collectAllFlightJobs(const std::vector<int> &planeIds) {
                 mJobList.emplace_back(qFPE.ObjectId, -1, job, JobOwner::Planned);
             }
 
-            if (qFPE.ObjectType == 4) {
-                assert(qFPE.ObjectId >= 0x1000000);
+            if (qFPE.ObjectType != 4) {
+                continue;
+            }
+            /* freight jobs from here onwards */
 
-                if (jobs.find(qFPE.ObjectId) == jobs.end()) {
-                    const auto &job = qPlayer.Frachten[qFPE.ObjectId];
-                    jobs[qFPE.ObjectId] = mJobList.size();
-                    mJobList.emplace_back(qFPE.ObjectId, -1, job, JobOwner::PlannedFreight);
-                    mJobList.back().setNumToTransport(job.TonsLeft);
-                }
+            assert(qFPE.ObjectId >= 0x1000000);
 
-                auto &jobListRef = mJobList[jobs[qFPE.ObjectId]];
-
-                /* possible that it is BacklogFreight when not all instances of the job were scheduled */
-                if (jobListRef.getOwner() != JobOwner::PlannedFreight) {
-                    assert(jobListRef.getOwner() == JobOwner::BacklogFreight);
-                    jobListRef.setOwner(JobOwner::PlannedFreight);
-                }
-
-                if (qFPE.Okay != 0) {
+            if (jobs.find(qFPE.ObjectId) == jobs.end()) {
+                if (extraPlane) {
+                    /* fully scheduled job on extra plane. We do not care about it. */
                     continue;
                 }
 
-                int tons = qPlanes[i].ptPassagiere / 10;
-                if (canBeReplanned) {
-                    /* tons were already counted in TonsLeft, so contained in numToTransport */
-                    jobListRef.addNumNotLocked(tons);
-                } else {
-                    /* tons were counted in TonsLeft, but must not be included in numToTransport */
-                    jobListRef.reduceNumToTransport(tons);
-                    jobListRef.addNumLocked(tons);
-                }
+                const auto &job = qPlayer.Frachten[qFPE.ObjectId];
+                jobs[qFPE.ObjectId] = mJobList.size();
+                mJobList.emplace_back(qFPE.ObjectId, -1, job, JobOwner::PlannedFreight);
+                mJobList.back().setNumToTransport(job.TonsLeft);
+            }
+
+            auto &jobListRef = mJobList[jobs[qFPE.ObjectId]];
+
+            /* possible that it is BacklogFreight when not all instances of the job were scheduled */
+            if (jobListRef.getOwner() != JobOwner::PlannedFreight) {
+                assert(jobListRef.getOwner() == JobOwner::BacklogFreight);
+                jobListRef.setOwner(JobOwner::PlannedFreight);
+            }
+
+            if (qFPE.Okay != 0) {
+                continue;
+            }
+
+            int tons = qPlanes[planeId].ptPassagiere / 10;
+            if (canBeReplanned) {
+                /* tons were already counted in TonsLeft, so contained in numToTransport */
+                jobListRef.addNumNotLocked(tons);
+            } else {
+                /* tons were counted in TonsLeft, but must not be included in numToTransport */
+                jobListRef.reduceNumToTransport(tons);
+                jobListRef.addNumLocked(tons);
             }
         }
     }
@@ -677,7 +710,7 @@ bool BotPlaner::applySolutionForPlane(PLAYER &qPlayer, int planeId, const BotPla
     return ok;
 }
 
-BotPlaner::SolutionList BotPlaner::generateSolution(const std::vector<int> &planeIdsInput, int extraBufferTime) {
+BotPlaner::SolutionList BotPlaner::generateSolution(const std::vector<int> &planeIdsInput, const std::deque<int> &planeIdsExtraInput, int extraBufferTime) {
     auto t_begin = std::chrono::steady_clock::now();
 
     if (mFactors.distanceFactor != 0) {
@@ -720,9 +753,15 @@ BotPlaner::SolutionList BotPlaner::generateSolution(const std::vector<int> &plan
             planeIds.push_back(i);
         }
     }
+    std::vector<int> planeIdsExtra;
+    for (auto i : planeIdsExtraInput) {
+        if (qPlanes.IsInAlbum(i) != 0) {
+            planeIdsExtra.push_back(i);
+        }
+    }
 
     /* prepare list of jobs */
-    collectAllFlightJobs(planeIds);
+    collectAllFlightJobs(planeIds, planeIdsExtra);
 
     /* statistics of existing jobs */
     int nPreviouslyOwned = 0;
@@ -838,10 +877,18 @@ BotPlaner::SolutionList BotPlaner::generateSolution(const std::vector<int> &plan
         takeJobs(planeState.currentSolution);
     }
 
+    /* generate solution */
     SolutionList list;
     for (const auto &plane : mPlaneStates) {
         list.emplace_back(std::move(plane.currentSolution));
     }
+
+    /* enqueue empty solution to clear schedules from invalid jobs */
+    for (auto i : planeIdsExtra) {
+        list.emplace_back();
+        list.back().planeId = i;
+    }
+
     return list;
 }
 

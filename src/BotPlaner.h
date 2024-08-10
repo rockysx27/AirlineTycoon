@@ -125,7 +125,7 @@ class BotPlaner {
     void setMinScoreRatioLastMinute(float val) { mMinScoreRatioLastMinute = val; }
     void setMinSpeedRatio(float val) { mMinSpeedRatio = val; }
 
-    SolutionList generateSolution(const std::vector<int> &planeIdsInput, int extraBufferTime);
+    SolutionList generateSolution(const std::vector<int> &planeIdsInput, const std::deque<int> &planeIdsExtraInput, int extraBufferTime);
     static bool applySolution(PLAYER &qPlayer, const SolutionList &solutions);
 
   private:
@@ -252,7 +252,7 @@ class BotPlaner {
     void printGraph(const Graph &g);
 
     /* preparation */
-    void collectAllFlightJobs(const std::vector<int> &planeIds);
+    void collectAllFlightJobs(const std::vector<int> &planeIds, const std::vector<int> &planeIdsExtra);
     void findPlaneTypes();
     std::vector<Graph> prepareGraph();
 

@@ -409,7 +409,7 @@ void Bot::grabFlights(BotPlaner &planer, bool areWeInOffice) {
         hprintf("Bot::grabFlights(): Extra time planned for walking to office: %d", extraBufferTime);
     }
 
-    mPlanerSolution = planer.generateSolution(mPlanesForJobs, extraBufferTime);
+    mPlanerSolution = planer.generateSolution(mPlanesForJobs, mPlanesForJobsUnassigned, extraBufferTime);
     if (!mPlanerSolution.empty()) {
         requestPlanFlights(areWeInOffice);
     }
@@ -436,18 +436,12 @@ void Bot::requestPlanFlights(bool areWeInOffice) {
 void Bot::planFlights() {
     mNeedToPlanJobs = false;
 
-    /* enqueue empty solution to clear schedules from invalid jobs */
-    for (const auto &planeId : mPlanesForJobsUnassigned) {
-        mPlanerSolution.emplace_back();
-        mPlanerSolution.back().planeId = planeId;
-    }
-
     SLONG oldGain = calcCurrentGainFromJobs();
     if (!BotPlaner::applySolution(qPlayer, mPlanerSolution)) {
         redprintf("Bot::planFlights(): Solution does not apply! Need to re-plan.");
 
         BotPlaner planer(qPlayer, qPlayer.Planes);
-        mPlanerSolution = planer.generateSolution(mPlanesForJobs, kAvailTimeExtra);
+        mPlanerSolution = planer.generateSolution(mPlanesForJobs, mPlanesForJobsUnassigned, kAvailTimeExtra);
         if (!mPlanerSolution.empty()) {
             BotPlaner::applySolution(qPlayer, mPlanerSolution);
         }
