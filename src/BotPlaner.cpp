@@ -562,6 +562,10 @@ bool BotPlaner::applySolutionForPlane(PLAYER &qPlayer, int planeId, const BotPla
         }
     }
 
+    if (solution.empty()) {
+        return true;
+    }
+
     /* plan taken jobs */
     std::unordered_map<int, JobScheduled> jobHash;
     std::unordered_map<int, std::vector<JobScheduled>> freightHash;
@@ -844,6 +848,9 @@ BotPlaner::SolutionList BotPlaner::generateSolution(const std::vector<int> &plan
 bool BotPlaner::applySolution(PLAYER &qPlayer, const SolutionList &solutions) {
     /* kill existing flight plans */
     for (const auto &solution : solutions) {
+        if (solution.empty()) {
+            continue;
+        }
         int planeId = solution.planeId;
         auto time = solution.scheduleFromTime;
         if (!GameMechanic::clearFlightPlanFrom(qPlayer, planeId, time.getDate(), time.getHour())) {

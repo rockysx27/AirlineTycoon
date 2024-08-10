@@ -436,6 +436,12 @@ void Bot::requestPlanFlights(bool areWeInOffice) {
 void Bot::planFlights() {
     mNeedToPlanJobs = false;
 
+    /* enqueue empty solution to clear schedules from invalid jobs */
+    for (const auto &planeId : mPlanesForJobsUnassigned) {
+        mPlanerSolution.emplace_back();
+        mPlanerSolution.back().planeId = planeId;
+    }
+
     SLONG oldGain = calcCurrentGainFromJobs();
     if (!BotPlaner::applySolution(qPlayer, mPlanerSolution)) {
         redprintf("Bot::planFlights(): Solution does not apply! Need to re-plan.");

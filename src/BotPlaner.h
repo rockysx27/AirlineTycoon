@@ -104,6 +104,8 @@ class BotPlaner {
         int totalPremium{0};
         int planeId{-1};
         PlaneTime scheduleFromTime;
+
+        inline bool empty() const { return jobs.empty(); }
     };
     using SolutionList = std::vector<BotPlaner::Solution>;
 
