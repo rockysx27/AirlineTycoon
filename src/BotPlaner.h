@@ -288,6 +288,7 @@ class BotPlaner {
 
     /* apply solution */
     bool takeJobs(Solution &currentSolution);
+    static bool removeInvalidFlightsForPlane(PLAYER &qPlayer, int planeId);
     static bool applySolutionForPlane(PLAYER &qPlayer, int planeId, const BotPlaner::Solution &solution);
 
     /* randomness */

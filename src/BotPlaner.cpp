@@ -566,10 +566,10 @@ bool BotPlaner::takeJobs(Solution &currentSolution) {
     return ok;
 }
 
-bool BotPlaner::applySolutionForPlane(PLAYER &qPlayer, int planeId, const BotPlaner::Solution &solution) {
+bool BotPlaner::removeInvalidFlightsForPlane(PLAYER &qPlayer, int planeId) {
     const auto &qPlanes = qPlayer.Planes;
     if (planeId < 0x1000000 || !qPlanes.IsInAlbum(planeId)) {
-        redprintf("BotPlaner::applySolutionForPlane(): Skipping invalid plane: %d", planeId);
+        redprintf("BotPlaner::removeInvalidFlightsForPlane(): Skipping invalid plane: %d", planeId);
         return false;
     }
 
@@ -584,15 +584,26 @@ bool BotPlaner::applySolutionForPlane(PLAYER &qPlayer, int planeId, const BotPla
             continue;
         }
         if (qFPE.Startdate == Sim.Date && qFPE.Startzeit <= Sim.GetHour() + 1) {
-            orangeprintf("BotPlaner::applySolutionForPlane(): Invalid FPE is already locked:");
+            orangeprintf("BotPlaner::removeInvalidFlightsForPlane(): Invalid FPE is already locked:");
             Helper::printFPE(qFPE);
             continue;
         }
-        orangeprintf("BotPlaner::applySolutionForPlane(): Removing invalid FPE:");
+
+        orangeprintf("BotPlaner::removeInvalidFlightsForPlane(): Removing invalid FPE:");
         Helper::printFPE(qFPE);
+
         if (!GameMechanic::removeFromFlightPlan(qPlayer, planeId, d)) {
-            redprintf("BotPlaner::applySolutionForPlane(): GameMechanic::removeFromFlightPlan returned error!");
+            redprintf("BotPlaner::removeInvalidFlightsForPlane(): GameMechanic::removeFromFlightPlan returned error!");
         }
+    }
+    return true;
+}
+
+bool BotPlaner::applySolutionForPlane(PLAYER &qPlayer, int planeId, const BotPlaner::Solution &solution) {
+    const auto &qPlanes = qPlayer.Planes;
+    if (planeId < 0x1000000 || !qPlanes.IsInAlbum(planeId)) {
+        redprintf("BotPlaner::applySolutionForPlane(): Skipping invalid plane: %d", planeId);
+        return false;
     }
 
     if (solution.empty()) {
@@ -638,6 +649,7 @@ bool BotPlaner::applySolutionForPlane(PLAYER &qPlayer, int planeId, const BotPla
 
     /* check flight time */
     bool ok = true;
+    const auto &qFlightPlan = qPlanes[planeId].Flugplan.Flug;
     for (int d = 0; d < qFlightPlan.AnzEntries(); d++) {
         const auto &qFPE = qFlightPlan[d];
         if (PlaneTime{qFPE.Startdate, qFPE.Startzeit} < solution.scheduleFromTime) {
@@ -895,10 +907,16 @@ BotPlaner::SolutionList BotPlaner::generateSolution(const std::vector<int> &plan
 bool BotPlaner::applySolution(PLAYER &qPlayer, const SolutionList &solutions) {
     /* kill existing flight plans */
     for (const auto &solution : solutions) {
+        int planeId = solution.planeId;
+
+        /* remove from entire flight plan (also before scheduleFromTime) */
+        removeInvalidFlightsForPlane(qPlayer, planeId);
+
         if (solution.empty()) {
             continue;
         }
-        int planeId = solution.planeId;
+
+        /* make room for new solution */
         auto time = solution.scheduleFromTime;
         if (!GameMechanic::clearFlightPlanFrom(qPlayer, planeId, time.getDate(), time.getHour())) {
             return false;
