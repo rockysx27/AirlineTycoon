@@ -41,7 +41,7 @@ struct RouteScore {
     }
 };
 
-template <typename T> inline bool eraseFirst(T &l, int val) {
+template <typename T> inline bool eraseFirst(T &l, SLONG val) {
     auto it = l.begin();
     while (it != l.end() && *it != val) {
         it++;
@@ -116,7 +116,7 @@ void Bot::actionBuero() {
 }
 
 void Bot::actionCallInternational(bool areWeInOffice) {
-    std::vector<int> cities;
+    std::vector<SLONG> cities;
     for (SLONG n = 0; n < Cities.AnzEntries(); n++) {
         if (!GameMechanic::canCallInternational(qPlayer, n)) {
             continue;
@@ -400,7 +400,7 @@ void Bot::actionVisitHR() {
     }
 
     /* advisors */
-    std::vector<int> wantedAdvisors = {BERATERTYP_FITNESS, BERATERTYP_SICHERHEIT, BERATERTYP_KEROSIN, BERATERTYP_GELD, BERATERTYP_FLUGZEUG};
+    std::vector<SLONG> wantedAdvisors = {BERATERTYP_FITNESS, BERATERTYP_SICHERHEIT, BERATERTYP_KEROSIN, BERATERTYP_GELD, BERATERTYP_FLUGZEUG};
     for (auto advisorType : wantedAdvisors) {
         SLONG bestCandidateId = -1;
         SLONG bestCandidateSkill = 0;

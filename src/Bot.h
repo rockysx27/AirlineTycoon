@@ -216,6 +216,7 @@ class Bot {
     void grabFlights(BotPlaner &planer, bool areWeInOffice);
     void requestPlanFlights(bool areWeInOffice);
     void planFlights();
+    SLONG replaceAutomaticFlights(SLONG planeId);
     std::pair<SLONG, SLONG> kerosineQualiOptimization(__int64 moneyAvailable, DOUBLE targetFillRatio) const;
     /* routes */
     void checkLostRoutes();
@@ -323,7 +324,7 @@ class Bot {
     BotPlaner::SolutionList mPlanerSolution;
 
     /* anim state */
-    int mOnThePhone{0};
+    SLONG mOnThePhone{0};
 
     /* designer plane */
     CXPlane mDesignerPlane;

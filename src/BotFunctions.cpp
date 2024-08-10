@@ -446,6 +446,7 @@ void Bot::planFlights() {
             BotPlaner::applySolution(qPlayer, mPlanerSolution);
         }
     }
+    mPlanerSolution = {};
 
     SLONG newGain = calcCurrentGainFromJobs();
     SLONG diff = newGain - oldGain;
@@ -458,12 +459,18 @@ void Bot::planFlights() {
     }
     Helper::checkFlightJobs(qPlayer, false, true);
 
-    mPlanerSolution = {};
+    /* replace automatic flights with routes */
+    SLONG count = 0;
+    for (const auto &id : mPlanesForJobs) {
+        count += replaceAutomaticFlights(id);
+    }
+    hprintf("Bot::planFlights(): Replaced %ld automatic flights with routes", count);
+    Helper::checkFlightJobs(qPlayer, false, true);
 
     /* check whether we will incur any fines */
     SLONG num = 0;
     mMoneyReservedForFines = 0;
-    for (int i = 0; i < qPlayer.Auftraege.AnzEntries(); i++) {
+    for (SLONG i = 0; i < qPlayer.Auftraege.AnzEntries(); i++) {
         if (qPlayer.Auftraege.IsInAlbum(i) == 0) {
             continue;
         }
@@ -474,7 +481,7 @@ void Bot::planFlights() {
         mMoneyReservedForFines += job.Strafe;
         num++;
     }
-    for (int i = 0; i < qPlayer.Frachten.AnzEntries(); i++) {
+    for (SLONG i = 0; i < qPlayer.Frachten.AnzEntries(); i++) {
         if (qPlayer.Frachten.IsInAlbum(i) == 0) {
             continue;
         }
@@ -491,6 +498,53 @@ void Bot::planFlights() {
     }
 
     forceReplanning();
+}
+
+SLONG Bot::replaceAutomaticFlights(SLONG planeId) {
+    auto &qPlane = qPlayer.Planes[planeId];
+    auto &qFlightPlan = qPlane.Flugplan.Flug;
+
+    bool changedFlightPlan = true;
+    SLONG count = 0;
+    while (changedFlightPlan) {
+        changedFlightPlan = false;
+        for (SLONG d = 0; !changedFlightPlan && d < qFlightPlan.AnzEntries(); d++) {
+            const auto &qFPE = qFlightPlan[d];
+            if (qFPE.ObjectType != 3) {
+                continue;
+            }
+
+            SLONG from = Cities.find(qFPE.VonCity);
+            SLONG to = Cities.find(qFPE.NachCity);
+            PlaneTime startTime{qFPE.Startdate, qFPE.Startzeit};
+            PlaneTime endTime{qFPE.Landedate, qFPE.Landezeit};
+
+            for (const auto &iter : mRoutes) {
+                const auto &qRoute = getRoute(iter);
+                SLONG fromCity = Cities.find(qRoute.VonCity);
+                SLONG toCity = Cities.find(qRoute.NachCity);
+                if (from != fromCity || to != toCity) {
+                    continue;
+                }
+                if (qPlane.ptReichweite * 1000 < Cities.CalcDistance(fromCity, toCity)) {
+                    continue;
+                }
+
+                if (!GameMechanic::removeFromFlightPlan(qPlayer, planeId, d)) {
+                    redprintf("Bot::replaceAutomaticFlights(): GameMechanic::removeFromFlightPlan returned error!");
+                    return count;
+                }
+                if (!GameMechanic::planRouteJob(qPlayer, planeId, iter.routeId, startTime.getDate(), startTime.getHour())) {
+                    redprintf("Bot::replaceAutomaticFlights(): GameMechanic::planRouteJob returned error!");
+                    return count;
+                }
+                changedFlightPlan = true;
+                count++;
+                break;
+            }
+        }
+    }
+    return count;
 }
 
 std::pair<SLONG, SLONG> Bot::kerosineQualiOptimization(__int64 moneyAvailable, DOUBLE targetFillRatio) const {
@@ -756,7 +810,7 @@ std::pair<Bot::RoutesNextStep, SLONG> Bot::routesNextStep() const {
     }
 
     /* find route with lowest utilization that can be improved */
-    int routeToImprove = -1;
+    SLONG routeToImprove = -1;
     for (auto i : mRoutesSortedByOwnUtilization) {
         if (mRoutes[i].routeUtilization < 90 && mRoutes[i].routeOwnUtilization < kMaximumRouteUtilization) {
             routeToImprove = i;
