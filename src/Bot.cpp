@@ -1172,7 +1172,8 @@ TEAKFILE &operator<<(TEAKFILE &File, const Bot &bot) {
     }
 
     File << bot.mLongTermStrategy;
-    File << bot.mBestPlaneTypeId << bot.mBestUsedPlaneIdx << bot.mBuyPlaneForRouteId << bot.mPlaneTypeForNewRoute;
+    File << bot.mBestPlaneTypeId << bot.mBestUsedPlaneIdx;
+    File << bot.mBuyPlaneForRouteId << bot.mPlaneTypeForNewRoute;
 
     File << static_cast<SLONG>(bot.mPlanesForNewRoute.size());
     for (const auto &i : bot.mPlanesForNewRoute) {
@@ -1295,9 +1296,9 @@ TEAKFILE &operator>>(TEAKFILE &File, Bot &bot) {
         File >> bot.mPlanesForRoutesUnassigned[i];
     }
 
-    SLONG runToFinalObjective = 0;
     File >> bot.mLongTermStrategy;
-    File >> bot.mBestPlaneTypeId >> bot.mBestUsedPlaneIdx >> bot.mBuyPlaneForRouteId >> bot.mPlaneTypeForNewRoute;
+    File >> bot.mBestPlaneTypeId >> bot.mBestUsedPlaneIdx;
+    File >> bot.mBuyPlaneForRouteId >> bot.mPlaneTypeForNewRoute;
 
     File >> size;
     bot.mPlanesForNewRoute.resize(size);
@@ -1307,6 +1308,7 @@ TEAKFILE &operator>>(TEAKFILE &File, Bot &bot) {
 
     File >> bot.mWantToRentRouteId;
     File >> bot.mFirstRun >> bot.mDayStarted >> bot.mDoRoutes;
+    SLONG runToFinalObjective = 0;
     File >> runToFinalObjective >> bot.mMoneyForFinalObjective;
     bot.mRunToFinalObjective = static_cast<Bot::FinalPhase>(runToFinalObjective);
     File >> bot.mOutOfGates;
