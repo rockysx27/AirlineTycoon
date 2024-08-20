@@ -1030,7 +1030,7 @@ void Bot::RobotExecuteAction() {
 
     case ACTION_VISITROUTEBOX:
         if (condVisitRouteBoxPlanning() != Prio::None) {
-            actionFindBestRoute();
+            actionVisitRouteBox();
         } else {
             orangeprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
@@ -1215,6 +1215,7 @@ TEAKFILE &operator<<(TEAKFILE &File, const Bot &bot) {
         File << i;
     }
 
+    File << bot.mRoutesUpdated << bot.mRoutesUtilizationUpdated;
     File << static_cast<SLONG>(bot.mRoutesNextStep) << bot.mImproveRouteId;
 
     File << bot.mNumEmployees;
@@ -1349,6 +1350,7 @@ TEAKFILE &operator>>(TEAKFILE &File, Bot &bot) {
         File >> bot.mRoutesSortedByOwnUtilization[i];
     }
 
+    File >> bot.mRoutesUpdated >> bot.mRoutesUtilizationUpdated;
     SLONG routesNextStep = 0;
     File >> routesNextStep >> bot.mImproveRouteId;
     bot.mRoutesNextStep = static_cast<Bot::RoutesNextStep>(routesNextStep);

@@ -19,14 +19,6 @@ bool Bot::hoursPassed(SLONG room, SLONG hours) const {
     return (Sim.Time - it->second > hours * 60000);
 }
 
-void Bot::grabNewFlights() {
-    mLastTimeInRoom.erase(ACTION_CALL_INTERNATIONAL);
-    mLastTimeInRoom.erase(ACTION_CALL_INTER_HANDY);
-    mLastTimeInRoom.erase(ACTION_CHECKAGENT1);
-    mLastTimeInRoom.erase(ACTION_CHECKAGENT2);
-    mLastTimeInRoom.erase(ACTION_CHECKAGENT3);
-}
-
 bool Bot::haveDiscount() const {
     if (qPlayer.HasBerater(BERATERTYP_SICHERHEIT) >= 50 || Sim.Date > 7) {
         return true; /* wait until we have some discount */
@@ -368,6 +360,14 @@ Bot::Prio Bot::condBuero() {
     if (mNeedToPlanRoutes) {
         return Prio::Top;
     }
+    if (mDoRoutes) {
+        if (!mRoutesUpdated) {
+            return Prio::Medium; /* update cached route info */
+        }
+        if (mRoutesUtilizationUpdated && mRoutesNextStep == RoutesNextStep::None) {
+            return Prio::Medium; /* generate route strategy if other info is already updated */
+        }
+    }
     return Prio::None;
 }
 
@@ -552,8 +552,7 @@ Bot::Prio Bot::condBuyNewPlane(__int64 &moneyAvailable) {
         return Prio::None; /* no plane purchase planned */
     }
 
-    auto res = mRoutesNextStep;
-    if (mDoRoutes && RoutesNextStep::BuyMorePlanes != res) {
+    if (mDoRoutes && RoutesNextStep::BuyMorePlanes != mRoutesNextStep) {
         return Prio::None;
     }
 
@@ -1063,20 +1062,21 @@ Bot::Prio Bot::condExpandAirport(__int64 &moneyAvailable) {
 }
 
 Bot::Prio Bot::condVisitRouteBoxPlanning() {
-    if (!hoursPassed(ACTION_VISITROUTEBOX, 4)) {
-        return Prio::None;
-    }
+    /* no hoursPassed(): Action frequency is controlled by mRoutesNextStep */
     if (!qPlayer.RobotUse(ROBOT_USE_ROUTEBOX) || !mDoRoutes) {
         return Prio::None;
     }
     if (mRunToFinalObjective > FinalPhase::No) {
         return Prio::None;
     }
-    if (mWantToRentRouteId != -1) {
-        return Prio::None; /* we already want to rent a route */
+    if ((mWantToRentRouteId == -1) && RoutesNextStep::RentNewRoute == mRoutesNextStep) {
+        return Prio::Medium; /* execute route strategy */
     }
-    if (RoutesNextStep::RentNewRoute == mRoutesNextStep) {
-        return Prio::Medium;
+    if (!mRoutesUtilizationUpdated) {
+        return Prio::Medium; /* update cached route info */
+    }
+    if (mRoutesUpdated && mRoutesNextStep == RoutesNextStep::None) {
+        return Prio::Medium; /* generate route strategy if other info is already updated */
     }
     return Prio::None;
 }
@@ -1098,7 +1098,7 @@ Bot::Prio Bot::condVisitRouteBoxRenting(__int64 &moneyAvailable) {
     if (!Helper::checkRoomOpen(ACTION_WERBUNG_ROUTES)) {
         return Prio::None; /* let's wait until we are able to buy ads for the route */
     }
-    if (mWantToRentRouteId != -1 && RoutesNextStep::RentNewRoute == mRoutesNextStep) {
+    if ((mWantToRentRouteId != -1) && RoutesNextStep::RentNewRoute == mRoutesNextStep) {
         return Prio::High;
     }
     return Prio::None;
@@ -1158,9 +1158,7 @@ Bot::Prio Bot::condVisitDesigner(__int64 &moneyAvailable) {
 
 Bot::Prio Bot::condBuyAdsForRoutes(__int64 &moneyAvailable) {
     moneyAvailable = getMoneyAvailable();
-    if (!hoursPassed(ACTION_WERBUNG_ROUTES, 4)) {
-        return Prio::None;
-    }
+    /* no hoursPassed(): Action frequency is controlled by mRoutesNextStep */
 
     if (!qPlayer.RobotUse(ROBOT_USE_WERBUNG)) {
         return Prio::None;

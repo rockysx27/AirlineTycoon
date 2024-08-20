@@ -122,7 +122,6 @@ class Bot {
     /* in BotConditions.cpp */
     bool isOfficeUsable() const;
     bool hoursPassed(SLONG room, SLONG hours) const;
-    void grabNewFlights();
     bool haveDiscount() const;
     enum class HowToPlan { None, Laptop, Office };
     HowToPlan canWePlanFlights();
@@ -203,12 +202,13 @@ class Bot {
     void actionVisitMech();
     void actionVisitDutyFree(__int64 moneyAvailable);
     void actionVisitBoss();
-    void actionFindBestRoute();
+    void actionVisitRouteBox();
     void actionRentRoute();
     void actionBuyAdsForRoutes(__int64 moneyAvailable);
     void actionBuyAds(__int64 moneyAvailable);
 
     /* in BotFunctions.cpp */
+    void grabNewFlights();
     void determineNemesis();
     void switchToFinalTarget();
     std::vector<SLONG> findBestAvailablePlaneType(bool forRoutes) const;
@@ -220,10 +220,14 @@ class Bot {
     std::pair<SLONG, SLONG> kerosineQualiOptimization(__int64 moneyAvailable, DOUBLE targetFillRatio) const;
     /* routes */
     void checkLostRoutes();
-    void updateRouteInfo();
-    std::pair<Bot::RoutesNextStep, SLONG> routesNextStep() const;
+    void updateRouteInfoOffice();
+    void updateRouteInfoBoard();
+    void routesRecalcNextStep();
+    std::pair<Bot::RoutesNextStep, SLONG> routesFindNextStep() const;
     void requestPlanRoutes(bool areWeInOffice);
+    void findBestRoute();
     void planRoutes();
+    void assignPlanesToRoutes();
 
     /* misc (in Bot.cpp) */
     SLONG numPlanes() const { return mPlanesForJobs.size() + mPlanesForJobsUnassigned.size() + mPlanesForRoutes.size() + mPlanesForRoutesUnassigned.size(); }
@@ -307,6 +311,8 @@ class Bot {
     /* routes */
     std::vector<RouteInfo> mRoutes;
     std::vector<SLONG> mRoutesSortedByOwnUtilization;
+    bool mRoutesUpdated{false};
+    bool mRoutesUtilizationUpdated{false};
     RoutesNextStep mRoutesNextStep{RoutesNextStep::None};
     SLONG mImproveRouteId{-1};
 
