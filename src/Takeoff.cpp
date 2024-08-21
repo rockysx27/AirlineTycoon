@@ -259,7 +259,7 @@ BOOL CTakeOffApp::InitInstance(int argc, char *argv[]) {
 
             i++;
             if (i < argc) {
-                // kNumRoutesStartBuyingTanks = atoi(argv[i]);
+                gAutoBotDiff = atoi(argv[i]);
             }
         }
     }

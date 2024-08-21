@@ -404,9 +404,6 @@ void Bot::grabFlights(BotPlaner &planer, bool areWeInOffice) {
         planer.setDistanceFactor(1);
         planer.setMinSpeedRatio(0.6f);
         break;
-    case DIFF_ADDON06:
-        // planer.setConstBonus(1000 * 1000); TODO
-        break;
     case DIFF_ADDON09:
         planer.setUhrigBonus(1000 * 1000);
         break;
@@ -535,6 +532,9 @@ SLONG Bot::replaceAutomaticFlights(SLONG planeId) {
         for (SLONG d = 0; !changedFlightPlan && d < qFlightPlan.AnzEntries(); d++) {
             const auto &qFPE = qFlightPlan[d];
             if (qFPE.ObjectType != 3) {
+                continue;
+            }
+            if (qFPE.Startdate == Sim.Date && qFPE.Startzeit <= Sim.GetHour() + 1) {
                 continue;
             }
 
