@@ -123,6 +123,8 @@ class Bot {
     bool isOfficeUsable() const;
     bool hoursPassed(SLONG room, SLONG hours) const;
     bool haveDiscount() const;
+    bool checkLaptop();
+    bool checkLaptopOrOffice();
     enum class HowToPlan { None, Laptop, Office };
     HowToPlan canWePlanFlights();
     __int64 getMoneyAvailable() const;
@@ -298,6 +300,7 @@ class Bot {
     __int64 mNemesisScore{0};
     bool mNeedToShutdownSecurity{false};
     SLONG mNemesisSabotaged{-1};
+    SLONG mArabHintsTracker{0};
 
     /* status boss office */
     SLONG mBossNumCitiesAvailable{-1};

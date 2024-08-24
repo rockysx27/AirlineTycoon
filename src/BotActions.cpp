@@ -49,10 +49,12 @@ void Bot::actionStartDay(__int64 moneyAvailable) {
 void Bot::actionStartDayLaptop(__int64 moneyAvailable) {
     mDayStarted = true;
 
-    /* reset route planning and invalildate cached info */
+    /* reset route planning and invalidate cached info */
     mRoutesUpdated = false;
     mRoutesUtilizationUpdated = false;
     mRoutesNextStep = RoutesNextStep::None;
+
+    mArabHintsTracker -= std::min(3, mArabHintsTracker);
 
     /* check lists of planes, check which planes are available for service and which are not */
     checkPlaneLists();
@@ -627,28 +629,30 @@ void Bot::actionSabotage(__int64 moneyAvailable) {
      * money/hints already checked in condition */
     SLONG jobType = 1;
     SLONG jobNumber = 1;
+    SLONG jobHints = 8;
 
     /* sabotage planes to damage enemy stock price in stock price competitions */
     bool stockPriceSabotage = (Sim.Difficulty == DIFF_ADDON08 || Sim.Difficulty == DIFF_ATFS07);
     /* sabotage plane tire to delay next start in miles&more mission */
     bool delaySabotage = (Sim.Difficulty == DIFF_ADDON04);
-
     if (stockPriceSabotage || delaySabotage) {
         std::array<SLONG, 5> hintArray{2, 4, 10, 20, 100};
         jobType = 0;
         jobNumber = std::min((stockPriceSabotage ? 4 : 3), qPlayer.ArabTrust);
-        auto minCost = SabotagePrice[jobNumber - 1];
-        SLONG hints = hintArray[jobNumber - 1];
-        if (qPlayer.ArabHints + hints > kMaxSabotageHints) {
-            return; /* wait until we won't be caught */
-        }
-        if (minCost > moneyAvailable) {
-            return; /* wait until we have enough money */
-        }
+        jobHints = hintArray[jobNumber - 1];
 
         const auto &qNemesisPlanes = Sim.Players.Players[mNemesis].Planes;
         qPlayer.ArabPlaneSelection = qNemesisPlanes.GetRandomUsedIndex(&LocalRandom);
         hprintf("Bot::actionSabotage(): Selecting plane %s", Helper::getPlaneName(qNemesisPlanes[qPlayer.ArabPlaneSelection]).c_str());
+    }
+
+    /* check preconditions */
+    auto minCost = SabotagePrice[jobNumber - 1];
+    if (mArabHintsTracker + jobHints > kMaxSabotageHints) {
+        return; /* wait until we won't be caught */
+    }
+    if (minCost > moneyAvailable) {
+        return; /* wait until we have enough money */
     }
 
     /* exceute sabotage */
@@ -665,6 +669,7 @@ void Bot::actionSabotage(__int64 moneyAvailable) {
         GameMechanic::activateSaboteurJob(qPlayer, FALSE);
         hprintf("Bot::actionSabotage(): Sabotaging nemesis %s (jobType = %ld, jobNumber = %ld)", (LPCTSTR)nemesisName, jobType, jobNumber);
         mNemesisSabotaged = mNemesis; /* ensures that we do not sabotage him again tomorrow */
+        mArabHintsTracker += jobHints;
         break;
     case GameMechanic::CheckSabotageResult::DeniedInvalidParam:
         redprintf("Bot::actionSabotage(): Cannot sabotage nemesis %s: Invalid param", (LPCTSTR)nemesisName);
