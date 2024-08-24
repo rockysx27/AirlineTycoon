@@ -227,8 +227,7 @@ bool Bot::checkPlaneLists() {
     return foundProblem || planesGoneMissing;
 }
 
-bool Bot::findPlanesNotAvailableForService(std::vector<SLONG> &listAvailable, std::deque<SLONG> &listUnassigned) {
-    bool planesGoneMissing = false;
+void Bot::findPlanesNotAvailableForService(std::vector<SLONG> &listAvailable, std::deque<SLONG> &listUnassigned) {
     std::vector<SLONG> newAvailable;
     for (const auto id : listAvailable) {
         auto &qPlane = qPlayer.Planes[id];
@@ -258,11 +257,9 @@ bool Bot::findPlanesNotAvailableForService(std::vector<SLONG> &listAvailable, st
         }
     }
     std::swap(listAvailable, newAvailable);
-    return planesGoneMissing;
 }
 
-bool Bot::findPlanesAvailableForService(std::deque<SLONG> &listUnassigned, std::vector<SLONG> &listAvailable) {
-    bool planesGoneMissing = false;
+void Bot::findPlanesAvailableForService(std::deque<SLONG> &listUnassigned, std::vector<SLONG> &listAvailable) {
     std::deque<SLONG> newUnassigned;
     for (const auto id : listUnassigned) {
         auto &qPlane = qPlayer.Planes[id];
@@ -282,7 +279,6 @@ bool Bot::findPlanesAvailableForService(std::deque<SLONG> &listUnassigned, std::
         }
     }
     std::swap(listUnassigned, newUnassigned);
-    return planesGoneMissing;
 }
 
 const CRentRoute &Bot::getRentRoute(const Bot::RouteInfo &routeInfo) const { return qPlayer.RentRouten.RentRouten[routeInfo.routeId]; }
