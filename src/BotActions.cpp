@@ -722,12 +722,14 @@ void Bot::actionEmitShares() {
     hprintf("Bot::actionEmitShares(): Emitting stock: %ld", newStock);
     GameMechanic::emitStock(qPlayer, newStock, kStockEmissionMode);
 
-    // Direkt wieder auf ein Viertel aufkaufen
-    auto moneyAvailable = getMoneyAvailable() - kMoneyReserveBuyOwnShares;
-    auto amount = calcAmountToBuy(qPlayer.PlayerNum, kOwnStockPosessionRatio, moneyAvailable);
-    if (amount > 0) {
-        hprintf("Bot::actionEmitShares(): Buying own stock: %lld", amount);
-        GameMechanic::buyStock(qPlayer, qPlayer.PlayerNum, amount);
+    /* rebuy some to reach target ratio of own stock */
+    if (mRunToFinalObjective < FinalPhase::TargetRun) {
+        auto moneyAvailable = getMoneyAvailable() - kMoneyReserveBuyOwnShares;
+        auto amount = calcAmountToBuy(qPlayer.PlayerNum, kOwnStockPosessionRatio, moneyAvailable);
+        if (amount > 0) {
+            hprintf("Bot::actionEmitShares(): Buying own stock: %lld", amount);
+            GameMechanic::buyStock(qPlayer, qPlayer.PlayerNum, amount);
+        }
     }
 }
 
@@ -741,6 +743,7 @@ void Bot::actionBuyNemesisShares(__int64 moneyAvailable) {
         if (amount > 0) {
             hprintf("Bot::actionBuyNemesisShares(): Buying enemy stock from %s: %lld", (LPCTSTR)qTarget.AirlineX, amount);
             GameMechanic::buyStock(qPlayer, dislike, amount);
+            moneyAvailable = getMoneyAvailable() - kMoneyReserveBuyOwnShares;
         }
     }
 }
@@ -768,10 +771,10 @@ void Bot::actionOvertakeAirline() {
         }
     }
     if (airline == -1) {
-        redprintf("Bot::actionOvertakeAirline():  There is no airline we can overtake");
+        redprintf("Bot::actionOvertakeAirline(): There is no airline we can overtake");
         return;
     }
-    hprintf("Bot::actionOvertakeAirline():  Liquidating %s", (LPCTSTR)Sim.Players.Players[airline].AirlineX);
+    hprintf("Bot::actionOvertakeAirline(): Liquidating %s", (LPCTSTR)Sim.Players.Players[airline].AirlineX);
     GameMechanic::overtakeAirline(qPlayer, airline, true);
 }
 
@@ -1058,8 +1061,9 @@ void Bot::actionRentRoute() {
     mPlaneTypeForNewRoute = -1;
 
     /* update sorted list */
+    assert(mRoutes.size() > 0);
     mRoutesSortedByOwnUtilization.resize(mRoutes.size());
-    for (SLONG i = 1; i < mRoutesSortedByOwnUtilization.size(); i++) {
+    for (SLONG i = mRoutesSortedByOwnUtilization.size() - 1; i >= 1; i--) {
         mRoutesSortedByOwnUtilization[i] = mRoutesSortedByOwnUtilization[i - 1];
     }
     mRoutesSortedByOwnUtilization[0] = mRoutes.size() - 1;

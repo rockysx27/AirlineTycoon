@@ -125,11 +125,11 @@ Bot::HowToGetMoney Bot::howToGetMoney() {
     }
 
     /* Step 4: Sell shares */
-    if (broke == AreWeBroke::Somewhat) {
-        return (numShares > 0) ? HowToGetMoney::SellShares : HowToGetMoney::None;
-    }
     if (numShares > 0) {
         return HowToGetMoney::SellShares;
+    }
+    if (broke == AreWeBroke::Somewhat) {
+        return HowToGetMoney::None;
     }
     if (numOwnShares > 0) {
         return (broke == AreWeBroke::Desperate) ? HowToGetMoney::SellAllOwnShares : HowToGetMoney::SellOwnShares;

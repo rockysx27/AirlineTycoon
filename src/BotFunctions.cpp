@@ -212,7 +212,8 @@ void Bot::switchToFinalTarget() {
     } else if (qPlayer.RobotUse(ROBOT_USE_LUXERY) && Sim.Difficulty == DIFF_ATFS02) {
         /* how much money do we need to upgrade everything safety-related? */
         auto planes = getAllPlanes();
-        for (SLONG c = 0; c < planes.size(); c++) {
+        auto numPlanes = std::min(5, static_cast<SLONG>(planes.size()));
+        for (SLONG c = 0; c < numPlanes; c++) {
             CPlane &qPlane = qPlayer.Planes[planes[c]];
             if (qPlane.ReifenTarget < 2) {
                 requiredMoney += (ReifenCosts[2] - ReifenCosts[qPlane.Reifen] / 2);
