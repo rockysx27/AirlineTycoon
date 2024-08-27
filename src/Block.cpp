@@ -1458,7 +1458,6 @@ bool BLOCK::RechteSeiteInhalt(XY TitleAreaB, XY ClientAreaB) {
             Bitmap.PrintAt(StandardTexte.GetS(TOKEN_ROUTE, 1007), FontSmallBlack, TEC_FONT_LEFT, ClientAreaB + XY(2, 40), ClientAreaB + XY(172, 170));
             Bitmap.PrintAt(Einheiten[EINH_DM].bString(qRRoute.TicketpreisFC), FontSmallBlack, TEC_FONT_LEFT, ClientAreaB + XY(80, 40),
                            ClientAreaB + XY(172, 170));
-            Bitmap.PrintAt("+-", FontSmallBlack, TEC_FONT_RIGHT, ClientAreaB + XY(2, 40), ClientAreaB + XY(172, 170));
 
             // erhöhen oder verringern:
             // Bitmap.PrintAt (StandardTexte.GetS (TOKEN_ROUTE, 1100), FontSmallBlack, TEC_FONT_LEFT, ClientAreaB+XY(2,40), ClientAreaB+XY(172,170));

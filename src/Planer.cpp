@@ -2288,17 +2288,29 @@ void CPlaner::HandleLButtonDown() {
                     break;
                 }
 
-                if (ClientPosB.IfIsWithin(148, 40 - 2, 160, 40 - 2 + 14)) {
-                    ticketPreisFC += 10;
-                }
-                if (ClientPosB.IfIsWithin(160, 40 - 2, 172, 40 - 2 + 14)) {
-                    ticketPreisFC -= 10;
-                }
                 if (ClientPosB.IfIsWithin(148, 40 - 2 - 13, 160, 40 - 2 - 13 + 14)) {
-                    ticketPreis += 10;
+                    if (AtGetAsyncKeyState(ATKEY_CONTROL) / 256 != 0) {
+                        ticketPreis += 1000;
+                        ticketPreisFC += 2000;
+                    } else if (AtGetAsyncKeyState(ATKEY_SHIFT) / 256 != 0) {
+                        ticketPreis += 100;
+                        ticketPreisFC += 200;
+                    } else {
+                        ticketPreis += 10;
+                        ticketPreisFC += 20;
+                    }
                 }
                 if (ClientPosB.IfIsWithin(160, 40 - 2 - 13, 172, 40 - 2 - 13 + 14)) {
-                    ticketPreis -= 10;
+                    if (AtGetAsyncKeyState(ATKEY_CONTROL) / 256 != 0) {
+                        ticketPreis -= 1000;
+                        ticketPreisFC -= 2000;
+                    } else if (AtGetAsyncKeyState(ATKEY_SHIFT) / 256 != 0) {
+                        ticketPreis -= 100;
+                        ticketPreisFC -= 200;
+                    } else {
+                        ticketPreis -= 10;
+                        ticketPreisFC -= 20;
+                    }
                 }
                 /*if ((ClientPosB.y-27)/13==0)
                   {
