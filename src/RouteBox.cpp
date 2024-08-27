@@ -191,8 +191,8 @@ void CRouteBox::OnPaint() {
             }
 
             if ((i != -1 && i + RoutePage * ListSize != CurrentTipIndex) || (i == -1 && i != CurrentTip)) {
-                CurrentTip = Table.LineIndex[i + RoutePage * ListSize];
                 if (i != -1) {
+                    CurrentTip = Table.LineIndex[i + RoutePage * ListSize];
                     CurrentTipIndex = i + RoutePage * ListSize;
                 } else {
                     CurrentTipIndex = -1;
