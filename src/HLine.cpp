@@ -44,6 +44,7 @@ void CHLObj::BlitAt(SB_CBitmapCore *pBitmap, XY Target) {
     SLONG Max = 0; // Vertikales Clipping
     Min = max(0, ClipRect.top - Target.y);
     Max = min(HLineEntries.AnzEntries(), ClipRect.bottom - Target.y);
+    Min = min(Min, Max);
 
     ClipRect.left -= Target.x;
     ClipRect.right -= Target.x;

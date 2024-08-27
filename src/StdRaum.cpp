@@ -7575,8 +7575,8 @@ void CStdRaum::MenuNextPage() {
 
 void CStdRaum::PersonalPageFlipped() {
     PLAYER &qPlayer = Sim.Players.Players[PlayerNum];
-    auto &qWorker = Workers.Workers[MenuRemapper[MenuPage - 1]];
     if (MenuPar2 == 1 && (qPlayer.HasBerater(BERATERTYP_PERSONAL) != 0) && MenuPage > 0) {
+        auto &qWorker = Workers.Workers[MenuRemapper[MenuPage - 1]];
         if (qWorker.Employer == WORKER_RESERVE) {
             // rausgeekelt:
             qPlayer.Messages.AddMessage(BERATERTYP_PERSONAL, bprintf(StandardTexte.GetS(TOKEN_ADVICE, 1004 + qWorker.Geschlecht), qWorker.Name.c_str()),
