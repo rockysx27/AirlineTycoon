@@ -66,7 +66,7 @@ void Bot::actionStartDayLaptop(__int64 moneyAvailable) {
         requestPlanRoutes(true);
     } else if (qPlayer.RobotUse(ROBOT_USE_ROUTES)) {
         /* logic for switching to routes */
-        if (mBestPlaneTypeId != -1) {
+        if ((getNumRentedRoutes() == 0) && (mBestPlaneTypeId != -1)) {
             const auto &bestPlaneType = PlaneTypes[mBestPlaneTypeId];
             SLONG costRouteAd = gWerbePrice[1 * 6 + 5];
             __int64 moneyNeeded = 2 * costRouteAd + bestPlaneType.Preis;
@@ -92,6 +92,22 @@ void Bot::actionStartDayLaptop(__int64 moneyAvailable) {
     mKerosineLevelLastChecked = qPlayer.TankInhalt;
     mTankRatioEmptiedYesterday = 1.0 * mKerosineUsedTodaySoFar / qPlayer.Tank;
     mKerosineUsedTodaySoFar = 0;
+
+    /* starting jobs (check every day because of mission DIFF_ADDON09) */
+    SLONG numToPlan = 0;
+    for (int i = 0; i < qPlayer.Auftraege.AnzEntries(); i++) {
+        if (qPlayer.Auftraege.IsInAlbum(i) == 0) {
+            continue;
+        }
+        if (qPlayer.Auftraege[i].InPlan == 0) {
+            numToPlan++;
+        }
+    }
+    if (numToPlan > 0) {
+        hprintf("Bot::RobotInit(): Have %d jobs to plan", numToPlan);
+        BotPlaner planer(qPlayer, qPlayer.Planes);
+        grabFlights(planer, true);
+    }
 
     /* some conditions might have changed (plane availability) */
     forceReplanning();
@@ -1035,6 +1051,18 @@ void Bot::actionVisitRouteBox() {
 }
 
 void Bot::actionRentRoute() {
+    if (!mDoRoutes) {
+        /* kill routes rented at beginning of game */
+        const auto &qRRouten = qPlayer.RentRouten.RentRouten;
+        for (SLONG routeID = 0; routeID < qRRouten.AnzEntries(); routeID++) {
+            if (qRRouten[routeID].Rang != 0) {
+                GameMechanic::killRoute(qPlayer, routeID);
+                hprintf("Bot::RobotInit(): Removing initial route %s", Helper::getRouteName(Routen[routeID]).c_str());
+            }
+        }
+        return;
+    }
+
     auto routeA = mWantToRentRouteId;
     mWantToRentRouteId = -1;
     assert(routeA != -1);

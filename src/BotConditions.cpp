@@ -227,7 +227,7 @@ bool Bot::canWeCallInternational() {
     }
 
     for (SLONG c = 0; c < 4; c++) {
-        if ((Sim.Players.Players[c].IsOut == 0) && (qPlayer.Kooperation[c] != 0)) {
+        if ((c != qPlayer.PlayerNum) && (Sim.Players.Players[c].IsOut == 0) && (qPlayer.Kooperation[c] != 0)) {
             return true; /* we have a cooperation partner, we can check if they have a branch office */
         }
     }
@@ -1106,7 +1106,10 @@ Bot::Prio Bot::condVisitRouteBoxRenting(__int64 &moneyAvailable) {
     if (!hoursPassed(ACTION_VISITROUTEBOX2, 4)) {
         return Prio::None;
     }
-    if (!qPlayer.RobotUse(ROBOT_USE_ROUTEBOX) || !mDoRoutes) {
+    if (!mDoRoutes) {
+        return (getNumRentedRoutes() > 0) ? Prio::Low : Prio::None;
+    }
+    if (!qPlayer.RobotUse(ROBOT_USE_ROUTEBOX)) {
         return Prio::None;
     }
     if (mRunToFinalObjective > FinalPhase::No) {

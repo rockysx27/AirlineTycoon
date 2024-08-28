@@ -412,15 +412,6 @@ void Bot::RobotInit() {
             }
         }
 
-        /* starting routes */
-        const auto &qRRouten = qPlayer.RentRouten.RentRouten;
-        for (SLONG routeID = 0; routeID < qRRouten.AnzEntries(); routeID++) {
-            if (qRRouten[routeID].Rang != 0) {
-                GameMechanic::killRoute(qPlayer, routeID);
-                hprintf("Bot::RobotInit(): Removing initial route %s", Helper::getRouteName(Routen[routeID]).c_str());
-            }
-        }
-
         /* mission specialization */
         if (Sim.Difficulty == DIFF_TUTORIAL) {
             mItemPills = -1;      /* item not available */

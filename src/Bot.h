@@ -221,6 +221,7 @@ class Bot {
     SLONG replaceAutomaticFlights(SLONG planeId);
     std::pair<SLONG, SLONG> kerosineQualiOptimization(__int64 moneyAvailable, DOUBLE targetFillRatio) const;
     /* routes */
+    SLONG getNumRentedRoutes() const;
     void checkLostRoutes();
     void updateRouteInfoOffice();
     void updateRouteInfoBoard();

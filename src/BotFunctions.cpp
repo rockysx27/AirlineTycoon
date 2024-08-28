@@ -687,11 +687,7 @@ std::pair<SLONG, SLONG> Bot::kerosineQualiOptimization(__int64 moneyAvailable, D
     return res;
 }
 
-void Bot::checkLostRoutes() {
-    if (mRoutes.empty()) {
-        return;
-    }
-
+SLONG Bot::getNumRentedRoutes() const {
     SLONG numRented = 0;
     const auto &qRRouten = qPlayer.RentRouten.RentRouten;
     for (const auto &rentRoute : qRRouten) {
@@ -699,7 +695,15 @@ void Bot::checkLostRoutes() {
             numRented++;
         }
     }
+    return numRented;
+}
 
+void Bot::checkLostRoutes() {
+    if (mRoutes.empty()) {
+        return;
+    }
+
+    auto numRented = getNumRentedRoutes();
     assert(numRented % 2 == 0);
     assert(numRented / 2 <= mRoutes.size());
     if (numRented / 2 < mRoutes.size()) {
@@ -707,6 +711,7 @@ void Bot::checkLostRoutes() {
 
         std::vector<RouteInfo> routesNew;
         std::vector<SLONG> planesForRoutesNew;
+        const auto &qRRouten = qPlayer.RentRouten.RentRouten;
         for (const auto &route : mRoutes) {
             if (qRRouten[route.routeId].Rang != 0) {
                 /* route still exists */
