@@ -248,7 +248,7 @@ void BotPlaner::collectAllFlightJobs(const std::vector<int> &planeIds, const std
 
                 assert(job.TonsLeft <= job.Tons);
                 if (job.TonsOpen > job.TonsLeft) {
-                    hprintf("Info: Condition '%ld open <= %ld left' violated:", job.TonsOpen, job.TonsLeft);
+                    hprintf("Info: Condition '%d open <= %d left' violated:", job.TonsOpen, job.TonsLeft);
                     mJobList.back().printInfo();
                 }
             }
@@ -362,13 +362,13 @@ void BotPlaner::collectAllFlightJobs(const std::vector<int> &planeIds, const std
             }
             if ((job.getTonsLeft() - tonsOpen) > (job.getNumLocked() + job.getNumNotLocked())) {
                 redprintf("BotPlaner::collectAllFlightJobs(): Tons currently planned for job does not match our calculation: "
-                          "%ld left - %ld open > %ld locked + %ld not locked.",
+                          "%d left - %d open > %d locked + %d not locked.",
                           job.getTonsLeft(), tonsOpen, job.getNumLocked(), job.getNumNotLocked());
                 job.printInfo();
             }
             if ((job.getTonsLeft()) != (job.getNumToTransport() + job.getNumLocked())) {
                 redprintf("BotPlaner::collectAllFlightJobs(): Tons to transport for job not calculated correctly: "
-                          "%ld left != %ld to transport + %ld locked.",
+                          "%d left != %d to transport + %d locked.",
                           job.getTonsLeft(), job.getNumToTransport(), job.getNumLocked());
                 job.printInfo();
             }

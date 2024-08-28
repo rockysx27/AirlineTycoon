@@ -51,7 +51,7 @@ void printJob(const CAuftrag &qAuftrag) {
 
 void printRoute(const CRoute &qRoute) {
     CString strDist(Einheiten[EINH_KM].bString(Cities.CalcDistance(qRoute.VonCity, qRoute.NachCity) / 1000));
-    hprintf("%s -> %s (Bedarf: %ld, Faktor: %f, %s)", (LPCTSTR)Cities[qRoute.VonCity].Name, (LPCTSTR)Cities[qRoute.NachCity].Name, qRoute.Bedarf, qRoute.Faktor,
+    hprintf("%s -> %s (Bedarf: %d, Faktor: %f, %s)", (LPCTSTR)Cities[qRoute.VonCity].Name, (LPCTSTR)Cities[qRoute.NachCity].Name, qRoute.Bedarf, qRoute.Faktor,
             (LPCTSTR)strDist);
 }
 
@@ -60,9 +60,8 @@ void printFreight(const CFracht &qAuftrag) {
     CString strDist(Einheiten[EINH_KM].bString(Cities.CalcDistance(qAuftrag.VonCity, qAuftrag.NachCity) / 1000));
     CString strPraemie(Insert1000erDots(qAuftrag.Praemie));
     CString strStrafe(Insert1000erDots(qAuftrag.Strafe));
-    hprintf("%s -> %s (%ld tons total, %ld left, %ld open) (%s, %s, %s $ / %s $)", (LPCTSTR)Cities[qAuftrag.VonCity].Name,
-            (LPCTSTR)Cities[qAuftrag.NachCity].Name, qAuftrag.Tons, qAuftrag.TonsLeft, qAuftrag.TonsOpen, (LPCTSTR)strDist, (LPCTSTR)strDate,
-            (LPCTSTR)strPraemie, (LPCTSTR)strStrafe);
+    hprintf("%s -> %s (%d tons total, %d left, %d open) (%s, %s, %s $ / %s $)", (LPCTSTR)Cities[qAuftrag.VonCity].Name, (LPCTSTR)Cities[qAuftrag.NachCity].Name,
+            qAuftrag.Tons, qAuftrag.TonsLeft, qAuftrag.TonsOpen, (LPCTSTR)strDist, (LPCTSTR)strDate, (LPCTSTR)strPraemie, (LPCTSTR)strStrafe);
 }
 
 std::string getRouteName(const CRoute &qRoute) { return {bprintf("%s -> %s", (LPCTSTR)Cities[qRoute.VonCity].Name, (LPCTSTR)Cities[qRoute.NachCity].Name)}; }
@@ -78,13 +77,13 @@ std::string getFreightName(const CFracht &qAuftrag) {
 std::string getPlaneName(const CPlane &qPlane, int mode) {
     CString typeName = (qPlane.TypeId == -1) ? "Designer" : PlaneTypes[qPlane.TypeId].Name;
     if (mode == 1) {
-        return {bprintf("%s (%s, Bj: %ld)", (LPCTSTR)qPlane.Name, (LPCTSTR)typeName, qPlane.Baujahr)};
+        return {bprintf("%s (%s, Bj: %d)", (LPCTSTR)qPlane.Name, (LPCTSTR)typeName, qPlane.Baujahr)};
     }
     return {bprintf("%s (%s)", (LPCTSTR)qPlane.Name, (LPCTSTR)typeName)};
 }
 
 void printFPE(const CFlugplanEintrag &qFPE) {
-    CString strInfo = bprintf("%s -> %s (%s %ld -> %s %ld)", (LPCTSTR)Cities[qFPE.VonCity].Kuerzel, (LPCTSTR)Cities[qFPE.NachCity].Kuerzel,
+    CString strInfo = bprintf("%s -> %s (%s %d -> %s %d)", (LPCTSTR)Cities[qFPE.VonCity].Kuerzel, (LPCTSTR)Cities[qFPE.NachCity].Kuerzel,
                               (LPCTSTR)getWeekday(qFPE.Startdate), qFPE.Startzeit, (LPCTSTR)getWeekday(qFPE.Landedate), qFPE.Landezeit);
 
     CString strType = "Auto   ";
@@ -179,7 +178,7 @@ SLONG _checkPlaneSchedule(const PLAYER &qPlayer, const CPlane &qPlane, std::unor
         PlaneTime startTime{qFPE.Startdate, qFPE.Startzeit};
         auto time = startTime + Cities.CalcFlugdauer(qFPE.VonCity, qFPE.NachCity, qPlane.ptGeschwindigkeit);
         if ((qFPE.Landedate != time.getDate()) || (qFPE.Landezeit != time.getHour())) {
-            redprintf("Helper::checkPlaneSchedule(): CFlugplanEintrag has invalid landing time: %s %ld, should be %s %ld", (LPCTSTR)getWeekday(qFPE.Landedate),
+            redprintf("Helper::checkPlaneSchedule(): CFlugplanEintrag has invalid landing time: %s %d, should be %s %d", (LPCTSTR)getWeekday(qFPE.Landedate),
                       qFPE.Landezeit, (LPCTSTR)getWeekday(time.getDate()), time.getHour());
             printFPE(qFPE);
         }
@@ -503,20 +502,20 @@ SLONG checkFlightJobs(const PLAYER &qPlayer, bool alwaysPrint, bool verboseInfo)
         }
         if ((-info.tonsOpen) >= info.smallestDecrement) {
             printInfo = true;
-            redprintf("Helper::checkPlaneSchedule(): At least one instance of job %s can be removed (overscheduled: %ld, smallest: %ld)",
+            redprintf("Helper::checkPlaneSchedule(): At least one instance of job %s can be removed (overscheduled: %d, smallest: %d)",
                       getFreightName(qAuftrag).c_str(), (-info.tonsOpen), info.smallestDecrement);
         }
 
         if (printInfo) {
             assert(info.planeNames.size() == info.FPEs.size());
             for (SLONG i = 0; i < info.FPEs.size(); i++) {
-                hprintf("+ %ld t on %s", info.tonsPerPlane[i], info.planeNames[i].c_str());
+                hprintf("+ %d t on %s", info.tonsPerPlane[i], info.planeNames[i].c_str());
                 Helper::printFPE(info.FPEs[i]);
             }
         }
     }
 
-    hprintf("Helper::checkFlightJobs(): %s: Found %ld problems for %ld planes.", (LPCTSTR)qPlayer.AirlineX, nIncorrect, nPlanes);
+    hprintf("Helper::checkFlightJobs(): %s: Found %d problems for %d planes.", (LPCTSTR)qPlayer.AirlineX, nIncorrect, nPlanes);
     if (verboseInfo) {
         overallInfo.printDetails();
     } else {

@@ -16,7 +16,7 @@ struct PartIter {
     void resetVariant() { variant = minVariant; }
 
     /* static */
-    std::string prefix; /* e.g. 'M%ld' for engines */
+    std::string prefix; /* e.g. 'M%d' for engines */
     SLONG minVariant{};
     SLONG maxVariant{};
     bool canBeOmitted{};

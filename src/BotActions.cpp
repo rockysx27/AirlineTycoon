@@ -73,7 +73,7 @@ void Bot::actionStartDayLaptop(__int64 moneyAvailable) {
             SLONG numPlanes = mPlanesForJobs.size() + mPlanesForJobsUnassigned.size();
             if ((numPlanes >= kSwitchToRoutesNumPlanesMin && moneyAvailable >= moneyNeeded) || numPlanes >= kSwitchToRoutesNumPlanesMax) {
                 mDoRoutes = true;
-                hprintf("Bot::actionStartDay(): Switching to routes. Reserving 2*%ld + %ld for ads and plane.", costRouteAd, bestPlaneType.Preis);
+                hprintf("Bot::actionStartDay(): Switching to routes. Reserving 2*%d + %d for ads and plane.", costRouteAd, bestPlaneType.Preis);
             }
         }
     }
@@ -357,7 +357,7 @@ void Bot::actionBuyUsedPlane(__int64 /*moneyAvailable*/) {
     auto &qPlane = qPlayer.Planes[planeId];
     qPlane.MaxBegleiter = qPlane.ptAnzBegleiter;
     hprintf("Bot::actionBuyUsedPlane(): Bought used plane %s", Helper::getPlaneName(qPlane).c_str());
-    hprintf("Bot::actionBuyUsedPlane(): Passengers = %ld, fuel = %ld, year = %d", qPlane.ptPassagiere, qPlane.ptVerbrauch, qPlane.Baujahr);
+    hprintf("Bot::actionBuyUsedPlane(): Passengers = %d, fuel = %d, year = %d", qPlane.ptPassagiere, qPlane.ptVerbrauch, qPlane.Baujahr);
     SLONG improvementNeeded = std::max(0, 80 - qPlane.WorstZustand);
     SLONG repairCost = improvementNeeded * (qPlane.ptPreis / 110);
     hprintf("Bot::actionBuyUsedPlane(): WorstZustand = %u, cost = %d", qPlane.WorstZustand, repairCost);
@@ -450,7 +450,7 @@ void Bot::actionVisitHR() {
         }
         /* hire best candidate and fire everyone of same type */
         if (bestCandidateId != -1) {
-            hprintf("Bot::actionVisitHR(): Upgrading advisor %ld to skill level %ld", advisorType, bestCandidateSkill);
+            hprintf("Bot::actionVisitHR(): Upgrading advisor %d to skill level %d", advisorType, bestCandidateSkill);
             /* fire existing adivsors */
             for (SLONG c = 0; c < Workers.Workers.AnzEntries(); c++) {
                 const auto &qWorker = Workers.Workers[c];
@@ -512,10 +512,10 @@ void Bot::actionVisitHR() {
         }
     }
     if (numPilotsHired > 0 || numStewardessHired > 0) {
-        hprintf("Bot::actionVisitHR(): Hiring %ld pilots and %ld attendants", numPilotsHired, numStewardessHired);
+        hprintf("Bot::actionVisitHR(): Hiring %d pilots and %d attendants", numPilotsHired, numStewardessHired);
     }
 
-    hprintf("Bot::actionVisitHR(): We have %ld extra pilots and %ld extra attendants", qPlayer.xPiloten, qPlayer.xBegleiter);
+    hprintf("Bot::actionVisitHR(): We have %d extra pilots and %d extra attendants", qPlayer.xPiloten, qPlayer.xBegleiter);
 
     /* check whether we lost employees / increase salary for unhappy employees once */
     SLONG nWorkers = 0;
@@ -535,11 +535,11 @@ void Bot::actionVisitHR() {
         }
     }
     if (mNumEmployees > nWorkers) {
-        hprintf("Bot::actionVisitHR(): We lost %ld employees", mNumEmployees - nWorkers);
+        hprintf("Bot::actionVisitHR(): We lost %d employees", mNumEmployees - nWorkers);
     }
     mNumEmployees = nWorkers;
     if (salaryIncreases > 0) {
-        hprintf("Bot::actionVisitHR(): Increases salary of %ld employees", salaryIncreases);
+        hprintf("Bot::actionVisitHR(): Increases salary of %d employees", salaryIncreases);
     }
 }
 
@@ -586,7 +586,7 @@ void Bot::actionBuyKerosine(__int64 moneyAvailable) {
         GameMechanic::buyKerosin(qPlayer, 2, res.second);
         mKerosineLevelLastChecked = qPlayer.TankInhalt;
 
-        hprintf("Bot::actionBuyKerosine(): Kerosine quantity: %ld => %ld", amountOld, qPlayer.TankInhalt);
+        hprintf("Bot::actionBuyKerosine(): Kerosine quantity: %d => %d", amountOld, qPlayer.TankInhalt);
         hprintf("Bot::actionBuyKerosine(): Kerosine quality: %.2f => %.2f", qualiOld, qPlayer.KerosinQuali);
     }
 }
@@ -597,7 +597,7 @@ void Bot::actionBuyKerosineTank(__int64 moneyAvailable) {
     {
         if (moneyAvailable >= TankPrice[i]) {
             SLONG amount = std::min(3LL, moneyAvailable / TankPrice[i]);
-            hprintf("Bot::actionBuyKerosineTank(): Buying %ld times tank type %ld", amount, i);
+            hprintf("Bot::actionBuyKerosineTank(): Buying %d times tank type %d", amount, i);
             GameMechanic::buyKerosinTank(qPlayer, i, amount);
             moneyAvailable = getMoneyAvailable() - kMoneyReserveBuyTanks;
             break;
@@ -670,7 +670,7 @@ void Bot::actionSabotage(__int64 moneyAvailable) {
     switch (res) {
     case GameMechanic::CheckSabotageResult::Ok:
         GameMechanic::activateSaboteurJob(qPlayer, FALSE);
-        hprintf("Bot::actionSabotage(): Sabotaging nemesis %s (jobType = %ld, jobNumber = %ld)", (LPCTSTR)nemesisName, jobType, jobNumber);
+        hprintf("Bot::actionSabotage(): Sabotaging nemesis %s (jobType = %d, jobNumber = %d)", (LPCTSTR)nemesisName, jobType, jobNumber);
         mNemesisSabotaged = mNemesis; /* ensures that we do not sabotage him again tomorrow */
         mArabHintsTracker += jobHints;
         break;
@@ -722,7 +722,7 @@ __int64 Bot::calcAmountToBuy(SLONG buyFromPlayerId, SLONG desiredRatio, __int64 
 
 void Bot::actionEmitShares() {
     __int64 newStock = (qPlayer.MaxAktien - qPlayer.AnzAktien) / 100 * 100;
-    hprintf("Bot::actionEmitShares(): Emitting stock: %ld", newStock);
+    hprintf("Bot::actionEmitShares(): Emitting stock: %lld", newStock);
     GameMechanic::emitStock(qPlayer, newStock, kStockEmissionMode);
 
     /* rebuy some to reach target ratio of own stock */
@@ -787,7 +787,7 @@ void Bot::actionSellShares(__int64 moneyAvailable) {
         SLONG c = qPlayer.PlayerNum;
         __int64 sells = (qPlayer.OwnsAktien[c] - qPlayer.AnzAktien * kOwnStockPosessionRatio / 100);
         if (sells > 0) {
-            hprintf("Bot::actionSellShares(): Selling own stock to have no more than %d %%: %ld", kOwnStockPosessionRatio, sells);
+            hprintf("Bot::actionSellShares(): Selling own stock to have no more than %d %%: %lld", kOwnStockPosessionRatio, sells);
             GameMechanic::sellStock(qPlayer, c, sells);
             return;
         }
@@ -831,7 +831,7 @@ void Bot::actionSellShares(__int64 moneyAvailable) {
                 __int64 sellsNeeded = calcSellShares(howMuchToRaise, Sim.Players.Players[c].Kurse[0]);
                 __int64 sellsMax = qPlayer.OwnsAktien[c];
                 __int64 sells = std::min(sellsMax, sellsNeeded);
-                hprintf("Bot::actionSellShares(): Selling stock from player %lld: %ld", c, sells);
+                hprintf("Bot::actionSellShares(): Selling stock from player %d: %lld", c, sells);
                 GameMechanic::sellStock(qPlayer, c, sells);
                 break;
             }
@@ -900,10 +900,10 @@ void Bot::actionVisitMech() {
         auto &qPlane = qPlanes[iter.first];
         auto worstZustand = std::min(qPlane.WorstZustand, qPlane.Zustand);
         if (qPlane.TargetZustand > iter.second) {
-            hprintf("Bot::actionVisitMech(): Increasing repair target of plane %s: %ld => %ld (Zustand = %u, WorstZustand = %u)",
+            hprintf("Bot::actionVisitMech(): Increasing repair target of plane %s: %u => %u (Zustand = %u, WorstZustand = %u)",
                     Helper::getPlaneName(qPlane, 1).c_str(), iter.second, qPlane.TargetZustand, qPlane.Zustand, worstZustand);
         } else if (qPlane.TargetZustand < iter.second) {
-            hprintf("Bot::actionVisitMech(): Lowering repair target of plane %s: %ld => %ld (Zustand = %u, WorstZustand = %u)",
+            hprintf("Bot::actionVisitMech(): Lowering repair target of plane %s: %u => %u (Zustand = %u, WorstZustand = %u)",
                     Helper::getPlaneName(qPlane, 1).c_str(), iter.second, qPlane.TargetZustand, qPlane.Zustand, worstZustand);
         }
     }
@@ -935,7 +935,7 @@ void Bot::actionVisitDutyFree(__int64 moneyAvailable) {
     if (qPlayer.LaptopQuality < 4) {
         auto quali = qPlayer.LaptopQuality;
         GameMechanic::buyDutyFreeItem(qPlayer, ITEM_LAPTOP);
-        hprintf("Bot::actionVisitDutyFree(): Buying laptop (%ld => %ld)", quali, qPlayer.LaptopQuality);
+        hprintf("Bot::actionVisitDutyFree(): Buying laptop (%d => %d)", quali, qPlayer.LaptopQuality);
     }
     __int64 moneySpent = std::max(0LL, (money - qPlayer.Money));
     moneyAvailable -= moneySpent;
@@ -997,7 +997,7 @@ void Bot::actionVisitBoss() {
         GameMechanic::bidOnGate(qPlayer, c);
         mMoneyReservedForAuctions += qZettel.Preis;
         moneyAvailable = getMoneyAvailable() - kMoneyReserveBossOffice;
-        hprintf("Bot::actionVisitBoss(): Bidding on gate: %ld $", qZettel.Preis);
+        hprintf("Bot::actionVisitBoss(): Bidding on gate: %d $", qZettel.Preis);
     }
 
     /* auction for subsidiaries */
@@ -1023,7 +1023,7 @@ void Bot::actionVisitBoss() {
             GameMechanic::bidOnCity(qPlayer, c);
             mMoneyReservedForAuctions += qZettel.Preis;
             moneyAvailable = getMoneyAvailable() - kMoneyReserveBossOffice;
-            hprintf("Bot::actionVisitBoss(): Bidding on city %s: %ld $", (LPCTSTR)Cities[qZettel.ZettelId].Name, qZettel.Preis);
+            hprintf("Bot::actionVisitBoss(): Bidding on city %s: %d $", (LPCTSTR)Cities[qZettel.ZettelId].Name, qZettel.Preis);
         }
     }
 }
@@ -1080,7 +1080,7 @@ void Bot::actionRentRoute() {
         mPlanesForRoutes.push_back(id);
         bool erased = eraseFirst(mPlanesForRoutesUnassigned, id);
         if (!erased) {
-            redprintf("Bot::actionRentRoute(): Plane with ID = %ld should have been in unassigned list", id);
+            redprintf("Bot::actionRentRoute(): Plane with ID = %d should have been in unassigned list", id);
         }
     }
     mPlanesForNewRoute.clear();
@@ -1093,7 +1093,7 @@ void Bot::actionRentRoute() {
 
 void Bot::actionBuyAdsForRoutes(__int64 moneyAvailable) {
     mCurrentImage = qPlayer.Image;
-    hprintf("Bot::actionBuyAdsForRoutes(): Checked company image: %ld", mCurrentImage);
+    hprintf("Bot::actionBuyAdsForRoutes(): Checked company image: %d", mCurrentImage);
 
     if (mRoutesNextStep != RoutesNextStep::BuyAdsForRoute) {
         orangeprintf("Bot::actionBuyAdsForRoutes(): Conditions not met anymore.");
@@ -1126,7 +1126,7 @@ void Bot::actionBuyAdsForRoutes(__int64 moneyAvailable) {
     SLONG oldImage = getRentRoute(qRoute).Image;
     GameMechanic::buyAdvertisement(qPlayer, 1, adCampaignSize, qRoute.routeId);
     SLONG newImage = getRentRoute(qRoute).Image;
-    hprintf("Bot::actionBuyAdsForRoutes(): Buying advertisement for route %s for %ld $ (image improved %ld => %ld)",
+    hprintf("Bot::actionBuyAdsForRoutes(): Buying advertisement for route %s for %d $ (image improved %d => %d)",
             Helper::getRouteName(getRoute(qRoute)).c_str(), cost, oldImage, newImage);
 
     qRoute.image = newImage;
@@ -1136,7 +1136,7 @@ void Bot::actionBuyAdsForRoutes(__int64 moneyAvailable) {
 
 void Bot::actionBuyAds(__int64 moneyAvailable) {
     mCurrentImage = qPlayer.Image;
-    hprintf("Bot::actionBuyAds(): Checked company image: %ld", mCurrentImage);
+    hprintf("Bot::actionBuyAds(): Checked company image: %d", mCurrentImage);
 
     assert(kSmallestAdCampaign >= 1);
     for (SLONG adCampaignSize = 5; adCampaignSize >= kSmallestAdCampaign; adCampaignSize--) {
@@ -1146,11 +1146,11 @@ void Bot::actionBuyAds(__int64 moneyAvailable) {
 
         while (moneyAvailable > cost && qPlayer.Image < 1000 && (qPlayer.Image + imageDelta2 < 1000)) {
             SLONG oldImage = qPlayer.Image;
-            hprintf("Bot::actionBuyAds(): Buying advertisement for airline for %ld $", cost);
+            hprintf("Bot::actionBuyAds(): Buying advertisement for airline for %d $", cost);
             GameMechanic::buyAdvertisement(qPlayer, 0, adCampaignSize);
             moneyAvailable = getMoneyAvailable();
 
-            hprintf("Bot::actionBuyAds(): Airline image improved (%ld => %ld)", oldImage, qPlayer.Image);
+            hprintf("Bot::actionBuyAds(): Airline image improved (%d => %d)", oldImage, qPlayer.Image);
             if (!qPlayer.RobotUse(ROBOT_USE_WERBUNG)) {
                 return;
             }

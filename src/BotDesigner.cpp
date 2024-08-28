@@ -27,12 +27,12 @@ class PlaneCandidate {
         }
         hprintf("Configuration: %s", ss.str().c_str());
         hprintf("Score = %f (BaseScore = %f)", mScore, mBaseScore);
-        hprintf("Passagiere = %ld", mPlane.CalcPassagiere());
-        hprintf("Reichweite = %ld", mPlane.CalcReichweite());
-        hprintf("Verbrauch = %ld", mPlane.CalcVerbrauch());
-        hprintf("Geschwindigkeit = %ld", mPlane.CalcSpeed());
-        hprintf("Lärm = %ld", mPlane.CalcNoise());
-        hprintf("Wartung = %ld", mPlane.CalcWartung());
+        hprintf("Passagiere = %d", mPlane.CalcPassagiere());
+        hprintf("Reichweite = %d", mPlane.CalcReichweite());
+        hprintf("Verbrauch = %d", mPlane.CalcVerbrauch());
+        hprintf("Geschwindigkeit = %d", mPlane.CalcSpeed());
+        hprintf("Lärm = %d", mPlane.CalcNoise());
+        hprintf("Wartung = %d", mPlane.CalcWartung());
         hprintf("Preis = %s", (LPCTSTR)Insert1000erDots(mPlane.CalcCost()));
     }
 
@@ -40,25 +40,25 @@ class PlaneCandidate {
         number += 1;
         switch (mScoreType) {
         case ScoreType::Standard:
-            mPlane.Name = bprintf("Bot Standard %ld", number);
+            mPlane.Name = bprintf("Bot Standard %d", number);
             break;
         case ScoreType::FastPassengers:
-            mPlane.Name = bprintf("Bot Jet %ld", number);
+            mPlane.Name = bprintf("Bot Jet %d", number);
             break;
         case ScoreType::FastFast:
-            mPlane.Name = bprintf("Bot Speedmaster %ld", number);
+            mPlane.Name = bprintf("Bot Speedmaster %d", number);
             break;
         case ScoreType::VIP:
-            mPlane.Name = bprintf("Bot VIP %ld", number);
+            mPlane.Name = bprintf("Bot VIP %d", number);
             break;
         case ScoreType::Miss05:
-            mPlane.Name = bprintf("Bot Beluga %ld", number);
+            mPlane.Name = bprintf("Bot Beluga %d", number);
             break;
         case ScoreType::Miss08:
-            mPlane.Name = bprintf("Bot Ecomaster %ld", number);
+            mPlane.Name = bprintf("Bot Ecomaster %d", number);
             break;
         default:
-            mPlane.Name = bprintf("Bot %ld", number);
+            mPlane.Name = bprintf("Bot %d", number);
             break;
         }
     }
@@ -68,25 +68,25 @@ class PlaneCandidate {
         number += 1;
         switch (mScoreType) {
         case ScoreType::Standard:
-            fileName = FullFilename(bprintf("botplane_std_%ld.plane", number), MyPlanePath);
+            fileName = FullFilename(bprintf("botplane_std_%d.plane", number), MyPlanePath);
             break;
         case ScoreType::FastPassengers:
-            fileName = FullFilename(bprintf("botplane_jet_%ld.plane", number), MyPlanePath);
+            fileName = FullFilename(bprintf("botplane_jet_%d.plane", number), MyPlanePath);
             break;
         case ScoreType::FastFast:
-            fileName = FullFilename(bprintf("botplane_speed_%ld.plane", number), MyPlanePath);
+            fileName = FullFilename(bprintf("botplane_speed_%d.plane", number), MyPlanePath);
             break;
         case ScoreType::VIP:
-            fileName = FullFilename(bprintf("botplane_vip_%ld.plane", number), MyPlanePath);
+            fileName = FullFilename(bprintf("botplane_vip_%d.plane", number), MyPlanePath);
             break;
         case ScoreType::Miss05:
-            fileName = FullFilename(bprintf("botplane_atfs05_%ld.plane", number), MyPlanePath);
+            fileName = FullFilename(bprintf("botplane_atfs05_%d.plane", number), MyPlanePath);
             break;
         case ScoreType::Miss08:
-            fileName = FullFilename(bprintf("botplane_atfs08_%ld.plane", number), MyPlanePath);
+            fileName = FullFilename(bprintf("botplane_atfs08_%d.plane", number), MyPlanePath);
             break;
         default:
-            fileName = FullFilename(bprintf("botplane_unknown_%ld.plane", number), MyPlanePath);
+            fileName = FullFilename(bprintf("botplane_unknown_%d.plane", number), MyPlanePath);
             break;
         }
         mPlane.Save(fileName);
@@ -201,14 +201,14 @@ class PlaneCandidate {
 };
 
 BotDesigner::BotDesigner() {
-    mPartIter = {{"B%li", 1, NUM_PLANE_BODY, false},
-                 {"R%li", 1, NUM_PLANE_LWING, false},
-                 {"C%li", 1, NUM_PLANE_COCKPIT, false},
-                 {"H%li", 1, NUM_PLANE_HECK, false},
-                 {"M%li", 1, NUM_PLANE_MOT, true},
-                 {"M%li", 1, NUM_PLANE_MOT, false},
-                 {"M%li", 5, 5, true},
-                 {"M%li", 5, 5, true}};
+    mPartIter = {{"B%d", 1, NUM_PLANE_BODY, false},
+                 {"R%d", 1, NUM_PLANE_LWING, false},
+                 {"C%d", 1, NUM_PLANE_COCKPIT, false},
+                 {"H%d", 1, NUM_PLANE_HECK, false},
+                 {"M%d", 1, NUM_PLANE_MOT, true},
+                 {"M%d", 1, NUM_PLANE_MOT, false},
+                 {"M%d", 5, 5, true},
+                 {"M%d", 5, 5, true}};
     mSecondaryEnginesIdx = 4;
     mPrimaryEnginesIdx = 5;
     mSecondaryAuxEnginesIdx = 6;
@@ -275,7 +275,7 @@ BotDesigner::BotDesigner() {
         if (canAdd) {
             it->second.push_back(c);
         } else {
-            hprintf("Dropping relation %ld", qRelation.Id);
+            hprintf("Dropping relation %d", qRelation.Id);
         }
     }
 
@@ -283,7 +283,7 @@ BotDesigner::BotDesigner() {
     for (const auto &iter : mPlaneRelations) {
         count += iter.second.size();
     }
-    hprintf("Reduced from %ld to %ld relations.", gPlanePartRelations.size(), count);
+    hprintf("Reduced from %d to %d relations.", gPlanePartRelations.size(), count);
 }
 
 bool BotDesigner::buildPart(CXPlane &plane, const PartIter &partIter) const {
@@ -461,7 +461,7 @@ std::pair<BotDesigner::FailedWhy, SLONG> BotDesigner::buildPlane(CXPlane &plane)
             continue;
         }
         CString prefix(iter.formatPrefix());
-        plane.Name.append(bprintf("%s%ld", (LPCTSTR)prefix, iter.position));
+        plane.Name.append(bprintf("%s%d", (LPCTSTR)prefix, iter.position));
         if (!buildPart(plane, iter)) {
             return {FailedWhy::NoMorePositions, i};
         }
@@ -494,7 +494,7 @@ SLONG BotDesigner::findBestDesignerPlane() {
             if (plane.IsBuildable()) {
                 successfulBuilds++;
                 if (successfulBuilds % 1000 == 0) {
-                    hprintf("Evaluated %ld/%ld builds so far!", successfulBuilds, totalBuilds);
+                    hprintf("Evaluated %d/%d builds so far!", successfulBuilds, totalBuilds);
                 }
 
                 for (SLONG i = 0; i < bestPlanes.size(); i++) {
@@ -560,7 +560,7 @@ SLONG BotDesigner::findBestDesignerPlane() {
         }
     }
 
-    hprintf("Evaluated %ld/%ld builds in total!", successfulBuilds, totalBuilds);
+    hprintf("Evaluated %d/%d builds in total!", successfulBuilds, totalBuilds);
 
     return 0;
 }

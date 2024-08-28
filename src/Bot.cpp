@@ -100,17 +100,17 @@ void Bot::removePlaneFromRoute(SLONG planeId) {
 bool Bot::checkPlaneAvailable(SLONG planeId, bool printIfAvailable) const {
     const auto &qPlane = qPlayer.Planes[planeId];
     if (qPlane.AnzBegleiter < qPlane.ptAnzBegleiter) {
-        redprintf("Bot::checkPlaneAvailable: Plane %s does not have enough crew members (%ld, need %ld).", Helper::getPlaneName(qPlane).c_str(),
+        redprintf("Bot::checkPlaneAvailable: Plane %s does not have enough crew members (%d, need %d).", Helper::getPlaneName(qPlane).c_str(),
                   qPlane.AnzBegleiter, qPlane.ptAnzBegleiter);
         return false;
     }
     if (qPlane.AnzPiloten < qPlane.ptAnzPiloten) {
-        redprintf("Bot::checkPlaneAvailable: Plane %s does not have enough pilots (%ld, need %ld).", Helper::getPlaneName(qPlane).c_str(), qPlane.AnzPiloten,
+        redprintf("Bot::checkPlaneAvailable: Plane %s does not have enough pilots (%d, need %d).", Helper::getPlaneName(qPlane).c_str(), qPlane.AnzPiloten,
                   qPlane.ptAnzPiloten);
         return false;
     }
     if (qPlane.Problem != 0) {
-        redprintf("Bot::checkPlaneAvailable: Plane %s has a problem for the next %ld hours", Helper::getPlaneName(qPlane).c_str(), qPlane.Problem);
+        redprintf("Bot::checkPlaneAvailable: Plane %s has a problem for the next %d hours", Helper::getPlaneName(qPlane).c_str(), qPlane.Problem);
         return false;
     }
     if (printIfAvailable) {
@@ -128,12 +128,12 @@ bool Bot::checkPlaneLists() {
     std::vector<SLONG> newPlanesForJobs;
     for (const auto &i : mPlanesForJobs) {
         if (!qPlayer.Planes.IsInAlbum(i)) {
-            redprintf("Bot::checkPlaneLists(): We lost the plane with ID = %ld", i);
+            redprintf("Bot::checkPlaneLists(): We lost the plane with ID = %d", i);
             planesGoneMissing = true;
             continue;
         }
         if (uniquePlaneIds.find(i) != uniquePlaneIds.end()) {
-            redprintf("Bot::checkPlaneLists(): Plane with ID = %ld appears in multiple lists: 1 and %ld.", i, uniquePlaneIds[i]);
+            redprintf("Bot::checkPlaneLists(): Plane with ID = %d appears in multiple lists: 1 and %d.", i, uniquePlaneIds[i]);
             foundProblem = true;
             continue;
         }
@@ -147,13 +147,13 @@ bool Bot::checkPlaneLists() {
     std::vector<SLONG> newPlanesForRoutes;
     for (const auto &i : mPlanesForRoutes) {
         if (!qPlayer.Planes.IsInAlbum(i)) {
-            redprintf("Bot::checkPlaneLists(): We lost the plane with ID = %ld", i);
+            redprintf("Bot::checkPlaneLists(): We lost the plane with ID = %d", i);
             removePlaneFromRoute(i);
             planesGoneMissing = true;
             continue;
         }
         if (uniquePlaneIds.find(i) != uniquePlaneIds.end()) {
-            redprintf("Bot::checkPlaneLists(): Plane with ID = %ld appears in multiple lists: 2 and %ld.", i, uniquePlaneIds[i]);
+            redprintf("Bot::checkPlaneLists(): Plane with ID = %d appears in multiple lists: 2 and %d.", i, uniquePlaneIds[i]);
             foundProblem = true;
             continue;
         }
@@ -167,12 +167,12 @@ bool Bot::checkPlaneLists() {
     std::deque<SLONG> newPlanesJobsUnassigned;
     for (const auto &i : mPlanesForJobsUnassigned) {
         if (!qPlayer.Planes.IsInAlbum(i)) {
-            redprintf("Bot::checkPlaneLists(): We lost the plane with ID = %ld", i);
+            redprintf("Bot::checkPlaneLists(): We lost the plane with ID = %d", i);
             planesGoneMissing = true;
             continue;
         }
         if (uniquePlaneIds.find(i) != uniquePlaneIds.end()) {
-            redprintf("Bot::checkPlaneLists(): Plane with ID = %ld appears in multiple lists: 3 and %ld.", i, uniquePlaneIds[i]);
+            redprintf("Bot::checkPlaneLists(): Plane with ID = %d appears in multiple lists: 3 and %d.", i, uniquePlaneIds[i]);
             foundProblem = true;
             continue;
         }
@@ -186,12 +186,12 @@ bool Bot::checkPlaneLists() {
     std::deque<SLONG> newPlanesRoutesUnassigned;
     for (const auto &i : mPlanesForRoutesUnassigned) {
         if (!qPlayer.Planes.IsInAlbum(i)) {
-            redprintf("Bot::checkPlaneLists(): We lost the plane with ID = %ld", i);
+            redprintf("Bot::checkPlaneLists(): We lost the plane with ID = %d", i);
             planesGoneMissing = true;
             continue;
         }
         if (uniquePlaneIds.find(i) != uniquePlaneIds.end()) {
-            redprintf("Bot::checkPlaneLists(): Plane with ID = %ld appears in multiple lists: 4 and %ld.", i, uniquePlaneIds[i]);
+            redprintf("Bot::checkPlaneLists(): Plane with ID = %d appears in multiple lists: 4 and %d.", i, uniquePlaneIds[i]);
             foundProblem = true;
             continue;
         }
@@ -219,9 +219,8 @@ bool Bot::checkPlaneLists() {
     /* maybe some planes now have crew? planes for routes will be checked in planRoutes() */
     findPlanesAvailableForService(mPlanesForJobsUnassigned, mPlanesForJobs);
 
-    hprintf("Bot::checkPlaneLists(): Planes for jobs: %ld / %ld are available.", mPlanesForJobs.size(),
-            mPlanesForJobs.size() + mPlanesForJobsUnassigned.size());
-    hprintf("Bot::checkPlaneLists(): Planes for routes: %ld / %ld are available.", mPlanesForRoutes.size(),
+    hprintf("Bot::checkPlaneLists(): Planes for jobs: %d / %d are available.", mPlanesForJobs.size(), mPlanesForJobs.size() + mPlanesForJobsUnassigned.size());
+    hprintf("Bot::checkPlaneLists(): Planes for routes: %d / %d are available.", mPlanesForRoutes.size(),
             mPlanesForRoutes.size() + mPlanesForRoutesUnassigned.size());
 
     return foundProblem || planesGoneMissing;
@@ -232,7 +231,7 @@ void Bot::findPlanesNotAvailableForService(std::vector<SLONG> &listAvailable, st
     for (const auto id : listAvailable) {
         auto &qPlane = qPlayer.Planes[id];
         auto worstZustand = std::min(qPlane.WorstZustand, qPlane.Zustand);
-        hprintf("Bot::findPlanesNotAvailableForService(): Plane %s: Zustand = %u, WorstZustand = %u, Baujahr = %ld", Helper::getPlaneName(qPlane).c_str(),
+        hprintf("Bot::findPlanesNotAvailableForService(): Plane %s: Zustand = %u, WorstZustand = %u, Baujahr = %d", Helper::getPlaneName(qPlane).c_str(),
                 qPlane.Zustand, worstZustand, qPlane.Baujahr);
 
         SLONG mode = 0; /* 0: keep plane in service */
@@ -264,7 +263,7 @@ void Bot::findPlanesAvailableForService(std::deque<SLONG> &listUnassigned, std::
     for (const auto id : listUnassigned) {
         auto &qPlane = qPlayer.Planes[id];
         auto worstZustand = std::min(qPlane.WorstZustand, qPlane.Zustand);
-        hprintf("Bot::findPlanesAvailableForService(): Plane %s: Zustand = %u, WorstZustand = %u, Baujahr = %ld", Helper::getPlaneName(qPlane).c_str(),
+        hprintf("Bot::findPlanesAvailableForService(): Plane %s: Zustand = %u, WorstZustand = %u, Baujahr = %d", Helper::getPlaneName(qPlane).c_str(),
                 qPlane.Zustand, worstZustand, qPlane.Baujahr);
 
         if (qPlane.Zustand < 100 && (qPlane.Zustand < qPlane.TargetZustand)) {
@@ -828,7 +827,7 @@ void Bot::RobotExecuteAction() {
             }
 
             if (_dividende != qPlayer.Dividende) {
-                hprintf("Bot::RobotExecuteAction(): Setting dividend to %ld", _dividende);
+                hprintf("Bot::RobotExecuteAction(): Setting dividend to %d", _dividende);
                 GameMechanic::setDividend(qPlayer, _dividende);
             }
         } else {
@@ -1109,7 +1108,7 @@ void Bot::RobotExecuteAction() {
                 }
             }
             mCurrentImage = qPlayer.Image;
-            hprintf("Bot::RobotExecuteAction(): Checked company image: %ld", mCurrentImage);
+            hprintf("Bot::RobotExecuteAction(): Checked company image: %d", mCurrentImage);
         } else {
             orangeprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
