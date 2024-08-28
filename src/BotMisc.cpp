@@ -29,8 +29,12 @@ void Bot::removePlaneFromRoute(SLONG planeId) {
     }
 }
 
-bool Bot::checkPlaneAvailable(SLONG planeId, bool printIfAvailable) const {
+bool Bot::checkPlaneAvailable(SLONG planeId, bool printIfAvailable, bool areWeInOffice) {
     const auto &qPlane = qPlayer.Planes[planeId];
+    if (!areWeInOffice && !checkLaptop()) {
+        orangeprintf("Bot::checkPlaneAvailable: Cannot check availability of plane %s.", Helper::getPlaneName(qPlane).c_str());
+        return false;
+    }
     if (qPlane.AnzBegleiter < qPlane.ptAnzBegleiter) {
         redprintf("Bot::checkPlaneAvailable: Plane %s does not have enough crew members (%d, need %d).", Helper::getPlaneName(qPlane).c_str(),
                   qPlane.AnzBegleiter, qPlane.ptAnzBegleiter);
@@ -171,7 +175,7 @@ void Bot::findPlanesNotAvailableForService(std::vector<SLONG> &listAvailable, st
             hprintf("Bot::findPlanesNotAvailableForService(): Plane %s not available for service: Needs repairs.", Helper::getPlaneName(qPlane).c_str());
             mode = 1; /* 1: phase plane out */
         }
-        if (!checkPlaneAvailable(id, false)) {
+        if (!checkPlaneAvailable(id, false, true)) {
             redprintf("Bot::findPlanesNotAvailableForService(): Plane %s not available for service: No crew.", Helper::getPlaneName(qPlane).c_str());
             mode = 2; /* 2: remove plane immediately from service */
         }
@@ -201,7 +205,7 @@ void Bot::findPlanesAvailableForService(std::deque<SLONG> &listUnassigned, std::
         if (qPlane.Zustand < 100 && (qPlane.Zustand < qPlane.TargetZustand)) {
             hprintf("Bot::findPlanesAvailableForService(): Plane %s still not available for service: Needs repairs.", Helper::getPlaneName(qPlane).c_str());
             newUnassigned.push_back(id);
-        } else if (!checkPlaneAvailable(id, false)) {
+        } else if (!checkPlaneAvailable(id, false, true)) {
             redprintf("Bot::findPlanesAvailableForService(): Plane %s still not available for service: No crew.", Helper::getPlaneName(qPlane).c_str());
             newUnassigned.push_back(id);
         } else {

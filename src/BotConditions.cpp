@@ -37,13 +37,6 @@ bool Bot::checkLaptop() {
     return false;
 }
 
-bool Bot::checkLaptopOrOffice() {
-    if (checkLaptop()) {
-        return true;
-    }
-    return (qPlayer.GetRoom() == ROOM_BURO_A + qPlayer.PlayerNum * 10);
-}
-
 Bot::HowToPlan Bot::canWePlanFlights() {
     if (!mDayStarted) {
         return HowToPlan::None;
@@ -658,7 +651,7 @@ Bot::Prio Bot::condBuyKerosine(__int64 &moneyAvailable) {
     if (!qPlayer.RobotUse(ROBOT_USE_PETROLAIR)) {
         return Prio::None;
     }
-    if (qPlayer.HasBerater(BERATERTYP_KEROSIN) < 30 || !checkLaptopOrOffice()) {
+    if (qPlayer.HasBerater(BERATERTYP_KEROSIN) < 30 || !checkLaptop()) {
         return Prio::None; /* no access to advisor report */
     }
     if (!haveDiscount()) {
@@ -681,7 +674,7 @@ Bot::Prio Bot::condBuyKerosineTank(__int64 &moneyAvailable) {
     if (!qPlayer.RobotUse(ROBOT_USE_PETROLAIR) || !qPlayer.RobotUse(ROBOT_USE_TANKS)) {
         return Prio::None;
     }
-    if (qPlayer.HasBerater(BERATERTYP_KEROSIN) < 30 || !checkLaptopOrOffice()) {
+    if (qPlayer.HasBerater(BERATERTYP_KEROSIN) < 30 || !checkLaptop()) {
         return Prio::None; /* no access to advisor report */
     }
     if (!haveDiscount()) {
@@ -1060,7 +1053,7 @@ Bot::Prio Bot::condExpandAirport(__int64 &moneyAvailable) {
     if (GameMechanic::ExpandAirportResult::Ok != GameMechanic::canExpandAirport(qPlayer)) {
         return Prio::None;
     }
-    if (!checkLaptopOrOffice()) {
+    if (!checkLaptop()) {
         return Prio::None; /* no access to gate utilization */
     }
     if (mRunToFinalObjective > FinalPhase::No) {

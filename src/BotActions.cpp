@@ -119,6 +119,7 @@ void Bot::actionBuero() {
     }
     if (mDoRoutes) {
         updateRouteInfoOffice();
+        assignPlanesToRoutes(true);
         if (mNeedToPlanRoutes) {
             planRoutes();
         }
@@ -347,7 +348,7 @@ void Bot::actionBuyNewPlane(__int64 /*moneyAvailable*/) {
         requestPlanRoutes(false);
         mBuyPlaneForRouteId = -1;
     } else {
-        if (checkPlaneAvailable(planeId, true)) {
+        if (checkPlaneAvailable(planeId, true, false)) {
             mPlanesForJobs.push_back(planeId);
             grabNewFlights();
         } else {
@@ -419,7 +420,7 @@ void Bot::actionBuyDesignerPlane(__int64 /*moneyAvailable*/) {
         }
         requestPlanRoutes(false);
     } else {
-        if (checkPlaneAvailable(planeId, true)) {
+        if (checkPlaneAvailable(planeId, true, false)) {
             mPlanesForJobs.push_back(planeId);
             grabNewFlights();
         } else {
@@ -1046,7 +1047,7 @@ void Bot::actionVisitBoss() {
 
 void Bot::actionVisitRouteBox() {
     updateRouteInfoBoard();
-    assignPlanesToRoutes();
+    assignPlanesToRoutes(false);
     findBestRoute();
 }
 

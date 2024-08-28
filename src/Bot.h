@@ -124,7 +124,6 @@ class Bot {
     bool hoursPassed(SLONG room, SLONG hours) const;
     bool haveDiscount() const;
     bool checkLaptop();
-    bool checkLaptopOrOffice();
     enum class HowToPlan { None, Laptop, Office };
     HowToPlan canWePlanFlights();
     __int64 getMoneyAvailable() const;
@@ -230,7 +229,7 @@ class Bot {
     void requestPlanRoutes(bool areWeInOffice);
     void findBestRoute();
     void planRoutes();
-    void assignPlanesToRoutes();
+    void assignPlanesToRoutes(bool areWeInOffice);
 
     /* misc (in BotMisc.cpp) */
     SLONG numPlanes() const { return mPlanesForJobs.size() + mPlanesForJobsUnassigned.size() + mPlanesForRoutes.size() + mPlanesForRoutesUnassigned.size(); }
@@ -253,7 +252,7 @@ class Bot {
     bool checkPlaneLists();
     void findPlanesNotAvailableForService(std::vector<SLONG> &listAvailable, std::deque<SLONG> &listUnassigned);
     void findPlanesAvailableForService(std::deque<SLONG> &listUnassigned, std::vector<SLONG> &listAvailable);
-    bool checkPlaneAvailable(SLONG planeId, bool printIfAvailable) const;
+    bool checkPlaneAvailable(SLONG planeId, bool printIfAvailable, bool areWeInOffice);
     const CRentRoute &getRentRoute(const RouteInfo &routeInfo) const;
     const CRoute &getRoute(const RouteInfo &routeInfo) const;
     __int64 getDailyOpSaldo() const;

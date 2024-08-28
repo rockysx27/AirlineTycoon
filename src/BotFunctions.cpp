@@ -1227,7 +1227,7 @@ void Bot::planRoutes() {
     }
 }
 
-void Bot::assignPlanesToRoutes() {
+void Bot::assignPlanesToRoutes(bool areWeInOffice) {
     if (mRoutes.empty()) {
         return;
     }
@@ -1243,7 +1243,7 @@ void Bot::assignPlanesToRoutes() {
         const auto &qPlane = qPlayer.Planes[planeId];
         mPlanesForRoutesUnassigned.pop_front();
 
-        if (!checkPlaneAvailable(planeId, true)) {
+        if (!checkPlaneAvailable(planeId, true, areWeInOffice)) {
             mPlanesForRoutesUnassigned.push_back(planeId);
             continue;
         }
