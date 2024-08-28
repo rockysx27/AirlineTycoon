@@ -49,10 +49,12 @@ void Bot::actionStartDay(__int64 moneyAvailable) {
 void Bot::actionStartDayLaptop(__int64 moneyAvailable) {
     mDayStarted = true;
 
-    /* reset route planning and invalidate cached info */
+    /*  invalidate cached info */
     mRoutesUpdated = false;
     mRoutesUtilizationUpdated = false;
     mRoutesNextStep = RoutesNextStep::None;
+    mExtraPilots = -1;
+    mExtraBegleiter = -1;
 
     mArabHintsTracker -= std::min(3, mArabHintsTracker);
 
@@ -303,6 +305,16 @@ void Bot::actionUpgradePlanes() {
     mRoutesNextStep = RoutesNextStep::None;
 }
 
+void Bot::updateExtraWorkers() {
+    if (qPlayer.HasBerater(BERATERTYP_PERSONAL)) {
+        mExtraPilots = qPlayer.xPiloten;
+        mExtraBegleiter = qPlayer.xBegleiter;
+    } else {
+        mExtraPilots = -1;
+        mExtraBegleiter = -1;
+    }
+}
+
 void Bot::actionBuyNewPlane(__int64 /*moneyAvailable*/) {
     if (mItemAntiStrike == 0 && (rand() % 2 == 0)) { /* rand() because human player has same chance of item appearing */
         if (GameMechanic::PickUpItemResult::PickedUp == GameMechanic::pickUpItem(qPlayer, ITEM_BH)) {
@@ -318,7 +330,6 @@ void Bot::actionBuyNewPlane(__int64 /*moneyAvailable*/) {
     }
     if (qPlayer.xPiloten < PlaneTypes[bestPlaneTypeId].AnzPiloten || qPlayer.xBegleiter < PlaneTypes[bestPlaneTypeId].AnzBegleiter) {
         redprintf("Bot::actionBuyNewPlane(): Not enough crew for selected plane!");
-        return;
     }
 
     auto list = GameMechanic::buyPlane(qPlayer, bestPlaneTypeId, 1);
@@ -356,6 +367,8 @@ void Bot::actionBuyNewPlane(__int64 /*moneyAvailable*/) {
         }
         mBestPlaneTypeId = -1;
     }
+
+    updateExtraWorkers();
 }
 
 void Bot::actionBuyUsedPlane(__int64 /*moneyAvailable*/) {
@@ -366,8 +379,8 @@ void Bot::actionBuyUsedPlane(__int64 /*moneyAvailable*/) {
 
     if (qPlayer.xPiloten < Sim.UsedPlanes[mBestUsedPlaneIdx].ptAnzPiloten || qPlayer.xBegleiter < Sim.UsedPlanes[mBestUsedPlaneIdx].ptAnzBegleiter) {
         redprintf("Bot::actionBuyUsedPlane(): Not enough crew for selected plane!");
-        return;
     }
+
     SLONG planeId = GameMechanic::buyUsedPlane(qPlayer, mBestUsedPlaneIdx);
     assert(planeId >= 0x1000000);
 
@@ -381,6 +394,8 @@ void Bot::actionBuyUsedPlane(__int64 /*moneyAvailable*/) {
 
     /* we always repair used planes first */
     mPlanesForJobsUnassigned.push_back(planeId);
+
+    updateExtraWorkers();
 }
 
 void Bot::actionBuyDesignerPlane(__int64 /*moneyAvailable*/) {
@@ -391,7 +406,6 @@ void Bot::actionBuyDesignerPlane(__int64 /*moneyAvailable*/) {
 
     if (qPlayer.xPiloten < mDesignerPlane.CalcPiloten() || qPlayer.xBegleiter < mDesignerPlane.CalcBegleiter()) {
         redprintf("Bot::actionBuyDesignerPlane(): Not enough crew for selected plane!");
-        return;
     }
 
     auto list = GameMechanic::buyXPlane(qPlayer, mDesignerPlaneFile, 1);
@@ -427,6 +441,8 @@ void Bot::actionBuyDesignerPlane(__int64 /*moneyAvailable*/) {
             mPlanesForJobsUnassigned.push_back(planeId);
         }
     }
+
+    updateExtraWorkers();
 }
 
 void Bot::actionVisitHR() {
@@ -554,10 +570,13 @@ void Bot::actionVisitHR() {
     if (mNumEmployees > nWorkers) {
         hprintf("Bot::actionVisitHR(): We lost %d employees", mNumEmployees - nWorkers);
     }
-    mNumEmployees = nWorkers;
     if (salaryIncreases > 0) {
         hprintf("Bot::actionVisitHR(): Increases salary of %d employees", salaryIncreases);
     }
+
+    mNumEmployees = nWorkers;
+    mExtraPilots = qPlayer.xPiloten;
+    mExtraBegleiter = qPlayer.xBegleiter;
 }
 
 void Bot::actionBuyKerosine(__int64 moneyAvailable) {

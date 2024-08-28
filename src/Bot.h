@@ -184,6 +184,7 @@ class Bot {
     void actionCheckTravelAgency();
     void actionCheckFreightDepot();
     void actionUpgradePlanes();
+    void updateExtraWorkers();
     void actionBuyNewPlane(__int64 moneyAvailable);
     void actionBuyUsedPlane(__int64 moneyAvailable);
     void actionBuyDesignerPlane(__int64 moneyAvailable);
@@ -326,6 +327,8 @@ class Bot {
 
     /* crew */
     SLONG mNumEmployees{0};
+    SLONG mExtraPilots{0};
+    SLONG mExtraBegleiter{0};
 
     /* items */
     SLONG mItemPills{0};      /* 1: card taken, 2: card given */

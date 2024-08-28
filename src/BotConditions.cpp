@@ -568,7 +568,7 @@ Bot::Prio Bot::condBuyNewPlane(__int64 &moneyAvailable) {
             return Prio::None; /* we already have an unused plane of desired type */
         }
     }
-    if ((qPlayer.xPiloten < PlaneTypes[bestPlaneTypeId].AnzPiloten) || (qPlayer.xBegleiter < PlaneTypes[bestPlaneTypeId].AnzBegleiter)) {
+    if ((mExtraPilots < PlaneTypes[bestPlaneTypeId].AnzPiloten) || (mExtraBegleiter < PlaneTypes[bestPlaneTypeId].AnzBegleiter)) {
         return Prio::None; /* not enough crew */
     }
     if (moneyAvailable >= PlaneTypes[bestPlaneTypeId].Preis) {
@@ -598,7 +598,7 @@ Bot::Prio Bot::condBuyUsedPlane(__int64 &moneyAvailable) {
     if (mBestUsedPlaneIdx < 0) {
         return Prio::None; /* no plane selected (ACTION_VISITMUSEUM) */
     }
-    if ((qPlayer.xPiloten < Sim.UsedPlanes[mBestUsedPlaneIdx].ptAnzPiloten) || (qPlayer.xBegleiter < Sim.UsedPlanes[mBestUsedPlaneIdx].ptAnzBegleiter)) {
+    if ((mExtraPilots < Sim.UsedPlanes[mBestUsedPlaneIdx].ptAnzPiloten) || (mExtraBegleiter < Sim.UsedPlanes[mBestUsedPlaneIdx].ptAnzBegleiter)) {
         return Prio::None; /* not enough crew */
     }
     if (moneyAvailable >= Sim.UsedPlanes[mBestUsedPlaneIdx].CalculatePrice()) {
@@ -1163,7 +1163,7 @@ Bot::Prio Bot::condVisitDesigner(__int64 &moneyAvailable) {
     if (mDesignerPlane.Name.empty() || !mDesignerPlane.IsBuildable()) {
         return Prio::None; /* no designer plane available */
     }
-    if ((qPlayer.xPiloten < mDesignerPlane.CalcPiloten()) || (qPlayer.xBegleiter < mDesignerPlane.CalcBegleiter())) {
+    if ((mExtraPilots < mDesignerPlane.CalcPiloten()) || (mExtraBegleiter < mDesignerPlane.CalcBegleiter())) {
         return Prio::None; /* not enough crew */
     }
     if (moneyAvailable >= mDesignerPlane.CalcCost()) {
