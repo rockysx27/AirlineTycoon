@@ -35,13 +35,13 @@ General:
 
 Statistics screen:
 * Showing far more categories where money was spent
+   * For example income from freight jobs, total tons transported, money spent on planes, sabotage or stocks and money gained from interest, credit or stocks
 * Accurate summation of money spent
    * Fixed many bugs where especially money earned / spent by competitor would not show up in balance
 * Whether or not values are shown depends on skill of financial advisor (for your airline) or skill of spy (regarding competitors)
 * Unlimited statistics: Store statistics data for each day since beginning of the game
 * Fix rendering of graph when zooming out
 * Fix display of mission target
-* Added more categories to statistics: Number of freight jobs, total tons transported and income from freight jobs
 
 Information menu:
 * Much more information on balance sheet depending on skill of your financial advisor
@@ -104,12 +104,9 @@ Bug fixes:
     * Correctly calculate plane saldo over past 7 days
 * Consider also number of first class passengers for statistics
 * Do not show route utilization for defeated players
-* Fixed random crash (during checking of flight plans)
 * Bug fixed in calculation in maximum amount of stock that can be emitted
     * Bug limited max amount of stock to around 2.1 million
     * Intger overflow is fixed now, but the originally intended limit of 250 million was changed to 2.5 million
-* Fixed counting of Uhrig flights for 9th addon mission
-  * Note that computer players always have and still are cheating in this mission
 * Fixed game shifting flights on its own even if they are already locked
     * Could previously cause double-booking of flights (income and cost booked twice)
 * Fixed crash in plane designer when attaching enginges to left side of tail
@@ -119,10 +116,13 @@ Bug fixes:
 * Fixed bug where player can 'survive' being overtaken by skipping dialog at the right moment
 * Classic mission 04 now uses correct route utilization
     * Previously, even though boss said that routes must be 20% utilized, game would check for 20% plane utilization
-* First class mission 07: Only need to have 2 repaired planes, not all of them in case more planes were bought
-* Evolution mission 02: Only need to have 5 planes with full safety upgrades, not all of them in case more planes were bought
-
-Computer player:
+* Addon mission 09: Fixed counting of Uhrig flights
+    * Note that computer players always have and still are cheating in this mission
+* First class mission 07: Only need to have two repaired planes, not all of them in case more than two were bought
+* Evolution mission 02: Only need to have five planes with full safety upgrades, not all of them in case more than five were bought
+* Fixed many random crashes
+  
+Default computer player:
 * Uses now same credit limit
 * Uses now same rules for trading stock
     * Trading fee (100 + 10% of volume) now also for computer players (fee existed only for player)
