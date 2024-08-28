@@ -50,6 +50,12 @@ void Bot::determineNemesis() {
     auto nemesisOld = mNemesis;
     mNemesis = -1;
     mNemesisScore = INT_MIN;
+    auto nemesisSabotaged = std::exchange(mNemesisSabotaged, -1);
+    if (qPlayer.HasBerater(BERATERTYP_INFO) < 50) {
+        hprintf("Bot::determineNemesis(): Need to hire spy first");
+        return;
+    }
+
     for (SLONG p = 0; p < 4; p++) {
         auto &qTarget = Sim.Players.Players[p];
         if (p == qPlayer.PlayerNum || qTarget.IsOut != 0) {
@@ -77,7 +83,7 @@ void Bot::determineNemesis() {
                 score = qTarget.GetMissionRating();
             }
         }
-        if (score > mNemesisScore && p != mNemesisSabotaged) {
+        if (score > mNemesisScore && p != nemesisSabotaged) {
             mNemesis = p;
             mNemesisScore = score;
         }
@@ -91,7 +97,6 @@ void Bot::determineNemesis() {
                     (LPCTSTR)Insert1000erDots64(mNemesisScore));
         }
     }
-    mNemesisSabotaged = -1;
 }
 
 void Bot::switchToFinalTarget() {
@@ -122,7 +127,7 @@ void Bot::switchToFinalTarget() {
     } else if (qPlayer.RobotUse(ROBOT_USE_MUCHWERBUNG) && Sim.Difficulty == DIFF_HARD) {
         /* formula that calculates image gain from largest campaign */
         SLONG adCampaignSize = 5;
-        SLONG numCampaignsRequired = ceil_div((TARGET_IMAGE - qPlayer.Image) * 55, (adCampaignSize + 6) * (gWerbePrice[adCampaignSize] / 10000));
+        SLONG numCampaignsRequired = ceil_div((TARGET_IMAGE - getImage()) * 55, (adCampaignSize + 6) * (gWerbePrice[adCampaignSize] / 10000));
         requiredMoney = numCampaignsRequired * gWerbePrice[adCampaignSize];
         hprintf("Bot::switchToFinalTarget(): Need %lld to buy %ld ad campaigns.", requiredMoney, numCampaignsRequired);
 
@@ -900,7 +905,7 @@ std::pair<Bot::RoutesNextStep, SLONG> Bot::routesFindNextStep() const {
     }
 
     /* Step 7: Improve airline image when we have one fully utilized route */
-    if (!mRoutes.empty() && qPlayer.Image < 800) {
+    if (!mRoutes.empty() && getImage() < 800) {
         return {RoutesNextStep::ImproveAirlineImage, -1};
     }
 

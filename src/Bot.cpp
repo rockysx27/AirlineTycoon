@@ -81,7 +81,7 @@ SLONG Bot::calcCurrentGainFromJobs() const {
 }
 
 SLONG Bot::calcRouteImageNeeded(const Bot::RouteInfo &routeInfo) const {
-    auto routeImageTarget = std::min(100, (800 - qPlayer.Image) / 4);
+    auto routeImageTarget = std::min(100, (800 - getImage()) / 4);
     return (routeImageTarget - routeInfo.image);
 }
 
@@ -288,6 +288,8 @@ const CRoute &Bot::getRoute(const Bot::RouteInfo &routeInfo) const { return Rout
 __int64 Bot::getDailyOpSaldo() const { return qPlayer.BilanzGestern.GetOpSaldo(); }
 
 __int64 Bot::getWeeklyOpSaldo() const { return qPlayer.BilanzWoche.Hole().GetOpSaldo(); }
+
+SLONG Bot::getImage() const { return (qPlayer.HasBerater(BERATERTYP_GELD) < 50) ? mCurrentImage : qPlayer.Image; }
 
 void Bot::forceReplanning() { qPlayer.RobotActions[1].ActionId = ACTION_NONE; }
 
@@ -1106,6 +1108,8 @@ void Bot::RobotExecuteAction() {
                     hprintf("Bot::RobotExecuteAction(): Picked up item floppy disk");
                 }
             }
+            mCurrentImage = qPlayer.Image;
+            hprintf("Bot::RobotExecuteAction(): Checked company image: %ld", mCurrentImage);
         } else {
             orangeprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
@@ -1184,6 +1188,7 @@ TEAKFILE &operator<<(TEAKFILE &File, const Bot &bot) {
     File << bot.mMoneyReservedForRepairs << bot.mMoneyReservedForUpgrades;
     File << bot.mMoneyReservedForAuctions << bot.mMoneyReservedForFines;
     File << bot.mNemesis << bot.mNemesisScore << bot.mNeedToShutdownSecurity << bot.mNemesisSabotaged;
+    File << bot.mArabHintsTracker << bot.mCurrentImage;
 
     File << bot.mBossNumCitiesAvailable;
     File << bot.mBossGateAvailable;
@@ -1313,6 +1318,7 @@ TEAKFILE &operator>>(TEAKFILE &File, Bot &bot) {
     File >> bot.mMoneyReservedForRepairs >> bot.mMoneyReservedForUpgrades;
     File >> bot.mMoneyReservedForAuctions >> bot.mMoneyReservedForFines;
     File >> bot.mNemesis >> bot.mNemesisScore >> bot.mNeedToShutdownSecurity >> bot.mNemesisSabotaged;
+    File >> bot.mArabHintsTracker >> bot.mCurrentImage;
 
     File >> bot.mBossNumCitiesAvailable;
     File >> bot.mBossGateAvailable;

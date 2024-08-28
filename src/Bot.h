@@ -257,6 +257,7 @@ class Bot {
     const CRoute &getRoute(const RouteInfo &routeInfo) const;
     __int64 getDailyOpSaldo() const;
     __int64 getWeeklyOpSaldo() const;
+    SLONG getImage() const;
     void forceReplanning();
 
     /* anim state */
@@ -301,6 +302,7 @@ class Bot {
     bool mNeedToShutdownSecurity{false};
     SLONG mNemesisSabotaged{-1};
     SLONG mArabHintsTracker{0};
+    SLONG mCurrentImage{0};
 
     /* status boss office */
     SLONG mBossNumCitiesAvailable{-1};

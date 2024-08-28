@@ -313,7 +313,8 @@ void Bot::actionBuyNewPlane(__int64 /*moneyAvailable*/) {
     assert(list[0] >= 0x1000000);
 
     auto planeId = list[0];
-    const auto &qPlane = qPlayer.Planes[planeId];
+    auto &qPlane = qPlayer.Planes[planeId];
+    qPlane.MaxBegleiter = qPlane.ptAnzBegleiter;
     hprintf("Bot::actionBuyNewPlane(): Bought plane %s", Helper::getPlaneName(qPlane).c_str());
     if (mDoRoutes) {
         if (mRoutesNextStep == RoutesNextStep::BuyMorePlanes) {
@@ -353,7 +354,8 @@ void Bot::actionBuyUsedPlane(__int64 /*moneyAvailable*/) {
     SLONG planeId = GameMechanic::buyUsedPlane(qPlayer, mBestUsedPlaneIdx);
     assert(planeId >= 0x1000000);
 
-    const auto &qPlane = qPlayer.Planes[planeId];
+    auto &qPlane = qPlayer.Planes[planeId];
+    qPlane.MaxBegleiter = qPlane.ptAnzBegleiter;
     hprintf("Bot::actionBuyUsedPlane(): Bought used plane %s", Helper::getPlaneName(qPlane).c_str());
     hprintf("Bot::actionBuyUsedPlane(): Passengers = %ld, fuel = %ld, year = %d", qPlane.ptPassagiere, qPlane.ptVerbrauch, qPlane.Baujahr);
     SLONG improvementNeeded = std::max(0, 80 - qPlane.WorstZustand);
@@ -384,7 +386,8 @@ void Bot::actionBuyDesignerPlane(__int64 /*moneyAvailable*/) {
     assert(list[0] >= 0x1000000);
 
     auto planeId = list[0];
-    const auto &qPlane = qPlayer.Planes[planeId];
+    auto &qPlane = qPlayer.Planes[planeId];
+    qPlane.MaxBegleiter = qPlane.ptAnzBegleiter;
     hprintf("Bot::actionBuyDesignerPlane(): Bought plane %s", Helper::getPlaneName(qPlane).c_str());
     if (mDoRoutes) {
         if (mRoutesNextStep == RoutesNextStep::BuyMorePlanes) {
@@ -1089,6 +1092,9 @@ void Bot::actionRentRoute() {
 }
 
 void Bot::actionBuyAdsForRoutes(__int64 moneyAvailable) {
+    mCurrentImage = qPlayer.Image;
+    hprintf("Bot::actionBuyAdsForRoutes(): Checked company image: %ld", mCurrentImage);
+
     if (mRoutesNextStep != RoutesNextStep::BuyAdsForRoute) {
         orangeprintf("Bot::actionBuyAdsForRoutes(): Conditions not met anymore.");
         return;
@@ -1129,6 +1135,9 @@ void Bot::actionBuyAdsForRoutes(__int64 moneyAvailable) {
 }
 
 void Bot::actionBuyAds(__int64 moneyAvailable) {
+    mCurrentImage = qPlayer.Image;
+    hprintf("Bot::actionBuyAds(): Checked company image: %ld", mCurrentImage);
+
     assert(kSmallestAdCampaign >= 1);
     for (SLONG adCampaignSize = 5; adCampaignSize >= kSmallestAdCampaign; adCampaignSize--) {
         SLONG cost = gWerbePrice[0 * 6 + adCampaignSize];

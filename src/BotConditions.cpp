@@ -345,7 +345,7 @@ Bot::Prio Bot::condAll(SLONG actionId) {
  */
 
 Bot::Prio Bot::condStartDay() {
-    /* not necesary to check hoursPassed() */
+    /* not necessary to check hoursPassed() */
     if (mDayStarted || !isOfficeUsable()) {
         return Prio::None;
     }
@@ -353,7 +353,7 @@ Bot::Prio Bot::condStartDay() {
 }
 
 Bot::Prio Bot::condStartDayLaptop() {
-    /* not necesary to check hoursPassed() */
+    /* not necessary to check hoursPassed() */
     if (mDayStarted || isOfficeUsable()) {
         return Prio::None;
     }
@@ -364,7 +364,7 @@ Bot::Prio Bot::condStartDayLaptop() {
 }
 
 Bot::Prio Bot::condBuero() {
-    /* not necesary to check hoursPassed() */
+    /* not necessary to check hoursPassed() */
     if (!isOfficeUsable()) {
         return Prio::None; /* office is destroyed */
     }
@@ -1229,11 +1229,11 @@ Bot::Prio Bot::condBuyAds(__int64 &moneyAvailable) {
         if ((mRunToFinalObjective == FinalPhase::TargetRun) && qPlayer.RobotUse(ROBOT_USE_MUCHWERBUNG)) {
             return Prio::High;
         }
-        if (qPlayer.Image < kMinimumImage || (mDoRoutes && qPlayer.Image < 300)) {
+        if (getImage() < kMinimumImage || (mDoRoutes && getImage() < 300)) {
             return Prio::Medium;
         }
         auto imageDelta = minCost / 10000 * (kSmallestAdCampaign + 6) / 55;
-        if (mDoRoutes && qPlayer.Image < (1000 - imageDelta)) {
+        if (mDoRoutes && getImage() < (1000 - imageDelta)) {
             return Prio::Low;
         }
     }
@@ -1241,11 +1241,18 @@ Bot::Prio Bot::condBuyAds(__int64 &moneyAvailable) {
 }
 
 Bot::Prio Bot::condVisitAds() {
+    /* check company image unless available via advisor */
+    if (hoursPassed(ACTION_VISITADS, 24) && qPlayer.HasBerater(BERATERTYP_GELD) < 50) {
+        return Prio::Medium;
+    }
+
+    /* always collect items if necessary */
     if (mItemAntiVirus == 3) {
         return Prio::Low;
     }
     if (mItemAntiVirus == 4 && qPlayer.HasItem(ITEM_DISKETTE) == 0) {
         return Prio::Low;
     }
+
     return Prio::None;
 }
