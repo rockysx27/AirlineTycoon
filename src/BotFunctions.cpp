@@ -3,7 +3,6 @@
 #include "BotHelper.h"
 #include "class.h"
 #include "GameMechanic.h"
-#include "global.h"
 #include "TeakLibW.h"
 
 #include <algorithm>
@@ -197,7 +196,7 @@ void Bot::switchToFinalTarget() {
                     }
                     break;
                 default:
-                    redprintf("Bot.cpp: Default case should not be reached.");
+                    redprintf("Bot::switchToFinalTarget(): Default case should not be reached.");
                     DebugBreak();
                 }
             }
@@ -865,7 +864,7 @@ void Bot::routesRecalcNextStep() {
         hprintf("Bot::routesRecalcNextStep(): Need to improve airline image");
         break;
     default:
-        redprintf("Bot.cpp: Default case should not be reached.");
+        redprintf("Bot::routesRecalcNextStep(): Default case should not be reached.");
         DebugBreak();
     }
 }

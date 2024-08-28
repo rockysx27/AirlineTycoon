@@ -232,7 +232,7 @@ class Bot {
     void planRoutes();
     void assignPlanesToRoutes();
 
-    /* misc (in Bot.cpp) */
+    /* misc (in BotMisc.cpp) */
     SLONG numPlanes() const { return mPlanesForJobs.size() + mPlanesForJobsUnassigned.size() + mPlanesForRoutes.size() + mPlanesForRoutesUnassigned.size(); }
     std::vector<SLONG> getAllPlanes() const {
         std::vector<SLONG> planes = mPlanesForRoutes;

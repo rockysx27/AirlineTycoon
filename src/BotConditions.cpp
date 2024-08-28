@@ -1,7 +1,6 @@
 #include "Bot.h"
 
 #include "BotHelper.h"
-#include "class.h"
 #include "GameMechanic.h"
 #include "global.h"
 #include "TeakLibW.h"
@@ -328,7 +327,7 @@ Bot::Prio Bot::condAll(SLONG actionId) {
     case ACTION_OVERTAKE_AIRLINE:
         return condOvertakeAirline();
     default:
-        redprintf("Bot.cpp: Default case should not be reached.");
+        redprintf("Bot::condAll(): Default case should not be reached.");
         return Prio::None;
     }
     return Prio::None;

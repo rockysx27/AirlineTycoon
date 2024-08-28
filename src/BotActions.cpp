@@ -291,7 +291,7 @@ void Bot::actionUpgradePlanes() {
                 }
                 break;
             default:
-                redprintf("Bot.cpp: Default case should not be reached.");
+                redprintf("Bot::actionUpgradePlanes(): Default case should not be reached.");
                 DebugBreak();
             }
         }
