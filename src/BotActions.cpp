@@ -306,13 +306,14 @@ void Bot::actionUpgradePlanes() {
 }
 
 void Bot::updateExtraWorkers() {
-    if (qPlayer.HasBerater(BERATERTYP_PERSONAL)) {
+    if (qPlayer.HasBerater(BERATERTYP_PERSONAL) > 0) {
         mExtraPilots = qPlayer.xPiloten;
         mExtraBegleiter = qPlayer.xBegleiter;
     } else {
         mExtraPilots = -1;
         mExtraBegleiter = -1;
     }
+    hprintf("Bot::updateExtraWorkers(): We have %d extra pilots and %d extra attendants", mExtraPilots, mExtraBegleiter);
 }
 
 void Bot::actionBuyNewPlane(__int64 /*moneyAvailable*/) {
@@ -460,7 +461,8 @@ void Bot::actionVisitHR() {
     }
 
     /* advisors */
-    std::vector<SLONG> wantedAdvisors = {BERATERTYP_FITNESS, BERATERTYP_SICHERHEIT, BERATERTYP_KEROSIN, BERATERTYP_GELD, BERATERTYP_FLUGZEUG};
+    std::vector<SLONG> wantedAdvisors = {BERATERTYP_PERSONAL, BERATERTYP_KEROSIN, BERATERTYP_GELD,      BERATERTYP_INFO,
+                                         BERATERTYP_FLUGZEUG, BERATERTYP_FITNESS, BERATERTYP_SICHERHEIT};
     for (auto advisorType : wantedAdvisors) {
         SLONG bestCandidateId = -1;
         SLONG bestCandidateSkill = 0;
@@ -548,8 +550,6 @@ void Bot::actionVisitHR() {
         hprintf("Bot::actionVisitHR(): Hiring %d pilots and %d attendants", numPilotsHired, numStewardessHired);
     }
 
-    hprintf("Bot::actionVisitHR(): We have %d extra pilots and %d extra attendants", qPlayer.xPiloten, qPlayer.xBegleiter);
-
     /* check whether we lost employees / increase salary for unhappy employees once */
     SLONG nWorkers = 0;
     SLONG salaryIncreases = 0;
@@ -577,6 +577,7 @@ void Bot::actionVisitHR() {
     mNumEmployees = nWorkers;
     mExtraPilots = qPlayer.xPiloten;
     mExtraBegleiter = qPlayer.xBegleiter;
+    hprintf("Bot::actionVisitHR(): We have %d extra pilots and %d extra attendants", mExtraPilots, mExtraBegleiter);
 }
 
 void Bot::actionBuyKerosine(__int64 moneyAvailable) {

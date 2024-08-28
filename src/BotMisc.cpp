@@ -224,6 +224,8 @@ __int64 Bot::getDailyOpSaldo() const { return qPlayer.BilanzGestern.GetOpSaldo()
 
 __int64 Bot::getWeeklyOpSaldo() const { return qPlayer.BilanzWoche.Hole().GetOpSaldo(); }
 
+bool Bot::isLateGame() const { return (getWeeklyOpSaldo() > 1e8); }
+
 SLONG Bot::getImage() const { return (qPlayer.HasBerater(BERATERTYP_GELD) < 50) ? mCurrentImage : qPlayer.Image; }
 
 void Bot::forceReplanning() { qPlayer.RobotActions[1].ActionId = ACTION_NONE; }

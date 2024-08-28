@@ -26,10 +26,10 @@ extern DOUBLE kMaxTicketPriceFactor;
 extern const DOUBLE kDefaultTicketPriceFactor;
 extern const SLONG kTargetEmployeeHappiness;
 extern const SLONG kMinimumEmployeeSkill;
-extern const SLONG kPlaneMinimumZustand;
+extern SLONG kPlaneMinimumZustand;
 extern const SLONG kPlaneTargetZustand;
 extern const SLONG kUsedPlaneMinimumScore;
-extern const DOUBLE kMaxKerosinQualiZiel;
+extern DOUBLE kMaxKerosinQualiZiel;
 extern SLONG kNumRoutesStartBuyingTanks;
 extern SLONG kOwnStockPosessionRatio;
 extern const SLONG kStockEmissionMode;
@@ -258,6 +258,7 @@ class Bot {
     const CRoute &getRoute(const RouteInfo &routeInfo) const;
     __int64 getDailyOpSaldo() const;
     __int64 getWeeklyOpSaldo() const;
+    bool isLateGame() const;
     SLONG getImage() const;
     void forceReplanning();
 

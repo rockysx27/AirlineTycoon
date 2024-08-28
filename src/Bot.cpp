@@ -23,10 +23,10 @@ DOUBLE kMaxTicketPriceFactor = 3.0;
 const DOUBLE kDefaultTicketPriceFactor = 3.5;
 const SLONG kTargetEmployeeHappiness = 90;
 const SLONG kMinimumEmployeeSkill = 70;
-const SLONG kPlaneMinimumZustand = 90;
+SLONG kPlaneMinimumZustand = 90;
 const SLONG kPlaneTargetZustand = 100;
 const SLONG kUsedPlaneMinimumScore = 40;
-const DOUBLE kMaxKerosinQualiZiel = 1.2;
+DOUBLE kMaxKerosinQualiZiel = 1.2;
 SLONG kNumRoutesStartBuyingTanks = 3;
 SLONG kOwnStockPosessionRatio = 25;
 const SLONG kStockEmissionMode = 2;
@@ -250,13 +250,16 @@ void Bot::RobotInit() {
         /* bot level */
         hprintf("Bot::RobotInit(): We are %s with bot level = %s.", (LPCTSTR)qPlayer.AirlineX, StandardTexte.GetS(TOKEN_NEWGAME, 5001 + qPlayer.BotLevel));
         if (qPlayer.BotLevel <= 1) {
-            kMaxTicketPriceFactor = std::min(kMaxTicketPriceFactor, 1.0);
+            kMaxTicketPriceFactor = std::min(1.0, kMaxTicketPriceFactor);
             kSchedulingMinScoreRatio = std::min(3.0f, kSchedulingMinScoreRatio);
             kSchedulingMinScoreRatioLastMinute = std::min(3.0f, kSchedulingMinScoreRatioLastMinute);
+            kPlaneMinimumZustand = std::min(80, kPlaneMinimumZustand);
+            kNumRoutesStartBuyingTanks = 99;
         } else if (qPlayer.BotLevel <= 2) {
-            kMaxTicketPriceFactor = std::min(kMaxTicketPriceFactor, 2.0);
+            kMaxTicketPriceFactor = std::min(2.0, kMaxTicketPriceFactor);
             kSchedulingMinScoreRatio = std::min(5.0f, kSchedulingMinScoreRatio);
             kSchedulingMinScoreRatioLastMinute = std::min(5.0f, kSchedulingMinScoreRatioLastMinute);
+            kMaxKerosinQualiZiel = std::min(1.0, kMaxKerosinQualiZiel);
         }
 
         mFirstRun = false;
@@ -369,13 +372,13 @@ void Bot::RobotPlan() {
                 qAction.walkingDistance);
     }*/
 
-    auto condRun = (qPlayer.BotLevel >= 3 ? Prio::Medium : (qPlayer.BotLevel >= 2 ? Prio::High : Prio::Top));
+    auto condNoRun = (qPlayer.BotLevel >= 3 ? Prio::Low : (qPlayer.BotLevel >= 2 ? Prio::Medium : Prio::Top));
 
     qRobotActions[1].ActionId = prioList[0].actionId;
-    qRobotActions[1].Running = (prioList[0].prio >= condRun);
+    qRobotActions[1].Running = (prioList[0].prio > condNoRun);
     qRobotActions[1].Prio = static_cast<SLONG>(prioList[0].prio);
     qRobotActions[2].ActionId = prioList[1].actionId;
-    qRobotActions[2].Running = (prioList[1].prio >= condRun);
+    qRobotActions[2].Running = (prioList[1].prio > condNoRun);
     qRobotActions[2].Prio = static_cast<SLONG>(prioList[1].prio);
 
     // hprintf("Bot::RobotPlan(): Action 0: %s", getRobotActionName(qRobotActions[0].ActionId));
