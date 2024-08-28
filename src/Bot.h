@@ -213,7 +213,7 @@ class Bot {
     void grabNewFlights();
     void determineNemesis();
     void switchToFinalTarget();
-    std::vector<SLONG> findBestAvailablePlaneType(bool forRoutes) const;
+    std::vector<SLONG> findBestAvailablePlaneType(bool forRoutes, bool canRefresh);
     SLONG findBestAvailableUsedPlane() const;
     void grabFlights(BotPlaner &planer, bool areWeInOffice);
     void requestPlanFlights(bool areWeInOffice);
@@ -277,6 +277,9 @@ class Bot {
     std::deque<SLONG> mPlanesForJobsUnassigned;
     std::vector<SLONG> mPlanesForRoutes;
     std::deque<SLONG> mPlanesForRoutesUnassigned;
+
+    /* known plane types */
+    std::vector<SLONG> mKnownPlaneTypes;
 
     /* strategy state */
     bool mLongTermStrategy{true};

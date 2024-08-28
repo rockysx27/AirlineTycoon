@@ -966,8 +966,10 @@ Bot::Prio Bot::condVisitMakler() {
     if (!hoursPassed(ACTION_VISITMAKLER, 4)) {
         return Prio::None;
     }
-    if (mBestPlaneTypeId == -1 && mLongTermStrategy) {
-        return Prio::Low;
+    if (mLongTermStrategy) {
+        if (hoursPassed(ACTION_VISITMAKLER, 24) || (mBestPlaneTypeId == -1)) {
+            return Prio::Low; /* check available plane types at least once per day */
+        }
     }
     if (mItemAntiStrike == 0) {
         return Prio::Low; /* take BH */

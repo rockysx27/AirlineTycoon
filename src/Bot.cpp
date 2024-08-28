@@ -942,7 +942,7 @@ void Bot::RobotExecuteAction() {
 
     case ACTION_VISITMAKLER:
         if (condVisitMakler() != Prio::None) {
-            mBestPlaneTypeId = findBestAvailablePlaneType(false)[0];
+            mBestPlaneTypeId = findBestAvailablePlaneType(false, true)[0];
 
             if (mItemAntiStrike == 0) {
                 if (GameMechanic::PickUpItemResult::PickedUp == GameMechanic::pickUpItem(qPlayer, ITEM_BH)) {
@@ -1161,6 +1161,11 @@ TEAKFILE &operator<<(TEAKFILE &File, const Bot &bot) {
         File << i;
     }
 
+    File << static_cast<SLONG>(bot.mKnownPlaneTypes.size());
+    for (const auto &i : bot.mKnownPlaneTypes) {
+        File << i;
+    }
+
     File << bot.mLongTermStrategy;
     File << bot.mBestPlaneTypeId << bot.mBestUsedPlaneIdx;
     File << bot.mBuyPlaneForRouteId << bot.mPlaneTypeForNewRoute;
@@ -1286,6 +1291,12 @@ TEAKFILE &operator>>(TEAKFILE &File, Bot &bot) {
     bot.mPlanesForRoutesUnassigned.resize(size);
     for (SLONG i = 0; i < size; i++) {
         File >> bot.mPlanesForRoutesUnassigned[i];
+    }
+
+    File >> size;
+    bot.mKnownPlaneTypes.resize(size);
+    for (SLONG i = 0; i < size; i++) {
+        File >> bot.mKnownPlaneTypes[i];
     }
 
     File >> bot.mLongTermStrategy;

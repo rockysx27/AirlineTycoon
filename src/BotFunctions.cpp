@@ -292,11 +292,14 @@ void Bot::switchToFinalTarget() {
             (LPCTSTR)Insert1000erDots64(cash), (LPCTSTR)Insert1000erDots64(availableMoney - cash));
 }
 
-std::vector<SLONG> Bot::findBestAvailablePlaneType(bool forRoutes) const {
-    CDataTable planeTable;
-    planeTable.FillWithPlaneTypes();
+std::vector<SLONG> Bot::findBestAvailablePlaneType(bool forRoutes, bool canRefresh) {
+    if (canRefresh) {
+        mKnownPlaneTypes = GameMechanic::getAvailablePlaneTypes();
+        hprintf("Bot::findBestAvailablePlaneType(): Checking available plane types: %d available", mKnownPlaneTypes.size());
+    }
+
     std::vector<std::pair<SLONG, DOUBLE>> scores;
-    for (const auto &i : planeTable.LineIndex) {
+    for (const auto &i : mKnownPlaneTypes) {
         if (!PlaneTypes.IsInAlbum(i)) {
             continue;
         }
@@ -938,7 +941,7 @@ void Bot::requestPlanRoutes(bool areWeInOffice) {
 
 void Bot::findBestRoute() {
     auto isBuyable = GameMechanic::getBuyableRoutes(qPlayer);
-    auto bestPlanes = findBestAvailablePlaneType(true); // TODO: Technically not possible to check plane types here
+    auto bestPlanes = findBestAvailablePlaneType(true, false);
 
     mWantToRentRouteId = -1;
     mPlaneTypeForNewRoute = -1;

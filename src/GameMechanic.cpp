@@ -593,6 +593,18 @@ bool GameMechanic::checkPlaneTypeAvailable(SLONG planeType) {
     return found;
 }
 
+std::vector<SLONG> GameMechanic::getAvailablePlaneTypes() {
+    std::vector<SLONG> result;
+    CDataTable planeTable;
+    planeTable.FillWithPlaneTypes();
+    for (const auto &i : planeTable.LineIndex) {
+        if (PlaneTypes.IsInAlbum(i)) {
+            result.push_back(i);
+        }
+    }
+    return result;
+}
+
 std::vector<SLONG> GameMechanic::buyPlane(PLAYER &qPlayer, SLONG planeType, SLONG amount) {
     std::vector<SLONG> planeIds;
     if (!PlaneTypes.IsInAlbum(planeType)) {
