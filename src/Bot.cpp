@@ -819,6 +819,7 @@ void Bot::RobotExecuteAction() {
 
     case ACTION_VISITSECURITY:
         if (condVisitSecurity(moneyAvailable) != Prio::None) {
+            actionVisitSecurity(moneyAvailable);
         } else {
             orangeprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
@@ -965,8 +966,8 @@ TEAKFILE &operator<<(TEAKFILE &File, const Bot &bot) {
     File << bot.mNeedToPlanJobs << bot.mNeedToPlanRoutes;
     File << bot.mMoneyReservedForRepairs << bot.mMoneyReservedForUpgrades;
     File << bot.mMoneyReservedForAuctions << bot.mMoneyReservedForFines;
-    File << bot.mNemesis << bot.mNemesisScore << bot.mNeedToShutdownSecurity << bot.mNemesisSabotaged;
-    File << bot.mArabHintsTracker << bot.mCurrentImage;
+    File << bot.mNemesis << bot.mNemesisScore << bot.mNeedToShutdownSecurity << bot.mUsingSecurity;
+    File << bot.mNemesisSabotaged << bot.mArabHintsTracker << bot.mCurrentImage;
 
     File << bot.mBossNumCitiesAvailable;
     File << bot.mBossGateAvailable;
@@ -1101,8 +1102,8 @@ TEAKFILE &operator>>(TEAKFILE &File, Bot &bot) {
     File >> bot.mNeedToPlanJobs >> bot.mNeedToPlanRoutes;
     File >> bot.mMoneyReservedForRepairs >> bot.mMoneyReservedForUpgrades;
     File >> bot.mMoneyReservedForAuctions >> bot.mMoneyReservedForFines;
-    File >> bot.mNemesis >> bot.mNemesisScore >> bot.mNeedToShutdownSecurity >> bot.mNemesisSabotaged;
-    File >> bot.mArabHintsTracker >> bot.mCurrentImage;
+    File >> bot.mNemesis >> bot.mNemesisScore >> bot.mNeedToShutdownSecurity >> bot.mUsingSecurity;
+    File >> bot.mNemesisSabotaged >> bot.mArabHintsTracker >> bot.mCurrentImage;
 
     File >> bot.mBossNumCitiesAvailable;
     File >> bot.mBossGateAvailable;

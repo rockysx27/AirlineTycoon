@@ -7712,6 +7712,12 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
         break;
     case ROBOT_USE_SECURTY_OFFICE:
         /* SuperBot: Respects this flag */
+        if (IsSuperBot()) {
+            if (Sim.Difficulty == DIFF_ATFS04 || Sim.Difficulty == DIFF_ATFS06) {
+                return true; /* need to have 15 days without sabotage */
+            }
+            return false; /* do not use security office otherwise */
+        }
         pFeatureDesc = "------"
                        "?"
                        "----------"

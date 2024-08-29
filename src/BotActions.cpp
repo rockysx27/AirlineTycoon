@@ -658,7 +658,10 @@ void Bot::actionSabotage(__int64 moneyAvailable) {
             mItemAntiVirus = 3;
         }
     }
-    if (qPlayer.HasItem(ITEM_ZANGE) == 0 && Sim.ItemZange == 1) {
+    if (Sim.ItemZange == 1) {
+        if (qPlayer.HasItem(ITEM_ZANGE) == 1) {
+            GameMechanic::removeItem(qPlayer, ITEM_ZANGE);
+        }
         if (GameMechanic::PickUpItemResult::PickedUp == GameMechanic::pickUpItem(qPlayer, ITEM_ZANGE)) {
             hprintf("Bot::actionSabotage(): Picked up item pliers");
         }
@@ -1211,5 +1214,24 @@ void Bot::actionBuyAds(__int64 moneyAvailable) {
 
     if (mRoutesNextStep == RoutesNextStep::ImproveAirlineImage) {
         mRoutesNextStep = RoutesNextStep::None;
+    }
+}
+
+void Bot::actionVisitSecurity(__int64 moneyAvailable) {
+    bool targetState = isLateGame();
+    GameMechanic::setSecurity(qPlayer, 0, targetState); /* office: spiked coffee, bomb */
+    GameMechanic::setSecurity(qPlayer, 1, targetState); /* laptop: virus */
+    GameMechanic::setSecurity(qPlayer, 2, targetState); /* HR: strike */
+    GameMechanic::setSecurity(qPlayer, 3, targetState); /* bank: hacking */
+    GameMechanic::setSecurity(qPlayer, 4, targetState); /* routebox: route steeling */
+    GameMechanic::setSecurity(qPlayer, 5, targetState); /* admin: cut phones, fake announcement */
+    GameMechanic::setSecurity(qPlayer, 6, targetState); /* planes: food, tv, crash */
+    GameMechanic::setSecurity(qPlayer, 7, targetState); /* planes: tire, engines */
+    GameMechanic::setSecurity(qPlayer, 8, targetState); /* gates: fake ads, seize plane */
+    mUsingSecurity = targetState;
+    if (targetState) {
+        hprintf("Bot::actionVisitSecurity(): Activate security measures");
+    } else {
+        hprintf("Bot::actionVisitSecurity(): Deactivate security measures");
     }
 }

@@ -208,6 +208,7 @@ class Bot {
     void actionRentRoute();
     void actionBuyAdsForRoutes(__int64 moneyAvailable);
     void actionBuyAds(__int64 moneyAvailable);
+    void actionVisitSecurity(__int64 moneyAvailable);
 
     /* in BotFunctions.cpp */
     void grabNewFlights();
@@ -305,6 +306,7 @@ class Bot {
     SLONG mNemesis{-1};
     __int64 mNemesisScore{0};
     bool mNeedToShutdownSecurity{false};
+    bool mUsingSecurity{false};
     SLONG mNemesisSabotaged{-1};
     SLONG mArabHintsTracker{0};
     SLONG mCurrentImage{0};

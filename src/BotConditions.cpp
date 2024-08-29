@@ -708,6 +708,12 @@ Bot::Prio Bot::condSabotage(__int64 &moneyAvailable) {
         return Prio::None;
     }
 
+    /* check if we want to prevent competitors from shutting down security office */
+    if (qPlayer.RobotUse(ROBOT_USE_SECURTY_OFFICE)) {
+        return mUsingSecurity ? Prio::High : Prio::Low;
+    }
+
+    /* check if we want to do sabotage */
     moneyAvailable -= kMoneyReserveSabotage;
     if (qPlayer.RobotUse(ROBOT_USE_EXTREME_SABOTAGE)) {
         if (!mNeedToShutdownSecurity && (mNemesis != -1)) {
@@ -735,9 +741,9 @@ Bot::Prio Bot::condSabotage(__int64 &moneyAvailable) {
                 return Prio::Medium;
             }
         }
-
+        /* we might need them to shut down security office */
         if (qPlayer.HasItem(ITEM_ZANGE) == 0) {
-            return mNeedToShutdownSecurity ? Prio::Medium : Prio::Low; /* collect pliers */
+            return mNeedToShutdownSecurity ? Prio::Medium : Prio::Low;
         }
     }
 
@@ -1128,6 +1134,11 @@ Bot::Prio Bot::condVisitSecurity(__int64 &moneyAvailable) {
     }
     if (!qPlayer.RobotUse(ROBOT_USE_SECURTY_OFFICE)) {
         return Prio::None;
+    }
+    if (isLateGame()) {
+        return Prio::Medium; /* enable security measures */
+    } else if (mUsingSecurity) {
+        return Prio::High; /* deactivate security measures */
     }
     return Prio::None;
 }

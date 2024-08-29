@@ -1567,6 +1567,27 @@ GameMechanic::PickUpItemResult GameMechanic::pickUpItem(PLAYER &qPlayer, SLONG i
     return PickUpItemResult::None;
 }
 
+bool GameMechanic::removeItem(PLAYER &qPlayer, SLONG item) {
+    bool removed = false;
+    for (SLONG d = 0; d < 6; d++) {
+        if (qPlayer.Items[d] == item) {
+            qPlayer.Items[d] = 0xff;
+            removed = true;
+        }
+    }
+    if (!remove) {
+        redprintf("GameMechanic::removeItem(%s): Player does not have item (%ld).", (LPCTSTR)qPlayer.AirlineX, item);
+        return false;
+    }
+
+    qPlayer.ReformIcons();
+    if (qPlayer.HasItem(ITEM_LAPTOP) == 0) {
+        qPlayer.SecurityFlags &= ~(1 << 1);
+    }
+    hprintf("GameMechanic::removeItem(%s): Removed item (%ld).", (LPCTSTR)qPlayer.AirlineX, item);
+    return true;
+}
+
 bool GameMechanic::useItem(PLAYER &qPlayer, SLONG item) {
     SLONG itemIndex = -1;
     for (SLONG d = 0; d < 6; d++) {

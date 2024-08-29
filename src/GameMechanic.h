@@ -106,6 +106,7 @@ class GameMechanic {
     /* Items */
     enum PickUpItemResult { PickedUp, NotAllowed, NoSpace, ConditionsNotMet, None };
     static PickUpItemResult pickUpItem(PLAYER &qPlayer, SLONG item);
+    static bool removeItem(PLAYER &qPlayer, SLONG item);
     static bool useItem(PLAYER &qPlayer, SLONG item);
 
     /* Flights */
