@@ -216,9 +216,7 @@ void Bot::RobotInit() {
         }
 
         if (qPlayer.RobotUse(ROBOT_USE_FORCEROUTES)) {
-            mDoRoutes = true;
             std::swap(mPlanesForJobsUnassigned, mPlanesForRoutesUnassigned);
-            hprintf("Bot::RobotInit(): Switching to routes (forced).");
         }
 
         if (qPlayer.RobotUse(ROBOT_USE_GROSSESKONTO)) {

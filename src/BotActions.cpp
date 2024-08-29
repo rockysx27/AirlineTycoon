@@ -66,9 +66,12 @@ void Bot::actionStartDayLaptop(__int64 moneyAvailable) {
         checkLostRoutes();
         updateRouteInfoOffice();
         requestPlanRoutes(true);
-    } else if (qPlayer.RobotUse(ROBOT_USE_ROUTES)) {
-        /* logic for switching to routes */
-        if ((getNumRentedRoutes() == 0) && (mBestPlaneTypeId != -1)) {
+    } else if (qPlayer.RobotUse(ROBOT_USE_ROUTES) && (getNumRentedRoutes() == 0)) {
+        /* logic for switching to routes. Before switching, make sure any initially rented routes have been cancelled */
+        if (qPlayer.RobotUse(ROBOT_USE_FORCEROUTES)) {
+            mDoRoutes = true;
+            hprintf("Bot::RobotInit(): Switching to routes (forced).");
+        } else if (mBestPlaneTypeId != -1) {
             const auto &bestPlaneType = PlaneTypes[mBestPlaneTypeId];
             SLONG costRouteAd = gWerbePrice[1 * 6 + 5];
             __int64 moneyNeeded = 2 * costRouteAd + bestPlaneType.Preis;
