@@ -96,8 +96,9 @@ CRegistryAccess::CRegistryAccess(const CString &RegistryPath) {
 bool CRegistryAccess::Open(const CString & /*RegistryPath*/) {
     Close(); // Alten Zugriff schließen
 
-    hprintf("Checkup.cpp: Reading AT.json");
-    hKey = json_load_file(AppPrefPath + "AT.json", 0, nullptr);
+    CString fn = AppPrefPath + "AT.json";
+    hprintf("Checkup.cpp: Reading %s", (LPCTSTR)fn);
+    hKey = json_load_file((LPCTSTR)fn, 0, nullptr);
     if (hKey == nullptr) {
         hprintf("Checkup.cpp: Could not open AT.json, using default settings.");
         hKey = json_object();
@@ -126,10 +127,14 @@ CRegistryAccess::~CRegistryAccess() { Close(); }
 // Alten Zugriff schließen:
 //--------------------------------------------------------------------------------------------
 void CRegistryAccess::Close() {
+    if (gQuickTestRun > 0) {
+        return;
+    }
     if (hKey != nullptr) {
 #if USE_JSON
-        hprintf("Checkup.cpp: Writing AT.json");
-        json_dump_file(hKey, AppPrefPath + "AT.json", 0);
+        CString fn = AppPrefPath + "AT.json";
+        hprintf("Checkup.cpp: Writing %s", (LPCTSTR)fn);
+        json_dump_file(hKey, (LPCTSTR)fn, 0);
         json_decref(hKey);
 #else
         RegCloseKey(hKey);

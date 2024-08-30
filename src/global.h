@@ -32,6 +32,7 @@ extern BOOL CheatMissions;
 extern SLONG CheatBerater;
 extern BOOL CheatAnimNow;
 extern SLONG CheatTestGame;
+extern SLONG CheatAutoSkip;
 
 //--------------------------------------------------------------------------------------------
 // Die Zufallsgeneratoren:
@@ -51,7 +52,7 @@ extern SLONG MissionKeys3[]; // Die Schlüsselwerte für die Registry
 //--------------------------------------------------------------------------------------------
 // Pointer auf Fenster:
 //--------------------------------------------------------------------------------------------
-extern CStdRaum *TopWin; //Übergeordnetes Fenster, z.B. load Airport
+extern CStdRaum *TopWin; // Übergeordnetes Fenster, z.B. load Airport
 
 //--------------------------------------------------------------------------------------------
 // Einige *WIRKLICH* globale Ressourcen:
@@ -145,7 +146,7 @@ extern BOOL bTest;               // Schneller Ablauf zum testen
 extern BOOL bActive;             // is application active?
 extern BOOL bFullscreen;         // is application Fullscreen or in Window?
 extern BOOL bCheatMode;          // Ist der Cheatmode zum testen aktiviert?
-extern BOOL bQuick;              // Depeche Mode = Alles auf die Schnelle..
+extern SLONG gQuickTestRun;      // Depeche Mode = Alles auf die Schnelle..
 extern BOOL bgWarp;              // Spieler warpt zum Ziel
 extern BOOL bNoVgaRam;           // Keine Bitmaps ins VGA-Ram legen
 extern BOOL bCheatMode;          // Ist der Cheatmode zum testen aktiviert?
@@ -162,6 +163,8 @@ extern BOOL gDisablePauseKey;    // Pause-Key für Texteingabe abgeschaltet?
 extern BOOL bgJustDidLotsOfWork; // Gegen Sprünge nach Load/Save
 extern BOOL bLeaveGameLoop;      // Hauptschleife verlassen?
 extern BOOL bFirstClass;
+extern SLONG gAutoQuitOnDay; // Exit game on specified game
+extern SLONG gAutoBotDiff;
 
 //--------------------------------------------------------------------------------------------
 // Das Spiel höchstpersönlich:
@@ -194,8 +197,8 @@ extern CString SmackerPath;  // Die Smacker-Filmchen
 extern CString IntroPath;    // Der Intro-Film
 extern CString AppPath;      // Der Ganze Pfad, z.B. "f:\project\takeoff\"
 extern CString AppPrefPath;
-extern CString VoicePath;    // die Sprache
-extern CString MyPlanePath;  // die eigenen Flugzeuge
+extern CString VoicePath;   // die Sprache
+extern CString MyPlanePath; // die eigenen Flugzeuge
 
 //--------------------------------------------------------------------------------------------
 // Die Simulationswelt mit ihren Parameter (Zeit, Spieler, Schwierigkeit, ..)
@@ -331,9 +334,9 @@ extern CSmoker Smokers[5];
 //--------------------------------------------------------------------------------------------
 extern SBBMS gItemBms;
 extern CTafelData TafelData;
-extern CAuftraege LastMinuteAuftraege;           // Die hängen gerade aus
-extern CAuftraege ReisebueroAuftraege;           // Die hängen gerade aus
-extern CFrachten gFrachten;                      // Die Frachtaufträge
+extern CAuftraege LastMinuteAuftraege;            // Die hängen gerade aus
+extern CAuftraege ReisebueroAuftraege;            // Die hängen gerade aus
+extern CFrachten gFrachten;                       // Die Frachtaufträge
 extern std::vector<CAuftraege> AuslandsAuftraege; // Aus dem Ausland
 extern std::vector<SLONG> AuslandsRefill;         // Aus dem Ausland
 extern std::vector<CFrachten> AuslandsFrachten;   // Aus dem Ausland
@@ -392,6 +395,7 @@ extern const char TOKEN_MISC[];
 extern const char TOKEN_MUSEUM[];
 extern const char TOKEN_MONEY[];
 extern const char TOKEN_NASA[];
+extern const char TOKEN_NEWGAME[];
 extern const char TOKEN_PASSENGER[];
 extern const char TOKEN_PERSONAL[];
 extern const char TOKEN_PLANE[];

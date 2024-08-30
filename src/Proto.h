@@ -76,6 +76,7 @@ CString FullFilename(const CString &Filename, const CString &PathString, SLONG N
 SLONG CalculateFlightKerosin(SLONG VonCity, SLONG NachCity, SLONG Verbrauch, SLONG Geschwindigkeit);
 SLONG CalculateFlightCost(SLONG VonCity, SLONG NachCity, SLONG Verbrauch, SLONG Geschwindigkeit, SLONG Player);
 SLONG CalculateFlightCostRechnerisch(SLONG VonCity, SLONG NachCity, SLONG Verbrauch, SLONG Geschwindigkeit, SLONG PlayerNum);
+SLONG CalculateFlightCostNoTank(SLONG VonCity, SLONG NachCity, SLONG Verbrauch, SLONG Geschwindigkeit);
 void InitEinheiten(const CString &Filename);
 CString Insert1000erDots(SLONG Value);
 CString Insert1000erDots64(__int64 Value);
@@ -97,7 +98,7 @@ void DebugBreak(void);
 DWORD AtGetTime(void);
 SLONG AtGetAsyncKeyState(SLONG vKey);
 DWORD AtGetTickCount(void);
-const char* getRobotActionName(SLONG a);
+const char *getRobotActionName(SLONG a);
 CString getCurrentDayString();
 
 //--------------------------------------------------------------------------------------------

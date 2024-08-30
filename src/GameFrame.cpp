@@ -5,11 +5,14 @@
 //============================================================================================
 #include "StdAfx.h"
 #include "AtNet.h"
+#include "BotHelper.h"
 #include "Intro.h"
 #include "NewGamePopup.h" //Fenster zum Wahl der Gegner und der Spielstärke
 #include "Outro.h"
 #include "Synthese.h"
 #include "glpause.h"
+
+#include "BotDesigner.h"
 
 #include "SbLib.h"
 #include "network.h"
@@ -1868,6 +1871,19 @@ void GameFrame::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) {
             }
         }
 
+        // AUTORUN
+        if (TypeBuffer[23] == 'A' && TypeBuffer[24] == 'U' && TypeBuffer[25] == 'T' && TypeBuffer[26] == 'O' && TypeBuffer[27] == 'R' &&
+            TypeBuffer[28] == 'U' && TypeBuffer[29] == 'N') {
+            if ((Sim.bAllowCheating != 0) || (Sim.bNetwork == 0)) {
+                Sim.bCheatedSession = 1;
+                CheatAutoSkip = (CheatAutoSkip == 0) ? 1 : 0;
+                CheatSound();
+
+                SIM::SendChatBroadcast(bprintf(StandardTexte.GetS(TOKEN_MISC, 7014), (LPCTSTR)Sim.Players.Players[Sim.localPlayer].NameX));
+                SIM::SendSimpleMessage(ATNET_CHEAT, 0, Sim.localPlayer, 2);
+            }
+        }
+
         // BUBBLEGUM
         if (TypeBuffer[21] == 'B' && TypeBuffer[22] == 'U' && TypeBuffer[23] == 'B' && TypeBuffer[24] == 'B' && TypeBuffer[25] == 'L' &&
             TypeBuffer[26] == 'E' && TypeBuffer[27] == 'G' && TypeBuffer[28] == 'U' && TypeBuffer[29] == 'M') {
@@ -1981,8 +1997,7 @@ void GameFrame::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) {
         // COFFEECUP
         if (TypeBuffer[21] == 'C' && TypeBuffer[22] == 'O' && TypeBuffer[23] == 'F' && TypeBuffer[24] == 'F' && TypeBuffer[25] == 'E' &&
             TypeBuffer[26] == 'E' && TypeBuffer[27] == 'C' && TypeBuffer[28] == 'U' && TypeBuffer[29] == 'P') {
-            Sim.Players.Players[0].SecurityFlags = (1 << 7);
-            Sim.Players.Players[Sim.localPlayer].ArabTrust = 6; // Für Spieler 2
+            Sim.Players.Players[Sim.localPlayer].ArabTrust = 6;
 
             /*Sim.Players.Players[Sim.localPlayer].ArabMode2  = 1; //Bakterien im Kaffee
               Sim.Players.Players[Sim.localPlayer].ArabOpfer2 = 2; //Für Spieler 2
@@ -2063,112 +2078,16 @@ void GameFrame::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) {
     }
 
     if (Editor == EDITOR_NONE) {
-        if (nChar == ATKEY_F6) {
-            // Sim.Players.Players[(SLONG)0].ArabMode2   = 3;
-            // Sim.Players.Players[(SLONG)0].ArabOpfer2  = 1; //Sim.localPlayer;
-            // Sim.Players.Players[(SLONG)0].NetSynchronizeSabotage ();
-            // Sim.Players.Players[(SLONG)0].ArabActive  = FALSE;
-            // Sim.Players.Players[(SLONG)0].ArabPlane   = qPlayer.Planes.GetRandomUsedIndex();
-        }
-
-        /*if (nChar==ATKEY_F6)
-          {
-          qPlayer.Money+=30000000;
-          }*/
-
-        /*if (nChar==ATKEY_F6)
-          {
-          static n=0;  n++;
-
-          for (SLONG c=0; c<Sim.KerosinPast.AnzEntries()-1; c++)
-          Sim.KerosinPast[c]=Sim.KerosinPast[c+1];
-
-          Sim.Kerosin += (rand()%21)-10 + (rand()%20<2)*((rand()%41)-20) + SLONG(sin ((Sim.Date+n+rand()%6)/3.0)*20) + SLONG(sin ((Sim.Date+n)*1.7)*20);
-          Limit (300l, Sim.Kerosin, 700l);
-          Sim.KerosinPast[9]=Sim.Kerosin;
-          } */
-
-        // if (nChar==ATKEY_F12) DebugBreak();
-
-        /*if (nChar==ATKEY_TAB)
-          {
-          Sim.localPlayer=(Sim.localPlayer+1)&3;
-          hprintf ("Sim.localPlayer now is Player %li", Sim.localPlayer+1);
-          } */
-
         if (nChar == ATKEY_F5) {
-            for (SLONG d = 0; d < 4; d++) {
-                if (Sim.Players.Players[d].Owner == 1) {
-                    for (SLONG c = Sim.Players.Players[d].Planes.AnzEntries() - 1; c >= 0; c--) {
-                        if (Sim.Players.Players[d].Planes.IsInAlbum(c) != 0) {
-                            hprintf("Dumping Player %li, Plane %li", d, c);
-                            Sim.Players.Players[d].Planes[c].Flugplan.Dump(true);
-                        }
-                    }
-                }
-            }
+            Helper::printAllSchedules(false);
         }
 
         if (nChar == ATKEY_F6) {
-            /*if (Sim.Players.Players[0].Sympathie[1]<200)
-              Sim.Players.Players[0].Sympathie[1]=250;
-              else
-              Sim.Players.Players[0].Sympathie[1]=-250;
+            Helper::printAllSchedules(true);
+        }
 
-            Sim.Players.Players[(SLONG)2].DoRoutes   = 1;
-            Sim.Players.Players[(SLONG)3].DoRoutes   = 1;
-            Sim.Players.Players[(SLONG)2].Image      = 150;
-            Sim.Players.Players[(SLONG)3].Image      = 150;
-
-            qPlayer.ArabTrust = 5;
-
-            Sim.Players.Players[(SLONG)2].ArabMode2  = 2;
-            Sim.Players.Players[(SLONG)2].ArabOpfer2 = 0;
-
-            Sim.Players.Players[(SLONG)2].ArabHints = 110;
-            Sim.Players.Players[(SLONG)2].ArabMode  = 3;
-            Sim.Players.Players[(SLONG)2].ArabOpfer = 3;
-            Sim.Players.Players[(SLONG)2].ArabActive = FALSE;
-            Sim.Players.Players[(SLONG)2].ArabPlane  = qPlayer.Planes.GetRandomUsedIndex();
-
-            qPlayer.OwnsAktien[3] = 8000;
-            Sim.Players.Players[3].OwnsAktien[3] = 0; */
-
-            /*hprintf ("Statusbericht der Spieler:");
-              for (c=0; c<Sim.Players.AnzPlayers; c++)
-              if (!Sim.Players.Players[c].IsOut)
-              {
-              PERSON &qPerson = Sim.Persons[Sim.Persons.GetPlayerIndex (c)];
-
-              hprintf ("%s: %s (%li) - Sympathien: %li, %li, %li, %li", (LPCTSTR)Sim.Players.Players[c].NameX, (LPCTSTR)Sim.Players.Players[c].AirlineX,
-              (LPCTSTR)Sim.Players.Players[c].Owner, (LPCTSTR)Sim.Players.Players[c].Sympathie[0], (LPCTSTR)Sim.Players.Players[c].Sympathie[1],
-              (LPCTSTR)Sim.Players.Players[c].Sympathie[2], (LPCTSTR)Sim.Players.Players[c].Sympathie[3]); hprintf ("- Owner %li - TopLocation: %li",
-              (LPCTSTR)Sim.Players.Players[c].Owner, (LPCTSTR)Sim.Players.Players[c].GetRoom()); hprintf ("- (%li,%li)->(%li,%li)", qPerson.Position.x,
-              qPerson.Position.y, qPerson.Target.x, qPerson.Target.y);
-              }
-
-              if (qPlayer.Items[0]==0xff)
-              qPlayer.Items[0]=0;
-              else
-              qPlayer.Items[0]+=6;
-
-              if (qPlayer.Items[0]>20)
-              qPlayer.Items[0]=0;
-
-              for (c=1; c<6; c++)
-              {
-              qPlayer.Items[c]=UBYTE(qPlayer.Items[0]+c);
-              if (qPlayer.Items[c]>20)
-              qPlayer.Items[c]=0xff;
-              }
-
-              qPlayer.LaptopBattery = 60*24;
-              qPlayer.LaptopQuality = 4;
-
-              qPlayer.ReformIcons ();
-              qPlayer.Money+=10000000;
-
-              qPlayer.WasInRoom.FillWith (TRUE);*/
+        if (nChar == ATKEY_F7) {
+            BotDesigner().findBestDesignerPlane();
         }
     }
 

@@ -303,25 +303,30 @@ too_large:
 
     // Typ A = Normal, Gewinn möglich, etwas Strafe
     if (Type >= 0 && Type < 50) {
+        jobType = 0;
     }
     // Typ B = Hoffmann, Gewinn möglich, keine Strafe
     else if (Type >= 50 && Type < 60) {
         Date++;
         BisDate++;
+        jobType = 1;
     }
     // Typ C = Zeit knapp, viel Gewinn, viel Strafe
     else if (Type >= 60 && Type < 80) {
         Praemie *= 2;
         Strafe = Praemie * 4;
+        jobType = 2;
     }
     // Typ D = Betrug, kein Gewinn möglich, etwas Strafe
     else if (Type >= 80 && Type < 95) {
         Praemie /= 2;
+        jobType = 3;
     }
     // Typ E = Glücksfall, viel Gewinn, keine Strafe
     else if (Type >= 95 && Type < 100) {
         Praemie *= 2;
         Strafe = 0;
+        jobType = 4;
     }
 
     Type = pRandom->Rand(100);
@@ -330,21 +335,27 @@ too_large:
         Personen = 1;
         Praemie = Praemie * 4;
         Strafe = Praemie * 4;
+        jobSizeType = 0;
     } else if (Type < 15 || (Sim.Date < 4 && Type < 30) || (Sim.Date < 8 && Type < 20) || (Sim.Difficulty == DIFF_TUTORIAL && Type < 70)) {
         Personen = 90;
         Praemie = Praemie * 3 / 4;
+        jobSizeType = 1;
     } else if (Type < 40 || Sim.Difficulty == DIFF_TUTORIAL) {
         Personen = 180;
         /* Praemie bleibt gleich */
+        jobSizeType = 2;
     } else if (Type < 70) {
         Personen = 280;
         Praemie = Praemie * 5 / 4;
+        jobSizeType = 3;
     } else if (Type < 90) {
         Personen = 340;
         Praemie = Praemie * 6 / 4;
+        jobSizeType = 4;
     } else {
         Personen = 430;
         Praemie = Praemie * 7 / 4;
+        jobSizeType = 5;
     }
 
     if (AreaType == 1) {
@@ -388,26 +399,31 @@ too_large:
 
     // Typ A = Normal, Gewinn möglich, etwas Strafe
     if (Type >= 0 && Type < 50) {
+        jobType = 0;
     }
     // Typ B = Hoffmann, Gewinn möglich
-    else if (Type >= 50 && Type < 60) {
+    else if (Type >= 50 && Type < 65) {
         Date = UWORD(Sim.Date);
         BisDate = UWORD(Sim.Date + 4 + pRandom->Rand(3));
+        jobType = 1;
     }
     // Typ C = Zeit knapp, viel Gewinn, viel Strafe
-    else if (Type >= 70 && Type < 80) {
+    else if (Type >= 65 && Type < 80) {
         Praemie *= 2;
         Strafe = Praemie * 2;
         BisDate = Date = UWORD(Sim.Date + 1);
+        jobType = 2;
     }
     // Typ D = Betrug, kein Gewinn möglich, etwas Strafe
     else if (Type >= 80 && Type < 95) {
         Praemie /= 2;
+        jobType = 3;
     }
     // Typ E = Glücksfall, viel Gewinn, keine Strafe
     else if (Type >= 95 && Type < 100) {
         Praemie *= 2;
         Strafe = 0;
+        jobType = 4;
     }
 
     Type = pRandom->Rand(100);
@@ -416,21 +432,27 @@ too_large:
         Personen = 2;
         Praemie = Praemie * 4;
         Strafe = Praemie * 4;
+        jobSizeType = 0;
     } else if (Type < 15 || (Sim.Date < 4 && Type < 30) || (Sim.Date < 8 && Type < 20) || (Sim.Difficulty == DIFF_TUTORIAL && Type < 70)) {
         Personen = 90;
         Praemie = Praemie * 3 / 4;
+        jobSizeType = 1;
     } else if (Type < 40 || Sim.Difficulty == DIFF_TUTORIAL) {
         Personen = 180;
         /* Praemie bleibt gleich */
+        jobSizeType = 2;
     } else if (Type < 70) {
         Personen = 280;
         Praemie = Praemie * 5 / 4;
+        jobSizeType = 3;
     } else if (Type < 90) {
         Personen = 340;
         Praemie = Praemie * 6 / 4;
+        jobSizeType = 4;
     } else {
         Personen = 430;
         Praemie = Praemie * 7 / 4;
+        jobSizeType = 5;
     }
 
     if (AreaType == 1) {
@@ -476,22 +498,28 @@ too_large:
 
     // Typ A = Normal, Gewinn möglich, etwas Strafe
     if (Type >= 0 && Type < 50) {
+        jobType = 0;
     }
     // Typ B = Hoffmann, Gewinn möglich, keine Strafe
-    else if (Type >= 50 && Type < 60) {
+    else if (Type >= 50 && Type < 65) {
         BisDate = UWORD(Sim.Date + 6);
+        jobType = 1;
     }
     // Typ C = Zeit knapp, viel Gewinn, viel Strafe
-    else if (Type >= 70 && Type < 95) {
+    else if (Type >= 65 && Type < 95) {
         Praemie *= 2;
         Strafe = Praemie * 2;
         BisDate = UWORD(Sim.Date + 1);
+        jobType = 2;
     }
     // Typ E = Glücksfall, viel Gewinn, keine Strafe
     else if (Type >= 95 && Type < 100) {
         Praemie *= 2;
         Strafe = 0;
+        jobType = 4;
     }
+
+    jobSizeType = 2;
 
     if (AreaType == 1) {
         Praemie = Praemie * 3 / 2;
@@ -537,6 +565,7 @@ too_large:
     Date = UWORD(Sim.Date + 1 + pRandom->Rand(3));
     BisDate = Date;
     InPlan = 0;
+    bUhrigFlight = TRUE;
 
     // Kopie dieser Formel auch bei Last-Minute
     Praemie = ((CalculateFlightCost(VonCity, NachCity, 8000, 700, -1)) + 99) / 100 * 115;
@@ -550,26 +579,31 @@ too_large:
 
     // Typ A = Normal, Gewinn möglich, etwas Strafe
     if (Type >= 0 && Type < 50) {
+        jobType = 0;
     }
     // Typ B = Hoffmann, Gewinn möglich
-    else if (Type >= 50 && Type < 60) {
+    else if (Type >= 50 && Type < 65) {
         Date = UWORD(Sim.Date);
         BisDate = UWORD(Sim.Date + 4 + pRandom->Rand(3));
+        jobType = 1;
     }
     // Typ C = Zeit knapp, viel Gewinn, viel Strafe
-    else if (Type >= 70 && Type < 80) {
+    else if (Type >= 65 && Type < 80) {
         Praemie *= 2;
         Strafe = Praemie * 2;
         BisDate = Date = UWORD(Sim.Date + 1);
+        jobType = 2;
     }
     // Typ D = Betrug, kein Gewinn möglich, etwas Strafe
     else if (Type >= 80 && Type < 95) {
         Praemie /= 2;
+        jobType = 3;
     }
     // Typ E = Glücksfall, viel Gewinn, keine Strafe
     else if (Type >= 95 && Type < 100) {
         Praemie *= 2;
         Strafe = 0;
+        jobType = 4;
     }
 
     Type = pRandom->Rand(100);
@@ -578,21 +612,27 @@ too_large:
         Personen = 2;
         Praemie = Praemie * 4;
         Strafe = Praemie * 4;
+        jobSizeType = 0;
     } else if (Type < 15 || (Sim.Date < 4 && Type < 30) || (Sim.Date < 8 && Type < 20) || (Sim.Difficulty == DIFF_TUTORIAL && Type < 70)) {
         Personen = 90;
         Praemie = Praemie * 3 / 4;
+        jobSizeType = 1;
     } else if (Type < 40 || Sim.Difficulty == DIFF_TUTORIAL) {
         Personen = 180;
         /* Praemie bleibt gleich */
+        jobSizeType = 2;
     } else if (Type < 70) {
         Personen = 280;
         Praemie = Praemie * 5 / 4;
+        jobSizeType = 3;
     } else if (Type < 90) {
         Personen = 340;
         Praemie = Praemie * 6 / 4;
+        jobSizeType = 4;
     } else {
         Personen = 430;
         Praemie = Praemie * 7 / 4;
+        jobSizeType = 5;
     }
 
     if (AreaType == 1) {
@@ -659,26 +699,31 @@ too_large:
 
     // Typ A = Normal, Gewinn möglich, etwas Strafe
     if (Type >= 0 && Type < 50) {
+        jobType = 0;
     }
     // Typ B = Hoffmann, Gewinn möglich
     else if (Type >= 50 && Type < 65) {
         Date = UWORD(Sim.Date);
         BisDate = UWORD(Sim.Date + 4 + localRand.Rand(3));
+        jobType = 1;
     }
     // Typ C = Zeit knapp, viel Gewinn, viel Strafe
     else if (Type >= 65 && Type < 80) {
         Praemie *= 2;
         Strafe = Praemie * 2;
         BisDate = Date = UWORD(Sim.Date + 1);
+        jobType = 2;
     }
     // Typ D = Betrug, kein Gewinn möglich, etwas Strafe
     else if (Type >= 80 && Type < 95) {
         Praemie /= 2;
+        jobType = 3;
     }
     // Typ E = Glücksfall, viel Gewinn, keine Strafe
     else if (Type >= 95 && Type < 100) {
         Praemie *= 2;
         Strafe = 0;
+        jobType = 4;
     }
 
     // Type = pRandom->Rand (100);
@@ -688,21 +733,27 @@ too_large:
         Personen = 2;
         Praemie = Praemie * 4;
         Strafe = Praemie * 4;
+        jobSizeType = 0;
     } else if (Type < 15 || (Sim.Date < 4 && Type < 30) || (Sim.Date < 8 && Type < 20) || (Sim.Difficulty == DIFF_TUTORIAL && Type < 70)) {
         Personen = 90;
         Praemie = Praemie * 3 / 4;
+        jobSizeType = 1;
     } else if (Type < 40 || Sim.Difficulty == DIFF_TUTORIAL) {
         Personen = 180;
         /* Praemie bleibt gleich */
+        jobSizeType = 2;
     } else if (Type < 70) {
         Personen = 280;
         Praemie = Praemie * 5 / 4;
+        jobSizeType = 3;
     } else if (Type < 90) {
         Personen = 340;
         Praemie = Praemie * 6 / 4;
+        jobSizeType = 4;
     } else {
         Personen = 430;
         Praemie = Praemie * 7 / 4;
+        jobSizeType = 5;
     }
 
     if (AreaType == 1) {
@@ -757,7 +808,7 @@ BOOL CAuftrag::FitsInPlane(const CPlane &Plane) const {
 //--------------------------------------------------------------------------------------------
 TEAKFILE &operator<<(TEAKFILE &File, const CAuftrag &Auftrag) {
     File << Auftrag.VonCity << Auftrag.NachCity << Auftrag.Personen << Auftrag.Date << Auftrag.InPlan << Auftrag.Okay << Auftrag.Praemie << Auftrag.Strafe
-         << Auftrag.BisDate;
+         << Auftrag.BisDate << Auftrag.jobType << Auftrag.jobSizeType;
 
     if (SaveVersionSub >= 100) {
         File << Auftrag.bUhrigFlight;
@@ -771,7 +822,7 @@ TEAKFILE &operator<<(TEAKFILE &File, const CAuftrag &Auftrag) {
 //--------------------------------------------------------------------------------------------
 TEAKFILE &operator>>(TEAKFILE &File, CAuftrag &Auftrag) {
     File >> Auftrag.VonCity >> Auftrag.NachCity >> Auftrag.Personen >> Auftrag.Date >> Auftrag.InPlan >> Auftrag.Okay >> Auftrag.Praemie >> Auftrag.Strafe >>
-        Auftrag.BisDate;
+        Auftrag.BisDate >> Auftrag.jobType >> Auftrag.jobSizeType;
 
     if (SaveVersionSub >= 100) {
         File >> Auftrag.bUhrigFlight;

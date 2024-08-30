@@ -1,5 +1,7 @@
 #pragma once
 
+#include <random>
+
 extern void memswap(void *, void *, ULONG);
 extern char *bprintf(char const *, ...);
 extern char *bitoa(SLONG);
@@ -384,6 +386,20 @@ class TEAKFILE {
         return File;
     }
 
+    friend TEAKFILE &operator<<(TEAKFILE &File, const std::string &b) {
+        File << (ULONG)b.length();
+        File.Write((const UBYTE *)b.c_str(), b.length());
+        return File;
+    }
+    friend TEAKFILE &operator>>(TEAKFILE &File, std::string &b) {
+        ULONG size;
+        File >> size;
+        BUFFER_V<BYTE> str(size);
+        File.Read(str.getData(), size);
+        b = (PCSTR)(BYTE *)str.getData();
+        return File;
+    }
+
     template <typename T, std::size_t N> friend TEAKFILE &operator<<(TEAKFILE &File, const std::array<T, N> &buffer) {
         for (SLONG i = 0; i < buffer.size(); i++) {
             File << buffer[i];
@@ -421,8 +437,9 @@ class TEAKFILE {
     template <typename T> friend TEAKFILE &operator<<(TEAKFILE &File, const BUFFER<T> &buffer) {
         File << buffer.Size;
         File << SLONG(buffer.DelPointer - buffer.MemPointer);
-        for (SLONG i = 0; i < buffer.Size; i++)
+        for (SLONG i = 0; i < buffer.Size; i++) {
             File << buffer.MemPointer[i];
+        }
         return File;
     }
 
@@ -432,14 +449,12 @@ class TEAKFILE {
         buffer.ReSize(0);
         buffer.ReSize(size);
         File >> offset;
-        for (SLONG i = 0; i < buffer.Size; i++)
+        for (SLONG i = 0; i < buffer.Size; i++) {
             File >> buffer.MemPointer[i];
+        }
         buffer.DelPointer = buffer.MemPointer + offset;
         return File;
     }
-
-  private:
-    void CodeBlock(unsigned char *, SLONG, SLONG);
 };
 
 // static_assert(sizeof(TEAKFILE) == 68, "TEAKFILE_size_check");
@@ -475,24 +490,37 @@ class CRLEReader {
 
 class TEAKRAND {
   public:
-    TEAKRAND(void);
-    TEAKRAND(ULONG _Seed);
+    TEAKRAND(void) { Seed = 0; }
+    TEAKRAND(ULONG _Seed) {
+        Seed = _Seed;
+        mMT.seed(Seed);
+    }
 
-    void SRand(ULONG _Seed);
+    void SRand(ULONG _Seed) {
+        Seed = _Seed;
+        mMT.seed(Seed);
+    }
     void SRandTime(void);
-    void Reset(void);
+    void Reset(void) { mMT.seed(Seed); }
 
-    UWORD Rand(void);
-    UWORD Rand(SLONG Max);
-    UWORD Rand(SLONG Min, SLONG Max);
-    ULONG GetSeed(void);
+    UWORD Rand(void) { return getRandInt(0, UINT16_MAX); }
+    UWORD Rand(SLONG Max) { return getRandInt(0, Max - 1); }
+    UWORD Rand(SLONG Min, SLONG Max) { return getRandInt(Min, Max); }
+    ULONG GetSeed(void) { return (Seed); }
 
     friend TEAKFILE &operator<<(TEAKFILE &File, const TEAKRAND &r);
     friend TEAKFILE &operator>>(TEAKFILE &File, TEAKRAND &r);
 
+    inline int getRandInt(int min, int max) {
+        assert(max >= min);
+        std::uniform_int_distribution<int> dist(min, max);
+        return dist(mMT);
+    }
+
   private:
     ULONG Seed{};
-    ULONG Value;
+
+    std::mt19937 mMT{};
 };
 
 template <typename T> class TXY {
@@ -836,6 +864,9 @@ class HDU {
     void ClearScreen();
     void HercPrintf(SLONG, const char *Format, ...);
     void HercPrintf(const char *Format, ...);
+    void HercPrintfRed(const char *Format, ...);
+    void HercPrintfOrange(const char *Format, ...);
+    void HercPrintfGreen(const char *Format, ...);
     void LogPosition(const char *, SLONG);
 
   private:
@@ -846,6 +877,9 @@ extern HDU Hdu;
 
 #define hprintf Hdu.HercPrintf
 #define hprintvar(x) Hdu.HercPrintf("%d\n", x)
+#define redprintf Hdu.HercPrintfRed
+#define orangeprintf Hdu.HercPrintfOrange
+#define greenprintf Hdu.HercPrintfGreen
 
 class XID {
   public:
@@ -1135,10 +1169,13 @@ template <typename T> class ALBUM_V {
 
 #ifdef DEBUG_ALBUM
     T &operator[](ULONG id) { return List.at(find(id)).first; }
+    const T &operator[](ULONG id) const { return List.at(find(id)).first; }
 #else
     T &operator[](ULONG id) { return List[find(id)].first; }
+    const T &operator[](ULONG id) const { return List[find(id)].first; }
 #endif
     T &at(ULONG id) { return List.at(find(id)).first; }
+    const T &at(ULONG id) const { return List.at(find(id)).first; }
 
     /* comparison */
 
@@ -1281,7 +1318,7 @@ template <typename T> class ALBUM_V {
             TeakLibW_Exception(nullptr, 0, ExcAlbumFind, Name.c_str());
         }
 
-        SLONG target = (random != nullptr) ? random->Rand(used) : rand() % 5;
+        SLONG target = (random != nullptr) ? random->Rand(used) : rand() % used;
         SLONG index = 0;
         for (SLONG i = AnzEntries() - 1; i >= 0; --i) {
             if (List[i].second == 0) {

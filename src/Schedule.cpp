@@ -3,6 +3,7 @@
 //============================================================================================
 #include "StdAfx.h"
 #include "AtNet.h"
+#include "BotHelper.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -44,6 +45,7 @@ CFlugplanEintrag::CFlugplanEintrag(BOOL ObjectType, ULONG ObjectId) {
     CFlugplanEintrag::Landezeit = 0;
     CFlugplanEintrag::ObjectType = ObjectType;
     CFlugplanEintrag::ObjectId = ObjectId;
+    CFlugplanEintrag::FlightBooked = FALSE;
 }
 
 //--------------------------------------------------------------------------------------------
@@ -60,7 +62,7 @@ TEAKFILE &operator<<(TEAKFILE &File, const CFlugplanEintrag &Eintrag) {
         if (Eintrag.ObjectType != 0) {
             File << Eintrag.Okay << Eintrag.HoursBefore << Eintrag.Passagiere << Eintrag.PassagiereFC << Eintrag.PArrived << Eintrag.Gate << Eintrag.VonCity
                  << Eintrag.GateWarning << Eintrag.NachCity << Eintrag.Startzeit << Eintrag.Landezeit << Eintrag.Startdate << Eintrag.Landedate
-                 << Eintrag.ObjectId << Eintrag.Ticketpreis << Eintrag.TicketpreisFC;
+                 << Eintrag.ObjectId << Eintrag.Ticketpreis << Eintrag.TicketpreisFC << Eintrag.FlightBooked;
         }
     }
 
@@ -81,7 +83,7 @@ TEAKFILE &operator>>(TEAKFILE &File, CFlugplanEintrag &Eintrag) {
         if (Eintrag.ObjectType != 0) {
             File >> Eintrag.Okay >> Eintrag.HoursBefore >> Eintrag.Passagiere >> Eintrag.PassagiereFC >> Eintrag.PArrived >> Eintrag.Gate >> Eintrag.VonCity >>
                 Eintrag.GateWarning >> Eintrag.NachCity >> Eintrag.Startzeit >> Eintrag.Landezeit >> Eintrag.Startdate >> Eintrag.Landedate >>
-                Eintrag.ObjectId >> Eintrag.Ticketpreis >> Eintrag.TicketpreisFC;
+                Eintrag.ObjectId >> Eintrag.Ticketpreis >> Eintrag.TicketpreisFC >> Eintrag.FlightBooked;
         } else {
             Eintrag.Okay = 0;
             Eintrag.Gate = -1;
@@ -90,6 +92,7 @@ TEAKFILE &operator>>(TEAKFILE &File, CFlugplanEintrag &Eintrag) {
             Eintrag.Landezeit = 0;
             Eintrag.ObjectType = 0;
             Eintrag.ObjectId = -1;
+            Eintrag.FlightBooked = FALSE;
         }
     }
 
@@ -218,7 +221,8 @@ void CFlugplanEintrag::CalcPassengers(SLONG PlayerNum, CPlane &qPlane) {
     if (ObjectType == 1) // Route
     {
         CRoute &qRoute = Routen[ObjectId];
-        // if (PlayerNum == 0) hprintf ("CalcPassengers for player %li for %s-%s", PlayerNum, (LPCTSTR)Cities[qRoute.VonCity].Name, (LPCTSTR)Cities[qRoute.NachCity].Name);
+        // if (PlayerNum == 0) hprintf ("CalcPassengers for player %li for %s-%s", PlayerNum, (LPCTSTR)Cities[qRoute.VonCity].Name,
+        // (LPCTSTR)Cities[qRoute.NachCity].Name);
 
         // Normale Passagiere: Aber nicht mehr kurz vor dem Start ändern:
         if (Startdate > Sim.Date || (Startdate == Sim.Date && Sim.GetHour() + 1 < Startzeit)) {
@@ -579,6 +583,28 @@ void CFlugplanEintrag::CalcPassengers(SLONG PlayerNum, CPlane &qPlane) {
 // Flug wird gestartet, die Kosten und Einnahmen werden verbucht:
 //--------------------------------------------------------------------------------------------
 void CFlugplanEintrag::BookFlight(CPlane *Plane, SLONG PlayerNum) {
+    PLAYER &qPlayer = Sim.Players.Players[PlayerNum];
+
+    if (FlightBooked) {
+        hprintf("==========");
+        redprintf("Schedule.cpp: %ld/%ld: %s: Tried to book flight twice:", Sim.Date, Sim.GetHour(), (LPCTSTR)qPlayer.AirlineX);
+        printf("Schedule.cpp: ");
+        Helper::printFPE(*this);
+        printf("Schedule.cpp: ");
+        if (ObjectType == 1) {
+            Helper::printRoute(Routen[ObjectId]);
+        } else if (ObjectType == 2) {
+            Helper::printJob(qPlayer.Auftraege[ObjectId]);
+        } else if (ObjectType == 4) {
+            Helper::printFreight(qPlayer.Frachten[ObjectId]);
+        } else {
+            hprintf("None");
+        }
+        hprintf("==========");
+        return;
+    }
+    FlightBooked = TRUE;
+
     __int64 Saldo = 0;
     SLONG Einnahmen = 0;
     SLONG Kerosin = 0;
@@ -589,7 +615,6 @@ void CFlugplanEintrag::BookFlight(CPlane *Plane, SLONG PlayerNum) {
     SLONG AusgabenKerosinOhneTank = 0;
     SLONG AusgabenEssen = 0;
     CString CityString;
-    PLAYER &qPlayer = Sim.Players.Players[PlayerNum];
 
     // Hat angebliche Asynchronitäten berichtet, obwohl der Flugplan gleich war!
     // NetGenericAsync (90000+ObjectId+Sim.Date*100+PlayerNum*1000, Startzeit);
@@ -630,7 +655,8 @@ void CFlugplanEintrag::BookFlight(CPlane *Plane, SLONG PlayerNum) {
     Plane->SummePassagiere += PassagiereFC;
 
     // Insgesamt geflogene Meilen:
-    qPlayer.NumMiles += Cities.CalcDistance(VonCity, NachCity) / 1609;
+    SLONG miles = Cities.CalcDistance(VonCity, NachCity) / 1609;
+    qPlayer.NumMiles += miles;
 
     // Für den Statistik-Screen:
     if (ObjectType == 1 || ObjectType == 2) {
@@ -642,6 +668,8 @@ void CFlugplanEintrag::BookFlight(CPlane *Plane, SLONG PlayerNum) {
             qPlayer.Statistiken[STAT_PASSAGIERE_HOME].AddAtPastDay(Passagiere);
             qPlayer.Statistiken[STAT_PASSAGIERE_HOME].AddAtPastDay(PassagiereFC);
         }
+    } else if (ObjectType == 4) {
+        qPlayer.Statistiken[STAT_FLUEGE].AddAtPastDay(1);
     }
 
     if (ObjectType == 1 || ObjectType == 2) {
@@ -662,10 +690,12 @@ void CFlugplanEintrag::BookFlight(CPlane *Plane, SLONG PlayerNum) {
 
     if (ObjectType == 4) {
         if (qPlayer.Frachten[ObjectId].TonsLeft > 0) {
-            qPlayer.NumFracht += min(qPlayer.Frachten[ObjectId].TonsLeft, Plane->ptPassagiere / 10);
+            SLONG tons = min(qPlayer.Frachten[ObjectId].TonsLeft, Plane->ptPassagiere / 10);
+            qPlayer.Statistiken[STAT_TONS].AddAtPastDay(tons);
+            qPlayer.NumFracht += tons;
 
             if (qPlayer.Frachten[ObjectId].Praemie == 0) {
-                qPlayer.NumFrachtFree += min(qPlayer.Frachten[ObjectId].TonsLeft, Plane->ptPassagiere / 10);
+                qPlayer.NumFrachtFree += tons;
             }
 
             qPlayer.Frachten[ObjectId].TonsLeft -= Plane->ptPassagiere / 10;
@@ -730,7 +760,7 @@ void CFlugplanEintrag::BookFlight(CPlane *Plane, SLONG PlayerNum) {
     } else if (ObjectType == 2) {
         qPlayer.ChangeMoney(Einnahmen, 2061, CityString);
     } else if (ObjectType == 3) {
-        qPlayer.ChangeMoney(Einnahmen, 2061, CityString); /* TODO: Gewinn für Leerflug */
+        qPlayer.ChangeMoney(Einnahmen, 2061, CityString);
     } else if (ObjectType == 4) {
         qPlayer.ChangeMoney(Einnahmen, 2066, CityString);
     }
@@ -791,6 +821,27 @@ void CFlugplanEintrag::BookFlight(CPlane *Plane, SLONG PlayerNum) {
             qRRoute.AuslastungFC = 0;
         }
 
+        //  MP: Auslastung der Route für den Bot:
+        {
+            if (Plane->MaxPassagiere > 0) {
+                auto ratio = Passagiere * 100 / Plane->MaxPassagiere;
+                if (qRRoute.AuslastungBot == 0) {
+                    qRRoute.AuslastungBot = ratio;
+                } else {
+                    qRRoute.AuslastungBot = (qRRoute.AuslastungBot + ratio) / 2;
+                }
+            }
+
+            if (Plane->MaxPassagiereFC > 0) {
+                auto ratio = PassagiereFC * 100 / Plane->MaxPassagiereFC;
+                if (qRRoute.AuslastungFirstClassBot == 0) {
+                    qRRoute.AuslastungFirstClassBot = ratio;
+                } else {
+                    qRRoute.AuslastungFirstClassBot = (qRRoute.AuslastungFirstClassBot + ratio) / 2;
+                }
+            }
+        }
+
         Routen[ObjectId].Bedarf -= Passagiere;
         if (Routen[ObjectId].Bedarf < 0) {
             Routen[ObjectId].Bedarf = 0;
@@ -802,9 +853,6 @@ void CFlugplanEintrag::BookFlight(CPlane *Plane, SLONG PlayerNum) {
     }
     // Bei Aufträgen, die Prämie verbuchen; Aufträge als erledigt markieren
     else if (ObjectType == 2) {
-        Hdu.HercPrintf("Player %li flies %li Passengers from %s to %s\n", PlayerNum, qPlayer.Auftraege[ObjectId].Personen,
-                       (LPCTSTR)Cities[qPlayer.Auftraege[ObjectId].VonCity].Name, (LPCTSTR)Cities[qPlayer.Auftraege[ObjectId].NachCity].Name);
-
         if (Okay == 0 || Okay == 1) {
             qPlayer.Auftraege[ObjectId].InPlan = -1; // Auftrag erledigt
         } else {
@@ -813,10 +861,14 @@ void CFlugplanEintrag::BookFlight(CPlane *Plane, SLONG PlayerNum) {
 
         // Add-On Mission 9
         if (Sim.Difficulty == DIFF_ADDON09) {
-            if ((qPlayer.Owner != 1 && (qPlayer.Auftraege[ObjectId].bUhrigFlight != 0)) ||
-                (qPlayer.NumOrderFlightsToday < 5 - static_cast<SLONG>(((Sim.Date + qPlayer.PlayerNum) % 5) == 1) -
-                                                    static_cast<SLONG>(((Sim.Date + qPlayer.PlayerNum) % 11) == 2) -
-                                                    static_cast<SLONG>(((Sim.Date + qPlayer.PlayerNum) % 7) == 0) - ((Sim.Date + qPlayer.PlayerNum) % 2))) {
+            if (qPlayer.Owner == 1 && qPlayer.RobotUse(ROBOT_UHRIG_FLIGHTS_AUTO)) {
+                if (qPlayer.NumOrderFlightsToday < 5 - static_cast<SLONG>(((Sim.Date + qPlayer.PlayerNum) % 5) == 1) -
+                                                       static_cast<SLONG>(((Sim.Date + qPlayer.PlayerNum) % 11) == 2) -
+                                                       static_cast<SLONG>(((Sim.Date + qPlayer.PlayerNum) % 7) == 0) - ((Sim.Date + qPlayer.PlayerNum) % 2)) {
+                    qPlayer.NumOrderFlights++;
+                    qPlayer.NumOrderFlightsToday++;
+                }
+            } else if (qPlayer.Auftraege[ObjectId].bUhrigFlight != 0) {
                 qPlayer.NumOrderFlights++;
                 qPlayer.NumOrderFlightsToday++;
             }
@@ -936,21 +988,36 @@ void CFlugplanEintrag::BookFlight(CPlane *Plane, SLONG PlayerNum) {
         Limit(SLONG(-1000), qPlayerX.Image, SLONG(1000));
     }
 
+    if (ObjectType == 1) {
+        hprintf("Schedule.cpp: %s: %s $ (+%s $)  (%ld miles, %u * %s $ + %u * %s $ from tickets)", (LPCTSTR)qPlayer.AirlineX,
+                (LPCTSTR)Insert1000erDots64(Saldo), (LPCTSTR)Insert1000erDots64(delta), miles, Passagiere, (LPCTSTR)Insert1000erDots(Ticketpreis), PassagiereFC,
+                (LPCTSTR)Insert1000erDots(TicketpreisFC));
+    } else {
+        hprintf("Schedule.cpp: %s: %s $ (+%s $)  (%ld miles, %u + %u passengers)", (LPCTSTR)qPlayer.AirlineX, (LPCTSTR)Insert1000erDots64(Saldo),
+                (LPCTSTR)Insert1000erDots64(delta), miles, Passagiere, PassagiereFC);
+    }
+    Helper::printFPE(*this);
+
     // Flugzeugabnutzung verbuchen:
     double faktorDistanz = (1 + 10.0 * Cities.CalcDistance(VonCity, NachCity) / 40040174);
     double faktorBaujahr = (2015 - Plane->Baujahr);
     double faktorKerosin = 1.0;
-    auto ZustandAlt = Plane->Zustand;
+    // auto ZustandAlt = Plane->Zustand;
     if (KerosinGesamtQuali > 1.0) {
-        faktorKerosin = 10 * (KerosinGesamtQuali - 1.0) * (KerosinGesamtQuali - 1.0);
-        hprintf ("Player %li: Schlechtes Kerosin (%.2f) reduziert Flugzeugzustand um %d statt um %d",
-                PlayerNum, KerosinGesamtQuali, (int)(faktorDistanz * faktorBaujahr * faktorKerosin / 15), (int)(faktorDistanz * faktorBaujahr / 15));
+        faktorKerosin += 10 * (KerosinGesamtQuali - 1.0) * (KerosinGesamtQuali - 1.0);
+        hprintf("Schedule.cpp: %s: Schlechtes Kerosin (%.2f) reduziert Flugzeugzustand um %d statt um %d", (LPCTSTR)qPlayer.AirlineX, KerosinGesamtQuali,
+                (int)(faktorDistanz * faktorBaujahr * faktorKerosin / 15), (int)(faktorDistanz * faktorBaujahr / 15));
     }
+    auto ZustandAlt = Plane->Zustand;
     Plane->Zustand = UBYTE(Plane->Zustand - faktorDistanz * faktorBaujahr * faktorKerosin / 15);
-    hprintf("Player %li: Zustand: %i -> %i. Faktoren: faktorDistanz = %f, faktorBaujahr = %f, faktorKerosin = %f", PlayerNum, ZustandAlt, Plane->Zustand, faktorDistanz, faktorBaujahr, faktorKerosin);
+    hprintf("Schedule.cpp: %s: Plane %s (%s): Zustand: %u => %u (worst = %u), faktorDistanz = %f, faktorBaujahr = %f, faktorKerosin = %f",
+            (LPCTSTR)qPlayer.AirlineX, (LPCTSTR)Plane->Name, (Plane->TypeId == -1) ? "Designer" : (LPCTSTR)PlaneTypes[Plane->TypeId].Name, ZustandAlt,
+            Plane->Zustand, Plane->WorstZustand, faktorDistanz, faktorBaujahr, faktorKerosin);
     if (Plane->Zustand > 200) {
         Plane->Zustand = 0;
     }
+
+    hprintf("");
 }
 
 //--------------------------------------------------------------------------------------------

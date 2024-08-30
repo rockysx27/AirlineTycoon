@@ -515,6 +515,11 @@ UBYTE CLANS::GetCustomerId(SLONG Browned, SLONG Koffer, TEAKRAND *pRand) {
         }
     }
 
+    if (Num == 0) {
+        /* MP: Hotfix: Sometimes Num is 0, leading to assertion failure below */
+        return (UBYTE(AnzEntries() - 1));
+    }
+
     if (pRand != nullptr) {
         Rnd = pRand->Rand(Num);
     } else {
@@ -2224,12 +2229,7 @@ void PERSON::DoOnePlayerStep() {
                             }
 
                             if (State == Sim.localPlayer) {
-                                for (SLONG c = 0; c < 6; c++) {
-                                    if (qPlayer.Items[c] == ITEM_GLOVE) {
-                                        qPlayer.Items[c] = ITEM_REDBULL;
-                                        break;
-                                    }
-                                }
+                                GameMechanic::pickUpItem(qPlayer, ITEM_REDBULL);
                             }
                         } else {
                             BUILD *pBuild = Airport.GetBuildNear(ScreenPos, XY(180, 160), Bricks(static_cast<SLONG>(0x10000000) + BRICK_ELECTRO));
@@ -3209,7 +3209,10 @@ void PERSON::PersonReachedTarget() {
 //--------------------------------------------------------------------------------------------
 const CFlugplanEintrag *PERSON::GetFlugplanEintrag() const {
     if (FlightAirline >= 0 && FlightAirline <= 3) {
-        return (&Sim.Players.Players[static_cast<SLONG>(FlightAirline)].Planes[FlightPlaneId].Flugplan.Flug[static_cast<SLONG>(FlightPlaneIndex)]);
+        const auto &qPlayer = Sim.Players.Players[static_cast<SLONG>(FlightAirline)];
+        if (qPlayer.IsOut == 0) {
+            return (&qPlayer.Planes[FlightPlaneId].Flugplan.Flug[static_cast<SLONG>(FlightPlaneIndex)]);
+        }
     }
 
     return (nullptr);
@@ -3826,7 +3829,7 @@ void CPersonQueue::SetSpotTime(XY Position, SLONG TimeSlice) {
 }
 
 //--------------------------------------------------------------------------------------------
-//Überwacht die Queue:
+// Überwacht die Queue:
 //--------------------------------------------------------------------------------------------
 void CPersonQueue::Pump() {
     SLONG c = 0;

@@ -342,15 +342,8 @@ void CFrachtRaum::OnLButtonDown(UINT nFlags, CPoint point) {
             StartDialog(TALKER_FRACHT, MEDIUM_AIR, 1000);
         }
         if (MouseClickArea == ROOM_FRACHT && MouseClickId == 12) {
-            if (Sim.ItemGlue == 0) {
+            if (GameMechanic::PickUpItemResult::NotAllowed == GameMechanic::pickUpItem(qPlayer, ITEM_GLUE)) {
                 StartDialog(TALKER_FRACHT, MEDIUM_AIR, 1010);
-            } else if (Sim.ItemGlue == 1 && (qPlayer.HasSpaceForItem() != 0)) {
-                qPlayer.BuyItem(ITEM_GLUE);
-
-                if (qPlayer.HasItem(ITEM_GLUE) != 0) {
-                    Sim.ItemGlue = 2;
-                    SIM::SendSimpleMessage(ATNET_TAKETHING, 0, ITEM_GLUE);
-                }
             }
         }
 
@@ -403,19 +396,17 @@ void CFrachtRaum::OnRButtonDown(UINT nFlags, CPoint point) {
 // void CFrachtRaum::RepaintZettel (SLONG n)
 //--------------------------------------------------------------------------------------------
 void CFrachtRaum::RepaintZettel(SLONG n) {
-    if (gFrachten[n].Praemie >= 0) {
-        ZettelBms[n].ReSize(KistenBms[n].Size);
-        ZettelBms[n].BlitFrom(KistenBms[n]);
+    ZettelBms[n].ReSize(KistenBms[n].Size);
+    ZettelBms[n].BlitFrom(KistenBms[n]);
 
-        ZettelBms[n].PrintAt(bprintf("%s-%s", (LPCTSTR)Cities[gFrachten[n].VonCity].Kuerzel, (LPCTSTR)Cities[gFrachten[n].NachCity].Kuerzel), FontSmallBlack,
-                             TEC_FONT_CENTERED, XY(3, 10) + ZettelOffset[n], XY(ZettelBms[n].Size.x - 3, 29) + ZettelOffset[n]);
+    ZettelBms[n].PrintAt(bprintf("%s-%s", (LPCTSTR)Cities[gFrachten[n].VonCity].Kuerzel, (LPCTSTR)Cities[gFrachten[n].NachCity].Kuerzel), FontSmallBlack,
+                         TEC_FONT_CENTERED, XY(3, 10) + ZettelOffset[n], XY(ZettelBms[n].Size.x - 3, 29) + ZettelOffset[n]);
 
-        ZettelBms[n].PrintAt(ShortenLongCities(Cities[gFrachten[n].VonCity].Name), FontSmallBlack, TEC_FONT_CENTERED, XY(3, 31) + ZettelOffset[n],
-                             XY(ZettelBms[n].Size.x - 3, 102) + ZettelOffset[n]);
-        ZettelBms[n].PrintAt("-", FontSmallBlack, TEC_FONT_CENTERED, XY(3, 41) + ZettelOffset[n], XY(ZettelBms[n].Size.x - 3, 102) + ZettelOffset[n]);
-        ZettelBms[n].PrintAt(ShortenLongCities(Cities[gFrachten[n].NachCity].Name), FontSmallBlack, TEC_FONT_CENTERED, XY(3, 52) + ZettelOffset[n],
-                             XY(ZettelBms[n].Size.x - 3, 102) + ZettelOffset[n]);
-    }
+    ZettelBms[n].PrintAt(ShortenLongCities(Cities[gFrachten[n].VonCity].Name), FontSmallBlack, TEC_FONT_CENTERED, XY(3, 31) + ZettelOffset[n],
+                         XY(ZettelBms[n].Size.x - 3, 102) + ZettelOffset[n]);
+    ZettelBms[n].PrintAt("-", FontSmallBlack, TEC_FONT_CENTERED, XY(3, 41) + ZettelOffset[n], XY(ZettelBms[n].Size.x - 3, 102) + ZettelOffset[n]);
+    ZettelBms[n].PrintAt(ShortenLongCities(Cities[gFrachten[n].NachCity].Name), FontSmallBlack, TEC_FONT_CENTERED, XY(3, 52) + ZettelOffset[n],
+                         XY(ZettelBms[n].Size.x - 3, 102) + ZettelOffset[n]);
 }
 
 //--------------------------------------------------------------------------------------------
@@ -555,22 +546,28 @@ too_large:
 
     // Typ A = Normal, Gewinn möglich, etwas Strafe
     if (Type >= 0 && Type < 50) {
+        jobType = 0;
     }
     // Typ B = Hoffmann, Gewinn möglich, keine Strafe
-    else if (Type >= 50 && Type < 60) {
+    else if (Type >= 50 && Type < 65) {
         BisDate = UWORD(Sim.Date + 6);
+        jobType = 1;
     }
     // Typ C = Zeit knapp, viel Gewinn, viel Strafe
-    else if (Type >= 70 && Type < 95) {
+    else if (Type >= 65 && Type < 95) {
         Praemie *= 2;
         Strafe = Praemie * 2;
         BisDate = UWORD(Sim.Date + 1);
+        jobType = 2;
     }
     // Typ E = Glücksfall, viel Gewinn, keine Strafe
     else if (Type >= 95 && Type < 100) {
         Praemie *= 2;
         Strafe = 0;
+        jobType = 4;
     }
+
+    jobSizeType = 2;
 
     if (AreaType == 1) {
         Praemie = Praemie * 3 / 2;
@@ -644,26 +641,31 @@ too_large:
 
     // Typ A = Normal, Gewinn möglich, etwas Strafe
     if (Type >= 0 && Type < 50) {
+        jobType = 0;
     }
     // Typ B = Hoffmann, Gewinn möglich
-    else if (Type >= 50 && Type < 60) {
+    else if (Type >= 50 && Type < 65) {
         Date = UWORD(Sim.Date);
         BisDate = UWORD(Sim.Date + 4 + pRnd->Rand(3));
+        jobType = 1;
     }
     // Typ C = Zeit knapp, viel Gewinn, viel Strafe
-    else if (Type >= 70 && Type < 80) {
+    else if (Type >= 65 && Type < 80) {
         Praemie *= 2;
         Strafe = Praemie * 2;
         BisDate = Date = UWORD(Sim.Date + 1);
+        jobType = 2;
     }
     // Typ D = Betrug, kein Gewinn möglich, etwas Strafe
     else if (Type >= 80 && Type < 95) {
         Praemie /= 2;
+        jobType = 3;
     }
     // Typ E = Glücksfall, viel Gewinn, keine Strafe
     else if (Type >= 95 && Type < 100) {
         Praemie *= 2;
         Strafe = 0;
+        jobType = 4;
     }
 
     Type = pRnd->Rand(100);
@@ -672,21 +674,27 @@ too_large:
         Tons = 1;
         Praemie = Praemie * 4;
         Strafe = Praemie * 4;
+        jobSizeType = 0;
     } else if (Type < 15 || (Sim.Date < 4 && Type < 30) || (Sim.Date < 8 && Type < 20) || (Sim.Difficulty == DIFF_TUTORIAL && Type < 70)) {
         Tons = 15;
         Praemie = Praemie * 3 / 4;
+        jobSizeType = 1;
     } else if (Type < 40 || Sim.Difficulty == DIFF_TUTORIAL) {
         Tons = 30;
         /* Praemie bleibt gleich */
+        jobSizeType = 2;
     } else if (Type < 70) {
         Tons = 40;
         Praemie = Praemie * 5 / 4;
+        jobSizeType = 3;
     } else if (Type < 90) {
         Tons = 60;
         Praemie = Praemie * 6 / 4;
+        jobSizeType = 4;
     } else {
         Tons = 100;
         Praemie = Praemie * 7 / 4;
+        jobSizeType = 5;
     }
 
     if (AreaType == 1) {
@@ -739,7 +747,7 @@ BOOL CFracht::FitsInPlane(const CPlane &Plane) const {
 //--------------------------------------------------------------------------------------------
 TEAKFILE &operator<<(TEAKFILE &File, const CFracht &Fracht) {
     File << Fracht.VonCity << Fracht.NachCity << Fracht.Tons << Fracht.TonsLeft << Fracht.TonsOpen << Fracht.Date << Fracht.InPlan << Fracht.Okay
-         << Fracht.Praemie << Fracht.Strafe << Fracht.BisDate;
+         << Fracht.Praemie << Fracht.Strafe << Fracht.BisDate << Fracht.jobType << Fracht.jobSizeType;
     return (File);
 }
 
@@ -748,7 +756,7 @@ TEAKFILE &operator<<(TEAKFILE &File, const CFracht &Fracht) {
 //--------------------------------------------------------------------------------------------
 TEAKFILE &operator>>(TEAKFILE &File, CFracht &Fracht) {
     File >> Fracht.VonCity >> Fracht.NachCity >> Fracht.Tons >> Fracht.TonsLeft >> Fracht.TonsOpen >> Fracht.Date >> Fracht.InPlan >> Fracht.Okay >>
-        Fracht.Praemie >> Fracht.Strafe >> Fracht.BisDate;
+        Fracht.Praemie >> Fracht.Strafe >> Fracht.BisDate >> Fracht.jobType >> Fracht.jobSizeType;
     return (File);
 }
 
@@ -1010,26 +1018,31 @@ too_large:
 
     // Typ A = Normal, Gewinn möglich, etwas Strafe
     if (Type >= 0 && Type < 50) {
+        jobType = 0;
     }
     // Typ B = Hoffmann, Gewinn möglich
-    else if (Type >= 50 && Type < 60) {
+    else if (Type >= 50 && Type < 65) {
         Date = UWORD(Sim.Date);
         BisDate = UWORD(Sim.Date + 4 + pRandom->Rand(3));
+        jobType = 1;
     }
     // Typ C = Zeit knapp, viel Gewinn, viel Strafe
-    else if (Type >= 70 && Type < 80) {
+    else if (Type >= 65 && Type < 80) {
         Praemie *= 2;
         Strafe = Praemie * 2;
         BisDate = Date = UWORD(Sim.Date + 1);
+        jobType = 2;
     }
     // Typ D = Betrug, kein Gewinn möglich, etwas Strafe
     else if (Type >= 80 && Type < 95) {
         Praemie /= 2;
+        jobType = 3;
     }
     // Typ E = Glücksfall, viel Gewinn, keine Strafe
     else if (Type >= 95 && Type < 100) {
         Praemie *= 2;
         Strafe = 0;
+        jobType = 4;
     }
 
     Type = pRandom->Rand(100);
@@ -1038,21 +1051,27 @@ too_large:
         Tons = 1;
         Praemie = Praemie * 4;
         Strafe = Praemie * 4;
+        jobSizeType = 0;
     } else if (Type < 15 || (Sim.Date < 4 && Type < 30) || (Sim.Date < 8 && Type < 20) || (Sim.Difficulty == DIFF_TUTORIAL && Type < 70)) {
         Tons = 15;
         Praemie = Praemie * 3 / 4;
+        jobSizeType = 1;
     } else if (Type < 40 || Sim.Difficulty == DIFF_TUTORIAL) {
         Tons = 30;
         /* Praemie bleibt gleich */
+        jobSizeType = 2;
     } else if (Type < 70) {
         Tons = 40;
         Praemie = Praemie * 5 / 4;
+        jobSizeType = 3;
     } else if (Type < 90) {
         Tons = 60;
         Praemie = Praemie * 6 / 4;
+        jobSizeType = 4;
     } else {
         Tons = 100;
         Praemie = Praemie * 7 / 4;
+        jobSizeType = 5;
     }
 
     if (AreaType == 1) {

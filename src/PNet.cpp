@@ -251,7 +251,7 @@ void PLAYER::NetSynchronizeMeeting() {
             Message << c;
             Message << qPlayer.ArabTrust << qPlayer.ArabMode << qPlayer.ArabMode2 << qPlayer.ArabMode3 << qPlayer.ArabActive;
             Message << qPlayer.ArabOpfer << qPlayer.ArabOpfer2 << qPlayer.ArabOpfer3 << qPlayer.ArabPlane << qPlayer.ArabHints;
-            Message << qPlayer.NumPassengers << qPlayer.NumFracht;
+            Message << qPlayer.ArabTimeout << qPlayer.NumPassengers << qPlayer.NumFracht;
         }
     }
 
@@ -273,7 +273,7 @@ void PLAYER::NetSynchronizeSabotage() const {
 
     Message << ATNET_SABOTAGE_ARAB << PlayerNum;
 
-    Message << ArabOpfer << ArabMode << ArabActive << ArabPlane << ArabOpfer2 << ArabMode2 << ArabOpfer3 << ArabMode3;
+    Message << ArabOpfer << ArabMode << ArabActive << ArabPlane << ArabOpfer2 << ArabMode2 << ArabOpfer3 << ArabMode3 << ArabTimeout;
 
     SIM::SendMemFile(Message);
 }

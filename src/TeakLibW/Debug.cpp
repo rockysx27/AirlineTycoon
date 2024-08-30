@@ -56,6 +56,47 @@ void HDU::HercPrintf(const char *format, ...) {
     fflush(Log);
 }
 
+void HDU::HercPrintfRed(const char *format, ...) {
+    if (Log == nullptr) {
+        return;
+    }
+    static SLONG numErrors = 0;
+    fprintf(Log, "\e[1;31mERR %d: ", numErrors++);
+    va_list args;
+    va_start(args, format);
+    vfprintf(Log, format, args);
+    va_end(args);
+    fprintf(Log, "\e[m\n");
+    fflush(Log);
+}
+
+void HDU::HercPrintfOrange(const char *format, ...) {
+    if (Log == nullptr) {
+        return;
+    }
+    static SLONG numWarnings = 0;
+    fprintf(Log, "\e[1;33mWARN %d: ", numWarnings++);
+    va_list args;
+    va_start(args, format);
+    vfprintf(Log, format, args);
+    va_end(args);
+    fprintf(Log, "\e[m\n");
+    fflush(Log);
+}
+
+void HDU::HercPrintfGreen(const char *format, ...) {
+    if (Log == nullptr) {
+        return;
+    }
+    fprintf(Log, "\e[1;32m");
+    va_list args;
+    va_start(args, format);
+    vfprintf(Log, format, args);
+    va_end(args);
+    fprintf(Log, "\e[m\n");
+    fflush(Log);
+}
+
 void here(char *file, SLONG line) { Hdu.HercPrintf(0, "Here in %s, line %li", file, line); }
 
 SLONG TeakLibW_Exception(char *file, SLONG line, const char *format, ...) {

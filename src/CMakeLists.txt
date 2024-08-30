@@ -59,6 +59,15 @@ add_executable (AT
     Auftrag.cpp
     Bank.cpp
     Block.cpp
+    Bot.cpp
+    BotActions.cpp
+    BotDesigner.cpp
+    BotConditions.cpp
+    BotFunctions.cpp
+    BotHelper.cpp
+    BotMisc.cpp
+    BotPlaner.cpp
+    BotPlanerAlgo.cpp
     Brick.cpp
     Checkup.cpp
     ColorFx.cpp
@@ -139,6 +148,18 @@ if(MSVC)
     target_compile_options(AT PUBLIC "/Zc:__cplusplus")
     target_compile_options(AT PUBLIC "/std:c++17")
 endif()
+
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Debug)
+elseif (CMAKE_BUILD_TYPE STREQUAL "Release")
+    set(CMAKE_BUILD_TYPE Release)
+    add_compile_definitions(NDEBUG)
+endif()
+
+# always optimize bot heuristics (take very long otherwise)
+#set_source_files_properties(BotPlaner.cpp PROPERTIES COMPILE_FLAGS "-O3 -DNEDBUG")
+#set_source_files_properties(BotPlanerAlgo.cpp PROPERTIES COMPILE_FLAGS "-O3 -DNEDBUG")
+
 
 if(NOT ${CMAKE_VERSION} VERSION_LESS "3.16.0")
     target_precompile_headers(AT PUBLIC StdAfx.h)

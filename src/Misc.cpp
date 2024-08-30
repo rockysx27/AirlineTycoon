@@ -9,6 +9,7 @@
 #include <chrono>
 #include <filesystem>
 #include <locale>
+#include <sstream>
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -137,14 +138,14 @@ CString KorrigiereUmlaute(CString &OriginalText) {
 }
 
 //--------------------------------------------------------------------------------------------
-//Überprüft, ob der Cursor in einem Bereich ist und erledigt das Highlighting:
+// Überprüft, ob der Cursor in einem Bereich ist und erledigt das Highlighting:
 //--------------------------------------------------------------------------------------------
 BOOL CheckCursorHighlight(const CRect &rect, UWORD FontColor, SLONG Look, SLONG TipId, SLONG ClickArea, SLONG ClickId, SLONG ClickPar1, SLONG ClickPar2) {
     return (CheckCursorHighlight(gMousePosition, rect, FontColor, Look, TipId, ClickArea, ClickId, ClickPar1, ClickPar2));
 }
 
 //--------------------------------------------------------------------------------------------
-//Überprüft, ob der Cursor in einem Bereich ist und erledigt das Highlighting:
+// Überprüft, ob der Cursor in einem Bereich ist und erledigt das Highlighting:
 //--------------------------------------------------------------------------------------------
 BOOL CheckCursorHighlight(const XY &CursorPos, const CRect &rect, UWORD FontColor, SLONG Look, SLONG TipId, SLONG ClickArea, SLONG ClickId, SLONG ClickPar1,
                           SLONG ClickPar2) {
@@ -506,11 +507,10 @@ SLONG CalculateFlightCostRechnerisch(SLONG VonCity, SLONG NachCity, SLONG Verbra
 }
 
 //--------------------------------------------------------------------------------------------
-// Berechnet, wieviel ein Flug kostet (min. 1000)
+// Berechnet, wieviel ein Flug kostet (Kerosin aus Tank ohne Kosten)
 //--------------------------------------------------------------------------------------------
 SLONG CalculateFlightCost(SLONG VonCity, SLONG NachCity, SLONG Verbrauch, SLONG Geschwindigkeit, SLONG PlayerNum) {
     SLONG Kerosin = CalculateFlightKerosin(VonCity, NachCity, Verbrauch, Geschwindigkeit);
-    SLONG Kosten = 0;
 
     // Kerosin aus dem Vorrat:
     if (PlayerNum != -1 && (Sim.Players.Players[PlayerNum].TankOpen != 0)) {
@@ -520,7 +520,21 @@ SLONG CalculateFlightCost(SLONG VonCity, SLONG NachCity, SLONG Verbrauch, SLONG 
     }
 
     // Restliches Kerosin kaufen:
-    Kosten += Kerosin * Sim.Kerosin;
+    SLONG Kosten = Kerosin * Sim.Kerosin;
+
+    if (Kosten < 1000) {
+        Kosten = 1000;
+    }
+
+    return (Kosten);
+}
+
+//--------------------------------------------------------------------------------------------
+// Berechnet, wieviel ein Flug kostet (ignoriere Kerosin-Tanks)
+//--------------------------------------------------------------------------------------------
+SLONG CalculateFlightCostNoTank(SLONG VonCity, SLONG NachCity, SLONG Verbrauch, SLONG Geschwindigkeit) {
+    SLONG Kerosin = CalculateFlightKerosin(VonCity, NachCity, Verbrauch, Geschwindigkeit);
+    SLONG Kosten = Kerosin * Sim.Kerosin;
 
     if (Kosten < 1000) {
         Kosten = 1000;
@@ -1784,95 +1798,20 @@ void CheckEventSync(SLONG EventId) {
 }
 
 //--------------------------------------------------------------------------------------------
-// Konstruktor mit Seed=0
-//--------------------------------------------------------------------------------------------
-TEAKRAND::TEAKRAND() { Seed = Value = 0; }
-
-//--------------------------------------------------------------------------------------------
-// Kondtruktor mit Seed Angabe
-//--------------------------------------------------------------------------------------------
-TEAKRAND::TEAKRAND(ULONG Seed) { Seed = Value = Seed; }
-
-//--------------------------------------------------------------------------------------------
-// nachträglicher Kondtruktor
-//--------------------------------------------------------------------------------------------
-void TEAKRAND::SRand(ULONG Seed) { Seed = Value = Seed; }
-
-//--------------------------------------------------------------------------------------------
 // nachträglicher Kondtruktor mit Seed aus Uhrzeit
 //--------------------------------------------------------------------------------------------
-void TEAKRAND::SRandTime() { Seed = Value = AtGetTime(); }
-
-//--------------------------------------------------------------------------------------------
-// Setzt den Zufallsgenerator auf dem exakten Zustand nach dem Konstruktor zurück:
-//--------------------------------------------------------------------------------------------
-void TEAKRAND::Reset() { Value = Seed; }
-
-//--------------------------------------------------------------------------------------------
-// eigentlicher Zufallszahlengenerator: (Xn+1 = Xn * 7381 + 269EC3h)
-//--------------------------------------------------------------------------------------------
-UWORD TEAKRAND::Rand() {
-#ifdef ENABLE_ASM
-    ULONG localValue = Value;
-
-    _asm
-        {
-        pusha
-
-             // Thanx to Machosoft!
-            mov       eax, [localValue]
-            mov       ecx, eax
-            lea       eax, dword ptr [eax+eax*4]
-            lea       eax, dword ptr [eax+eax*4]
-            add       eax, ecx
-            lea       eax, dword ptr [ecx+eax*8]
-            shl       eax, 8
-            sub       eax, ecx
-            lea       eax, dword ptr [ecx+eax*4]
-            add       eax, 00269ec3h
-            mov       [localValue], eax
-
-            popa
-        }
-
-    Value = localValue;
-
-    return (UWORD(localValue >> 16));
-#else
-    Value = Value * 7381 + 0x269EC3;
-
-    return (UWORD(Value >> 16));
-#endif
+void TEAKRAND::SRandTime() {
+    Seed = AtGetTime();
+    mMT.seed(Seed);
 }
-
-//--------------------------------------------------------------------------------------------
-// Zufallszahl aus dem Intervall [0..Max]
-//--------------------------------------------------------------------------------------------
-UWORD TEAKRAND::Rand(SLONG Max) {
-    if (this == pSurvisedRandom1 || this == pSurvisedRandom2) {
-        CheckEventSync(-Sim.TimeSlice);
-        CheckEventSync(Max);
-        CheckEventSync(SLONG(Value >> 16));
-    }
-
-    return (UWORD(Rand() % Max));
-}
-
-//--------------------------------------------------------------------------------------------
-// Zufallszahl aus dem Intervall [Min..Max]
-//--------------------------------------------------------------------------------------------
-UWORD TEAKRAND::Rand(SLONG Min, SLONG Max) { return (UWORD(Rand() % (Max - Min + 1) + Min)); }
-
-//--------------------------------------------------------------------------------------------
-// Gibt den aktuellen "Seed" zus Generators zurück:
-//--------------------------------------------------------------------------------------------
-ULONG TEAKRAND::GetSeed() { return (Value); }
 
 //--------------------------------------------------------------------------------------------
 // Speichert den Zustand des Generators:
 //--------------------------------------------------------------------------------------------
 TEAKFILE &operator<<(TEAKFILE &File, const TEAKRAND &r) {
-    File << r.Seed << r.Value;
+    std::stringstream ss{};
+    ss << r.mMT;
+    File << r.Seed << ss.str();
 
     return (File);
 }
@@ -1881,7 +1820,11 @@ TEAKFILE &operator<<(TEAKFILE &File, const TEAKRAND &r) {
 // Lädt den Zustand des Generators:
 //--------------------------------------------------------------------------------------------
 TEAKFILE &operator>>(TEAKFILE &File, TEAKRAND &r) {
-    File >> r.Seed >> r.Value;
+    std::string str;
+    File >> r.Seed >> str;
+
+    std::stringstream ss(str);
+    ss >> r.mMT;
 
     return (File);
 }
@@ -2077,10 +2020,10 @@ const char *getRobotActionName(SLONG a) {
         return "ACTION_CHECKAGENT2";
     case ACTION_CHECKAGENT3:
         return "ACTION_CHECKAGENT3";
-    case ACTION_MEETING:
-        return "ACTION_MEETING";
     case ACTION_STARTDAY:
-        return "ACTION_STARTDAY / ACTION_BUERO";
+        return "ACTION_STARTDAY";
+    case ACTION_BUERO:
+        return "ACTION_BUERO";
     case ACTION_PERSONAL:
         return "ACTION_PERSONAL";
     case ACTION_VISITARAB:
@@ -2119,6 +2062,34 @@ const char *getRobotActionName(SLONG a) {
         return "ACTION_BUYNEWPLANE";
     case ACTION_WERBUNG:
         return "ACTION_WERBUNG";
+    case ACTION_UPGRADE_PLANES:
+        return "ACTION_UPGRADE_PLANES";
+    case ACTION_BUY_KEROSIN:
+        return "ACTION_BUY_KEROSIN";
+    case ACTION_BUY_KEROSIN_TANKS:
+        return "ACTION_BUY_KEROSIN_TANKS";
+    case ACTION_SET_DIVIDEND:
+        return "ACTION_SET_DIVIDEND";
+    case ACTION_BUYSHARES:
+        return "ACTION_BUYSHARES";
+    case ACTION_SELLSHARES:
+        return "ACTION_SELLSHARES";
+    case ACTION_WERBUNG_ROUTES:
+        return "ACTION_WERBUNG_ROUTES";
+    case ACTION_CALL_INTERNATIONAL:
+        return "ACTION_CALL_INTERNATIONAL";
+    case ACTION_VISITROUTEBOX2:
+        return "ACTION_VISITROUTEBOX2";
+    case ACTION_EXPANDAIRPORT:
+        return "ACTION_EXPANDAIRPORT";
+    case ACTION_CALL_INTER_HANDY:
+        return "ACTION_CALL_INTER_HANDY";
+    case ACTION_STARTDAY_LAPTOP:
+        return "ACTION_STARTDAY_LAPTOP";
+    case ACTION_VISITADS:
+        return "ACTION_VISITADS";
+    case ACTION_OVERTAKE_AIRLINE:
+        return "ACTION_OVERTAKE_AIRLINE";
     default:
         hprintf("Misc.cpp: Default case should not be reached.");
         DebugBreak();

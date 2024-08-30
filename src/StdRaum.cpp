@@ -1844,9 +1844,6 @@ void CStdRaum::StartDialog(SLONG DialogPartner, BOOL Medium, SLONG DialogPar1, S
                 MakeSayWindow(0, TOKEN_RICK, 6001, pFontPartner);
             } else {
                 MakeSayWindow(0, TOKEN_RICK, 6000, pFontPartner);
-
-                Sim.Players.Players[Sim.localPlayer].StrikeEndCountdown = 10;
-                Sim.Players.Players[Sim.localPlayer].StrikeEndType = 3;
             }
         } else {
             MakeSayWindow(0, TOKEN_RICK, 5000 + rand() % 9, pFontPartner);
@@ -2595,6 +2592,7 @@ void CStdRaum::PostPaint() {
             qPlayer.Money -= 1;
 
             qPlayer.Statistiken[STAT_A_SONSTIGES].AddAtPastDay(-1);
+            qPlayer.Bilanz.SonstigeAusgaben -= 1;
             if (PlayerNum == Sim.localPlayer) {
                 SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -1, STAT_A_SONSTIGES);
             }
@@ -3344,7 +3342,8 @@ void CStdRaum::OnLButtonDown(UINT /*unused*/, CPoint point) {
 
         // Klick ins Inventar erfolgreich?
         if (ItemIndex < 6 && Sim.bNoTime == FALSE) {
-            switch (qPlayer.Items[ItemIndex]) {
+            auto item = qPlayer.Items[ItemIndex];
+            switch (item) {
             // Leer:
             case 0xff:
                 break;
@@ -3379,340 +3378,8 @@ void CStdRaum::OnLButtonDown(UINT /*unused*/, CPoint point) {
                     MenuSetZoomStuff(XY(248 + ItemIndex * 60, 446), 0.17, FALSE);
                 }
                 break;
-
-                // Kalaschnikow:
-            case ITEM_MG:
-                if ((Sim.Headlines.IsInteresting == 0) && qPlayer.GetRoom() == ROOM_KIOSK) {
-                    break;
-                }
-                if ((IsDialogOpen() == 0) && (MenuIsOpen() == 0) && qPlayer.GetRoom() == ROOM_ARAB_AIR) {
-                    qPlayer.ArabTrust = max(1, qPlayer.ArabTrust);
-                    qPlayer.Items[ItemIndex] = 0xff;
-                    qPlayer.ReformIcons();
-                    StartDialog(TALKER_ARAB, MEDIUM_AIR, 1);
-                } else if (DefaultDialogPartner != TALKER_NONE) {
-                    StartDialog(DefaultDialogPartner, MEDIUM_AIR, 10000 + ITEM_MG);
-                }
-                break;
-
-                // Bier:
-            case ITEM_BIER:
-                if ((Sim.Headlines.IsInteresting == 0) && qPlayer.GetRoom() == ROOM_KIOSK) {
-                    break;
-                }
-                if ((IsDialogOpen() == 0) && (MenuIsOpen() == 0) && qPlayer.GetRoom() == ROOM_WERKSTATT) {
-                    qPlayer.MechTrust = max(1, qPlayer.MechTrust);
-                    qPlayer.Items[ItemIndex] = 0xff;
-                    qPlayer.ReformIcons();
-                    qPlayer.MechAngry = 0;
-                    qPlayer.ReformIcons();
-                    StartDialog(TALKER_MECHANIKER, MEDIUM_AIR, 2);
-                } else if (DefaultDialogPartner != TALKER_NONE) {
-                    StartDialog(DefaultDialogPartner, MEDIUM_AIR, 10000 + ITEM_BIER);
-                } else {
-                    PlayUniversalFx("gulps.raw", Sim.Options.OptionEffekte);
-                    qPlayer.IsDrunk += 400;
-                    qPlayer.Items[ItemIndex] = 0xff;
-                }
-                break;
-
-            case ITEM_OEL:
-                if ((Sim.Headlines.IsInteresting == 0) && qPlayer.GetRoom() == ROOM_KIOSK) {
-                    break;
-                }
-                if ((IsDialogOpen() == 0) && (MenuIsOpen() == 0) && qPlayer.GetRoom() == ROOM_GLOBE) {
-                    qPlayer.GlobeOiled = TRUE;
-                    qPlayer.Items[ItemIndex] = 0xff;
-                    qPlayer.ReformIcons();
-                } else if (DefaultDialogPartner != TALKER_NONE) {
-                    StartDialog(DefaultDialogPartner, MEDIUM_AIR, 10000 + ITEM_OEL);
-                }
-                break;
-
-            case ITEM_TABLETTEN:
-                if ((Sim.Headlines.IsInteresting == 0) && qPlayer.GetRoom() == ROOM_KIOSK) {
-                    break;
-                }
-                if (qPlayer.SickTokay != 0) {
-                    qPlayer.SickTokay = 0;
-                    qPlayer.Items[ItemIndex] = 0xff;
-                    qPlayer.ReformIcons();
-                } else if (DefaultDialogPartner != TALKER_NONE) {
-                    StartDialog(DefaultDialogPartner, MEDIUM_AIR, 10000 + ITEM_TABLETTEN);
-                }
-                break;
-
-            case ITEM_POSTKARTE:
-                if ((Sim.Headlines.IsInteresting == 0) && qPlayer.GetRoom() == ROOM_KIOSK) {
-                    break;
-                }
-                if ((IsDialogOpen() == 0) && (MenuIsOpen() == 0) && qPlayer.GetRoom() == ROOM_PERSONAL_A + PlayerNum * 10) {
-                    qPlayer.SeligTrust = TRUE;
-                    qPlayer.Items[ItemIndex] = 0xff;
-                    qPlayer.ReformIcons();
-                    StartDialog(TALKER_PERSONAL1a + PlayerNum * 2, MEDIUM_AIR, 300);
-                } else if (DefaultDialogPartner != TALKER_NONE) {
-                    StartDialog(DefaultDialogPartner, MEDIUM_AIR, 10000 + ITEM_POSTKARTE);
-                }
-                break;
-
-            case ITEM_SPINNE:
-                if ((Sim.Headlines.IsInteresting == 0) && qPlayer.GetRoom() == ROOM_KIOSK) {
-                    break;
-                }
-                if ((IsDialogOpen() == 0) && (MenuIsOpen() == 0) && qPlayer.GetRoom() == ROOM_SABOTAGE) {
-                    if (qPlayer.ArabTrust != 0) {
-                        qPlayer.SpiderTrust = TRUE;
-                        qPlayer.Items[ItemIndex] = 0xff;
-                        qPlayer.ReformIcons();
-                    }
-                    StartDialog(TALKER_SABOTAGE, MEDIUM_AIR, 3000);
-                } else if (DefaultDialogPartner != TALKER_NONE) {
-                    StartDialog(DefaultDialogPartner, MEDIUM_AIR, 10000 + ITEM_SPINNE);
-                }
-                break;
-
-            case ITEM_DART:
-                if ((Sim.Headlines.IsInteresting == 0) && qPlayer.GetRoom() == ROOM_KIOSK) {
-                    break;
-                }
-                if ((IsDialogOpen() == 0) && (MenuIsOpen() == 0) && qPlayer.GetRoom() == ROOM_WERBUNG &&
-                    (Sim.Difficulty >= DIFF_NORMAL || Sim.Difficulty == DIFF_FREEGAME)) {
-                    qPlayer.WerbungTrust = TRUE;
-                    qPlayer.Items[ItemIndex] = 0xff;
-                    qPlayer.ReformIcons();
-                    StartDialog(TALKER_WERBUNG, MEDIUM_AIR, 8001);
-                } else if (DefaultDialogPartner != TALKER_NONE) {
-                    StartDialog(DefaultDialogPartner, MEDIUM_AIR, 10000 + ITEM_DART);
-                }
-                break;
-
-            case ITEM_DISKETTE:
-                if ((Sim.Headlines.IsInteresting == 0) && qPlayer.GetRoom() == ROOM_KIOSK) {
-                    break;
-                }
-                if ((qPlayer.LaptopVirus != 0) && (qPlayer.HasItem(ITEM_LAPTOP) != 0)) {
-                    if (qPlayer.GetRoom() == ROOM_LAPTOP) {
-                        qPlayer.LeaveRoom();
-                    }
-
-                    qPlayer.LaptopVirus = 0;
-                    qPlayer.Items[ItemIndex] = 0xff;
-                    qPlayer.ReformIcons();
-                } else if (DefaultDialogPartner != TALKER_NONE) {
-                    StartDialog(DefaultDialogPartner, MEDIUM_AIR, 10000 + ITEM_DISKETTE);
-                }
-                break;
-
-            case ITEM_BH:
-                if ((Sim.Headlines.IsInteresting == 0) && qPlayer.GetRoom() == ROOM_KIOSK) {
-                    break;
-                }
-                if ((IsDialogOpen() == 0) && (MenuIsOpen() == 0) && qPlayer.GetRoom() == ROOM_SHOP1) {
-                    qPlayer.DutyTrust = TRUE;
-                    qPlayer.Items[ItemIndex] = 0xff;
-                    StartDialog(TALKER_DUTYFREE, MEDIUM_AIR, 801);
-                    qPlayer.ReformIcons();
-                } else if (DefaultDialogPartner != TALKER_NONE) {
-                    StartDialog(DefaultDialogPartner, MEDIUM_AIR, 10000 + ITEM_BH);
-                }
-                break;
-
-            case ITEM_HUFEISEN:
-                if ((Sim.Headlines.IsInteresting == 0) && qPlayer.GetRoom() == ROOM_KIOSK) {
-                    break;
-                }
-                if ((IsDialogOpen() == 0) && (MenuIsOpen() == 0) && qPlayer.GetRoom() == ROOM_RICKS) {
-                    qPlayer.TrinkerTrust = TRUE;
-                    qPlayer.Items[ItemIndex] = 0xff;
-                    StartDialog(TALKER_TRINKER, MEDIUM_AIR, 800);
-                    qPlayer.ReformIcons();
-                } else if (DefaultDialogPartner != TALKER_NONE) {
-                    StartDialog(DefaultDialogPartner, MEDIUM_AIR, 10000 + ITEM_HUFEISEN);
-                }
-                break;
-
-            case ITEM_PRALINEN:
-                if (DefaultDialogPartner != TALKER_NONE) {
-                    StartDialog(DefaultDialogPartner, MEDIUM_AIR, 10000 + ITEM_PRALINEN);
-                } else {
-                    qPlayer.Items[ItemIndex] = 0xff;
-                    qPlayer.ReformIcons();
-                    PlayUniversalFx("eating.raw", Sim.Options.OptionEffekte);
-                }
-                break;
-
-            case ITEM_PRALINEN_A:
-                if (DefaultDialogPartner != TALKER_NONE) {
-                    StartDialog(DefaultDialogPartner, MEDIUM_AIR, 10000 + ITEM_PRALINEN_A);
-                } else {
-                    PlayUniversalFx("eating.raw", Sim.Options.OptionEffekte);
-                    qPlayer.IsDrunk += 400;
-                    qPlayer.Items[ItemIndex] = 0xff;
-                    qPlayer.ReformIcons();
-                }
-                break;
-
-            case ITEM_PAPERCLIP:
-                if ((IsDialogOpen() == 0) && (MenuIsOpen() == 0) && qPlayer.GetRoom() == ROOM_FRACHT && Sim.ItemGlue == 0 &&
-                    (qPlayer.HasItem(ITEM_GLUE) == 0)) {
-                    StartDialog(TALKER_FRACHT, MEDIUM_AIR, 1020);
-                    qPlayer.DropItem(ITEM_PAPERCLIP);
-                    Sim.ItemGlue = 1;
-                } else if (DefaultDialogPartner != TALKER_NONE) {
-                    StartDialog(DefaultDialogPartner, MEDIUM_AIR, 10000 + ITEM_PAPERCLIP);
-                }
-                break;
-
-            case ITEM_GLUE:
-                if (qPlayer.GetRoom() == ROOM_AIRPORT) {
-                    PERSON &qPerson = Sim.Persons[Sim.Persons.GetPlayerIndex(PlayerNum)];
-
-                    // Obere oder untere Ebene?
-                    if (qPerson.Position.y >= 4000) {
-                        // oben!
-                        if (Sim.AddGlueSabotage(qPerson.Position, qPerson.Dir, qPlayer.NewDir, qPerson.Phase)) {
-                            TEAKFILE Message;
-
-                            Message.Announce(30);
-                            Message << ATNET_SABOTAGE_DIRECT << SLONG(ITEM_GLUE) << qPerson.Position << qPerson.Dir << qPlayer.NewDir << qPerson.Phase;
-                            SIM::SendMemFile(Message, 0);
-
-                            qPlayer.DropItem(ITEM_GLUE);
-                        }
-                    } else {
-                        MenuStart(MENU_REQUEST, MENU_REQUEST_NOGLUE);
-                        MenuSetZoomStuff(XY(320, 220), 0.17, FALSE);
-                    }
-                } else if (DefaultDialogPartner != TALKER_NONE) {
-                    StartDialog(DefaultDialogPartner, MEDIUM_AIR, 10000 + ITEM_GLUE);
-                }
-                break;
-
-            case ITEM_GLOVE:
-                if (DefaultDialogPartner != TALKER_NONE) {
-                    StartDialog(DefaultDialogPartner, MEDIUM_AIR, 10000 + ITEM_GLOVE);
-                }
-                break;
-
-            case ITEM_REDBULL:
-                if (qPlayer.GetRoom() == ROOM_KIOSK) {
-                    StartDialog(TALKER_KIOSK, MEDIUM_AIR, 1010);
-                    qPlayer.Items[ItemIndex] = 0xff;
-                    qPlayer.ReformIcons();
-                    qPlayer.KioskTrust = 1;
-                } else if (DefaultDialogPartner != TALKER_NONE) {
-                    StartDialog(DefaultDialogPartner, MEDIUM_AIR, 10000 + ITEM_REDBULL);
-                } else {
-                    PlayUniversalFx("gulps.raw", Sim.Options.OptionEffekte);
-                    qPlayer.Items[ItemIndex] = 0xff;
-                    qPlayer.ReformIcons();
-                    qPlayer.Koffein += 20 * 120;
-                    PLAYER::NetSynchronizeFlags();
-                    SIM::SendSimpleMessage(ATNET_CAFFEINE, 0, PlayerNum, qPlayer.Koffein);
-                }
-                break;
-
-            case ITEM_STINKBOMBE:
-                if (qPlayer.GetRoom() == ROOM_AIRPORT) {
-                    PERSON &qPerson = Sim.Persons[Sim.Persons.GetPlayerIndex(PlayerNum)];
-
-                    // Untere Ebene?
-                    if (qPerson.Position.y < 4000) {
-                        SIM::SendSimpleMessage(ATNET_SABOTAGE_DIRECT, 0, ITEM_STINKBOMBE, qPerson.Position.x, qPerson.Position.y);
-                        Sim.AddStenchSabotage(qPerson.Position);
-
-                        qPlayer.DropItem(ITEM_STINKBOMBE);
-                    } else {
-                        MenuStart(MENU_REQUEST, MENU_REQUEST_NOSTENCH);
-                        MenuSetZoomStuff(XY(320, 220), 0.17, FALSE);
-                    }
-                } else if (DefaultDialogPartner != TALKER_NONE) {
-                    StartDialog(DefaultDialogPartner, MEDIUM_AIR, 10000 + ITEM_STINKBOMBE);
-                }
-                break;
-
-            case ITEM_ZIGARRE:
-                break;
-
-            case ITEM_GLKOHLE:
-                if (qPlayer.GetRoom() == ROOM_LAST_MINUTE) {
-                    SLONG cnt = 0;
-                    for (SLONG c = LastMinuteAuftraege.AnzEntries() - 1; c >= 0; c--) {
-                        if (LastMinuteAuftraege[c].Praemie > 0) {
-                            LastMinuteAuftraege[c].Praemie = 0;
-                            qPlayer.NetUpdateTook(2, c);
-                            cnt++;
-                        }
-                    }
-
-                    if (cnt > 0) {
-                        gUniversalFx.Stop();
-                        gUniversalFx.ReInit("fireauft.raw");
-                        gUniversalFx.Play(DSBPLAY_NOSTOP, Sim.Options.OptionEffekte * 100 / 7);
-                    }
-                } else if (qPlayer.GetRoom() == ROOM_REISEBUERO) {
-                    SLONG cnt = 0;
-                    for (SLONG c = ReisebueroAuftraege.AnzEntries() - 1; c >= 0; c--) {
-                        if (ReisebueroAuftraege[c].Praemie > 0) {
-                            ReisebueroAuftraege[c].Praemie = 0;
-                            qPlayer.NetUpdateTook(1, c);
-                            cnt++;
-                        }
-                    }
-
-                    if (cnt > 0) {
-                        gUniversalFx.Stop();
-                        gUniversalFx.ReInit("fireauft.raw");
-                        gUniversalFx.Play(DSBPLAY_NOSTOP, Sim.Options.OptionEffekte * 100 / 7);
-                    }
-                } else if (DefaultDialogPartner != TALKER_NONE) {
-                    StartDialog(DefaultDialogPartner, MEDIUM_AIR, 10000 + ITEM_GLKOHLE);
-                }
-                break;
-
-            case ITEM_KOHLE:
-                if (DefaultDialogPartner != TALKER_NONE) {
-                    StartDialog(DefaultDialogPartner, MEDIUM_AIR, 10000 + ITEM_KOHLE);
-                }
-                break;
-
-            case ITEM_ZANGE:
-                if (DefaultDialogPartner != TALKER_NONE) {
-                    StartDialog(DefaultDialogPartner, MEDIUM_AIR, 10000 + ITEM_ZANGE);
-                } else if (qPlayer.GetRoom() == ROOM_AIRPORT) {
-                    XY Position = Sim.Persons[Sim.Persons.GetPlayerIndex(qPlayer.PlayerNum)].Position;
-
-                    if (ROOM_SECURITY == Airport.GetRuneParNear(XY(Position.x, Position.y), XY(22, 22), RUNE_2SHOP)) {
-                        GameMechanic::sabotageSecurityOffice(qPlayer);
-                        PLAYER::NetSynchronizeItems();
-                        qPlayer.WalkStopEx();
-                    }
-                }
-                break;
-
-            case ITEM_PARFUEM:
-                if (qPlayer.GetRoom() == ROOM_WERKSTATT && Sim.Slimed != -1) {
-                    for (SLONG d = 0; d < 6; d++) {
-                        if (qPlayer.Items[d] == ITEM_PARFUEM) {
-                            qPlayer.Items[d] = ITEM_XPARFUEM;
-                        }
-                    }
-                } else if (DefaultDialogPartner != TALKER_NONE) {
-                    StartDialog(DefaultDialogPartner, MEDIUM_AIR, 10000 + ITEM_PARFUEM);
-                }
-                break;
-
-            case ITEM_XPARFUEM:
-                if (qPlayer.GetRoom() == ROOM_AIRPORT) {
-                    qPlayer.PlayerStinking = 2000;
-                    qPlayer.DropItem(ITEM_XPARFUEM);
-                    PLAYER::NetSynchronizeFlags();
-                }
-                break;
-
             default:
-                TeakLibW_Exception(FNL, ExcCreateWindow);
+                GameMechanic::useItem(qPlayer, item);
             }
         }
     }
@@ -3833,7 +3500,7 @@ void CStdRaum::OnPaint() { OnPaint(FALSE); }
 void CStdRaum::OnPaint(BOOL /*bHandyDialog*/) {
     ReferenceCursorPos = gMousePosition;
 
-    if ((PleaseCancelTextBubble != 0) && (bHandy == 0)) {
+    if ((PleaseCancelTextBubble != 0) && (bHandy == 0) || (CheatAutoSkip != 0)) {
         PleaseCancelTextBubble = FALSE;
         if (IsDialogOpen() != 0) {
             PreLButtonDown(WasLButtonDownPoint);
@@ -4160,7 +3827,7 @@ void CStdRaum::MenuStart(SLONG MenuType, SLONG MenuPar1, SLONG MenuPar2, SLONG M
         MenuPage = 0;
         MenuPar4 = "";
         MenuDataTable.FillWithXPlaneTypes();
-        MenuPageMax = (MenuDataTable.AnzRows - 1) / 13;
+        MenuPageMax = ((MenuDataTable.AnzRows - 1) / 13) * 13;
         break;
 
     case MENU_CLOSED:
@@ -5569,13 +5236,7 @@ void CStdRaum::MenuRepaint() {
                     gToiletFx.ReInit("toiletmf.raw");
                 }
 
-                if (Sim.ItemParfuem != 0) {
-                    qPlayer.BuyItem(ITEM_PARFUEM);
-                    if (qPlayer.HasItem(ITEM_PARFUEM) != 0) {
-                        Sim.ItemParfuem = 0;
-                        SIM::SendSimpleMessage(ATNET_TAKETHING, 0, ITEM_PARFUEM);
-                    }
-                }
+                GameMechanic::pickUpItem(qPlayer, ITEM_PARFUEM);
             } else {
                 gToiletFx.ReInit("toilet.raw");
             }
@@ -5919,7 +5580,7 @@ void CStdRaum::MenuLeftClick(XY Pos) {
 
     case MENU_KEROSIN:
         if (MouseClickArea == -102 && MouseClickId == MENU_KEROSIN && MouseClickPar1 == -20) {
-            GameMechanic::toggleKerosinTank(qPlayer);
+            GameMechanic::toggleKerosinTankOpen(qPlayer);
             MenuRepaint();
         } else if (MouseClickArea == -102 && MouseClickId == MENU_KEROSIN && MouseClickPar1 == -99) {
             MenuStop();
@@ -6130,6 +5791,7 @@ void CStdRaum::MenuLeftClick(XY Pos) {
                         qPlayer.Money -= 1;
 
                         qPlayer.Statistiken[STAT_A_SONSTIGES].AddAtPastDay(-1);
+                        qPlayer.Bilanz.SonstigeAusgaben -= 1;
                         if (PlayerNum == Sim.localPlayer) {
                             SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -1, STAT_A_SONSTIGES);
                         }
@@ -6232,6 +5894,7 @@ void CStdRaum::MenuLeftClick(XY Pos) {
             qPlayer.Money -= 1;
 
             qPlayer.Statistiken[STAT_A_SONSTIGES].AddAtPastDay(-1);
+            qPlayer.Bilanz.SonstigeAusgaben -= 1;
             if (PlayerNum == Sim.localPlayer) {
                 SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -1, STAT_A_SONSTIGES);
             }
@@ -6338,6 +6001,7 @@ void CStdRaum::MenuLeftClick(XY Pos) {
                         qPlayer.Money -= 1;
 
                         qPlayer.Statistiken[STAT_A_SONSTIGES].AddAtPastDay(-1);
+                        qPlayer.Bilanz.SonstigeAusgaben -= 1;
                         if (PlayerNum == Sim.localPlayer) {
                             SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -1, STAT_A_SONSTIGES);
                         }
@@ -6434,7 +6098,6 @@ void CStdRaum::MenuLeftClick(XY Pos) {
 
     case MENU_PERSONAL:
         if (MouseClickId == MENU_PERSONAL) {
-            auto &qWorker = Workers.Workers[MenuRemapper[MenuPage - 1]];
             if (MouseClickPar1 == -1 && MenuPage > 0) {
                 if (AtGetAsyncKeyState(ATKEY_CONTROL) / 256 != 0) {
                     MenuPage = std::max(0, MenuPage - 100);
@@ -6454,16 +6117,18 @@ void CStdRaum::MenuLeftClick(XY Pos) {
                 }
                 gMovePaper.Play(DSBPLAY_NOSTOP, Sim.Options.OptionEffekte * 100 / 7);
             } else if (MouseClickPar1 == -3) {
-                GameMechanic::hireWorker(qPlayer, qWorker);
+                GameMechanic::hireWorker(qPlayer, MenuRemapper[MenuPage - 1]);
                 qPlayer.UpdateWalkSpeed();
             } else if (MouseClickPar1 == -4) {
-                GameMechanic::fireWorker(qPlayer, qWorker);
+                GameMechanic::fireWorker(qPlayer, MenuRemapper[MenuPage - 1]);
                 qPlayer.UpdateWalkSpeed();
             }
             // Gehalt erhöhen/kürzen:
             else if (MouseClickPar1 == -5) {
+                auto &qWorker = Workers.Workers[MenuRemapper[MenuPage - 1]];
                 qWorker.Gehaltsaenderung(1);
             } else if (MouseClickPar1 == -6) {
+                auto &qWorker = Workers.Workers[MenuRemapper[MenuPage - 1]];
                 qWorker.Gehaltsaenderung(0);
             } else if (MouseClickPar1 == -7) {
                 // Anderes Flugzeug:
@@ -6475,62 +6140,7 @@ void CStdRaum::MenuLeftClick(XY Pos) {
                 MenuInfo2 = m1;
                 MenuInfo3 = m2;
             }
-
-            if (MenuPar2 == 1 && (qPlayer.HasBerater(BERATERTYP_PERSONAL) != 0) && MenuPage > 0 && (MouseClickPar1 == -1 || MouseClickPar1 == -2)) {
-                if (qWorker.Employer == WORKER_RESERVE) {
-                    // rausgeekelt:
-                    qPlayer.Messages.AddMessage(BERATERTYP_PERSONAL, bprintf(StandardTexte.GetS(TOKEN_ADVICE, 1004 + qWorker.Geschlecht), qWorker.Name.c_str()),
-                                                MESSAGE_COMMENT);
-                } else if (qWorker.Employer == WORKER_JOBLESS) {
-                    if (qWorker.Typ <= BERATERTYP_SICHERHEIT && (qPlayer.HasBerater(qWorker.Typ) != 0)) {
-                        if (qWorker.Typ == BERATERTYP_PERSONAL) {
-                            qPlayer.Messages.AddMessage(BERATERTYP_PERSONAL, StandardTexte.GetS(TOKEN_ADVICE, 1272), MESSAGE_COMMENT);
-                        } else if (qWorker.Talent <= qPlayer.HasBerater(qWorker.Typ)) {
-                            qPlayer.Messages.AddMessage(BERATERTYP_PERSONAL, StandardTexte.GetS(TOKEN_ADVICE, 1270), MESSAGE_COMMENT, SMILEY_BAD);
-                        } else {
-                            qPlayer.Messages.AddMessage(BERATERTYP_PERSONAL, StandardTexte.GetS(TOKEN_ADVICE, 1271), MESSAGE_COMMENT, SMILEY_GOOD);
-                        }
-                    } else if ((MenuRemapper[MenuPage - 1] * 7777 % 100) > qPlayer.HasBerater(BERATERTYP_PERSONAL)) {
-                        qPlayer.Messages.AddMessage(BERATERTYP_PERSONAL, StandardTexte.GetS(TOKEN_ADVICE, 1000), MESSAGE_COMMENT, SMILEY_NEUTRAL);
-                    } else {
-                        SLONG n = Workers.GetQualityRatio(MenuRemapper[MenuPage - 1]);
-                        SLONG Smiley = 0;
-
-                        if (qWorker.Talent <= 25) {
-                            n = 1006;
-                            Smiley = SMILEY_BAD;
-                        } else if (qWorker.Talent <= 45) {
-                            n = 1007;
-                            Smiley = SMILEY_BAD;
-                        } else if (n < -5) {
-                            n = 1001;
-                            Smiley = SMILEY_BAD;
-                        } else if (n > 5) {
-                            if (qWorker.Talent >= 90) {
-                                n = 1008;
-                                Smiley = SMILEY_GREAT;
-                            } else {
-                                n = 1003;
-                                Smiley = SMILEY_GOOD;
-                            }
-
-                        } else {
-                            n = 1002;
-                            Smiley = SMILEY_NEUTRAL;
-                        }
-
-                        qPlayer.Messages.AddMessage(BERATERTYP_PERSONAL, StandardTexte.GetS(TOKEN_ADVICE, n), MESSAGE_COMMENT, Smiley);
-                    }
-                } else {
-                    // kein text:
-                    qPlayer.Messages.AddMessage(BERATERTYP_PERSONAL, "", MESSAGE_COMMENT);
-                }
-            }
-
-            if (Sim.bNetwork != 0) {
-                qPlayer.NetUpdateWorkers();
-            }
-            MenuRepaint();
+            PersonalPageFlipped();
         }
         break;
 
@@ -6960,7 +6570,7 @@ void CStdRaum::MenuLeftClick(XY Pos) {
 
         case MENU_REQUEST_KILLPLAN:
             if (MouseClickArea == -101 && MouseClickId == MENU_REQUEST && MouseClickPar1 == 1) {
-                GameMechanic::killFlightPlan(qPlayer, MenuPar2);
+                GameMechanic::clearFlightPlan(qPlayer, MenuPar2);
             }
             if (MouseClickArea == -101 && MouseClickId == MENU_REQUEST && MouseClickPar1 > 0) {
                 MenuStop();
@@ -7707,8 +7317,6 @@ void CStdRaum::MenuSetZoomStuff(const XY &MenuStartPos, DOUBLE MinimumZoom, BOOL
 // NewGamePopup::OnChar
 //--------------------------------------------------------------------------------------------
 void CStdRaum::OnChar(UINT nChar, UINT /*unused*/, UINT /*unused*/) {
-    PLAYER &qPlayer = Sim.Players.Players[PlayerNum];
-
     if (CalculatorIsOpen != 0) {
         CalcKey(nChar);
     } else if ((MenuIsOpen() != 0) && (CurrentMenu == MENU_RENAMEPLANE || CurrentMenu == MENU_RENAMEEDITPLANE || CurrentMenu == MENU_ENTERTCPIP ||
@@ -7758,10 +7366,7 @@ void CStdRaum::OnChar(UINT nChar, UINT /*unused*/, UINT /*unused*/) {
             change = true;
         }
         if (change) {
-            MenuRepaint();
-            if (Sim.bNetwork != 0) {
-                qPlayer.NetUpdateWorkers();
-            }
+            PersonalPageFlipped();
         }
     }
 }
@@ -7863,7 +7468,6 @@ void CStdRaum::OnKeyDown(UINT nChar, UINT /*nRepCnt*/, UINT /*nFlags*/) {
         break;
 
     case MENU_PERSONAL: {
-        auto &qWorker = Workers.Workers[MenuRemapper[MenuPage - 1]];
         switch (nChar) {
         case ATKEY_LEFT:
             if (AtGetAsyncKeyState(ATKEY_CONTROL) / 256 != 0) {
@@ -7888,12 +7492,12 @@ void CStdRaum::OnKeyDown(UINT nChar, UINT /*nRepCnt*/, UINT /*nFlags*/) {
             change = true;
             break;
         case ATKEY_RETURN:
-            GameMechanic::hireWorker(qPlayer, qWorker);
+            GameMechanic::hireWorker(qPlayer, MenuRemapper[MenuPage - 1]);
             qPlayer.UpdateWalkSpeed();
             change = true;
             break;
         case ATKEY_BACK:
-            GameMechanic::fireWorker(qPlayer, qWorker);
+            GameMechanic::fireWorker(qPlayer, MenuRemapper[MenuPage - 1]);
             qPlayer.UpdateWalkSpeed();
             change = true;
             break;
@@ -7901,10 +7505,7 @@ void CStdRaum::OnKeyDown(UINT nChar, UINT /*nRepCnt*/, UINT /*nFlags*/) {
             break;
         }
         if (change) {
-            MenuRepaint();
-            if (Sim.bNetwork != 0) {
-                qPlayer.NetUpdateWorkers();
-            }
+            PersonalPageFlipped();
         }
         break;
     }
@@ -7969,5 +7570,65 @@ void CStdRaum::MenuNextPage() {
         MenuPage = std::min(MenuPageMax, MenuPage + 13);
     }
 
+    MenuRepaint();
+}
+
+void CStdRaum::PersonalPageFlipped() {
+    PLAYER &qPlayer = Sim.Players.Players[PlayerNum];
+    if (MenuPar2 == 1 && (qPlayer.HasBerater(BERATERTYP_PERSONAL) != 0) && MenuPage > 0) {
+        auto &qWorker = Workers.Workers[MenuRemapper[MenuPage - 1]];
+        if (qWorker.Employer == WORKER_RESERVE) {
+            // rausgeekelt:
+            qPlayer.Messages.AddMessage(BERATERTYP_PERSONAL, bprintf(StandardTexte.GetS(TOKEN_ADVICE, 1004 + qWorker.Geschlecht), qWorker.Name.c_str()),
+                                        MESSAGE_COMMENT);
+        } else if (qWorker.Employer == WORKER_JOBLESS) {
+            if (qWorker.Typ <= BERATERTYP_SICHERHEIT && (qPlayer.HasBerater(qWorker.Typ) != 0)) {
+                if (qWorker.Typ == BERATERTYP_PERSONAL) {
+                    qPlayer.Messages.AddMessage(BERATERTYP_PERSONAL, StandardTexte.GetS(TOKEN_ADVICE, 1272), MESSAGE_COMMENT);
+                } else if (qWorker.Talent <= qPlayer.HasBerater(qWorker.Typ)) {
+                    qPlayer.Messages.AddMessage(BERATERTYP_PERSONAL, StandardTexte.GetS(TOKEN_ADVICE, 1270), MESSAGE_COMMENT, SMILEY_BAD);
+                } else {
+                    qPlayer.Messages.AddMessage(BERATERTYP_PERSONAL, StandardTexte.GetS(TOKEN_ADVICE, 1271), MESSAGE_COMMENT, SMILEY_GOOD);
+                }
+            } else if ((MenuRemapper[MenuPage - 1] * 7777 % 100) > qPlayer.HasBerater(BERATERTYP_PERSONAL)) {
+                qPlayer.Messages.AddMessage(BERATERTYP_PERSONAL, StandardTexte.GetS(TOKEN_ADVICE, 1000), MESSAGE_COMMENT, SMILEY_NEUTRAL);
+            } else {
+                SLONG n = Workers.GetQualityRatio(MenuRemapper[MenuPage - 1]);
+                SLONG Smiley = 0;
+
+                if (qWorker.Talent <= 25) {
+                    n = 1006;
+                    Smiley = SMILEY_BAD;
+                } else if (qWorker.Talent <= 45) {
+                    n = 1007;
+                    Smiley = SMILEY_BAD;
+                } else if (n < -5) {
+                    n = 1001;
+                    Smiley = SMILEY_BAD;
+                } else if (n > 5) {
+                    if (qWorker.Talent >= 90) {
+                        n = 1008;
+                        Smiley = SMILEY_GREAT;
+                    } else {
+                        n = 1003;
+                        Smiley = SMILEY_GOOD;
+                    }
+
+                } else {
+                    n = 1002;
+                    Smiley = SMILEY_NEUTRAL;
+                }
+
+                qPlayer.Messages.AddMessage(BERATERTYP_PERSONAL, StandardTexte.GetS(TOKEN_ADVICE, n), MESSAGE_COMMENT, Smiley);
+            }
+        } else {
+            // kein text:
+            qPlayer.Messages.AddMessage(BERATERTYP_PERSONAL, "", MESSAGE_COMMENT);
+        }
+    }
+
+    if (Sim.bNetwork != 0) {
+        qPlayer.NetUpdateWorkers();
+    }
     MenuRepaint();
 }

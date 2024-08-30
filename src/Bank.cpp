@@ -338,7 +338,7 @@ void Bank::OnRButtonDown(UINT nFlags, CPoint point) {
 // Löscht die Bilanz
 //--------------------------------------------------------------------------------------------
 void CBilanz::Clear() {
-    Tickets = Auftraege = KerosinVorrat = KerosinFlug = Essen = 0;
+    Tickets = Auftraege = FrachtAuftraege = KerosinVorrat = KerosinFlug = Essen = 0;
     Vertragsstrafen = Wartung = FlugzeugUmbau = Personal = Gatemiete = 0;
     Citymiete = Routenmiete = HabenZinsen = HabenRendite = KreditNeu = 0;
     SollZinsen = SollRendite = KreditTilgung = Steuer = Aktienverkauf = 0;
@@ -354,8 +354,8 @@ void CBilanz::Clear() {
 // Gibt den Saldo der Habens-Seite zurück:
 //--------------------------------------------------------------------------------------------
 __int64 CBilanz::GetHaben() const {
-    return Tickets + Auftraege + HabenZinsen + HabenRendite + KreditNeu + Aktienverkauf + AktienEmission + AktienEmissionKompErh + FlugzeugVerkauf + Takeovers +
-           SabotageGeklaut + SabotageKomp + BodyguardRabatt + GeldErhalten + SonstigeEinnahmen;
+    return Tickets + Auftraege + FrachtAuftraege + HabenZinsen + HabenRendite + KreditNeu + Aktienverkauf + AktienEmission + AktienEmissionKompErh +
+           FlugzeugVerkauf + Takeovers + SabotageGeklaut + SabotageKomp + BodyguardRabatt + GeldErhalten + SonstigeEinnahmen;
 }
 
 //--------------------------------------------------------------------------------------------
@@ -371,7 +371,7 @@ __int64 CBilanz::GetSoll() const {
 //--------------------------------------------------------------------------------------------
 // Gibt den operativen Gewinn zurück
 //--------------------------------------------------------------------------------------------
-__int64 CBilanz::GetOpGewinn() const { return Tickets + Auftraege; }
+__int64 CBilanz::GetOpGewinn() const { return Tickets + Auftraege + FrachtAuftraege; }
 __int64 CBilanz::GetOpVerlust() const {
     auto summe = KerosinVorrat + KerosinFlug + Essen + Vertragsstrafen + Wartung;
     summe += FlugzeugUmbau + Personal + Gatemiete + Citymiete + Routenmiete;
@@ -391,6 +391,7 @@ __int64 CBilanz::GetSumme() const { return (GetHaben() + GetSoll()); }
 void CBilanz::operator+=(const CBilanz &Bilanz) {
     Tickets += Bilanz.Tickets;
     Auftraege += Bilanz.Auftraege;
+    FrachtAuftraege += Bilanz.FrachtAuftraege;
     KerosinVorrat += Bilanz.KerosinVorrat;
     KerosinFlug += Bilanz.KerosinFlug;
     Essen += Bilanz.Essen;
@@ -442,7 +443,7 @@ void CBilanz::operator+=(const CBilanz &Bilanz) {
 // Speichert einen Bilanz-Datensatz:
 //--------------------------------------------------------------------------------------------
 TEAKFILE &operator<<(TEAKFILE &File, const CBilanz &Bilanz) {
-    File << Bilanz.Tickets << Bilanz.Auftraege << Bilanz.KerosinVorrat;
+    File << Bilanz.Tickets << Bilanz.Auftraege << Bilanz.FrachtAuftraege << Bilanz.KerosinVorrat;
     File << Bilanz.KerosinFlug << Bilanz.Essen << Bilanz.Vertragsstrafen;
     File << Bilanz.Wartung << Bilanz.FlugzeugUmbau << Bilanz.Personal;
     File << Bilanz.Gatemiete << Bilanz.Citymiete << Bilanz.Routenmiete;
@@ -468,7 +469,7 @@ TEAKFILE &operator<<(TEAKFILE &File, const CBilanz &Bilanz) {
 // Lädt einen Bilanzdatensatz:
 //--------------------------------------------------------------------------------------------
 TEAKFILE &operator>>(TEAKFILE &File, CBilanz &Bilanz) {
-    File >> Bilanz.Tickets >> Bilanz.Auftraege >> Bilanz.KerosinVorrat;
+    File >> Bilanz.Tickets >> Bilanz.Auftraege >> Bilanz.FrachtAuftraege >> Bilanz.KerosinVorrat;
     File >> Bilanz.KerosinFlug >> Bilanz.Essen >> Bilanz.Vertragsstrafen;
     File >> Bilanz.Wartung >> Bilanz.FlugzeugUmbau >> Bilanz.Personal;
     File >> Bilanz.Gatemiete >> Bilanz.Citymiete >> Bilanz.Routenmiete;

@@ -250,8 +250,11 @@ class CStdRaum {
     friend class PERSON;
     friend class PLAYER;
     friend class SIM;
+    friend class Bot;
+    friend class GameMechanic;
 
   private:
     void MenuPrevPage();
     void MenuNextPage();
+    void PersonalPageFlipped();
 };

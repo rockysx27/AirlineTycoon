@@ -1,3 +1,6 @@
+#ifndef CLASS_H_
+#define CLASS_H_
+
 //============================================================================================
 // Class.h - Prototypen von Klassen, die nicht vom ClassWizard stammen:
 //============================================================================================
@@ -5,10 +8,12 @@
 //============================================================================================
 #include "defines.h"
 #include "HLine.h"
+
 #include <array>
 
 typedef BUFFER_V<UBYTE> BUFFER_UBYTE;
 
+class Bot;
 class CPlane;
 class CPlaner;
 class CStdRaum;
@@ -435,7 +440,6 @@ class /**/ CPlaneType {
 
 class /**/ CPlaneTypes : public ALBUM_V<CPlaneType> {
   public:
-  public:
     CPlaneTypes() : ALBUM_V<CPlaneType>("PlaneTypes") {}
     CPlaneTypes(const CString &TabFilename);
     void ReInit(const CString &TabFilename);
@@ -459,6 +463,9 @@ class /**/ CAuftrag {
     SLONG Praemie{};     // Prämie bei Erfüllung
     SLONG Strafe{};      // Strafe bei Versagen
     BOOL bUhrigFlight{}; // Von Uhrig in Auftrag gegeben?
+    /* types */
+    SLONG jobType{-1};
+    SLONG jobSizeType{-1};
 
     CAuftrag() = default;
     CAuftrag(ULONG VonCity, ULONG NachCity, ULONG Personen, UWORD Date, SLONG Praemie, SLONG Strafe);
@@ -514,6 +521,9 @@ class CFracht {
     SBYTE Okay{};     // 0=Nix, -1=Durchgeführt, 1=1x im Plan
     SLONG Praemie{};  // Prämie bei Erfüllung
     SLONG Strafe{};   // Strafe bei Versagen
+    /* types */
+    SLONG jobType{-1};
+    SLONG jobSizeType{-1};
 
     CFracht() = default;
     CFracht(ULONG VonCity, ULONG NachCity, SLONG Tons, ULONG Personen, UWORD Date, SLONG Praemie, SLONG Strafe);
@@ -599,6 +609,9 @@ class CRentRoute {
     SLONG RoutenAuslastung{};               // Soviel % des Routenbedarfes deckt man im Schnitt
     SLONG HeuteBefoerdert{};                // Soviele Passagiere haben wir heute hier befördert
     std::array<SLONG, 7> WocheBefoerdert{}; // Soviele Passagiere haben wir in den letzten 7 Tagen befördert
+    SLONG AuslastungBot{};                  // Auslastung mit anderer Filterkonstante für den Bot
+    SLONG AuslastungFirstClassBot{};        // Auslastung mit anderer Filterkonstante für den Bot
+    SLONG RoutenAuslastungBot{};            // Auslastung mit anderer Filterkonstante für den Bot
     UBYTE Image{};                          // Die Bekanntheit; beginnt bei 0, kann durch Werbung oder Geduld auf 100 gesteigert werden
     SLONG Miete{};                          // Soviel zahlt der Spieler wegen der Versteigerung
     SLONG Ticketpreis{};                    // Soviel kostet ein Ticket
@@ -666,10 +679,12 @@ class CFlugplanEintrag {
     SLONG ObjectId{-1};       // Bezeichnet Auftrag oder -1
     SLONG Ticketpreis{};      // Ticketpreis für Routen
     SLONG TicketpreisFC{};    // Ticketpreis für Routen (Erste Klasse)
+    BOOL FlightBooked{FALSE}; // Added: Ensure flight is only "booked" once
 
   public:
     CFlugplanEintrag() = default;
     CFlugplanEintrag(BOOL ObjectType, ULONG ObjectId);
+
     void BookFlight(CPlane *Plane, SLONG PlayerNum);
     void CalcPassengers(SLONG PlayerNum, CPlane &qPlane);
     void FlightChanged(void);
@@ -1049,6 +1064,9 @@ class /**/ CITIES : public ALBUM_V<CITY> {
     ULONG GetIdFromName(const char *Name);
     ULONG GetIdFromNames(const char *Name, ...);
     void UseRealKuerzel(BOOL Real);
+
+  private:
+    SLONG HashTableSize{};
 };
 
 //--------------------------------------------------------------------------------------------
@@ -1490,6 +1508,7 @@ class /**/ PERSON {
     friend class SIM;
     friend class GameMechanic;
     friend class AIRPORT;
+    friend class Bot;
 };
 
 class /**/ PERSONS : public ALBUM_V<PERSON> {
@@ -1598,13 +1617,15 @@ class /**/ CRobotAction {
     SLONG ActionId{};
     UBYTE TargetRoom{};
     SLONG Par1{}, Par2{};
+    BOOL Running{FALSE};
+    SLONG Prio{};
 
     friend TEAKFILE &operator<<(TEAKFILE &File, const CRobotAction &r) {
-        File << r.ActionId << r.TargetRoom << r.Par1 << r.Par2;
+        File << r.ActionId << r.TargetRoom << r.Par1 << r.Par2 << r.Running << r.Prio;
         return (File);
     }
     friend TEAKFILE &operator>>(TEAKFILE &File, CRobotAction &r) {
-        File >> r.ActionId >> r.TargetRoom >> r.Par1 >> r.Par2;
+        File >> r.ActionId >> r.TargetRoom >> r.Par1 >> r.Par2 >> r.Running >> r.Prio;
         return (File);
     }
 };
@@ -1785,6 +1806,7 @@ class CBilanz {
     // Seite 1 Hauptgeschäft, Einnahmen
     __int64 Tickets{};
     __int64 Auftraege{};
+    __int64 FrachtAuftraege{};
     // Ausgaben
     __int64 KerosinVorrat{};
     __int64 KerosinFlug{};
@@ -1969,6 +1991,7 @@ class PLAYER {
     SLONG ArabMode2{};                           // Anschlag unterwegs? Und zwar von der Spieler-Bezogenen Art
     SLONG ArabMode3{};                           // Anschlag unterwegs? Und zwar von den Specials
     SLONG ArabActive{};                          // FALSE=Flugzeug war noch nicht gelandet; TRUE=Flugzeug war am Boden, Anschlag jetzt möglich
+    SLONG ArabTimeout{};                         // How often has the Arab failed to sabotage a certain plane?
     std::pair<SLONG, SLONG> ArabModeSelection{}; // Spieler hat Anschlagtyp ausgewählt, aber ein Parameter (Flugzeug/Route) fehlt noch
     SLONG ArabOpfer{};                           // Anschlag auf wen?
     SLONG ArabOpfer2{};                          // Anschlag auf wen?
@@ -2027,7 +2050,7 @@ class PLAYER {
     SLONG NumAuftraege{};  // Zahl der geflogenen Aufträge
     SLONG NumPassengers{}; // Zahl der Passagieren, die man befördert hat
     __int64 Gewinn{};
-    SLONG ConnectFlags{};          // Flags für Städte, die verbunden wurden
+    SLONG NumMissionRoutes{};      // Flags für Städte, die verbunden wurden
     SLONG RocketFlags{};           // Flags für die Raketenbauteile
     SLONG LastRocketFlags{};       // Vom Tag davor
     SLONG NumFracht{};             // Soviele tonnnen wurden bisher transportiert
@@ -2151,23 +2174,26 @@ class PLAYER {
     TEAKRAND PlayerWalkRandom;
     TEAKRAND PlayerExtraRandom;
     BOOL bHasPlanesUpgradedToday{};
+    SLONG BotLevel{0};
 
   public:
     PLAYER();
     ~PLAYER();
+    void ReInitBot();
     void Add5UhrigFlights(void);
     SLONG AnzPlanesOnRoute(ULONG RouteId);
     void BookBuroRent(void); // Zieht Miete vom Geld ab
     void BookSalary(void);   // Zieht Gehalt vom Geld ab
     void BroadcastPosition(bool bForce = false);
     void BroadcastRooms(SLONG Message, SLONG RoomLeft = -1);
-    void BuyPlane(CXPlane &plane, TEAKRAND *pRnd);
-    void BuyPlane(ULONG PlaneTypeId, TEAKRAND *pRnd);
+    ULONG BuyPlane(CXPlane &plane, TEAKRAND *pRnd);
+    ULONG BuyPlane(ULONG PlaneTypeId, TEAKRAND *pRnd);
     void BuyItem(UBYTE Item);
     SLONG CalcSecurityCosts(bool bFixOnly = false, bool bPlaneOnly = false);
     void DisplayAsTelefoning(void) const;
     bool DropItem(UBYTE Item);
     SLONG CalcCreditLimit(void) const;
+    SLONG CalcCreditLimit(__int64 money, __int64 credit) const;
     void CalcRoom(void);                                                                   // Speed-up für GetRoom
     SLONG CalcPlanePropSum(void);                                                          // Berechnet, was die anstehenden Umrüstungen zusammen kosten werden
     void ChangeMoney(__int64 Money, SLONG Reason, const CString &Par1, char *Par2 = NULL); // Ändert Barschaft und Profit
@@ -2244,6 +2270,10 @@ class PLAYER {
     static void NetSynchronizeMeeting(void);
     void NetBuyXPlane(SLONG Anzahl, CXPlane &plane) const;
     static void NetSave(DWORD UniqueGameId, SLONG CursorY, const CString &Name);
+
+    /* methods and data for improved robot */
+    bool IsSuperBot() const;
+    Bot *mBot{nullptr};
 
     friend TEAKFILE &operator<<(TEAKFILE &File, const PLAYER &Player);
     friend TEAKFILE &operator>>(TEAKFILE &File, PLAYER &Player);
@@ -2572,7 +2602,7 @@ class SIM // Die Simulationswelt; alles was zur aktuellen Partie gehört
     void AddNewShoppers(void);
     void AddStenchSabotage(XY Position);
     bool AddGlueSabotage(XY Position, SLONG Dir, SLONG NewDir, SLONG Phase);
-    void ChooseStartup(BOOL GameModeQuick);
+    void ChooseStartup();
     void DoTimeStep(void);
     SLONG GetWeek(void) const;
     SLONG GetHour(void) const;
@@ -2631,3 +2661,5 @@ class SIM // Die Simulationswelt; alles was zur aktuellen Partie gehört
     friend TEAKFILE &operator<<(TEAKFILE &File, const SIM &Sim);
     friend TEAKFILE &operator>>(TEAKFILE &File, SIM &Sim);
 };
+
+#endif // CLASS_H_

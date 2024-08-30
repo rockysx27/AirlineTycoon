@@ -491,13 +491,11 @@ void CWerkstatt::OnLButtonDown(UINT nFlags, CPoint point) {
         } else if (MouseClickArea == ROOM_WERKSTATT && MouseClickId == 10) {
             StartDialog(TALKER_MECHANIKER, MEDIUM_AIR, 1);
         } else if (MouseClickArea == ROOM_WERKSTATT && MouseClickId == 20) {
-            if (qPlayer.MechTrust == 0) {
+            auto res = GameMechanic::pickUpItem(qPlayer, ITEM_OEL);
+            if (GameMechanic::PickUpItemResult::NotAllowed == res) {
                 StartDialog(TALKER_MECHANIKER, MEDIUM_AIR, 20);
-            } else {
-                if (qPlayer.HasSpaceForItem() != 0) {
-                    StartDialog(TALKER_MECHANIKER, MEDIUM_AIR, 21);
-                    qPlayer.BuyItem(ITEM_OEL);
-                }
+            } else if (GameMechanic::PickUpItemResult::PickedUp == res) {
+                StartDialog(TALKER_MECHANIKER, MEDIUM_AIR, 21);
             }
         } else {
             CStdRaum::OnLButtonDown(nFlags, point);

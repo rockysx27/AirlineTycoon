@@ -8,6 +8,8 @@
 #include "Aufsicht.h"
 #include "Nasa.h"
 
+#include "Bot.h"
+
 CString Space = " ";
 
 extern XY BeraterSprechblasenOffset[];
@@ -20,6 +22,43 @@ extern SLONG WasLButtonDownMouseClickArea; // In Statusleiste/Raum
 extern SLONG WasLButtonDownMouseClickId;   // Der Id
 extern SLONG WasLButtonDownMouseClickPar1;
 extern SLONG WasLButtonDownMouseClickPar2;
+
+void printPostGameInfo();
+
+void printPostGameInfo() {
+    SLONG botPlayerNum = -1;
+    SLONG bestEnemy = 0;
+    for (SLONG c = 0; c < Sim.Players.Players.AnzEntries(); c++) {
+        auto &qPlayer = Sim.Players.Players[c];
+        if (qPlayer.IsSuperBot()) {
+            botPlayerNum = c;
+        } else if (qPlayer.Statistiken[STAT_MISSIONSZIEL].GetAtPastDay(0) > bestEnemy) {
+            bestEnemy = qPlayer.Statistiken[STAT_MISSIONSZIEL].GetAtPastDay(0);
+        }
+    }
+    if (botPlayerNum != -1) {
+        auto &qPlayer = Sim.Players.Players[botPlayerNum];
+
+        printf("BotMission: Mission, Tage");
+        for (SLONG c = 0; c < 4; c++) {
+            printf(", Sieg%s", (LPCTSTR)Sim.Players.Players[c].Abk);
+        }
+        hprintf(", BesterGegner");
+
+        printf("BotMission: %d, %d", Sim.Difficulty, Sim.Date);
+        for (SLONG c = 0; c < 4; c++) {
+            auto &qP = Sim.Players.Players[c];
+            printf(", %d", (qP.HasWon() != 0 && qP.IsOut == 0) ? 1 : 0);
+        }
+        hprintf(", %ld", bestEnemy);
+
+        qPlayer.mBot->printStatisticsLine("BotStatistics2", true);
+
+        if (gQuickTestRun > 0) {
+            exit(0);
+        }
+    }
+}
 
 //--------------------------------------------------------------------------------------------
 // Vor allem anderen einen Klick auf den Berater prüfen:
@@ -287,9 +326,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                 StopDialog();
                 break;
             case 3002:
-                if (qPlayer.HasSpaceForItem() != 0) {
-                    qPlayer.BuyItem(ITEM_DART);
-                }
+                GameMechanic::pickUpItem(qPlayer, ITEM_DART);
                 StopDialog();
                 break;
 
@@ -351,7 +388,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
             case 1054:
             case 1055: {
                 SLONG number = (id - 1050);
-                auto ret = GameMechanic::checkPrerequisitesForSaboteurJob(qPlayer, 0, number);
+                auto ret = GameMechanic::checkPrerequisitesForSaboteurJob(qPlayer, 0, number, FALSE);
                 if (ret.dialogParam.empty()) {
                     MakeSayWindow(0, TOKEN_SABOTAGE, ret.dialogID, pFontPartner);
                 } else {
@@ -366,7 +403,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                 break;
 
             case 1070:
-                GameMechanic::activateSaboteurJob(qPlayer);
+                GameMechanic::activateSaboteurJob(qPlayer, FALSE);
                 StopDialog();
 
                 break;
@@ -376,14 +413,14 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
             case 1253:
             case 1254: {
                 SLONG number = (id - 1250);
-                auto ret = GameMechanic::checkPrerequisitesForSaboteurJob(qPlayer, 1, number);
+                auto ret = GameMechanic::checkPrerequisitesForSaboteurJob(qPlayer, 1, number, FALSE);
                 if (ret.dialogParam.empty()) {
                     MakeSayWindow(0, TOKEN_SABOTAGE, ret.dialogID, pFontPartner);
                 } else {
                     MakeSayWindow(0, TOKEN_SABOTAGE, ret.dialogID, pFontPartner, (LPCTSTR)ret.dialogParam);
                 }
                 if (ret.result == GameMechanic::CheckSabotageResult::Ok) {
-                    GameMechanic::activateSaboteurJob(qPlayer);
+                    GameMechanic::activateSaboteurJob(qPlayer, FALSE);
                 }
                 break;
             }
@@ -395,7 +432,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
             case 1085:
             case 1086: {
                 SLONG number = (id - 1080);
-                auto ret = GameMechanic::checkPrerequisitesForSaboteurJob(qPlayer, 2, number);
+                auto ret = GameMechanic::checkPrerequisitesForSaboteurJob(qPlayer, 2, number, FALSE);
                 if (ret.dialogParam.empty()) {
                     MakeSayWindow(0, TOKEN_SABOTAGE, ret.dialogID, pFontPartner);
                 } else {
@@ -409,18 +446,18 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                         MenuDialogReEntryB = 1091;
                         MenuStart(MENU_SABOTAGEROUTE);
                     } else {
-                        GameMechanic::activateSaboteurJob(qPlayer);
+                        GameMechanic::activateSaboteurJob(qPlayer, FALSE);
                     }
                 }
                 break;
             }
             case 1090:
-                GameMechanic::activateSaboteurJob(qPlayer);
+                GameMechanic::activateSaboteurJob(qPlayer, FALSE);
                 MakeSayWindow(0, TOKEN_SABOTAGE, 1160, pFontPartner);
                 break;
 
             case 1091:
-                GameMechanic::activateSaboteurJob(qPlayer);
+                GameMechanic::activateSaboteurJob(qPlayer, FALSE);
                 MakeSayWindow(0, TOKEN_SABOTAGE, 1160, pFontPartner);
                 break;
 
@@ -566,7 +603,9 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                 Array.ReSize(d);
 
                 if (MenuPar1 >= 0 && MenuPar1 < Array.AnzEntries()) {
-                    if (GameMechanic::buyXPlane(qPlayer, Array[MenuPar1], "\x1\x2\x3\x5\xa"[id - 6011])) {
+                    auto fullFilename = FullFilename(Array[MenuPar1], MyPlanePath);
+                    auto planeIds = GameMechanic::buyXPlane(qPlayer, fullFilename, "\x1\x2\x3\x5\xa"[id - 6011]);
+                    if (!planeIds.empty()) {
                         MakeSayWindow(0, TOKEN_DESIGNER, 6030, pFontPartner);
                     } else {
                         MakeSayWindow(0, TOKEN_DESIGNER, 6020, pFontPartner);
@@ -857,7 +896,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                 break;
 
             case 1003: { // Aktien ausgeben:
-                auto res = GameMechanic::canEmitStock(qPlayer);
+                auto res = GameMechanic::canEmitStock(qPlayer, &tmp);
                 if (res == GameMechanic::EmitStockResult::DeniedTooMuch) {
                     MakeSayWindow(0, TOKEN_BANK, 3000, pFontPartner);
                 } else if (res == GameMechanic::EmitStockResult::DeniedValueTooLow) {
@@ -1237,8 +1276,9 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
             case 9304:
             case 9403:
             case 9404:
-                MenuStart(MENU_GAMEOVER, static_cast<SLONG>(static_cast<SLONG>(qPlayer.HasWon()) == 0));
+                MenuStart(MENU_GAMEOVER, static_cast<SLONG>(qPlayer.HasWon() == false));
                 hprintf("Event: Mission abgeschlossen, Spiel wird beendet.");
+                printPostGameInfo();
                 break;
 
                 // Missionsbericht #1
@@ -1446,9 +1486,9 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                             }
 
                             TmpStr += Sim.Players.Players[c].AirlineX + ": ";
-                            TmpStr += bitoa(Sim.Players.Players[c].ConnectFlags);
+                            TmpStr += bitoa(Sim.Players.Players[c].NumMissionRoutes);
                             TmpStr2 += Sim.Players.Players[c].AirlineX + ": ";
-                            TmpStr2 += bitoa(Sim.Players.Players[c].ConnectFlags);
+                            TmpStr2 += bitoa(Sim.Players.Players[c].NumMissionRoutes);
                         }
                     }
 
@@ -1466,7 +1506,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
 
                 for (c = d = 0; c < Sim.Players.Players.AnzEntries(); c++) {
                     if (Sim.Players.Players[c].IsOut == 0) {
-                        if (d == -1 || Sim.Players.Players[c].ConnectFlags > Sim.Players.Players[d].ConnectFlags) {
+                        if (d == -1 || Sim.Players.Players[c].NumMissionRoutes > Sim.Players.Players[d].NumMissionRoutes) {
                             d = c;
                         }
                     }
@@ -1475,7 +1515,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                 // Missionsziel erreicht?
                 if (Sim.Players.Players[d].HasWon() == 0) {
                     // Nein:
-                    if (Sim.Players.Players[d].ConnectFlags == 0) {
+                    if (Sim.Players.Players[d].NumMissionRoutes == 0) {
                         goto _und_jetzt_weiter_mit_etc;
                     }
 
@@ -3630,12 +3670,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                       Sim.Gamestate = GAMESTATE_BOOT; */
                     break;
                 } else {
-                    Sim.Players.Players[DialogPar1].IsOut = TRUE;
-
-                    for (SLONG c = 0; c < Sim.Players.Players.AnzEntries(); c++) {
-                        Sim.Players.Players[c].OwnsAktien[DialogPar1] = 0;
-                        Sim.Players.Players[DialogPar1].OwnsAktien[c] = 0;
-                    }
+                    GameMechanic::bankruptPlayer(Sim.Players.Players[DialogPar1]);
                 }
                 // absichtlich kein break, sondern nächster Spieler:
                 [[fallthrough]];
@@ -4126,7 +4161,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
             case 143:
             case 144:
             case 145:
-                if (GameMechanic::buyPlane(qPlayer, DialogPar2, "\x1\x2\x3\x5\xa"[id - 141])) {
+                if (!GameMechanic::buyPlane(qPlayer, DialogPar2, "\x1\x2\x3\x5\xa"[id - 141]).empty()) {
                     MakeSayWindow(0, TOKEN_MAKLER, 150, pFontPartner);
                 } else {
                     MakeSayWindow(0, TOKEN_MAKLER, 6000, pFontPartner);
@@ -4187,7 +4222,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                 break;
 
             case 600:
-                if (GameMechanic::buyUsedPlane(qPlayer, 0x1000000 + DialogPar1)) {
+                if (GameMechanic::buyUsedPlane(qPlayer, 0x1000000 + DialogPar1) != -1) {
                     StopDialog();
                 } else {
                     MakeSayWindow(0, TOKEN_MUSEUM, 6000, pFontPartner);
@@ -4303,9 +4338,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                 StopDialog();
                 break;
             case 301:
-                if (qPlayer.HasSpaceForItem() != 0) {
-                    qPlayer.BuyItem(ITEM_TABLETTEN);
-                }
+                GameMechanic::pickUpItem(qPlayer, ITEM_TABLETTEN);
                 StopDialog();
                 break;
 
@@ -4426,9 +4459,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                 StopDialog();
                 break;
             case 8002:
-                if (qPlayer.HasSpaceForItem() != 0) {
-                    qPlayer.BuyItem(ITEM_DISKETTE);
-                }
+                GameMechanic::pickUpItem(qPlayer, ITEM_DISKETTE);
                 StopDialog();
                 break;
 
@@ -4486,7 +4517,6 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                 break;
             case 3501: // Alles:
                 DialogPar1 = 1;
-                DialogPar2 = -1;
                 MakeSayWindow(0, TOKEN_WERBUNG, 3001, pFontPartner);
                 break;
 
@@ -4541,9 +4571,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                 break;
 
             case 802:
-                if (qPlayer.HasSpaceForItem() != 0) {
-                    qPlayer.BuyItem(ITEM_HUFEISEN);
-                }
+                GameMechanic::pickUpItem(qPlayer, ITEM_HUFEISEN);
                 StopDialog();
                 break;
 
@@ -4569,39 +4597,12 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
 
             case 3001:
                 StopDialog();
-                if (qPlayer.HasSpaceForItem() != 0) {
-                    SLONG preis = -atoi(StandardTexte.GetS(TOKEN_ITEM, 2801));
-
-                    qPlayer.BuyItem(ITEM_PRALINEN_A);
-
-                    qPlayer.ChangeMoney(preis,
-                                        9999, // Leerstring
-                                        StandardTexte.GetS(TOKEN_ITEM, 1801));
-
-                    if (PlayerNum == Sim.localPlayer) {
-                        SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, preis, STAT_A_SONSTIGES);
-                    }
-
-                    qPlayer.DoBodyguardRabatt(-preis);
-                }
+                GameMechanic::buyDutyFreeItem(qPlayer, ITEM_PRALINEN_A);
                 break;
 
             case 3002:
                 StopDialog();
-                if (qPlayer.HasSpaceForItem() != 0) {
-                    SLONG preis = -atoi(StandardTexte.GetS(TOKEN_ITEM, 2801));
-
-                    qPlayer.BuyItem(ITEM_PRALINEN);
-
-                    qPlayer.ChangeMoney(preis,
-                                        9999, // Leerstring
-                                        StandardTexte.GetS(TOKEN_ITEM, 1801));
-                    if (PlayerNum == Sim.localPlayer) {
-                        SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, preis, STAT_A_SONSTIGES);
-                    }
-
-                    qPlayer.DoBodyguardRabatt(-preis);
-                }
+                GameMechanic::buyDutyFreeItem(qPlayer, ITEM_PRALINEN);
                 break;
 
             case 2001: {
@@ -5149,7 +5150,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                     MakeSayWindow(0, TOKEN_NASA, 7000, pFontPartner);
                 } else {
                     (dynamic_cast<CNasa *>((qPlayer.DialogWin) != nullptr ? qPlayer.DialogWin : this))->KommVarTippNow = 12;
-                    qPlayer.AddRocketPart(ROCKET_BASE, -RocketPrices[0]);
+                    qPlayer.AddRocketPart(ROCKET_BASE, RocketPrices[0]);
                     MakeSayWindow(0, TOKEN_NASA, 5099, pFontPartner);
                     PlayFanfare();
                 }
@@ -5163,7 +5164,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                     MakeSayWindow(0, TOKEN_NASA, 7000, pFontPartner);
                 } else {
                     (dynamic_cast<CNasa *>((qPlayer.DialogWin) != nullptr ? qPlayer.DialogWin : this))->KommVarTippNow = 12;
-                    qPlayer.AddRocketPart(ROCKET_TOWER, -RocketPrices[1]);
+                    qPlayer.AddRocketPart(ROCKET_TOWER, RocketPrices[1]);
                     MakeSayWindow(0, TOKEN_NASA, 5099, pFontPartner);
                     PlayFanfare();
                 }
@@ -5175,7 +5176,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                     MakeSayWindow(0, TOKEN_NASA, 7000, pFontPartner);
                 } else {
                     (dynamic_cast<CNasa *>((qPlayer.DialogWin) != nullptr ? qPlayer.DialogWin : this))->KommVarTippNow = 12;
-                    qPlayer.AddRocketPart(ROCKET_ARM, -RocketPrices[2]);
+                    qPlayer.AddRocketPart(ROCKET_ARM, RocketPrices[2]);
                     MakeSayWindow(0, TOKEN_NASA, 5099, pFontPartner);
                     PlayFanfare();
                 }
@@ -5188,7 +5189,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                     MakeSayWindow(0, TOKEN_NASA, 7000, pFontPartner);
                 } else {
                     (dynamic_cast<CNasa *>((qPlayer.DialogWin) != nullptr ? qPlayer.DialogWin : this))->KommVarTippNow = 12;
-                    qPlayer.AddRocketPart(ROCKET_AIRFRAME, -RocketPrices[3]);
+                    qPlayer.AddRocketPart(ROCKET_AIRFRAME, RocketPrices[3]);
                     MakeSayWindow(0, TOKEN_NASA, 5099, pFontPartner);
                     PlayFanfare();
                 }
@@ -5202,7 +5203,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                     MakeSayWindow(0, TOKEN_NASA, 7000, pFontPartner);
                 } else {
                     (dynamic_cast<CNasa *>((qPlayer.DialogWin) != nullptr ? qPlayer.DialogWin : this))->KommVarTippNow = 12;
-                    qPlayer.AddRocketPart(ROCKET_WINGS, -RocketPrices[4]);
+                    qPlayer.AddRocketPart(ROCKET_WINGS, RocketPrices[4]);
                     MakeSayWindow(0, TOKEN_NASA, 5099, pFontPartner);
                     PlayFanfare();
                 }
@@ -5216,7 +5217,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                     MakeSayWindow(0, TOKEN_NASA, 7000, pFontPartner);
                 } else {
                     (dynamic_cast<CNasa *>((qPlayer.DialogWin) != nullptr ? qPlayer.DialogWin : this))->KommVarTippNow = 12;
-                    qPlayer.AddRocketPart(ROCKET_CAPSULE, -RocketPrices[5]);
+                    qPlayer.AddRocketPart(ROCKET_CAPSULE, RocketPrices[5]);
                     MakeSayWindow(0, TOKEN_NASA, 5099, pFontPartner);
                     PlayFanfare();
                 }
@@ -5230,7 +5231,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                     MakeSayWindow(0, TOKEN_NASA, 7000, pFontPartner);
                 } else {
                     (dynamic_cast<CNasa *>((qPlayer.DialogWin) != nullptr ? qPlayer.DialogWin : this))->KommVarTippNow = 12;
-                    qPlayer.AddRocketPart(ROCKET_HECK, -RocketPrices[6]);
+                    qPlayer.AddRocketPart(ROCKET_HECK, RocketPrices[6]);
                     MakeSayWindow(0, TOKEN_NASA, 5099, pFontPartner);
                     PlayFanfare();
                 }
@@ -5246,7 +5247,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                     MakeSayWindow(0, TOKEN_NASA, 7000, pFontPartner);
                 } else {
                     (dynamic_cast<CNasa *>((qPlayer.DialogWin) != nullptr ? qPlayer.DialogWin : this))->KommVarTippNow = 12;
-                    qPlayer.AddRocketPart(ROCKET_PROP, -RocketPrices[7]);
+                    qPlayer.AddRocketPart(ROCKET_PROP, RocketPrices[7]);
                     MakeSayWindow(0, TOKEN_NASA, 5099, pFontPartner);
                     PlayFanfare();
                 }
@@ -5260,7 +5261,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                     MakeSayWindow(0, TOKEN_NASA, 7000, pFontPartner);
                 } else {
                     (dynamic_cast<CNasa *>((qPlayer.DialogWin) != nullptr ? qPlayer.DialogWin : this))->KommVarTippNow = 12;
-                    qPlayer.AddRocketPart(ROCKET_MAINPROP, -RocketPrices[8]);
+                    qPlayer.AddRocketPart(ROCKET_MAINPROP, RocketPrices[8]);
                     MakeSayWindow(0, TOKEN_NASA, 5099, pFontPartner);
                     PlayFanfare();
                 }
@@ -5274,7 +5275,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                     MakeSayWindow(0, TOKEN_NASA, 7000, pFontPartner);
                 } else {
                     (dynamic_cast<CNasa *>((qPlayer.DialogWin) != nullptr ? qPlayer.DialogWin : this))->KommVarTippNow = 12;
-                    qPlayer.AddRocketPart(ROCKET_COCKPIT, -RocketPrices[9]);
+                    qPlayer.AddRocketPart(ROCKET_COCKPIT, RocketPrices[9]);
                     MakeSayWindow(0, TOKEN_NASA, 5099, pFontPartner);
                     PlayFanfare();
                 }
@@ -5329,7 +5330,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                     MakeSayWindow(0, TOKEN_NASA, 8300, pFontPartner);
                 } else {
                     (dynamic_cast<CNasa *>((qPlayer.DialogWin) != nullptr ? qPlayer.DialogWin : this))->KommVarTippNow = 12;
-                    qPlayer.AddRocketPart(Flag, -RocketPrices[Index]);
+                    qPlayer.AddRocketPart(Flag, RocketPrices[Index]);
                     MakeSayWindow(0, TOKEN_NASA, 8302, pFontPartner);
                     PlayFanfare();
                 }
@@ -5504,10 +5505,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
         case TALKER_KIOSK:
             switch (id) {
             case 1021:
-                if (qPlayer.HasSpaceForItem() != 0) {
-                    qPlayer.BuyItem(ITEM_STINKBOMBE);
-                }
-                qPlayer.KioskTrust = 0;
+                GameMechanic::pickUpItem(qPlayer, ITEM_STINKBOMBE);
                 StopDialog();
                 break;
 

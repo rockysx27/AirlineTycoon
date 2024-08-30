@@ -327,20 +327,17 @@ void CReisebuero::OnPaint() {
 // void CReisebuero::OnPaint()
 //--------------------------------------------------------------------------------------------
 void CReisebuero::RepaintZettel(SLONG n) {
-    if (ReisebueroAuftraege[n].Praemie > 0) {
-        ZettelBms[n].ReSize(gZettelBms[n % 3].Size);
-        ZettelBms[n].BlitFrom(gZettelBms[n % 3]);
+    ZettelBms[n].ReSize(gZettelBms[n % 3].Size);
+    ZettelBms[n].BlitFrom(gZettelBms[n % 3]);
 
-        ZettelBms[n].PrintAt(
-            bprintf("%s-%s", (LPCTSTR)Cities[ReisebueroAuftraege[n].VonCity].Kuerzel, (LPCTSTR)Cities[ReisebueroAuftraege[n].NachCity].Kuerzel), FontSmallBlack,
-            TEC_FONT_CENTERED, XY(3, 10), XY(ZettelBms[n].Size.x - 3, 29));
+    ZettelBms[n].PrintAt(bprintf("%s-%s", (LPCTSTR)Cities[ReisebueroAuftraege[n].VonCity].Kuerzel, (LPCTSTR)Cities[ReisebueroAuftraege[n].NachCity].Kuerzel),
+                         FontSmallBlack, TEC_FONT_CENTERED, XY(3, 10), XY(ZettelBms[n].Size.x - 3, 29));
 
-        ZettelBms[n].PrintAt(ShortenLongCities(Cities[ReisebueroAuftraege[n].VonCity].Name), FontSmallBlack, TEC_FONT_CENTERED, XY(3, 31),
-                             XY(ZettelBms[n].Size.x - 3, 102));
-        ZettelBms[n].PrintAt("-", FontSmallBlack, TEC_FONT_CENTERED, XY(3, 42), XY(ZettelBms[n].Size.x - 3, 102));
-        ZettelBms[n].PrintAt(ShortenLongCities(Cities[ReisebueroAuftraege[n].NachCity].Name), FontSmallBlack, TEC_FONT_CENTERED, XY(3, 54),
-                             XY(ZettelBms[n].Size.x - 3, 102));
-    }
+    ZettelBms[n].PrintAt(ShortenLongCities(Cities[ReisebueroAuftraege[n].VonCity].Name), FontSmallBlack, TEC_FONT_CENTERED, XY(3, 31),
+                         XY(ZettelBms[n].Size.x - 3, 102));
+    ZettelBms[n].PrintAt("-", FontSmallBlack, TEC_FONT_CENTERED, XY(3, 42), XY(ZettelBms[n].Size.x - 3, 102));
+    ZettelBms[n].PrintAt(ShortenLongCities(Cities[ReisebueroAuftraege[n].NachCity].Name), FontSmallBlack, TEC_FONT_CENTERED, XY(3, 54),
+                         XY(ZettelBms[n].Size.x - 3, 102));
 }
 
 //--------------------------------------------------------------------------------------------
@@ -363,8 +360,7 @@ void CReisebuero::OnLButtonDown(UINT nFlags, CPoint point) {
         if (MouseClickArea == ROOM_REISEBUERO && MouseClickId == 999) {
             qPlayer.LeaveRoom();
         } else if (MouseClickArea == ROOM_REISEBUERO && MouseClickId == 20) {
-            if ((qPlayer.HasItem(ITEM_SPINNE) == 0) && (qPlayer.HasSpaceForItem() != 0)) {
-                qPlayer.BuyItem(ITEM_SPINNE);
+            if (GameMechanic::PickUpItemResult::PickedUp == GameMechanic::pickUpItem(qPlayer, ITEM_SPINNE)) {
                 KommVar2 = 2;
                 KommVar = 0;
             }
