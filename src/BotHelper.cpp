@@ -19,13 +19,17 @@ extern SLONG timeWerbOpen;
 
 // #define PRINT_OVERALL 1
 
-static void setColorForFlightJob(SLONG objectType) {
+inline void setColorForFlightJob(const PLAYER &qPlayer, const CFlugplanEintrag &qFPE) {
     std::cout << "\e[1;";
-    if (objectType == 1) {
+    if (qFPE.ObjectType == 1) {
         std::cout << "34";
-    } else if (objectType == 2) {
-        std::cout << "32";
-    } else if (objectType == 4) {
+    } else if (qFPE.ObjectType == 2) {
+        if (qPlayer.Auftraege[qFPE.ObjectId].bUhrigFlight) {
+            std::cout << "31";
+        } else {
+            std::cout << "32";
+        }
+    } else if (qFPE.ObjectType == 4) {
         std::cout << "33";
     } else {
         std::cout << "35";
@@ -33,7 +37,7 @@ static void setColorForFlightJob(SLONG objectType) {
     std::cout << "m";
 }
 
-static void resetColor() { std::cout << "\e[m"; }
+inline void resetColor() { std::cout << "\e[m"; }
 
 namespace Helper {
 
@@ -354,7 +358,7 @@ void printFlightJobs(const PLAYER &qPlayer, const CPlane &qPlane) {
         if (objectType == 0) {
             continue;
         }
-        setColorForFlightJob(objectType);
+        setColorForFlightJob(qPlayer, qFlightPlan[d]);
         printf("%c> ", 'A' + (d % 26));
         printFPE(qFlightPlan[d]);
         if (objectType == 1) {
@@ -386,7 +390,7 @@ void printFlightJobs(const PLAYER &qPlayer, const CPlane &qPlane) {
             }
 
             if (qFlightPlan[idx].Startdate < day || (qFlightPlan[idx].Startdate == day && qFlightPlan[idx].Startzeit <= i)) {
-                setColorForFlightJob(qFlightPlan[idx].ObjectType);
+                setColorForFlightJob(qPlayer, qFlightPlan[idx]);
                 std::cout << static_cast<char>('A' + (idx % 26));
                 resetColor();
             } else {
