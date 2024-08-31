@@ -228,16 +228,20 @@ void Bot::RobotInit() {
             if (Sim.Difficulty == DIFF_ATFS05) {
                 kSwitchToRoutesNumPlanesMin = std::max(3, kSwitchToRoutesNumPlanesMin);
                 kSwitchToRoutesNumPlanesMax = std::max(3, kSwitchToRoutesNumPlanesMax);
+                setHardcodedDesignerPlaneLarge();
                 mDesignerPlaneFile = FullFilename("botplane_atfs05_1.plane", MyPlanePath);
             } else if (Sim.Difficulty == DIFF_ATFS08) {
                 kSwitchToRoutesNumPlanesMin = std::max(5, kSwitchToRoutesNumPlanesMin);
                 kSwitchToRoutesNumPlanesMax = std::max(5, kSwitchToRoutesNumPlanesMax);
+                setHardcodedDesignerPlaneEco();
                 mDesignerPlaneFile = FullFilename("botplane_atfs08_1.plane", MyPlanePath);
             }
-            if (mDesignerPlaneFile.empty() || DoesFileExist(mDesignerPlaneFile) == 0) {
-                redprintf("Bot::RobotInit: We do not have a designer plane for this mission (filename = %s).", (LPCTSTR)mDesignerPlaneFile);
-            } else {
-                mDesignerPlane.Load(mDesignerPlaneFile);
+            if (!mDesignerPlaneFile.empty()) {
+                if (DoesFileExist(mDesignerPlaneFile) == 1) {
+                    mDesignerPlane.Load(mDesignerPlaneFile);
+                } else {
+                    mDesignerPlane.Save(mDesignerPlaneFile);
+                }
             }
         }
 

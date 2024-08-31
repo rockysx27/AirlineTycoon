@@ -4,6 +4,246 @@
 #include "GameMechanic.h"
 #include "TeakLibW.h"
 
+std::vector<SLONG> Bot::getAllPlanes() const {
+    std::vector<SLONG> planes = mPlanesForRoutes;
+    for (auto &i : mPlanesForRoutesUnassigned) {
+        planes.push_back(i);
+    }
+    for (auto &i : mPlanesForJobs) {
+        planes.push_back(i);
+    }
+    for (auto &i : mPlanesForJobsUnassigned) {
+        planes.push_back(i);
+    }
+    return planes;
+}
+
+bool Bot::isOfficeUsable() const { return (qPlayer.OfficeState != 2); }
+
+bool Bot::hoursPassed(SLONG room, SLONG hours) const {
+    const auto it = mLastTimeInRoom.find(room);
+    if (it == mLastTimeInRoom.end()) {
+        return true;
+    }
+    return (Sim.Time - it->second > hours * 60000);
+}
+
+bool Bot::haveDiscount() const {
+    if (qPlayer.HasBerater(BERATERTYP_SICHERHEIT) >= 50 || Sim.Date > 7) {
+        return true; /* wait until we have some discount */
+    }
+    return false;
+}
+
+bool Bot::checkLaptop() {
+    if (qPlayer.HasItem(ITEM_LAPTOP)) {
+        if ((qPlayer.LaptopVirus == 1) && (qPlayer.HasItem(ITEM_DISKETTE) == 1)) {
+            GameMechanic::useItem(qPlayer, ITEM_DISKETTE);
+        }
+        if (qPlayer.LaptopVirus == 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
+Bot::HowToPlan Bot::canWePlanFlights() {
+    if (!mDayStarted) {
+        return HowToPlan::None;
+    }
+    if (checkLaptop()) {
+        return HowToPlan::Laptop;
+    }
+    if (isOfficeUsable()) {
+        return HowToPlan::Office;
+    }
+    return HowToPlan::None;
+}
+
+__int64 Bot::getMoneyAvailable() const {
+    __int64 m = qPlayer.Money;
+    m -= mMoneyReservedForRepairs;
+    m -= mMoneyReservedForUpgrades;
+    m -= mMoneyReservedForAuctions;
+    m -= mMoneyReservedForFines;
+    m -= kMoneyEmergencyFund;
+    return m;
+}
+
+Bot::AreWeBroke Bot::areWeBroke() const {
+    if (mRunToFinalObjective == FinalPhase::TargetRun) {
+        return AreWeBroke::Desperate;
+    }
+
+    auto moneyAvailable = getMoneyAvailable();
+    if (moneyAvailable < DEBT_WARNLIMIT3) {
+        return AreWeBroke::Desperate;
+    }
+    if (moneyAvailable < 0) {
+        return AreWeBroke::Yes;
+    }
+
+    /* no reason to get as much money as possible right now */
+    if (moneyAvailable < qPlayer.Credit) {
+        return AreWeBroke::Somewhat;
+    }
+    return AreWeBroke::No;
+}
+
+Bot::HowToGetMoney Bot::howToGetMoney() {
+    auto broke = areWeBroke();
+    if (broke == AreWeBroke::No) {
+        return HowToGetMoney::None;
+    }
+
+    SLONG numShares = 0;
+    SLONG numOwnShares = 0;
+    for (SLONG c = 0; c < Sim.Players.AnzPlayers; c++) {
+        if (c == qPlayer.PlayerNum) {
+            numOwnShares += qPlayer.OwnsAktien[c];
+        } else {
+            numShares += qPlayer.OwnsAktien[c];
+        }
+    }
+
+    if (broke < AreWeBroke::Desperate) {
+        /* do not sell all shares to prevent hostile takeover */
+        numOwnShares = std::max(0, numOwnShares - qPlayer.AnzAktien / 2 - 1);
+    }
+
+    /* Step 1: Lower repair targets */
+    if (mMoneyReservedForRepairs > 0) {
+        return HowToGetMoney::LowerRepairTargets;
+    }
+
+    /* Step 2: Cancel plane upgrades */
+    if (mMoneyReservedForUpgrades > 0) {
+        return HowToGetMoney::CancelPlaneUpgrades;
+    }
+
+    /* Step 3: Emit shares */
+    if (GameMechanic::canEmitStock(qPlayer) == GameMechanic::EmitStockResult::Ok) {
+        return HowToGetMoney::EmitShares;
+    }
+
+    /* Step 4: Sell shares */
+    if (numShares > 0) {
+        return HowToGetMoney::SellShares;
+    }
+    if (broke == AreWeBroke::Somewhat) {
+        return HowToGetMoney::None;
+    }
+    if (numOwnShares > 0) {
+        return (broke == AreWeBroke::Desperate) ? HowToGetMoney::SellAllOwnShares : HowToGetMoney::SellOwnShares;
+    }
+
+    /* Step 5: Take out loan */
+    if (qPlayer.CalcCreditLimit() >= 1000) {
+        return HowToGetMoney::IncreaseCredit;
+    }
+    return HowToGetMoney::None;
+}
+
+__int64 Bot::howMuchMoneyCanWeGet(bool extremMeasures) {
+    __int64 valueCompetitorShares = 0;
+    SLONG numOwnShares = 0;
+    for (SLONG c = 0; c < Sim.Players.AnzPlayers; c++) {
+        if (c == qPlayer.PlayerNum) {
+            numOwnShares += qPlayer.OwnsAktien[c];
+        } else {
+            auto stockPrice = static_cast<__int64>(Sim.Players.Players[c].Kurse[0]);
+            valueCompetitorShares += stockPrice * qPlayer.OwnsAktien[c];
+        }
+    }
+
+    if (!extremMeasures) {
+        numOwnShares = std::max(0, numOwnShares - qPlayer.AnzAktien / 2 - 1);
+    }
+
+    __int64 moneyEmit = 0;
+    __int64 moneyStock = 0;
+    __int64 moneyStockOwn = 0;
+    auto stockPrice = static_cast<__int64>(qPlayer.Kurse[0]);
+    if (GameMechanic::canEmitStock(qPlayer) == GameMechanic::EmitStockResult::Ok) {
+        __int64 newStock = (qPlayer.MaxAktien - qPlayer.AnzAktien) / 100 * 100;
+        __int64 emissionsKurs = 0;
+        __int64 marktAktien = 0;
+        if (kStockEmissionMode == 0) {
+            emissionsKurs = stockPrice - 5;
+            marktAktien = newStock;
+        } else if (kStockEmissionMode == 1) {
+            emissionsKurs = stockPrice - 3;
+            marktAktien = newStock * 8 / 10;
+        } else if (kStockEmissionMode == 2) {
+            emissionsKurs = stockPrice - 1;
+            marktAktien = newStock * 6 / 10;
+        }
+        moneyEmit = marktAktien * emissionsKurs - newStock * emissionsKurs / 10 / 100 * 100;
+        hprintf("Bot::howMuchMoneyCanWeGet(): Can get %s $ by emitting stock", (LPCTSTR)Insert1000erDots(moneyEmit));
+    }
+
+    if (valueCompetitorShares > 0) {
+        moneyStock = valueCompetitorShares - valueCompetitorShares / 10 - 100;
+        hprintf("Bot::howMuchMoneyCanWeGet(): Can get %s $ by selling stock", (LPCTSTR)Insert1000erDots(moneyStock));
+    }
+
+    if (numOwnShares > 0) {
+        auto value = stockPrice * numOwnShares;
+        moneyStockOwn = value - value / 10 - 100;
+        hprintf("Bot::howMuchMoneyCanWeGet(): Can get %s $ by selling our own stock", (LPCTSTR)Insert1000erDots(moneyStockOwn));
+    }
+
+    __int64 moneyForecast = qPlayer.Money + moneyEmit + moneyStock + moneyStockOwn - kMoneyEmergencyFund;
+    __int64 credit = qPlayer.CalcCreditLimit(moneyForecast, qPlayer.Credit);
+    if (credit >= 1000) {
+        moneyForecast += credit;
+        hprintf("Bot::howMuchMoneyCanWeGet(): Can get %s $ by taking a loan", (LPCTSTR)Insert1000erDots(credit));
+    }
+
+    hprintf("Bot::howMuchMoneyCanWeGet(): We can get %s $ in total!", (LPCTSTR)Insert1000erDots(moneyForecast));
+    return moneyForecast;
+}
+
+bool Bot::canWeCallInternational() {
+    if (!qPlayer.RobotUse(ROBOT_USE_ABROAD)) {
+        return false;
+    }
+
+    if (qPlayer.TelephoneDown != 0) {
+        return false;
+    }
+
+    if (mPlanesForJobs.empty()) {
+        return false; /* no planes */
+    }
+    if (!mPlanerSolution.empty()) {
+        return false; /* previously grabbed flights still not scheduled */
+    }
+
+    auto res = canWePlanFlights();
+    if (HowToPlan::None == res) {
+        return false;
+    }
+    if (HowToPlan::Office == res && Sim.GetHour() >= 17) {
+        return false; /* might be too late to reach office */
+    }
+
+    for (SLONG c = 0; c < 4; c++) {
+        if ((c != qPlayer.PlayerNum) && (Sim.Players.Players[c].IsOut == 0) && (qPlayer.Kooperation[c] != 0)) {
+            return true; /* we have a cooperation partner, we can check if they have a branch office */
+        }
+    }
+    for (SLONG n = 0; n < Cities.AnzEntries(); n++) {
+        if (n == Cities.find(Sim.HomeAirportId)) {
+            continue;
+        }
+        if (qPlayer.RentCities.RentCities[n].Rang != 0U) {
+            return true; /* we have our own branch office */
+        }
+    }
+    return false;
+}
+
 SLONG Bot::calcCurrentGainFromJobs() const {
     SLONG gain = 0;
     for (auto planeId : mPlanesForJobs) {
@@ -229,3 +469,113 @@ bool Bot::isLateGame() const { return (getWeeklyOpSaldo() > 1e8); }
 SLONG Bot::getImage() const { return (qPlayer.HasBerater(BERATERTYP_GELD) < 50) ? mCurrentImage : qPlayer.Image; }
 
 void Bot::forceReplanning() { qPlayer.RobotActions[1].ActionId = ACTION_NONE; }
+
+void Bot::setHardcodedDesignerPlaneLarge() {
+    mDesignerPlane.Name = "Bot Beluga";
+    mDesignerPlane.Parts.ReSize(7);
+    mDesignerPlane.Parts.FillAlbum();
+    mDesignerPlane.Parts[0].Pos2d.x = -35;
+    mDesignerPlane.Parts[0].Pos2d.y = -95;
+    mDesignerPlane.Parts[0].Pos3d.x = 308;
+    mDesignerPlane.Parts[0].Pos3d.y = 69;
+    mDesignerPlane.Parts[0].Shortname = "M7";
+    mDesignerPlane.Parts[0].ParentShortname = "R6";
+    mDesignerPlane.Parts[0].ParentRelationId = 298;
+    mDesignerPlane.Parts[1].Pos2d.x = -90;
+    mDesignerPlane.Parts[1].Pos2d.y = -103;
+    mDesignerPlane.Parts[1].Pos3d.x = 216;
+    mDesignerPlane.Parts[1].Pos3d.y = 55;
+    mDesignerPlane.Parts[1].Shortname = "L6";
+    mDesignerPlane.Parts[1].ParentShortname = "B2";
+    mDesignerPlane.Parts[1].ParentRelationId = 92;
+    mDesignerPlane.Parts[2].Pos2d.x = 107;
+    mDesignerPlane.Parts[2].Pos2d.y = -152;
+    mDesignerPlane.Parts[2].Pos3d.x = 62;
+    mDesignerPlane.Parts[2].Pos3d.y = 9;
+    mDesignerPlane.Parts[2].Shortname = "H3";
+    mDesignerPlane.Parts[2].ParentShortname = "B2";
+    mDesignerPlane.Parts[2].ParentRelationId = 39;
+    mDesignerPlane.Parts[3].Pos2d.x = -107;
+    mDesignerPlane.Parts[3].Pos2d.y = -120;
+    mDesignerPlane.Parts[3].Pos3d.x = 174;
+    mDesignerPlane.Parts[3].Pos3d.y = 99;
+    mDesignerPlane.Parts[3].Shortname = "B2";
+    mDesignerPlane.Parts[3].ParentShortname = "";
+    mDesignerPlane.Parts[3].ParentRelationId = 1;
+    mDesignerPlane.Parts[4].Pos2d.x = -171;
+    mDesignerPlane.Parts[4].Pos2d.y = -83;
+    mDesignerPlane.Parts[4].Pos3d.x = 424;
+    mDesignerPlane.Parts[4].Pos3d.y = 204;
+    mDesignerPlane.Parts[4].Shortname = "C2";
+    mDesignerPlane.Parts[4].ParentShortname = "B2";
+    mDesignerPlane.Parts[4].ParentRelationId = 11;
+    mDesignerPlane.Parts[5].Pos2d.x = -50;
+    mDesignerPlane.Parts[5].Pos2d.y = -30;
+    mDesignerPlane.Parts[5].Pos3d.x = 126;
+    mDesignerPlane.Parts[5].Pos3d.y = 243;
+    mDesignerPlane.Parts[5].Shortname = "M7";
+    mDesignerPlane.Parts[5].ParentShortname = "R6";
+    mDesignerPlane.Parts[5].ParentRelationId = 297;
+    mDesignerPlane.Parts[6].Pos2d.x = -90;
+    mDesignerPlane.Parts[6].Pos2d.y = -78;
+    mDesignerPlane.Parts[6].Pos3d.x = 92;
+    mDesignerPlane.Parts[6].Pos3d.y = 169;
+    mDesignerPlane.Parts[6].Shortname = "R6";
+    mDesignerPlane.Parts[6].ParentShortname = "B2";
+    mDesignerPlane.Parts[6].ParentRelationId = 91;
+}
+
+void Bot::setHardcodedDesignerPlaneEco() {
+    mDesignerPlane.Name = "Bot Ecomaster";
+    mDesignerPlane.Parts.ReSize(7);
+    mDesignerPlane.Parts.FillAlbum();
+    mDesignerPlane.Parts[0].Pos2d.x = -53;
+    mDesignerPlane.Parts[0].Pos2d.y = -93;
+    mDesignerPlane.Parts[0].Pos3d.x = 408;
+    mDesignerPlane.Parts[0].Pos3d.y = 82;
+    mDesignerPlane.Parts[0].Shortname = "M2";
+    mDesignerPlane.Parts[0].ParentShortname = "R4";
+    mDesignerPlane.Parts[0].ParentRelationId = 244;
+    mDesignerPlane.Parts[1].Pos2d.x = -40;
+    mDesignerPlane.Parts[1].Pos2d.y = -108;
+    mDesignerPlane.Parts[1].Pos3d.x = 290;
+    mDesignerPlane.Parts[1].Pos3d.y = 41;
+    mDesignerPlane.Parts[1].Shortname = "L4";
+    mDesignerPlane.Parts[1].ParentShortname = "B1";
+    mDesignerPlane.Parts[1].ParentRelationId = 66;
+    mDesignerPlane.Parts[2].Pos2d.x = 45;
+    mDesignerPlane.Parts[2].Pos2d.y = -121;
+    mDesignerPlane.Parts[2].Pos3d.x = 168;
+    mDesignerPlane.Parts[2].Pos3d.y = 52;
+    mDesignerPlane.Parts[2].Shortname = "H4";
+    mDesignerPlane.Parts[2].ParentShortname = "B1";
+    mDesignerPlane.Parts[2].ParentRelationId = 33;
+    mDesignerPlane.Parts[3].Pos2d.x = -44;
+    mDesignerPlane.Parts[3].Pos2d.y = -75;
+    mDesignerPlane.Parts[3].Pos3d.x = 247;
+    mDesignerPlane.Parts[3].Pos3d.y = 137;
+    mDesignerPlane.Parts[3].Shortname = "B1";
+    mDesignerPlane.Parts[3].ParentShortname = "";
+    mDesignerPlane.Parts[3].ParentRelationId = 0;
+    mDesignerPlane.Parts[4].Pos2d.x = -92;
+    mDesignerPlane.Parts[4].Pos2d.y = -76;
+    mDesignerPlane.Parts[4].Pos3d.x = 350;
+    mDesignerPlane.Parts[4].Pos3d.y = 167;
+    mDesignerPlane.Parts[4].Shortname = "C1";
+    mDesignerPlane.Parts[4].ParentShortname = "B1";
+    mDesignerPlane.Parts[4].ParentRelationId = 5;
+    mDesignerPlane.Parts[5].Pos2d.x = -53;
+    mDesignerPlane.Parts[5].Pos2d.y = -4;
+    mDesignerPlane.Parts[5].Pos3d.x = 189;
+    mDesignerPlane.Parts[5].Pos3d.y = 275;
+    mDesignerPlane.Parts[5].Shortname = "M2";
+    mDesignerPlane.Parts[5].ParentShortname = "R4";
+    mDesignerPlane.Parts[5].ParentRelationId = 243;
+    mDesignerPlane.Parts[6].Pos2d.x = -40;
+    mDesignerPlane.Parts[6].Pos2d.y = -41;
+    mDesignerPlane.Parts[6].Pos3d.x = 119;
+    mDesignerPlane.Parts[6].Pos3d.y = 196;
+    mDesignerPlane.Parts[6].Shortname = "R4";
+    mDesignerPlane.Parts[6].ParentShortname = "B1";
+    mDesignerPlane.Parts[6].ParentRelationId = 65;
+}

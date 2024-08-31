@@ -120,17 +120,6 @@ class Bot {
     };
 
     /* in BotConditions.cpp */
-    bool isOfficeUsable() const;
-    bool hoursPassed(SLONG room, SLONG hours) const;
-    bool haveDiscount() const;
-    bool checkLaptop();
-    enum class HowToPlan { None, Laptop, Office };
-    HowToPlan canWePlanFlights();
-    __int64 getMoneyAvailable() const;
-    AreWeBroke areWeBroke() const;
-    HowToGetMoney howToGetMoney();
-    __int64 howMuchMoneyCanWeGet(bool extremMeasures);
-    bool canWeCallInternational();
     Prio condAll(SLONG actionId);
     Prio condStartDay();
     Prio condStartDayLaptop();
@@ -235,19 +224,18 @@ class Bot {
 
     /* misc (in BotMisc.cpp) */
     SLONG numPlanes() const { return mPlanesForJobs.size() + mPlanesForJobsUnassigned.size() + mPlanesForRoutes.size() + mPlanesForRoutesUnassigned.size(); }
-    std::vector<SLONG> getAllPlanes() const {
-        std::vector<SLONG> planes = mPlanesForRoutes;
-        for (auto &i : mPlanesForRoutesUnassigned) {
-            planes.push_back(i);
-        }
-        for (auto &i : mPlanesForJobs) {
-            planes.push_back(i);
-        }
-        for (auto &i : mPlanesForJobsUnassigned) {
-            planes.push_back(i);
-        }
-        return planes;
-    }
+    std::vector<SLONG> getAllPlanes() const;
+    bool isOfficeUsable() const;
+    bool hoursPassed(SLONG room, SLONG hours) const;
+    bool haveDiscount() const;
+    bool checkLaptop();
+    enum class HowToPlan { None, Laptop, Office };
+    HowToPlan canWePlanFlights();
+    __int64 getMoneyAvailable() const;
+    AreWeBroke areWeBroke() const;
+    HowToGetMoney howToGetMoney();
+    __int64 howMuchMoneyCanWeGet(bool extremMeasures);
+    bool canWeCallInternational();
     SLONG calcCurrentGainFromJobs() const;
     SLONG calcRouteImageNeeded(const RouteInfo &routeInfo) const;
     void removePlaneFromRoute(SLONG planeId);
@@ -262,6 +250,8 @@ class Bot {
     bool isLateGame() const;
     SLONG getImage() const;
     void forceReplanning();
+    void setHardcodedDesignerPlaneLarge();
+    void setHardcodedDesignerPlaneEco();
 
     /* anim state */
     bool getOnThePhone() const { return mOnThePhone > 0; }
