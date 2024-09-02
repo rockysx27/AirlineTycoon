@@ -8,6 +8,14 @@
 #include <algorithm>
 #include <iostream>
 
+#if __cplusplus < 201703L
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#else
+#include <filesystem>
+namespace fs = std::filesystem;
+#endif
+
 const bool kAlwaysReplan = true;
 float kSchedulingMinScoreRatio = 140 * 1000.0f;
 float kSchedulingMinScoreRatioLastMinute = 10 * 1000.0f;
@@ -225,6 +233,9 @@ void Bot::RobotInit() {
         }
 
         if (qPlayer.RobotUse(ROBOT_USE_DESIGNER_BUY)) {
+            // Path will be "%AppPath%/myplanes/"
+            fs::create_directory(LPCTSTR(AppPath + MyPlanePath.Left(MyPlanePath.GetLength() - 3)));
+
             if (Sim.Difficulty == DIFF_ATFS05) {
                 kSwitchToRoutesNumPlanesMin = std::max(3, kSwitchToRoutesNumPlanesMin);
                 kSwitchToRoutesNumPlanesMax = std::max(3, kSwitchToRoutesNumPlanesMax);
