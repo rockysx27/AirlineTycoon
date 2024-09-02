@@ -491,6 +491,7 @@ void CWorkers::NewDay() {
                 if (Workers[c].TimeInPool > 0) {
                     Workers[c].TimeInPool = 0;
                 }
+                Workers[c].Gehalt = Workers[c].OriginalGehalt;
 
                 Sim.Players.Players[ExEmployer].MapWorkers(FALSE);
                 break;

@@ -2427,6 +2427,7 @@ bool GameMechanic::fireWorker(PLAYER &qPlayer, SLONG workerId) {
     }
 
     qWorker.Employer = WORKER_JOBLESS;
+    qWorker.Gehalt = qWorker.OriginalGehalt;
     if (qWorker.TimeInPool > 0) {
         qWorker.TimeInPool = 0;
     }
