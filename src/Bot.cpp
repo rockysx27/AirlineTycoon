@@ -215,14 +215,6 @@ void Bot::RobotInit() {
             kMaximumRouteUtilization = 20;
         }
 
-        /* is this a mission that is usually very fast? */
-        if (Sim.Difficulty != DIFF_FREEGAME && Sim.Difficulty != DIFF_FREEGAMEMAP) {
-            if (Sim.Difficulty <= DIFF_EASY) {
-                // TODO
-                // mLongTermStrategy = false;
-            }
-        }
-
         if (qPlayer.RobotUse(ROBOT_USE_FORCEROUTES)) {
             std::swap(mPlanesForJobsUnassigned, mPlanesForRoutesUnassigned);
         }
@@ -261,7 +253,7 @@ void Bot::RobotInit() {
         }
 
         /* bot level */
-        hprintf("Bot::RobotInit(): We are %s with bot level = %s.", (LPCTSTR)qPlayer.AirlineX, StandardTexte.GetS(TOKEN_NEWGAME, 5001 + qPlayer.BotLevel));
+        hprintf("Bot::RobotInit(): We are player %d with bot level = %s.", qPlayer.PlayerNum, StandardTexte.GetS(TOKEN_NEWGAME, 5001 + qPlayer.BotLevel));
         if (qPlayer.BotLevel <= 1) {
             kMaxTicketPriceFactor = std::min(1.0, kMaxTicketPriceFactor);
             kSchedulingMinScoreRatio = std::min(3.0f, kSchedulingMinScoreRatio);
@@ -274,6 +266,8 @@ void Bot::RobotInit() {
             kSchedulingMinScoreRatioLastMinute = std::min(5.0f, kSchedulingMinScoreRatioLastMinute);
             kMaxKerosinQualiZiel = std::min(1.0, kMaxKerosinQualiZiel);
         }
+
+        printRobotFlags();
 
         mFirstRun = false;
     }
@@ -302,8 +296,6 @@ void Bot::RobotInit() {
 }
 
 void Bot::RobotPlan() {
-    // hprintf("Bot.cpp: Enter RobotPlan()");
-
     if (mFirstRun) {
         redprintf("Bot::RobotPlan(): Bot was not initialized!");
         RobotInit();
@@ -394,9 +386,8 @@ void Bot::RobotPlan() {
     qRobotActions[2].Running = (prioList[1].prio > condNoRun);
     qRobotActions[2].Prio = static_cast<SLONG>(prioList[1].prio);
 
-    // hprintf("Bot::RobotPlan(): Action 0: %s", getRobotActionName(qRobotActions[0].ActionId));
-    // greenprintf("Bot::RobotPlan(): Action 1: %s with prio %s", getRobotActionName(qRobotActions[1].ActionId), getPrioName(prioList[0].prio));
-    // greenprintf("Bot::RobotPlan(): Action 2: %s with prio %s", getRobotActionName(qRobotActions[2].ActionId), getPrioName(prioList[1].prio));
+    hprintf("Bot::RobotPlan(): Current: %s, planned: %s, %s", getRobotActionName(qRobotActions[0].ActionId), getRobotActionName(qRobotActions[1].ActionId),
+            getRobotActionName(qRobotActions[2].ActionId), getPrioName(prioList[1].prio));
 
     if (qRobotActions[1].ActionId == ACTION_NONE) {
         redprintf("Did not plan action for slot #1");
@@ -404,8 +395,6 @@ void Bot::RobotPlan() {
     if (qRobotActions[2].ActionId == ACTION_NONE) {
         redprintf("Did not plan action for slot #2");
     }
-
-    // hprintf("Bot.cpp: Leaving RobotPlan()\n");
 }
 
 void Bot::RobotExecuteAction() {
