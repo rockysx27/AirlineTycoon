@@ -7690,7 +7690,7 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
                        "-X--X--XXX";
         break;
     case ROBOT_USE_SHORTFLIGHTS:
-        /* SuperBot: Ignores this flag */
+        /* SuperBot: Respects this flag */
         pFeatureDesc = "------"
                        "."
                        "----------"

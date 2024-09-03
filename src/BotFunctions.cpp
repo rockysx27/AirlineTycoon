@@ -415,12 +415,6 @@ void Bot::grabFlights(BotPlaner &planer, bool areWeInOffice) {
     case DIFF_ADDON09:
         planer.setUhrigBonus(1000 * 1000);
         break;
-    case DIFF_ATFS03:
-        if (qPlayer.Planes.GetNumUsed() >= 4) {
-            planer.setDistanceFactor(-1);         /* prefer short flights */
-            planer.setPassengerFactor(10 * 1000); /* need to fly as many passengers as possible */
-        }
-        break;
     default:
         break;
     }
@@ -991,7 +985,9 @@ void Bot::findBestRoute() {
 
         /* calc score for route (more passengers always good, longer routes tend to be also more worth it) */
         DOUBLE score = Routen[c].AnzPassagiere();
-        score *= (Cities.CalcDistance(Routen[c].VonCity, Routen[c].NachCity) / 1000);
+        if (!qPlayer.RobotUse(ROBOT_USE_SHORTFLIGHTS)) {
+            score *= (Cities.CalcDistance(Routen[c].VonCity, Routen[c].NachCity) / 1000);
+        }
         score /= Routen[c].Miete;
 
         /* current utilization of route */
@@ -1040,6 +1036,13 @@ void Bot::findBestRoute() {
         SLONG finalTarget = ceil_div(passengersPerWeek * kMaximumRouteUtilization, 100);
         SLONG numPlanesTarget = ceil_div(minTarget, numTripsPerWeek * PlaneTypes[planeTypeId].Passagiere);
         SLONG numPlanesTotal = ceil_div(finalTarget, numTripsPerWeek * PlaneTypes[planeTypeId].Passagiere);
+
+        if (qPlayer.RobotUse(ROBOT_USE_SHORTFLIGHTS)) {
+            const auto target = BTARGET_PASSAVG * 6 / 5; /* need to transport X passengers each day (plus margin) */
+            if ((24 / duration) * PlaneTypes[planeTypeId].Passagiere < target) {
+                continue;
+            }
+        }
 
         /* account for the fact that we already have suitable planes */
         if (useExistingPlaneId.size() > numPlanesTotal) {
