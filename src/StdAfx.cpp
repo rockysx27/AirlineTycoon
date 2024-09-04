@@ -17,7 +17,7 @@
 
 #include "class.h"
 #include "Defines.h"
-#include "GameFrame.h"
+#include "Gameframe.h"
 #include "Global.h"
 #include "Proto.h"
 #include "res\Resource.h"

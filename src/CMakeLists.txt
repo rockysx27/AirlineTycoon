@@ -96,7 +96,7 @@ add_executable (AT
     Misc.cpp
     Museum.cpp
     Nasa.cpp
-    NewGamePopup.cpp
+    NewgamePopup.cpp
     Options.cpp
     Outro.cpp
     Person.cpp

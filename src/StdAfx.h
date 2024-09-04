@@ -33,7 +33,7 @@ typedef CStdStringA CString;
 #include "class.h" //Eigene Klassen
 #include "Proto.h"
 #include "TakeOff.h"
-#include "GameFrame.h" //Rahmenfenster mit PrimarySurface
+#include "Gameframe.h" //Rahmenfenster mit PrimarySurface
 
 // Räume:
 #include "SmackPrs.h"

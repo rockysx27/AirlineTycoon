@@ -7,7 +7,7 @@
 #include "AtNet.h"
 #include "BotHelper.h"
 #include "Intro.h"
-#include "NewGamePopup.h" //Fenster zum Wahl der Gegner und der Spielstärke
+#include "NewgamePopup.h" //Fenster zum Wahl der Gegner und der Spielstärke
 #include "Outro.h"
 #include "Synthese.h"
 #include "glpause.h"
@@ -479,8 +479,8 @@ void GameFrame::ProcessEvent(const SDL_Event &event) const {
         FrameWnd->OnKeyDown(event.text.text[0], 0, 0);
         break;
     case SDL_KEYDOWN: {
-        UINT nFlags = event.key.keysym.scancode | ((SDL_GetModState() & KMOD_LALT) << 5);
-        FrameWnd->OnKeyDown(KeycodeToUpper(event.key.keysym.sym), event.key.repeat, nFlags);
+        // UINT nFlags = event.key.keysym.scancode | ((SDL_GetModState() & KMOD_LALT) << 5);
+        FrameWnd->OnKeyDown(toupper(event.key.keysym.sym), event.key.repeat, InputFlags::None);
     } break;
     case SDL_MOUSEBUTTONDOWN: {
         CPoint pos = CPoint(event.button.x, event.button.y);
@@ -1481,37 +1481,39 @@ void GameFrame::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) {
                                             break;
                                         }
 
-                                        switch (nChar) {
-                                        case ATKEY_TAB:
-                                            (qPlayer.LocationWin)->MenuStart(MENU_REQUEST, MENU_REQUEST_CALLITADAY, 0);
-                                            (qPlayer.LocationWin)->MenuSetZoomStuff(XY(320, 220), 0.17, FALSE);
-                                            nChar = 0;
-                                            break;
+                                        if (nFlags != InputFlags::FromTextInput) {
+                                            switch (nChar) {
+                                            case ATKEY_TAB:
+                                                (qPlayer.LocationWin)->MenuStart(MENU_REQUEST, MENU_REQUEST_CALLITADAY, 0);
+                                                (qPlayer.LocationWin)->MenuSetZoomStuff(XY(320, 220), 0.17, FALSE);
+                                                nChar = 0;
+                                                break;
 
-                                        case ATKEY_ESCAPE:
-                                        case ATKEY_F2:
-                                            if (qPlayer.IsLocationInQueue(ROOM_OPTIONS) == 0) {
-                                                qPlayer.EnterRoom(ROOM_OPTIONS);
-                                            } else {
-                                                qPlayer.LeaveRoom();
-                                            }
-                                            break;
+                                            case ATKEY_ESCAPE:
+                                            case ATKEY_F2:
+                                                if (qPlayer.IsLocationInQueue(ROOM_OPTIONS) == 0) {
+                                                    qPlayer.EnterRoom(ROOM_OPTIONS);
+                                                } else {
+                                                    qPlayer.LeaveRoom();
+                                                }
+                                                break;
 
-                                        case ATKEY_F3:
-                                            if (qPlayer.IsLocationInQueue(ROOM_OPTIONS) == 0) {
-                                                OptionsShortcut = 5;
-                                                qPlayer.EnterRoom(ROOM_OPTIONS);
-                                            }
-                                            break;
+                                            case ATKEY_F3:
+                                                if (qPlayer.IsLocationInQueue(ROOM_OPTIONS) == 0) {
+                                                    OptionsShortcut = 5;
+                                                    qPlayer.EnterRoom(ROOM_OPTIONS);
+                                                }
+                                                break;
 
-                                        case ATKEY_F4:
-                                            if (qPlayer.IsLocationInQueue(ROOM_OPTIONS) == 0) {
-                                                OptionsShortcut = 6;
-                                                qPlayer.EnterRoom(ROOM_OPTIONS);
+                                            case ATKEY_F4:
+                                                if (qPlayer.IsLocationInQueue(ROOM_OPTIONS) == 0) {
+                                                    OptionsShortcut = 6;
+                                                    qPlayer.EnterRoom(ROOM_OPTIONS);
+                                                }
+                                                break;
+                                            default:
+                                                break;
                                             }
-                                            break;
-                                        default:
-                                            break;
                                         }
                                     }
                                 }

@@ -23,7 +23,7 @@
 #include "Makler.h"
 #include "Museum.h"
 #include "Nasa.h"
-#include "NewGamePopup.h" //Fenster zum Wahl der Gegner und der Spielstärke
+#include "NewgamePopup.h" //Fenster zum Wahl der Gegner und der Spielstärke
 #include "Outro.h"
 #include "PlanProp.h"
 #include "Reise.h"

@@ -1,4 +1,4 @@
-// GameFrame.h : header file
+// Gameframe.h : header file
 //
 
 enum InputFlags {
