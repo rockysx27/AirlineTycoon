@@ -119,7 +119,7 @@ add_executable (AT
     Sound.cpp
     Statistk.cpp
     StdAfx.cpp
-    StdRaum.cpp
+    Stdraum.cpp
     Synthese.cpp
     Tafel.cpp
     Takeoff.cpp
@@ -162,7 +162,7 @@ endif()
 
 
 if(NOT ${CMAKE_VERSION} VERSION_LESS "3.16.0")
-    target_precompile_headers(AT PUBLIC StdAfx.h)
+    target_precompile_headers(AT PUBLIC stdafx.h)
 endif()
 
 target_link_libraries(AT PRIVATE

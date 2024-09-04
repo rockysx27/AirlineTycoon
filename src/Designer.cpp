@@ -1,7 +1,7 @@
 //============================================================================================
 // Designer.cpp : Der Designer-Raum
 //============================================================================================
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "AtNet.h"
 #include "Designer.h"
 #include "gldesigner.h"

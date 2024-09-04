@@ -3,7 +3,7 @@
 //============================================================================================
 // Link to: "NewgamePopup.h"
 //============================================================================================
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "AtNet.h"
 #include "NewgamePopup.h" //Fenster zum Wahl der Gegner und der Spielstärke
 #include "glstart.h"

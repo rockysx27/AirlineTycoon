@@ -1,7 +1,7 @@
 //============================================================================================
 // DeltaVid.cpp : Funktionen zum laden und speichern von Delta Videos
 //============================================================================================
-#include "StdAfx.h"
+#include "stdafx.h"
 
 extern BOOL MakeUnvideoOn555;
 

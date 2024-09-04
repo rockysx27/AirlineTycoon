@@ -1,7 +1,7 @@
 //============================================================================================
 // PlaneType.cpp : Routinen zum verwalten der PlaneType-Tabelle (Flugzeugtypen):
 //============================================================================================
-#include "StdAfx.h"
+#include "stdafx.h"
 
 // Preise verstehen sich pro Sitzplatz:
 extern SLONG SeatCosts[];

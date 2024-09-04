@@ -1,9 +1,9 @@
 //============================================================================================
-// StdRaum.cpp : Die Statuszeile
+// Stdraum.cpp : Die Statuszeile
 //============================================================================================
 // Link: "StdRaum.h"
 //============================================================================================
-#include "StdAfx.h"
+#include "stdafx.h"
 
 #include "ArabAir.h"
 #include "Aufsicht.h"
@@ -1869,7 +1869,7 @@ void CStdRaum::StartDialog(SLONG DialogPartner, BOOL Medium, SLONG DialogPar1, S
         }
         break;
     default:
-        hprintf("StdRaum.cpp: Default case should not be reached.");
+        hprintf("Stdraum.cpp: Default case should not be reached.");
         DebugBreak();
     }
 }
@@ -3656,7 +3656,7 @@ void CStdRaum::RepaintTip() {
     case TIP_ITEM:
         break;
     default:
-        hprintf("StdRaum.cpp: Default case should not be reached.");
+        hprintf("Stdraum.cpp: Default case should not be reached.");
         DebugBreak();
     }
 
@@ -5772,7 +5772,7 @@ void CStdRaum::MenuLeftClick(XY Pos) {
                         MenuRepaint();
                         break;
                     default:
-                        hprintf("StdRaum.cpp: Default case should not be reached.");
+                        hprintf("Stdraum.cpp: Default case should not be reached.");
                         DebugBreak();
                     }
 

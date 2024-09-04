@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "stdafx.h"
 
 const char *ExcOpen = "Can't open %s!";
 const char *ExcRead = "Can't read %s!";

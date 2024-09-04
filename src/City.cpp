@@ -3,7 +3,7 @@
 //============================================================================================
 #include <cmath>
 
-#include "StdAfx.h"
+#include "stdafx.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

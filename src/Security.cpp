@@ -1,7 +1,7 @@
 //============================================================================================
 // Security.cpp : Der Security-Raum
 //============================================================================================
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "AtNet.h"
 #include "Security.h"
 #include "glsecurity.h"

@@ -1,7 +1,7 @@
 //============================================================================================
 // Aufsicht.cpp : Das Büro der Flugaufsicht
 //============================================================================================
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "AtNet.h"
 #include "Aufsicht.h"
 #include "glauf.h"

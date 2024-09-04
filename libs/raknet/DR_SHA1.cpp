@@ -6,7 +6,7 @@
   See header file for version history and test vectors.
 */
 
-// If compiling with MFC, you might want to add #include "StdAfx.h"
+// If compiling with MFC, you might want to add #include "stdafx.h"
 
 #define _CRT_SECURE_NO_WARNINGS
 #include "DR_SHA1.h"

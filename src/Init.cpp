@@ -1,7 +1,7 @@
 //============================================================================================
 // Init.cpp : Routinen zur initialisierung:
 //============================================================================================
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "Checkup.h"
 #include "Editor.h"
 #include <algorithm>

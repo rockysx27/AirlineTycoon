@@ -2,7 +2,7 @@
 //	TakeOff.pch will be the pre-compiled header
 //	stdafx.obj will contain the pre-compiled type information
 
-#include "StdAfx.h"
+#include "stdafx.h"
 
 // MSC ist zu blöd für tiefer Verschachtelte Dependecies. Daher werden hier die Entsprechenden
 // Includes vorgegauckelt. Tatsächlich ausgeführt werden sie aber nie.

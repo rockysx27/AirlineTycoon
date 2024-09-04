@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "stdafx.h"
 #include <SDL_bits.h>
 
 #ifdef ENABLE_ASM

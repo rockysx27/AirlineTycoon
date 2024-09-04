@@ -1,7 +1,7 @@
 //============================================================================================
 // Museum.cpp : Das Museum mit den alten Flugzeugen
 //============================================================================================
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "Museum.h"
 #include "glmuseum.h"
 

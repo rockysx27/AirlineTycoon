@@ -1,7 +1,7 @@
 //============================================================================================
 // Sim.cpp : Routinen zur allgemeinen Simulationsverwaltung:
 //============================================================================================
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "AtNet.h"
 #include "Checkup.h"
 #include <filesystem>

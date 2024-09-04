@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "stdafx.h"
 
 SB_CCursor::SB_CCursor(class SB_CPrimaryBitmap *primary, class SB_CBitmapCore *cursor) : Primary(primary), Cursor(cursor), Background(nullptr) {
     CreateBackground();

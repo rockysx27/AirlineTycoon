@@ -1,7 +1,7 @@
 //============================================================================================
 // Person.Cpp - Verwaltung von Clans und Personen (Clan-Ausprägungen)
 //============================================================================================
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "AtNet.h"
 
 extern SB_CColorFX ColorFX;

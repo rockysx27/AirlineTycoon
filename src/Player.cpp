@@ -1,7 +1,7 @@
 //============================================================================================
 // Player.cpp : Routinen zum verwalten der Spieler
 //============================================================================================
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "AtNet.h"
 #include "Bot.h"
 #include "BotHelper.h"

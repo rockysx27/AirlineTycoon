@@ -1,7 +1,7 @@
 //============================================================================================
 // HallDiskMenu - Das Lade- und Speichermenü für die einzelnen Airport Halls
 //============================================================================================
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "HalldiskMenu.h"
 
 #ifdef _DEBUG

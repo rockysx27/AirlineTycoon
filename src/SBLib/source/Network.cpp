@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "BaseNetworkType.hpp"
 #include "BitStream.h"
 #include "ENetNetwork.hpp"

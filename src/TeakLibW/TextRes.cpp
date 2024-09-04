@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "stdafx.h"
 
 const char *ExcTextResNotOpened = "TextRes not opened!";
 const char *ExcTextResStaticOverflow = "TextRes is too SLONG: %lx:%lx";

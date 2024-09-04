@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "BitStream.h"
 #include "RAKNetNetwork.hpp"
 #include <StringCompressor.h>
