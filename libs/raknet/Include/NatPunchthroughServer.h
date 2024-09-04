@@ -3,7 +3,7 @@
  *  All rights reserved.
  *
  *  This source code is licensed under the BSD-style license found in the
- *  LICENSE file in the root directory of this source tree. An additional grant
+ *  LICENSE file in the root directory of this source tree. An additional grant 
  *  of patent rights can be found in the PATENTS file in the same directory.
  *
  */
@@ -12,8 +12,9 @@
 /// \brief Contains the NAT-punchthrough plugin for the server.
 ///
 
+
 #include "NativeFeatureIncludes.h"
-#if _RAKNET_SUPPORT_NatPunchthroughServer == 1
+#if _RAKNET_SUPPORT_NatPunchthroughServer==1
 
 #ifndef __NAT_PUNCHTHROUGH_SERVER_H
 #define __NAT_PUNCHTHROUGH_SERVER_H
@@ -26,11 +27,12 @@
 #include "DS_OrderedList.h"
 #include "RakString.h"
 
-namespace RakNet {
+namespace RakNet
+{
 /// Forward declarations
 class RakPeerInterface;
 struct Packet;
-#if _RAKNET_SUPPORT_PacketLogger == 1
+#if _RAKNET_SUPPORT_PacketLogger==1
 class PacketLogger;
 #endif
 
@@ -40,26 +42,29 @@ class PacketLogger;
 /// \ingroup PLUGINS_GROUP
 
 /// \ingroup NAT_PUNCHTHROUGH_GROUP
-struct RAK_DLL_EXPORT NatPunchthroughServerDebugInterface {
-    NatPunchthroughServerDebugInterface() {}
-    virtual ~NatPunchthroughServerDebugInterface() {}
-    virtual void OnServerMessage(const char *msg) = 0;
+struct RAK_DLL_EXPORT NatPunchthroughServerDebugInterface
+{
+	NatPunchthroughServerDebugInterface() {}
+	virtual ~NatPunchthroughServerDebugInterface() {}
+	virtual void OnServerMessage(const char *msg)=0;
 };
 
 /// \ingroup NAT_PUNCHTHROUGH_GROUP
-struct RAK_DLL_EXPORT NatPunchthroughServerDebugInterface_Printf : public NatPunchthroughServerDebugInterface {
-    virtual void OnServerMessage(const char *msg);
+struct RAK_DLL_EXPORT NatPunchthroughServerDebugInterface_Printf : public NatPunchthroughServerDebugInterface
+{
+	virtual void OnServerMessage(const char *msg);
 };
 
-#if _RAKNET_SUPPORT_PacketLogger == 1
+#if _RAKNET_SUPPORT_PacketLogger==1
 /// \ingroup NAT_PUNCHTHROUGH_GROUP
-struct RAK_DLL_EXPORT NatPunchthroughServerDebugInterface_PacketLogger : public NatPunchthroughServerDebugInterface {
-    // Set to non-zero to write to the packetlogger!
-    PacketLogger *pl;
+struct RAK_DLL_EXPORT NatPunchthroughServerDebugInterface_PacketLogger : public NatPunchthroughServerDebugInterface
+{
+	// Set to non-zero to write to the packetlogger!
+	PacketLogger *pl;
 
-    NatPunchthroughServerDebugInterface_PacketLogger() { pl = 0; }
-    ~NatPunchthroughServerDebugInterface_PacketLogger() {}
-    virtual void OnServerMessage(const char *msg);
+	NatPunchthroughServerDebugInterface_PacketLogger() {pl=0;}
+	~NatPunchthroughServerDebugInterface_PacketLogger() {}
+	virtual void OnServerMessage(const char *msg);
 };
 #endif
 
@@ -70,78 +75,78 @@ struct RAK_DLL_EXPORT NatPunchthroughServerDebugInterface_PacketLogger : public 
 /// \sa NatTypeDetectionClient
 /// See also http://www.jenkinssoftware.com/raknet/manual/natpunchthrough.html
 /// \ingroup NAT_PUNCHTHROUGH_GROUP
-class RAK_DLL_EXPORT NatPunchthroughServer : public PluginInterface2 {
-  public:
-    STATIC_FACTORY_DECLARATIONS(NatPunchthroughServer)
+class RAK_DLL_EXPORT NatPunchthroughServer : public PluginInterface2
+{
+public:
 
-    // Constructor
-    NatPunchthroughServer();
+	STATIC_FACTORY_DECLARATIONS(NatPunchthroughServer)
 
-    // Destructor
-    virtual ~NatPunchthroughServer();
+	// Constructor
+	NatPunchthroughServer();
 
-    /// Sets a callback to be called with debug messages
-    /// \param[in] i Pointer to an interface. The pointer is stored, so don't delete it while in progress. Pass 0 to clear.
-    void SetDebugInterface(NatPunchthroughServerDebugInterface *i);
+	// Destructor
+	virtual ~NatPunchthroughServer();
 
-    /// \internal For plugin handling
-    virtual void Update(void);
+	/// Sets a callback to be called with debug messages
+	/// \param[in] i Pointer to an interface. The pointer is stored, so don't delete it while in progress. Pass 0 to clear.
+	void SetDebugInterface(NatPunchthroughServerDebugInterface *i);
 
-    /// \internal For plugin handling
-    virtual PluginReceiveResult OnReceive(Packet *packet);
+	/// \internal For plugin handling
+	virtual void Update(void);
 
-    /// \internal For plugin handling
-    virtual void OnClosedConnection(const SystemAddress &systemAddress, RakNetGUID rakNetGUID, PI2_LostConnectionReason lostConnectionReason);
-    virtual void OnNewConnection(const SystemAddress &systemAddress, RakNetGUID rakNetGUID, bool isIncoming);
+	/// \internal For plugin handling
+	virtual PluginReceiveResult OnReceive(Packet *packet);
 
-    // Each connected user has a ready state. Ready means ready for nat punchthrough.
-    struct User;
-    struct ConnectionAttempt {
-        ConnectionAttempt() {
-            sender = 0;
-            recipient = 0;
-            startTime = 0;
-            attemptPhase = NAT_ATTEMPT_PHASE_NOT_STARTED;
-        }
-        User *sender, *recipient;
-        uint16_t sessionId;
-        RakNet::Time startTime;
-        enum {
-            NAT_ATTEMPT_PHASE_NOT_STARTED,
-            NAT_ATTEMPT_PHASE_GETTING_RECENT_PORTS,
-        } attemptPhase;
-    };
-    struct User {
-        RakNetGUID guid;
-        SystemAddress systemAddress;
-        unsigned short mostRecentPort;
-        bool isReady;
-        DataStructures::OrderedList<RakNetGUID, RakNetGUID> groupPunchthroughRequests;
+	/// \internal For plugin handling
+	virtual void OnClosedConnection(const SystemAddress &systemAddress, RakNetGUID rakNetGUID, PI2_LostConnectionReason lostConnectionReason );
+	virtual void OnNewConnection(const SystemAddress &systemAddress, RakNetGUID rakNetGUID, bool isIncoming);
 
-        DataStructures::List<ConnectionAttempt *> connectionAttempts;
-        bool HasConnectionAttemptToUser(User *user);
-        void DerefConnectionAttempt(ConnectionAttempt *ca);
-        void DeleteConnectionAttempt(ConnectionAttempt *ca);
-        void LogConnectionAttempts(RakNet::RakString &rs);
-    };
-    RakNet::Time lastUpdate;
-    static int NatPunchthroughUserComp(const RakNetGUID &key, User *const &data);
+	// Each connected user has a ready state. Ready means ready for nat punchthrough.
+	struct User;
+	struct ConnectionAttempt
+	{
+		ConnectionAttempt() {sender=0; recipient=0; startTime=0; attemptPhase=NAT_ATTEMPT_PHASE_NOT_STARTED;}
+		User *sender, *recipient;
+		uint16_t sessionId;
+		RakNet::Time startTime;
+		enum
+		{
+			NAT_ATTEMPT_PHASE_NOT_STARTED,
+			NAT_ATTEMPT_PHASE_GETTING_RECENT_PORTS,
+		} attemptPhase;
+	};
+	struct User
+	{
+		RakNetGUID guid;
+		SystemAddress systemAddress;
+		unsigned short mostRecentPort;
+		bool isReady;
+		DataStructures::OrderedList<RakNetGUID,RakNetGUID> groupPunchthroughRequests;
 
-  protected:
-    void OnNATPunchthroughRequest(Packet *packet);
-    DataStructures::OrderedList<RakNetGUID, User *, NatPunchthroughServer::NatPunchthroughUserComp> users;
+		DataStructures::List<ConnectionAttempt *> connectionAttempts;
+		bool HasConnectionAttemptToUser(User *user);
+		void DerefConnectionAttempt(ConnectionAttempt *ca);
+		void DeleteConnectionAttempt(ConnectionAttempt *ca);
+		void LogConnectionAttempts(RakNet::RakString &rs);
+	};
+	RakNet::Time lastUpdate;
+	static int NatPunchthroughUserComp( const RakNetGUID &key, User * const &data );
+protected:
+	void OnNATPunchthroughRequest(Packet *packet);
+	DataStructures::OrderedList<RakNetGUID, User*, NatPunchthroughServer::NatPunchthroughUserComp> users;
 
-    void OnGetMostRecentPort(Packet *packet);
-    void OnClientReady(Packet *packet);
+	void OnGetMostRecentPort(Packet *packet);
+	void OnClientReady(Packet *packet);
 
-    void SendTimestamps(void);
-    void StartPendingPunchthrough(void);
-    void StartPunchthroughForUser(User *user);
-    uint16_t sessionId;
-    NatPunchthroughServerDebugInterface *natPunchthroughServerDebugInterface;
+	void SendTimestamps(void);
+	void StartPendingPunchthrough(void);
+	void StartPunchthroughForUser(User*user);
+	uint16_t sessionId;
+	NatPunchthroughServerDebugInterface *natPunchthroughServerDebugInterface;
 
-    SystemAddress boundAddresses[MAXIMUM_NUMBER_OF_INTERNAL_IDS];
-    unsigned char boundAddressCount;
+	SystemAddress boundAddresses[MAXIMUM_NUMBER_OF_INTERNAL_IDS];
+	unsigned char boundAddressCount;
+
 };
 
 } // namespace RakNet

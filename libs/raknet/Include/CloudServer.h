@@ -3,7 +3,7 @@
  *  All rights reserved.
  *
  *  This source code is licensed under the BSD-style license found in the
- *  LICENSE file in the root directory of this source tree. An additional grant
+ *  LICENSE file in the root directory of this source tree. An additional grant 
  *  of patent rights can be found in the PATENTS file in the same directory.
  *
  */
@@ -13,8 +13,9 @@
 /// \details TODO
 ///
 
+
 #include "NativeFeatureIncludes.h"
-#if _RAKNET_SUPPORT_CloudServer == 1
+#if _RAKNET_SUPPORT_CloudServer==1
 
 #ifndef __CLOUD_SERVER_H
 #define __CLOUD_SERVER_H
@@ -30,7 +31,8 @@
 /// If the data is smaller than this value, an allocation is avoid. However, this value exists for every row
 #define CLOUD_SERVER_DATA_STACK_SIZE 32
 
-namespace RakNet {
+namespace RakNet
+{
 /// Forward declarations
 class RakPeerInterface;
 
@@ -38,299 +40,302 @@ class RakPeerInterface;
 /// All attached instances of CloudServerQueryFilter on each corresponding operation, from all directly connected clients
 /// If any attached instance returns false for a given operation, that operation is silently rejected
 /// \ingroup CLOUD_GROUP
-class RAK_DLL_EXPORT CloudServerQueryFilter {
-  public:
-    CloudServerQueryFilter() {}
-    virtual ~CloudServerQueryFilter() {}
+class RAK_DLL_EXPORT CloudServerQueryFilter
+{
+public:
+	CloudServerQueryFilter() {}
+	virtual ~CloudServerQueryFilter() {}
 
-    /// Called when a local client wants to post data
-    /// \return true to allow, false to reject
-    virtual bool OnPostRequest(RakNetGUID clientGuid, SystemAddress clientAddress, CloudKey key, uint32_t dataLength, const char *data) = 0;
+	/// Called when a local client wants to post data
+	/// \return true to allow, false to reject
+	virtual bool OnPostRequest(RakNetGUID clientGuid, SystemAddress clientAddress, CloudKey key, uint32_t dataLength, const char *data)=0;
 
-    /// Called when a local client wants to release data that it has previously uploaded
-    /// \return true to allow, false to reject
-    virtual bool OnReleaseRequest(RakNetGUID clientGuid, SystemAddress clientAddress, DataStructures::List<CloudKey> &cloudKeys) = 0;
+	/// Called when a local client wants to release data that it has previously uploaded
+	/// \return true to allow, false to reject
+	virtual bool OnReleaseRequest(RakNetGUID clientGuid, SystemAddress clientAddress, DataStructures::List<CloudKey> &cloudKeys)=0;
 
-    /// Called when a local client wants to query data
-    /// If you return false, the client will get no response at all
-    /// \return true to allow, false to reject
-    virtual bool OnGetRequest(RakNetGUID clientGuid, SystemAddress clientAddress, CloudQuery &query, DataStructures::List<RakNetGUID> &specificSystems) = 0;
+	/// Called when a local client wants to query data
+	/// If you return false, the client will get no response at all
+	/// \return true to allow, false to reject
+	virtual bool OnGetRequest(RakNetGUID clientGuid, SystemAddress clientAddress, CloudQuery &query, DataStructures::List<RakNetGUID> &specificSystems)=0;
 
-    /// Called when a local client wants to stop getting updates for data
-    /// If you return false, the client will keep getting updates for that data
-    /// \return true to allow, false to reject
-    virtual bool OnUnsubscribeRequest(RakNetGUID clientGuid, SystemAddress clientAddress, DataStructures::List<CloudKey> &cloudKeys,
-                                      DataStructures::List<RakNetGUID> &specificSystems) = 0;
+	/// Called when a local client wants to stop getting updates for data
+	/// If you return false, the client will keep getting updates for that data
+	/// \return true to allow, false to reject
+	virtual bool OnUnsubscribeRequest(RakNetGUID clientGuid, SystemAddress clientAddress, DataStructures::List<CloudKey> &cloudKeys, DataStructures::List<RakNetGUID> &specificSystems)=0;
 };
 
 /// \brief Stores client data, and allows cross-server communication to retrieve this data
 /// \ingroup CLOUD_GROUP
-class RAK_DLL_EXPORT CloudServer : public PluginInterface2, CloudAllocator {
-  public:
-    // GetInstance() and DestroyInstance(instance*)
-    STATIC_FACTORY_DECLARATIONS(CloudServer)
+class RAK_DLL_EXPORT CloudServer : public PluginInterface2, CloudAllocator
+{
+public:
+	// GetInstance() and DestroyInstance(instance*)
+	STATIC_FACTORY_DECLARATIONS(CloudServer)
 
-    CloudServer();
-    virtual ~CloudServer();
+	CloudServer();
+	virtual ~CloudServer();
 
-    /// \brief Max bytes a client can upload
-    /// Data in excess of this value is silently ignored
-    /// defaults to 0 (unlimited)
-    /// \param[in] bytes Max bytes a client can upload. 0 means unlimited.
-    void SetMaxUploadBytesPerClient(uint64_t bytes);
+	/// \brief Max bytes a client can upload
+	/// Data in excess of this value is silently ignored
+	/// defaults to 0 (unlimited)
+	/// \param[in] bytes Max bytes a client can upload. 0 means unlimited.
+	void SetMaxUploadBytesPerClient(uint64_t bytes);
 
-    /// \brief Max bytes returned by a download. If the number of bytes would exceed this amount, the returned list is truncated
-    /// However, if this would result in no rows downloaded, then one row will be returned.
-    /// \param[in] bytes Max bytes a client can download from a single Get(). 0 means unlimited.
-    void SetMaxBytesPerDownload(uint64_t bytes);
+	/// \brief Max bytes returned by a download. If the number of bytes would exceed this amount, the returned list is truncated
+	/// However, if this would result in no rows downloaded, then one row will be returned.
+	/// \param[in] bytes Max bytes a client can download from a single Get(). 0 means unlimited.
+	void SetMaxBytesPerDownload(uint64_t bytes);
 
-    /// \brief Add a server, which is assumed to be connected in a fully connected mesh to all other servers and also running the CloudServer plugin
-    /// The other system must also call AddServer before getting the subscription data, or it will be rejected.
-    /// Sending a message telling the other system to call AddServer(), followed by calling AddServer() locally, would be sufficient for this to work.
-    /// \note This sends subscription data to the other system, using RELIABLE_ORDERED on channel 0
-    /// \param[in] systemIdentifier Identifier of the remote system
-    void AddServer(RakNetGUID systemIdentifier);
+	/// \brief Add a server, which is assumed to be connected in a fully connected mesh to all other servers and also running the CloudServer plugin
+	/// The other system must also call AddServer before getting the subscription data, or it will be rejected.
+	/// Sending a message telling the other system to call AddServer(), followed by calling AddServer() locally, would be sufficient for this to work.
+	/// \note This sends subscription data to the other system, using RELIABLE_ORDERED on channel 0
+	/// \param[in] systemIdentifier Identifier of the remote system
+	void AddServer(RakNetGUID systemIdentifier);
 
-    /// \brief Removes a server added through AddServer()
-    /// \param[in] systemIdentifier Identifier of the remote system
-    void RemoveServer(RakNetGUID systemIdentifier);
+	/// \brief Removes a server added through AddServer()
+	/// \param[in] systemIdentifier Identifier of the remote system
+	void RemoveServer(RakNetGUID systemIdentifier);
 
-    /// Return list of servers added with AddServer()
-    /// \param[out] remoteServers List of servers added
-    void GetRemoteServers(DataStructures::List<RakNetGUID> &remoteServersOut);
+	/// Return list of servers added with AddServer()
+	/// \param[out] remoteServers List of servers added
+	void GetRemoteServers(DataStructures::List<RakNetGUID> &remoteServersOut);
 
-    /// \brief Frees all memory. Does not remove query filters
-    void Clear(void);
+	/// \brief Frees all memory. Does not remove query filters
+	void Clear(void);
 
-    /// \brief Report the specified SystemAddress to client queries, rather than what RakPeer reads.
-    /// This is useful if you already know your public IP
-    /// This only applies to future updates, so call it before updating to apply to all queries
-    /// \param[in] forcedAddress The systmeAddress to return in queries. Use UNASSIGNED_SYSTEM_ADDRESS (default) to use what RakPeer returns
-    void ForceExternalSystemAddress(SystemAddress forcedAddress);
+	/// \brief Report the specified SystemAddress to client queries, rather than what RakPeer reads.
+	/// This is useful if you already know your public IP
+	/// This only applies to future updates, so call it before updating to apply to all queries
+	/// \param[in] forcedAddress The systmeAddress to return in queries. Use UNASSIGNED_SYSTEM_ADDRESS (default) to use what RakPeer returns
+	void ForceExternalSystemAddress(SystemAddress forcedAddress);
 
-    /// \brief Adds a callback called on each query. If all filters returns true for an operation, the operation is allowed.
-    /// If the filter was already added, the function silently fails
-    /// \param[in] filter An externally allocated instance of CloudServerQueryFilter. The instance must remain valid until it is removed with
-    /// RemoveQueryFilter() or RemoveAllQueryFilters()
-    void AddQueryFilter(CloudServerQueryFilter *filter);
+	/// \brief Adds a callback called on each query. If all filters returns true for an operation, the operation is allowed.
+	/// If the filter was already added, the function silently fails
+	/// \param[in] filter An externally allocated instance of CloudServerQueryFilter. The instance must remain valid until it is removed with RemoveQueryFilter() or RemoveAllQueryFilters()
+	void AddQueryFilter(CloudServerQueryFilter* filter);
 
-    /// \brief Removes a callback added with AddQueryFilter()
-    /// The instance is not deleted, only unreferenced. It is up to the user to delete the instance, if necessary
-    /// \param[in] filter An externally allocated instance of CloudServerQueryFilter. The instance must remain valid until it is removed with
-    /// RemoveQueryFilter() or RemoveAllQueryFilters()
-    void RemoveQueryFilter(CloudServerQueryFilter *filter);
+	/// \brief Removes a callback added with AddQueryFilter()
+	/// The instance is not deleted, only unreferenced. It is up to the user to delete the instance, if necessary
+	/// \param[in] filter An externally allocated instance of CloudServerQueryFilter. The instance must remain valid until it is removed with RemoveQueryFilter() or RemoveAllQueryFilters()
+	void RemoveQueryFilter(CloudServerQueryFilter* filter);
 
-    /// \brief Removes all instances of CloudServerQueryFilter added with AddQueryFilter().
-    /// The instances are not deleted, only unreferenced. It is up to the user to delete the instances, if necessary
-    void RemoveAllQueryFilters(void);
+	/// \brief Removes all instances of CloudServerQueryFilter added with AddQueryFilter().
+	/// The instances are not deleted, only unreferenced. It is up to the user to delete the instances, if necessary
+	void RemoveAllQueryFilters(void);
 
-  protected:
-    virtual void Update(void);
-    virtual PluginReceiveResult OnReceive(Packet *packet);
-    virtual void OnClosedConnection(const SystemAddress &systemAddress, RakNetGUID rakNetGUID, PI2_LostConnectionReason lostConnectionReason);
-    virtual void OnRakPeerShutdown(void);
+protected:
+	virtual void Update(void);
+	virtual PluginReceiveResult OnReceive(Packet *packet);
+	virtual void OnClosedConnection(const SystemAddress &systemAddress, RakNetGUID rakNetGUID, PI2_LostConnectionReason lostConnectionReason );
+	virtual void OnRakPeerShutdown(void);
 
-    virtual void OnPostRequest(Packet *packet);
-    virtual void OnReleaseRequest(Packet *packet);
-    virtual void OnGetRequest(Packet *packet);
-    virtual void OnUnsubscribeRequest(Packet *packet);
-    virtual void OnServerToServerGetRequest(Packet *packet);
-    virtual void OnServerToServerGetResponse(Packet *packet);
 
-    uint64_t maxUploadBytesPerClient, maxBytesPerDowload;
+	virtual void OnPostRequest(Packet *packet);
+	virtual void OnReleaseRequest(Packet *packet);
+	virtual void OnGetRequest(Packet *packet);
+	virtual void OnUnsubscribeRequest(Packet *packet);
+	virtual void OnServerToServerGetRequest(Packet *packet);
+	virtual void OnServerToServerGetResponse(Packet *packet);
 
-    // ----------------------------------------------------------------------------
-    // For a given data key, quickly look up one or all systems that have uploaded
-    // ----------------------------------------------------------------------------
-    struct CloudData {
-        CloudData() {}
-        ~CloudData() {
-            if (allocatedData)
-                rakFree_Ex(allocatedData, _FILE_AND_LINE_);
-        }
-        bool IsUnused(void) const { return isUploaded == false && specificSubscribers.Size() == 0; }
-        void Clear(void) {
-            if (dataPtr == allocatedData)
-                rakFree_Ex(allocatedData, _FILE_AND_LINE_);
-            allocatedData = 0;
-            dataPtr = 0;
-            dataLengthBytes = 0;
-            isUploaded = false;
-        }
+	uint64_t maxUploadBytesPerClient, maxBytesPerDowload;
 
-        unsigned char stackData[CLOUD_SERVER_DATA_STACK_SIZE];
-        unsigned char *allocatedData; // Uses allocatedData instead of stackData if length of data exceeds CLOUD_SERVER_DATA_STACK_SIZE
-        unsigned char *dataPtr;       // Points to either stackData or allocatedData
-        uint32_t dataLengthBytes;
-        bool isUploaded;
+	// ----------------------------------------------------------------------------
+	// For a given data key, quickly look up one or all systems that have uploaded
+	// ----------------------------------------------------------------------------
+	struct CloudData
+	{
+		CloudData() {}
+		~CloudData() {if (allocatedData) rakFree_Ex(allocatedData, _FILE_AND_LINE_);}
+		bool IsUnused(void) const {return isUploaded==false && specificSubscribers.Size()==0;}
+		void Clear(void) {if (dataPtr==allocatedData) rakFree_Ex(allocatedData, _FILE_AND_LINE_); allocatedData=0; dataPtr=0; dataLengthBytes=0; isUploaded=false;}
 
-        /// System address of server that is holding this data, and the client is connected to
-        SystemAddress serverSystemAddress;
+		unsigned char stackData[CLOUD_SERVER_DATA_STACK_SIZE];
+		unsigned char *allocatedData; // Uses allocatedData instead of stackData if length of data exceeds CLOUD_SERVER_DATA_STACK_SIZE
+		unsigned char *dataPtr; // Points to either stackData or allocatedData
+		uint32_t dataLengthBytes;
+		bool isUploaded;
 
-        /// System address of client that uploaded this data
-        SystemAddress clientSystemAddress;
+		/// System address of server that is holding this data, and the client is connected to
+		SystemAddress serverSystemAddress;
 
-        /// RakNetGUID of server that is holding this data, and the client is connected to
-        RakNetGUID serverGUID;
+		/// System address of client that uploaded this data
+		SystemAddress clientSystemAddress;
 
-        /// RakNetGUID of client that uploaded this data
-        RakNetGUID clientGUID;
+		/// RakNetGUID of server that is holding this data, and the client is connected to
+		RakNetGUID serverGUID;
 
-        /// When the key data changes from this particular system, notify these subscribers
-        /// This list mutually exclusive with CloudDataList::nonSpecificSubscribers
-        DataStructures::OrderedList<RakNetGUID, RakNetGUID> specificSubscribers;
-    };
-    void WriteCloudQueryRowFromResultList(unsigned int i, DataStructures::List<CloudData *> &cloudDataResultList,
-                                          DataStructures::List<CloudKey> &cloudKeyResultList, BitStream *bsOut);
-    void WriteCloudQueryRowFromResultList(DataStructures::List<CloudData *> &cloudDataResultList, DataStructures::List<CloudKey> &cloudKeyResultList,
-                                          BitStream *bsOut);
+		/// RakNetGUID of client that uploaded this data
+		RakNetGUID clientGUID;
 
-    static int KeyDataPtrComp(const RakNetGUID &key, CloudData *const &data);
-    struct CloudDataList {
-        bool IsUnused(void) const { return keyData.Size() == 0 && nonSpecificSubscribers.Size() == 0; }
-        bool IsNotUploaded(void) const { return uploaderCount == 0; }
-        bool RemoveSubscriber(RakNetGUID g) {
-            bool objectExists;
-            unsigned int index;
-            index = nonSpecificSubscribers.GetIndexFromKey(g, &objectExists);
-            if (objectExists) {
-                subscriberCount--;
-                nonSpecificSubscribers.RemoveAtIndex(index);
-                return true;
-            }
-            return false;
-        }
+		/// When the key data changes from this particular system, notify these subscribers
+		/// This list mutually exclusive with CloudDataList::nonSpecificSubscribers
+		DataStructures::OrderedList<RakNetGUID, RakNetGUID> specificSubscribers;
+	};
+	void WriteCloudQueryRowFromResultList(unsigned int i, DataStructures::List<CloudData*> &cloudDataResultList, DataStructures::List<CloudKey> &cloudKeyResultList, BitStream *bsOut);
+	void WriteCloudQueryRowFromResultList(DataStructures::List<CloudData*> &cloudDataResultList, DataStructures::List<CloudKey> &cloudKeyResultList, BitStream *bsOut);
 
-        unsigned int uploaderCount, subscriberCount;
-        CloudKey key;
+	static int KeyDataPtrComp( const RakNetGUID &key, CloudData* const &data );
+	struct CloudDataList
+	{
+		bool IsUnused(void) const {return keyData.Size()==0 && nonSpecificSubscribers.Size()==0;}
+		bool IsNotUploaded(void) const {return uploaderCount==0;}
+		bool RemoveSubscriber(RakNetGUID g) {
+			bool objectExists;
+			unsigned int index;
+			index = nonSpecificSubscribers.GetIndexFromKey(g, &objectExists);
+			if (objectExists)
+			{
+				subscriberCount--;
+				nonSpecificSubscribers.RemoveAtIndex(index);
+				return true;
+			}
+			return false;
+		}
 
-        // Data uploaded from or subscribed to for various systems
-        DataStructures::OrderedList<RakNetGUID, CloudData *, CloudServer::KeyDataPtrComp> keyData;
+		unsigned int uploaderCount, subscriberCount;
+		CloudKey key;
 
-        /// When the key data changes from any system, notify these subscribers
-        /// This list mutually exclusive with CloudData::specificSubscribers
-        DataStructures::OrderedList<RakNetGUID, RakNetGUID> nonSpecificSubscribers;
-    };
+		// Data uploaded from or subscribed to for various systems
+		DataStructures::OrderedList<RakNetGUID, CloudData*, CloudServer::KeyDataPtrComp> keyData;
 
-    static int KeyDataListComp(const CloudKey &key, CloudDataList *const &data);
-    DataStructures::OrderedList<CloudKey, CloudDataList *, CloudServer::KeyDataListComp> dataRepository;
+		/// When the key data changes from any system, notify these subscribers
+		/// This list mutually exclusive with CloudData::specificSubscribers
+		DataStructures::OrderedList<RakNetGUID, RakNetGUID> nonSpecificSubscribers;
+	};
 
-    struct KeySubscriberID {
-        CloudKey key;
-        DataStructures::OrderedList<RakNetGUID, RakNetGUID> specificSystemsSubscribedTo;
-    };
-    static int KeySubscriberIDComp(const CloudKey &key, KeySubscriberID *const &data);
+	static int KeyDataListComp( const CloudKey &key, CloudDataList * const &data );
+	DataStructures::OrderedList<CloudKey, CloudDataList*, CloudServer::KeyDataListComp> dataRepository;
 
-    // Remote systems
-    struct RemoteCloudClient {
-        bool IsUnused(void) const { return uploadedKeys.Size() == 0 && subscribedKeys.Size() == 0; }
+	struct KeySubscriberID
+	{
+		CloudKey key;
+		DataStructures::OrderedList<RakNetGUID, RakNetGUID> specificSystemsSubscribedTo;
+	};
+	static int KeySubscriberIDComp(const CloudKey &key, KeySubscriberID * const &data );
 
-        DataStructures::OrderedList<CloudKey, CloudKey, CloudKeyComp> uploadedKeys;
-        DataStructures::OrderedList<CloudKey, KeySubscriberID *, CloudServer::KeySubscriberIDComp> subscribedKeys;
-        uint64_t uploadedBytes;
-    };
-    DataStructures::Hash<RakNetGUID, RemoteCloudClient *, 2048, RakNetGUID::ToUint32> remoteSystems;
+	// Remote systems
+	struct RemoteCloudClient
+	{
+		bool IsUnused(void) const {return uploadedKeys.Size()==0 && subscribedKeys.Size()==0;}
 
-    // For a given user, release all subscribed and uploaded keys
-    void ReleaseSystem(RakNetGUID clientAddress);
+		DataStructures::OrderedList<CloudKey,CloudKey,CloudKeyComp> uploadedKeys;
+		DataStructures::OrderedList<CloudKey,KeySubscriberID*,CloudServer::KeySubscriberIDComp> subscribedKeys;
+		uint64_t uploadedBytes;
+	};
+	DataStructures::Hash<RakNetGUID, RemoteCloudClient*, 2048, RakNetGUID::ToUint32> remoteSystems;
 
-    // For a given user, release a set of keys
-    void ReleaseKeys(RakNetGUID clientAddress, DataStructures::List<CloudKey> &keys);
+	// For a given user, release all subscribed and uploaded keys
+	void ReleaseSystem(RakNetGUID clientAddress );
 
-    void NotifyClientSubscribersOfDataChange(CloudData *cloudData, CloudKey &key, DataStructures::OrderedList<RakNetGUID, RakNetGUID> &subscribers,
-                                             bool wasUpdated);
-    void NotifyClientSubscribersOfDataChange(CloudQueryRow *row, DataStructures::OrderedList<RakNetGUID, RakNetGUID> &subscribers, bool wasUpdated);
-    void NotifyServerSubscribersOfDataChange(CloudData *cloudData, CloudKey &key, bool wasUpdated);
+	// For a given user, release a set of keys
+	void ReleaseKeys(RakNetGUID clientAddress, DataStructures::List<CloudKey> &keys );
 
-    struct RemoteServer {
-        RakNetGUID serverAddress;
-        // This server needs to know about these keys when they are updated or deleted
-        DataStructures::OrderedList<CloudKey, CloudKey, CloudKeyComp> subscribedKeys;
-        // This server has uploaded these keys, and needs to know about Get() requests
-        DataStructures::OrderedList<CloudKey, CloudKey, CloudKeyComp> uploadedKeys;
+	void NotifyClientSubscribersOfDataChange( CloudData *cloudData, CloudKey &key, DataStructures::OrderedList<RakNetGUID, RakNetGUID> &subscribers, bool wasUpdated );
+	void NotifyClientSubscribersOfDataChange( CloudQueryRow *row, DataStructures::OrderedList<RakNetGUID, RakNetGUID> &subscribers, bool wasUpdated );
+	void NotifyServerSubscribersOfDataChange( CloudData *cloudData, CloudKey &key, bool wasUpdated );
 
-        // Just for processing
-        bool workingFlag;
+	struct RemoteServer
+	{
+		RakNetGUID serverAddress;
+		// This server needs to know about these keys when they are updated or deleted
+		DataStructures::OrderedList<CloudKey,CloudKey,CloudKeyComp> subscribedKeys;
+		// This server has uploaded these keys, and needs to know about Get() requests
+		DataStructures::OrderedList<CloudKey,CloudKey,CloudKeyComp> uploadedKeys;
 
-        // If false, we don't know what keys they have yet, so send everything
-        bool gotSubscribedAndUploadedKeys;
-    };
+		// Just for processing
+		bool workingFlag;
 
-    static int RemoteServerComp(const RakNetGUID &key, RemoteServer *const &data);
-    DataStructures::OrderedList<RakNetGUID, RemoteServer *, CloudServer::RemoteServerComp> remoteServers;
+		// If false, we don't know what keys they have yet, so send everything
+		bool gotSubscribedAndUploadedKeys;
+	};
 
-    struct BufferedGetResponseFromServer {
-        void Clear(CloudAllocator *allocator);
+	static int RemoteServerComp(const RakNetGUID &key, RemoteServer* const &data );
+	DataStructures::OrderedList<RakNetGUID, RemoteServer*, CloudServer::RemoteServerComp> remoteServers;
 
-        RakNetGUID serverAddress;
-        CloudQueryResult queryResult;
-        bool gotResult;
-    };
+	struct BufferedGetResponseFromServer
+	{
+		void Clear(CloudAllocator *allocator);
 
-    struct CloudQueryWithAddresses {
-        // Inputs
-        CloudQuery cloudQuery;
-        DataStructures::List<RakNetGUID> specificSystems;
+		RakNetGUID serverAddress;
+		CloudQueryResult queryResult;
+		bool gotResult;
+	};
 
-        void Serialize(bool writeToBitstream, BitStream *bitStream);
-    };
+	struct CloudQueryWithAddresses
+	{
+		// Inputs
+		CloudQuery cloudQuery;
+		DataStructures::List<RakNetGUID> specificSystems;
 
-    static int BufferedGetResponseFromServerComp(const RakNetGUID &key, BufferedGetResponseFromServer *const &data);
-    struct GetRequest {
-        void Clear(CloudAllocator *allocator);
-        bool AllRemoteServersHaveResponded(void) const;
-        CloudQueryWithAddresses cloudQueryWithAddresses;
+		void Serialize(bool writeToBitstream, BitStream *bitStream);
+	};
 
-        // When request started. If takes too long for a response from another system, can abort remaining systems
-        RakNet::Time requestStartTime;
+	static int BufferedGetResponseFromServerComp(const RakNetGUID &key, BufferedGetResponseFromServer* const &data );
+	struct GetRequest
+	{
+		void Clear(CloudAllocator *allocator);
+		bool AllRemoteServersHaveResponded(void) const;
+		CloudQueryWithAddresses cloudQueryWithAddresses;
 
-        // Assigned by server that gets the request to identify response. See nextGetRequestId
-        uint32_t requestId;
+		// When request started. If takes too long for a response from another system, can abort remaining systems
+		RakNet::Time requestStartTime;
 
-        RakNetGUID requestingClient;
+		// Assigned by server that gets the request to identify response. See nextGetRequestId
+		uint32_t requestId;
 
-        DataStructures::OrderedList<RakNetGUID, BufferedGetResponseFromServer *, CloudServer::BufferedGetResponseFromServerComp> remoteServerResponses;
-    };
-    static int GetRequestComp(const uint32_t &key, GetRequest *const &data);
-    DataStructures::OrderedList<uint32_t, GetRequest *, CloudServer::GetRequestComp> getRequests;
-    RakNet::Time nextGetRequestsCheck;
+		RakNetGUID requestingClient;
 
-    uint32_t nextGetRequestId;
+		DataStructures::OrderedList<RakNetGUID, BufferedGetResponseFromServer*, CloudServer::BufferedGetResponseFromServerComp> remoteServerResponses;
+	};
+	static int GetRequestComp(const uint32_t &key, GetRequest* const &data );
+	DataStructures::OrderedList<uint32_t, GetRequest*, CloudServer::GetRequestComp> getRequests;
+	RakNet::Time nextGetRequestsCheck;
 
-    void ProcessAndTransmitGetRequest(GetRequest *getRequest);
+	uint32_t nextGetRequestId;
 
-    void ProcessCloudQueryWithAddresses(CloudServer::CloudQueryWithAddresses &cloudQueryWithAddresses, DataStructures::List<CloudData *> &cloudDataResultList,
-                                        DataStructures::List<CloudKey> &cloudKeyResultList);
+	void ProcessAndTransmitGetRequest(GetRequest *getRequest);
 
-    void SendUploadedAndSubscribedKeysToServer(RakNetGUID systemAddress);
-    void SendUploadedKeyToServers(CloudKey &cloudKey);
-    void SendSubscribedKeyToServers(CloudKey &cloudKey);
-    void RemoveUploadedKeyFromServers(CloudKey &cloudKey);
-    void RemoveSubscribedKeyFromServers(CloudKey &cloudKey);
+	void ProcessCloudQueryWithAddresses(
+		CloudServer::CloudQueryWithAddresses &cloudQueryWithAddresses,
+		DataStructures::List<CloudData*> &cloudDataResultList,
+		DataStructures::List<CloudKey> &cloudKeyResultList
+		);
 
-    void OnSendUploadedAndSubscribedKeysToServer(Packet *packet);
-    void OnSendUploadedKeyToServers(Packet *packet);
-    void OnSendSubscribedKeyToServers(Packet *packet);
-    void OnRemoveUploadedKeyFromServers(Packet *packet);
-    void OnRemoveSubscribedKeyFromServers(Packet *packet);
-    void OnServerDataChanged(Packet *packet);
+	void SendUploadedAndSubscribedKeysToServer( RakNetGUID systemAddress );
+	void SendUploadedKeyToServers( CloudKey &cloudKey );
+	void SendSubscribedKeyToServers( CloudKey &cloudKey );
+	void RemoveUploadedKeyFromServers( CloudKey &cloudKey );
+	void RemoveSubscribedKeyFromServers( CloudKey &cloudKey );
 
-    void GetServersWithUploadedKeys(DataStructures::List<CloudKey> &keys, DataStructures::List<RemoteServer *> &remoteServersWithData);
+	void OnSendUploadedAndSubscribedKeysToServer( Packet *packet );
+	void OnSendUploadedKeyToServers( Packet *packet );
+	void OnSendSubscribedKeyToServers( Packet *packet );
+	void OnRemoveUploadedKeyFromServers( Packet *packet );
+	void OnRemoveSubscribedKeyFromServers( Packet *packet );
+	void OnServerDataChanged( Packet *packet );
 
-    CloudServer::CloudDataList *GetOrAllocateCloudDataList(CloudKey key, bool *dataRepositoryExists, unsigned int &dataRepositoryIndex);
+	void GetServersWithUploadedKeys(
+		DataStructures::List<CloudKey> &keys,
+		DataStructures::List<RemoteServer*> &remoteServersWithData
+		);
 
-    void UnsubscribeFromKey(RemoteCloudClient *remoteCloudClient, RakNetGUID remoteCloudClientGuid, unsigned int keySubscriberIndex, CloudKey &cloudKey,
-                            DataStructures::List<RakNetGUID> &specificSystems);
-    void RemoveSpecificSubscriber(RakNetGUID specificSubscriber, CloudDataList *cloudDataList, RakNetGUID remoteCloudClientGuid);
+	CloudServer::CloudDataList *GetOrAllocateCloudDataList(CloudKey key, bool *dataRepositoryExists, unsigned int &dataRepositoryIndex);
 
-    DataStructures::List<CloudServerQueryFilter *> queryFilters;
+	void UnsubscribeFromKey(RemoteCloudClient *remoteCloudClient, RakNetGUID remoteCloudClientGuid, unsigned int keySubscriberIndex, CloudKey &cloudKey, DataStructures::List<RakNetGUID> &specificSystems);
+	void RemoveSpecificSubscriber(RakNetGUID specificSubscriber, CloudDataList *cloudDataList, RakNetGUID remoteCloudClientGuid);
 
-    SystemAddress forceAddress;
+	DataStructures::List<CloudServerQueryFilter*> queryFilters;
+
+	SystemAddress forceAddress;
 };
+
 
 } // namespace RakNet
 
 #endif
+
 
 // Key subscription
 //
