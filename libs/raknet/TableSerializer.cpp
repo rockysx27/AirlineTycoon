@@ -189,7 +189,7 @@ bool TableSerializer::DeserializeCell(RakNet::BitStream *in, DataStructures::Tab
 {
 	bool isEmpty=false;
 	double value;
-	INT32 ptr;
+	void *ptr;
 	char tempString[65535];
 	cell->Clear();
 
@@ -213,7 +213,7 @@ bool TableSerializer::DeserializeCell(RakNet::BitStream *in, DataStructures::Tab
 		{
 			if (in->Read(ptr)==false)
 				return false;
-			cell->SetPtr(IntToPtr(ptr));
+			cell->SetPtr(ptr);
 		}
 		else
 		{

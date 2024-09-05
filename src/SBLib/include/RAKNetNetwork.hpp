@@ -1,9 +1,8 @@
 #pragma once
 
-#include "network.h"
 #include "RakPeerInterface.h"
 #include "RakNetTypes.h"
-#include "rooms-plugin\RoomsPlugin.h"
+#include "rooms-plugin/RoomsPlugin.h"
 
 #define RAKNET_TYPE_DIRECT_JOIN "Direct-IP  Join"
 #define RAKNET_TYPE_DIRECT_HOST "Direct-IP  Host"
@@ -17,31 +16,34 @@ constexpr auto  MASTER_SERVER_ADDRESS = "";
 
 #pragma pack(push, 1)
 namespace RakNet {
-class NatPunchthroughClient;
+	class NatPunchthroughClient;
 }
 
 class RAKNetRoomCallbacks;
 
-struct RAKNetworkPeer {
-    BYTE netID;
-    ULONG ID;
-    RakNet::RakNetGUID guid;
-    RakNet::SystemAddress address;
+struct RAKNetworkPeer
+{
+	BYTE netID;
+	ULONG ID;
+	RakNet::RakNetGUID guid;
+	RakNet::SystemAddress address;
 };
 #pragma pack(pop)
-struct RAKNetworkPlayer : public SBNetworkPlayer {
-    // ULONG ID;
-    RakNet::RakNetGUID peer;
+struct RAKNetworkPlayer : public SBNetworkPlayer
+{
+	//ULONG ID;
+	RakNet::RakNetGUID peer;
 };
-struct RAKSessionInfo : public SBSessionInfo {
-    // ULONG hostID;
-    // char sessionName[26];
-    RakNet::RakNetGUID address;
+struct RAKSessionInfo : public SBSessionInfo
+{
+	//ULONG hostID;
+	//char sessionName[26];
+	RakNet::RakNetGUID address;
 };
 
 class RAKNetNetwork : public BaseNetworkType, public IServerSearchable {
-  public:
-    RAKNetNetwork();
+public:
+	RAKNetNetwork();
 
 	void Initialize() override;
 	void Disconnect() override;
@@ -59,7 +61,7 @@ class RAKNetNetwork : public BaseNetworkType, public IServerSearchable {
 	bool IsServerSearchable() override;
 	IServerSearchable *GetServerSearcher() override;
 
-    // Server Searchable:
+	//Server Searchable:
 
 	void LoginMasterServer();
 	void RetrieveRoomList();
@@ -71,17 +73,17 @@ class RAKNetNetwork : public BaseNetworkType, public IServerSearchable {
 	
 private:
     /// <summary>
-    /// Polls the interface until a connection was established
-    /// </summary>
-    /// <param name="peerInterface">The interface to check fo a successful connection</param>
-    /// <returns>true - when a connection was established</returns>
-    bool AwaitConnection(RakNet::RakPeerInterface *peerInterface, bool isAnotherPeer);
+	/// Polls the interface until a connection was established
+	/// </summary>
+	/// <param name="peerInterface">The interface to check fo a successful connection</param>
+	/// <returns>true - when a connection was established</returns>
+    bool AwaitConnection(RakNet::RakPeerInterface* peerInterface, bool isAnotherPeer);
 
     RakNet::SystemAddress mServer;
     RakNet::RakNetGUID mHost;
-    RakNet::RakPeerInterface *mMaster = nullptr;
-    RakNet::NatPunchthroughClient *mNATPlugin = nullptr;
-    bool isNATMode = false;
+    RakNet::RakPeerInterface* mMaster = nullptr;
+	RakNet::NatPunchthroughClient* mNATPlugin = nullptr;
+	bool isNATMode = false;
 
     SBList<RakNet::Packet*> mPackets;
 
@@ -98,12 +100,11 @@ private:
 	/// <param name="serverGuid">The GUID of the master server</param>
 	void RequestHostedClients(RakNet::RakNetGUID serverGuid);
 
-    /// <summary>
-    /// Starts to retrieve a list of clients that are connected to the specified master server
-    /// Response will be send to the mServerSearch peer
-    /// </summary>
-    /// <param name="serverGuid">The GUID of the master server</param>
-    void RequestHostedClients(RakNet::RakNetGUID serverGuid);
+	/// <summary>
+	/// Connects blocking to the master server and on successful connection will attempt a login with the username
+	/// </summary>
+	/// <returns>true - on success, otherwise false</returns>
+	bool ConnectToMasterServer();
 
 	bool CreateRoom(const char* roomName, const char* password) const;
 

@@ -43,16 +43,6 @@ public:
 		lastFunc = callResult;
 	}
 
-        // parent->SetRoomList(callResult->roomsOutput.Size(), name);
-    }
-    void CreateRoom_Callback(const RakNet::SystemAddress &senderAddress, RakNet::CreateRoom_Func *callResult) override {
-        (void)senderAddress;
-        callResult->PrintResult();
-    }
-    void EnterRoom_Callback(const RakNet::SystemAddress &senderAddress, RakNet::EnterRoom_Func *callResult) override {
-        (void)senderAddress;
-        callResult->PrintResult();
-    }
 
 	// Results of calls
 	void JoinByFilter_Callback(const RakNet::SystemAddress& senderAddress, RakNet::JoinByFilter_Func* callResult) override {
