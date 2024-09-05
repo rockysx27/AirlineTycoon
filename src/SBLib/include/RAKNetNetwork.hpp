@@ -2,7 +2,7 @@
 
 #include "RakPeerInterface.h"
 #include "RakNetTypes.h"
-#include "rooms-plugin\RoomsPlugin.h"
+#include "rooms-plugin/RoomsPlugin.h"
 
 #define RAKNET_TYPE_DIRECT_JOIN "Direct-IP  Join"
 #define RAKNET_TYPE_DIRECT_HOST "Direct-IP  Host"
@@ -29,21 +29,19 @@ struct RAKNetworkPeer {
     RakNet::SystemAddress address;
 };
 #pragma pack(pop)
-struct RAKNetworkPlayer : public SBNetworkPlayer
-{
-	//ULONG ID;
-	RakNet::RakNetGUID peer;
+struct RAKNetworkPlayer : public SBNetworkPlayer {
+    // ULONG ID;
+    RakNet::RakNetGUID peer;
 };
-struct RAKSessionInfo : public SBSessionInfo
-{
-	//ULONG hostID;
-	//char sessionName[26];
-	RakNet::RakNetGUID address;
+struct RAKSessionInfo : public SBSessionInfo {
+    // ULONG hostID;
+    // char sessionName[26];
+    RakNet::RakNetGUID address;
 };
 
 class RAKNetNetwork : public BaseNetworkType, public IServerSearchable {
-public:
-	RAKNetNetwork();
+  public:
+    RAKNetNetwork();
 
     void Initialize() override;
     void Disconnect() override;

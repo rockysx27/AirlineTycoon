@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "SbLib.h"
 #include "network.h"
 #include <ctime>
@@ -10,9 +10,9 @@
 #include "RAKNetRoomCallbacks.hpp"
 
 using namespace RakNet;
-#define AT_Log(a, ...) AT_Log_I("RAKNetNetwork", a, __VA_ARGS__)
+#define AT_Log(...) AT_Log_I("RAKNetNetwork", __VA_ARGS__)
 
-void SerializePacket(ATPacket* p, BitStream* data) {
+void SerializePacket(ATPacket *p, BitStream *data) {
     data->Write(p->messageType);
     data->Write(p->peerID);
     data->Write(p->dataLength);
@@ -22,7 +22,7 @@ void SerializePacket(ATPacket* p, BitStream* data) {
     }
 }
 
-void DeserializePacket(unsigned char* data, unsigned int length, ATPacket* packet) {
+void DeserializePacket(unsigned char *data, unsigned int length, ATPacket *packet) {
     BitStream dataStream(data, length, false);
     dataStream.Read(packet->messageType);
     dataStream.Read(packet->peerID);
@@ -322,7 +322,8 @@ bool RAKNetNetwork::CreateSession(SBNetworkCreation *create) {
         // allowed flow skip!
     case SBCreationFlags::SBNETWORK_CREATE_NONE:
     default: // No need for a NAT server if the user chose it
-        mMaster->Startup(4, &SocketDescriptor(SERVER_PORT, ""), 1);
+        SocketDescriptor tmp(SERVER_PORT, "");
+        mMaster->Startup(4, &tmp, 1);
         AT_Log("CREATE SESSION: DIRECT. Our GUID: '%s' and our SystemAddress: '%s'", mMaster->GetMyGUID().ToString(),
                mMaster->GetSystemAddressFromGuid(mMaster->GetMyGUID()).ToString());
         mMaster->SetMaximumIncomingConnections(4);
@@ -351,9 +352,7 @@ void RAKNetNetwork::CloseSession() {
     mState = SBSessionEnum::SBNETWORK_SESSION_FINISHED;
 }
 
-ULONG RAKNetNetwork::GetLocalPlayerID() {
-    return mLocalID;
-}
+ULONG RAKNetNetwork::GetLocalPlayerID() { return mLocalID; }
 
 void RAKNetNetwork::RequestHostedClients(RakNetGUID serverGuid) {}
 
@@ -366,7 +365,7 @@ bool RAKNetNetwork::Send(BUFFER<UBYTE> &buffer, ULONG length, ULONG peerID, bool
     a.messageType = SBNETWORK_MESSAGE;
     a.dataLength = length;
     a.data = buffer;
-	a.peerID = peerID;
+    a.peerID = peerID;
 
     BitStream data;
     SerializePacket(&a, &data);
@@ -375,8 +374,7 @@ bool RAKNetNetwork::Send(BUFFER<UBYTE> &buffer, ULONG length, ULONG peerID, bool
         AT_Log("SEND PRIVATE: SBNETWORK_MESSAGE ID: - ID %x TO: %x", (a.data[3] << 24) | (a.data[2] << 16) | (a.data[1] << 8) | (a.data[0]), peerID);
     }
 
-	mMaster->Send(&data, HIGH_PRIORITY, RELIABLE_ORDERED, 0, NET_BROADCAST, true);
-    
+    mMaster->Send(&data, HIGH_PRIORITY, RELIABLE_ORDERED, 0, NET_BROADCAST, true);
 
     return true;
 }
@@ -394,8 +392,7 @@ bool RAKNetNetwork::Receive(UBYTE **buffer, ULONG &size) {
                 master = mPlayers.GetLastAccessed();
         }
 
-        if (master->ID == mLocalID)
-        {
+        if (master->ID == mLocalID) {
             DPPacket dp{};
             dp.messageType = DPSYS_HOST;
             dp.playerType = DPPLAYERTYPE_PLAYER;
@@ -423,19 +420,19 @@ bool RAKNetNetwork::Receive(UBYTE **buffer, ULONG &size) {
         case ID_CONNECTION_LOST: {
             AT_Log("RECEIVED: SBNETWORK_DISCONNECT - reason: %d", p->data[0]);
 
-            //ATPacket packet{};
-            //DeserializePacket(p->data, p->length, &packet);
-        		
-        	//Find disconnected player 
+            // ATPacket packet{};
+            // DeserializePacket(p->data, p->length, &packet);
+
+            // Find disconnected player
             SBNetworkPlayer *disconnectedPlayer = nullptr;
             for (mPlayers.GetFirst(); !mPlayers.IsLast(); mPlayers.GetNext()) {
-                if (static_cast<RAKNetworkPlayer*>(mPlayers.GetLastAccessed())->peer == p->guid) {
+                if (static_cast<RAKNetworkPlayer *>(mPlayers.GetLastAccessed())->peer == p->guid) {
                     disconnectedPlayer = mPlayers.GetLastAccessed();
                     break;
                 }
             }
 
-            if (disconnectedPlayer != nullptr) { //relay information to game
+            if (disconnectedPlayer != nullptr) { // relay information to game
                 DPPacket dp{};
                 dp.messageType = DPSYS_DESTROYPLAYERORGROUP;
                 dp.playerType = DPPLAYERTYPE_PLAYER;
@@ -443,7 +440,7 @@ bool RAKNetNetwork::Receive(UBYTE **buffer, ULONG &size) {
                 size = sizeof(DPPacket);
                 *buffer = new UBYTE[size];
                 memcpy(*buffer, &dp, size);
-            	
+
                 mPlayers.RemoveLastAccessed();
                 delete disconnectedPlayer;
             }
@@ -461,7 +458,7 @@ bool RAKNetNetwork::Receive(UBYTE **buffer, ULONG &size) {
             if (packet.peerID && packet.peerID != mLocalID) {
                 break;
             }
-        		
+
             *buffer = packet.data;
             size = packet.dataLength;
 
@@ -471,7 +468,7 @@ bool RAKNetNetwork::Receive(UBYTE **buffer, ULONG &size) {
         case SBEventEnum::SBNETWORK_ESTABLISH_CONNECTION: { // New Connection to master peer
             RAKNetworkPlayer *player = new RAKNetworkPlayer();
             BitStream b(p->data, p->length, true);
-            b.IgnoreBytes(1); //Net event ID
+            b.IgnoreBytes(1); // Net event ID
             b.Read(player->ID);
             player->peer = p->guid; // mMaster->GetGuidFromSystemAddress(p->systemAddress);
             mPlayers.Add(player);
@@ -558,10 +555,7 @@ bool RAKNetNetwork::Receive(UBYTE **buffer, ULONG &size) {
 }
 #pragma optimize("", on)
 
-
-SBList<SBNetworkPlayer*>* RAKNetNetwork::GetAllPlayers() {
-    return &mPlayers;
-}
+SBList<SBNetworkPlayer *> *RAKNetNetwork::GetAllPlayers() { return &mPlayers; }
 
 SBCapabilitiesFlags RAKNetNetwork::GetCapabilities() {
     if (this->GetState() == SBSessionEnum::SBNETWORK_SESSION_MASTER)
@@ -577,9 +571,7 @@ SBCapabilitiesFlags RAKNetNetwork::GetCapabilities() {
 
 bool RAKNetNetwork::IsServerSearchable() { return true; }
 
-IServerSearchable* RAKNetNetwork::GetServerSearcher() {
-	return this;
-}
+IServerSearchable *RAKNetNetwork::GetServerSearcher() { return this; }
 
 int RAKNetNetwork::CheckConnectionPacket(Packet *p, RakPeerInterface *peerInterface, bool isAnotherPeer) {
     switch (p->data[0]) {

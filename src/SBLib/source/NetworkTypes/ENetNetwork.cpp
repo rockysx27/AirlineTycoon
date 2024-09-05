@@ -1,14 +1,9 @@
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "SbLib.h"
 #include "network.h"
 #include "ENetNetwork.hpp"
 
-
-ENetNetwork::ENetNetwork()
-    : mServer()
-    , mHost(nullptr)
-    , mMaster(nullptr)
-    , mSocket() {
+ENetNetwork::ENetNetwork() : mServer(), mHost(nullptr), mMaster(nullptr), mSocket() {
     TEAKRAND rand;
     rand.SRandTime();
     mLocalID = rand.Rand();
@@ -21,9 +16,7 @@ ENetNetwork::ENetNetwork()
 
 ENetNetwork::~ENetNetwork() = default;
 
-void ENetNetwork::Initialize() {
-
-}
+void ENetNetwork::Initialize() {}
 
 SLONG ENetNetwork::GetMessageCount() {
     ENetEvent event;
@@ -34,10 +27,8 @@ SLONG ENetNetwork::GetMessageCount() {
         SLONG clientID;
         buf.data = &clientID;
         buf.dataLength = sizeof(SLONG);
-        if (enet_socket_receive(mSocket, &address, &buf, 1) > 0)
-        {
-            if (clientID != mLocalID)
-            {
+        if (enet_socket_receive(mSocket, &address, &buf, 1) > 0) {
+            if (clientID != mLocalID) {
                 buf.data = &mSessionInfo.GetFirst();
                 buf.dataLength = sizeof(SBSessionInfo);
                 enet_socket_send(mSocket, &address, &buf, 1);
@@ -47,18 +38,15 @@ SLONG ENetNetwork::GetMessageCount() {
         ENetSessionInfo *info = new ENetSessionInfo();
         buf.data = info;
         buf.dataLength = sizeof(ENetSessionInfo);
-        if (enet_socket_receive(mSocket, &address, &buf, 1) > 0)
-        {
-            if (info->hostID != mLocalID)
-            {
+        if (enet_socket_receive(mSocket, &address, &buf, 1) > 0) {
+            if (info->hostID != mLocalID) {
                 if (mSessionInfo.GetNumberOfElements() > 0) {
                     /* Check if we already know about the session */
                     for (mSessionInfo.GetFirst(); !mSessionInfo.IsLast() && mSessionInfo.GetLastAccessed()->hostID != info->hostID; mSessionInfo.GetNext())
                         ;
                 }
 
-                if (mSessionInfo.GetNumberOfElements() == 0 || mSessionInfo.IsLast())
-                {
+                if (mSessionInfo.GetNumberOfElements() == 0 || mSessionInfo.IsLast()) {
                     info->address.host = address.host;
                     mSessionInfo.Add(info);
                     mSessions.Add(std::make_shared<SBStr>(info->sessionName));
@@ -85,8 +73,7 @@ SLONG ENetNetwork::GetMessageCount() {
                 player->peer = event.peer;
                 player->peer->data = &mPlayers.Add(player);
 
-                if (mState == SBSessionEnum::SBNETWORK_SESSION_MASTER)
-                {
+                if (mState == SBSessionEnum::SBNETWORK_SESSION_MASTER) {
                     /* Broadcast the address of this peer to all other peers */
                     ENetNetworkPeer peer;
                     peer.ID = event.data;
@@ -110,9 +97,7 @@ SLONG ENetNetwork::GetMessageCount() {
                 player->ID = peer->ID;
                 player->peer = enet_host_connect(mHost, &peer->address, 2, mLocalID);
                 player->peer->data = &mPlayers.Add(player);
-            }
-            else
-            {
+            } else {
                 mPackets.Add(event.packet);
             }
             break;
@@ -125,14 +110,12 @@ SLONG ENetNetwork::GetMessageCount() {
                 dp.messageType = DPSYS_DESTROYPLAYERORGROUP;
                 dp.playerType = DPPLAYERTYPE_PLAYER;
                 dp.dpId = player->ID;
-                ENetPacket* packet = enet_packet_create(&dp, sizeof(DPPacket), ENET_PACKET_FLAG_RELIABLE);
+                ENetPacket *packet = enet_packet_create(&dp, sizeof(DPPacket), ENET_PACKET_FLAG_RELIABLE);
                 mPackets.Add(packet);
 
                 if (mPlayers.GetNumberOfElements() > 0) {
-                    for (mPlayers.GetFirst(); !mPlayers.IsLast(); mPlayers.GetNext())
-                    {
-                        if (mPlayers.GetLastAccessed()->ID == player->ID)
-                        {
+                    for (mPlayers.GetFirst(); !mPlayers.IsLast(); mPlayers.GetNext()) {
+                        if (mPlayers.GetLastAccessed()->ID == player->ID) {
                             mPlayers.RemoveLastAccessed();
                             break;
                         }
@@ -179,8 +162,7 @@ bool ENetNetwork::Connect(const char *host) {
 
     enet_socket_set_option(mSocket, ENET_SOCKOPT_REUSEADDR, 1);
     enet_socket_set_option(mSocket, ENET_SOCKOPT_NONBLOCK, 1);
-    if (enet_address_set_host_ip(&mServer, host) < 0)
-    {
+    if (enet_address_set_host_ip(&mServer, host) < 0) {
         enet_socket_set_option(mSocket, ENET_SOCKOPT_BROADCAST, 1);
         mServer.host = ENET_HOST_BROADCAST;
     }
@@ -222,9 +204,7 @@ bool ENetNetwork::CreateSession(SBNetworkCreation *sessionSettings) {
 
 void ENetNetwork::CloseSession() { mState = SBSessionEnum::SBNETWORK_SESSION_FINISHED; }
 
-ULONG ENetNetwork::GetLocalPlayerID() {
-    return mLocalID;
-}
+ULONG ENetNetwork::GetLocalPlayerID() { return mLocalID; }
 
 bool ENetNetwork::IsSessionFinished() { return mState == SBSessionEnum::SBNETWORK_SESSION_FINISHED; }
 
@@ -247,12 +227,12 @@ bool ENetNetwork::Send(BUFFER<UBYTE> &buffer, ULONG length, ULONG peerID, bool c
     return true;
 }
 
-bool ENetNetwork::Receive(UBYTE** buffer, ULONG& length) {
+bool ENetNetwork::Receive(UBYTE **buffer, ULONG &length) {
     mPackets.GetFirst();
     if (mPackets.IsLast())
         return false;
 
-    ENetPacket* packet = mPackets.GetLastAccessed();
+    ENetPacket *packet = mPackets.GetLastAccessed();
     length = packet->dataLength;
     *buffer = new UBYTE[length];
     memcpy(*buffer, packet->data, length);
@@ -263,17 +243,13 @@ bool ENetNetwork::Receive(UBYTE** buffer, ULONG& length) {
     return true;
 }
 
-SBList<SBNetworkPlayer*>* ENetNetwork::GetAllPlayers() {
-    return &mPlayers;
-}
+SBList<SBNetworkPlayer *> *ENetNetwork::GetAllPlayers() { return &mPlayers; }
 
 SBCapabilitiesFlags ENetNetwork::GetCapabilities() { return SBCapabilitiesFlags::SBNETWORK_NONE; }
 
 bool ENetNetwork::IsServerSearchable() { return true; }
 
-IServerSearchable* ENetNetwork::GetServerSearcher() {
-	return this;
-}
+IServerSearchable *ENetNetwork::GetServerSearcher() { return this; }
 
 SBList<std::shared_ptr<SBStr>> *ENetNetwork::GetSessionListAsync() { return &mSessions; }
 
