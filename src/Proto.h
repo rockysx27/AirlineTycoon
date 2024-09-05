@@ -104,8 +104,6 @@ void DebugBreak(void);
 DWORD AtGetTime(void);
 SLONG AtGetAsyncKeyState(SLONG vKey);
 DWORD AtGetTickCount(void);
-const char *getRobotActionName(SLONG a);
-const char *getRobotUseName(SLONG a);
 CString getCurrentDayString();
 
 //--------------------------------------------------------------------------------------------

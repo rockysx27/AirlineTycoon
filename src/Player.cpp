@@ -3169,7 +3169,7 @@ void PLAYER::RobotPump() {
             RobotActions[c] = RobotActions[c + 1];
         }
         if (IsSuperBot()) {
-            hprintf("RobotPump(): Action 0: %s", getRobotActionName(RobotActions[0].ActionId));
+            hprintf("RobotPump(): Action 0: %s", Translate_ACTION(RobotActions[0].ActionId));
         }
 
         RobotActions[RobotActions.AnzEntries() - 1].ActionId = ACTION_NONE;
@@ -3993,7 +3993,7 @@ void PLAYER::RobotExecuteAction() {
     // Die exakte Zeit des Ausführens auf dem Server simulieren
     SLONG RealLocalTime = Sim.Time;
 
-    /* Hdu.HercPrintf("Player %li: %s, %s at %li/%li\n", PlayerNum, getRobotActionName(RobotActions[0].ActionId), getRobotActionName(RobotActions[1].ActionId),
+    /* Hdu.HercPrintf("Player %li: %s, %s at %li/%li\n", PlayerNum, Translate_ACTION(RobotActions[0].ActionId), Translate_ACTION(RobotActions[1].ActionId),
                    WaitWorkTill, WaitWorkTill2);*/
     NetGenericSync(770 + PlayerNum, RobotActions[0].ActionId);
     NetGenericSync(740 + PlayerNum, RobotActions[1].ActionId);

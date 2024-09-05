@@ -20,9 +20,9 @@ void Bot::printRobotFlags() {
     for (const auto &i : list) {
         bool robotUses = qPlayer.RobotUse(i.first);
         if (robotUses == i.second) {
-            greenprintf("Bot::printRobotFlags(): %s is %s (default)", getRobotUseName(i.first), (robotUses ? "SET" : "UNSET"));
+            greenprintf("Bot::printRobotFlags(): %s is %s (default)", Translate_ROBOT_USE(i.first), (robotUses ? "SET" : "UNSET"));
         } else {
-            redprintf("Bot::printRobotFlags(): %s is %s (mission specialization)", getRobotUseName(i.first), (robotUses ? "SET" : "UNSET"));
+            redprintf("Bot::printRobotFlags(): %s is %s (mission specialization)", Translate_ROBOT_USE(i.first), (robotUses ? "SET" : "UNSET"));
         }
     }
 }

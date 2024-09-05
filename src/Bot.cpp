@@ -373,7 +373,7 @@ void Bot::RobotPlan() {
     });
 
     /*for (const auto &qAction : prioList) {
-        hprintf("Bot::RobotPlan(): %s with prio %s (%d+%d)", getRobotActionName(qAction.actionId), getPrioName(qAction.prio), qAction.secondaryScore,
+        hprintf("Bot::RobotPlan(): %s with prio %s (%d+%d)", Translate_ACTION(qAction.actionId), getPrioName(qAction.prio), qAction.secondaryScore,
                 qAction.walkingDistance);
     }*/
 
@@ -386,8 +386,8 @@ void Bot::RobotPlan() {
     qRobotActions[2].Running = (prioList[1].prio > condNoRun);
     qRobotActions[2].Prio = static_cast<SLONG>(prioList[1].prio);
 
-    hprintf("Bot::RobotPlan(): Current: %s, planned: %s, %s", getRobotActionName(qRobotActions[0].ActionId), getRobotActionName(qRobotActions[1].ActionId),
-            getRobotActionName(qRobotActions[2].ActionId), getPrioName(prioList[1].prio));
+    hprintf("Bot::RobotPlan(): Current: %s, planned: %s, %s", Translate_ACTION(qRobotActions[0].ActionId), Translate_ACTION(qRobotActions[1].ActionId),
+            Translate_ACTION(qRobotActions[2].ActionId), getPrioName(prioList[1].prio));
 
     if (qRobotActions[1].ActionId == ACTION_NONE) {
         redprintf("Did not plan action for slot #1");
@@ -429,7 +429,7 @@ void Bot::RobotExecuteAction() {
 
     mNumActionsToday += 1;
     greenprintf("Bot::RobotExecuteAction(): Executing %s (#%d, %s), current time: %02ld:%02ld, money: %s $ (available: %s $)",
-                getRobotActionName(qAction.ActionId), mNumActionsToday, getPrioName(qAction.Prio), Sim.GetHour(), Sim.GetMinute(),
+                Translate_ACTION(qAction.ActionId), mNumActionsToday, getPrioName(qAction.Prio), Sim.GetHour(), Sim.GetMinute(),
                 (LPCTSTR)Insert1000erDots64(qPlayer.Money), (LPCTSTR)Insert1000erDots64(getMoneyAvailable()));
 
     mOnThePhone = 0;
@@ -895,7 +895,7 @@ void Bot::RobotExecuteAction() {
         break;
 
     default:
-        redprintf("Bot::RobotExecuteAction(): Trying to execute invalid action: %s", getRobotActionName(qAction.ActionId));
+        redprintf("Bot::RobotExecuteAction(): Trying to execute invalid action: %s", Translate_ACTION(qAction.ActionId));
         // DebugBreak();
     }
 
