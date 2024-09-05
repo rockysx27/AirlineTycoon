@@ -51,7 +51,7 @@ PRINTF_ATTR(2, 3) inline void AT_Log_I(const std::string origin, const std::stri
     va_end(argptr);
 }
 
-#define AT_Log_Generic(a, ...) AT_Log_I("Generic", a, __VA_ARGS__)
+#define AT_Log_Generic(...) AT_Log_I("Generic", __VA_ARGS__)
 
 template <typename T> inline void Limit(T min, T &value, T max) {
     if (value < min)

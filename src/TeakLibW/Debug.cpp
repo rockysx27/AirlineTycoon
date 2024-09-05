@@ -34,7 +34,7 @@ HDU::HDU() : Log(nullptr) {
         if (strstr(message, "||") == nullptr) {
             const unsigned long long size = strlen(message) + strlen("Misc || ") + 1;
             finalMessage = new char[size]{};
-            sprintf_s(finalMessage, size, "Misc || %s", message);
+            snprintf(finalMessage, size, "Misc || %s", message);
             modified = true;
         }
 
@@ -50,7 +50,7 @@ HDU::HDU() : Log(nullptr) {
             delete[] finalMessage;
     };
 
-    SDL_LogSetOutputFunction(func, defaultOut);
+    SDL_LogSetOutputFunction(func, &defaultOut);
 
     SDL_free(base);
 }
