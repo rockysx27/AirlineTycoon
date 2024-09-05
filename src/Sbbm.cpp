@@ -3,7 +3,7 @@
 //============================================================================================
 // Link: "SBBM.h"
 //============================================================================================
-#include "stdafx.h"
+#include "StdAfx.h"
 
 extern SB_CColorFX ColorFX;
 extern XY MouseCursorOffset;
@@ -529,7 +529,7 @@ void SBPRIMARYBM::Flip(XY WindowPos, BOOL /*ShowFPS*/) {
 
               if (gBlendState==4)
               {
-            //Jaja, sehr seltsam. Warum, daß steht in Gameframe.cpp
+            //Jaja, sehr seltsam. Warum, daß steht in GameFrame.cpp
             SLONG c=0;
 
             SB_CBitmapKey SrcKey(PrimaryBm);

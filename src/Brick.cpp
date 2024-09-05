@@ -1,7 +1,7 @@
 //============================================================================================
 // Brick.Cpp - Funktionen für die Verwaltung der baulichen Elemente:
 //============================================================================================
-#include "stdafx.h"
+#include "StdAfx.h"
 
 extern SB_CColorFX ColorFX;
 

@@ -1753,7 +1753,7 @@ class /**/ CWorkers {
 };
 
 //--------------------------------------------------------------------------------------------
-// Stdraum.cpp: Jemand mit dem sich der Spieler unterhalten kann:
+// StdRaum.cpp: Jemand mit dem sich der Spieler unterhalten kann:
 //--------------------------------------------------------------------------------------------
 class CTalker {
   public:
@@ -2640,7 +2640,7 @@ class SIM // Die Simulationswelt; alles was zur aktuellen Partie gehört
     void NetRefill(SLONG Type, SLONG City = 0) const;
     void NetSynchronizeOvertake(void) const;
 
-    // In NewgamePopup.cpp
+    // In NewGamePopup.cpp
     static bool SendMemFile(TEAKFILE &file, ULONG target = 0, bool useCompression = true);
     static bool ReceiveMemFile(TEAKFILE &file);
     static bool SendSimpleMessage(ULONG Message, ULONG target = 0);

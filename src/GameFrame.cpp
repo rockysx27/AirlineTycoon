@@ -1,13 +1,13 @@
 //============================================================================================
 // GameFrame.cpp : implementation file
 //============================================================================================
-// Link: "Gameframe.h"
+// Link: "GameFrame.h"
 //============================================================================================
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "AtNet.h"
 #include "BotHelper.h"
 #include "Intro.h"
-#include "NewgamePopup.h" //Fenster zum Wahl der Gegner und der Spielstärke
+#include "NewGamePopup.h" //Fenster zum Wahl der Gegner und der Spielstärke
 #include "Outro.h"
 #include "Synthese.h"
 #include "glpause.h"

@@ -1,4 +1,4 @@
-// stdafx.h : include file for standard system include files,
+// StdAfx.h : include file for standard system include files,
 //  or project specific include files that are used frequently, but
 //      are changed infrequently
 //
@@ -34,7 +34,7 @@ typedef CStdStringA CString;
 #include "class.h" //Eigene Klassen
 #include "Proto.h"
 #include "TakeOff.h"
-#include "Gameframe.h" //Rahmenfenster mit PrimarySurface
+#include "GameFrame.h" //Rahmenfenster mit PrimarySurface
 
 // Räume:
 #include "SmackPrs.h"

@@ -3,7 +3,7 @@
 //============================================================================================
 // Link: "Tafel.h"
 //============================================================================================
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "AtNet.h"
 #include "Tafel.h" //Die Tafel bei der Flughafenaufsicht
 #include "gltafel.h"

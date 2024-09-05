@@ -1,7 +1,7 @@
 //============================================================================================
 // Buero.cpp : Das Büro des Spielers
 //============================================================================================
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "Buero.h"
 #include "glBueroDrk.h"
 #include "glbuero.h"

@@ -78,7 +78,7 @@ add_executable (AT
     DutyFree.cpp
     Editor.cpp
     Fracht.cpp
-    Gameframe.cpp
+    GameFrame.cpp
     GameMechanic.cpp
     Global.cpp
     Globe.cpp
@@ -96,7 +96,7 @@ add_executable (AT
     Misc.cpp
     Museum.cpp
     Nasa.cpp
-    NewgamePopup.cpp
+    NewGamePopup.cpp
     Options.cpp
     Outro.cpp
     Person.cpp
@@ -119,7 +119,7 @@ add_executable (AT
     Sound.cpp
     Statistk.cpp
     StdAfx.cpp
-    Stdraum.cpp
+    StdRaum.cpp
     Synthese.cpp
     Tafel.cpp
     Takeoff.cpp
@@ -162,7 +162,7 @@ endif()
 
 
 if(NOT ${CMAKE_VERSION} VERSION_LESS "3.16.0")
-    target_precompile_headers(AT PUBLIC stdafx.h)
+    target_precompile_headers(AT PUBLIC StdAfx.h)
 endif()
 
 target_link_libraries(AT PRIVATE

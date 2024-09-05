@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "StdAfx.h"
 
 char *bprintf(char const *format, ...) {
     static char buffer[8192];

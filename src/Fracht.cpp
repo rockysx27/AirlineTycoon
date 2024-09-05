@@ -1,7 +1,7 @@
 //============================================================================================
 // Fracht.cpp : Der Fracht Schalter (neu im Add-On)
 //============================================================================================
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "AtNet.h"
 #include "Fracht.h"
 #include "glfracht.h"

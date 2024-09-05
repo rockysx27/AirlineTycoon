@@ -3,12 +3,12 @@
 //============================================================================================
 // Link: "Werbung.h"
 //============================================================================================
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "Werbung.h"
 #include "glnowerb.h"
 #include "glwerbe.h"
 
-#define ROOM_LIMIT DIFF_NORMAL // Siehe auch Stdraum.cpp wegen dem Intro-Text beim ersten betreten
+#define ROOM_LIMIT DIFF_NORMAL // Siehe auch StdRaum.cpp wegen dem Intro-Text beim ersten betreten
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

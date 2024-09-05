@@ -1,4 +1,4 @@
-// NewgamePopup.h : header file
+// NewGamePopup.h : header file
 //
 #include "SbLib.h"
 #include "network.h"

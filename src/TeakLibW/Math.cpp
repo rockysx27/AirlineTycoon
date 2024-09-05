@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "StdAfx.h"
 
 void memswap(void *dst, void *src, ULONG size) {
     for (ULONG i = size; i > 0; --i) {

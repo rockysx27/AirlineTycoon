@@ -1,11 +1,11 @@
 //============================================================================================
-// NewgamePopup.cpp : implementation file
+// NewGamePopup.cpp : implementation file
 //============================================================================================
-// Link to: "NewgamePopup.h"
+// Link to: "NewGamePopup.h"
 //============================================================================================
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "AtNet.h"
-#include "NewgamePopup.h" //Fenster zum Wahl der Gegner und der Spielstärke
+#include "NewGamePopup.h" //Fenster zum Wahl der Gegner und der Spielstärke
 #include "glstart.h"
 #include <cstdio>
 #include <cstdlib>
@@ -2430,7 +2430,7 @@ void NewGamePopup::OnTimer(UINT nIDEvent) {
 
                 break;
             default:
-                hprintf("NewgamePopup.cpp: Default case should not be reached.");
+                hprintf("NewGamePopup.cpp: Default case should not be reached.");
                 DebugBreak();
             }
 

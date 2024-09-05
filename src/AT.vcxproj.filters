@@ -7,7 +7,7 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Stdraum.cpp">
+    <ClCompile Include="StdRaum.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Synthese.cpp">
@@ -130,7 +130,7 @@
     <ClCompile Include="Options.cpp">
       <Filter>Source Files\Screens</Filter>
     </ClCompile>
-    <ClCompile Include="NewgamePopup.cpp">
+    <ClCompile Include="NewGamePopup.cpp">
       <Filter>Source Files\Screens</Filter>
     </ClCompile>
     <ClCompile Include="Outro.cpp">
@@ -169,7 +169,7 @@
     <ClCompile Include="HLine.cpp">
       <Filter>Source Files\GFX</Filter>
     </ClCompile>
-    <ClCompile Include="Gameframe.cpp">
+    <ClCompile Include="GameFrame.cpp">
       <Filter>Source Files\GFX</Filter>
     </ClCompile>
     <ClCompile Include="AirportView.cpp">
@@ -302,7 +302,7 @@
     <ClInclude Include="Colorfx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Gameframe.h">
+    <ClInclude Include="GameFrame.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="HLine.h">
@@ -326,7 +326,7 @@
     <ClInclude Include="SSE.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="stdafx.h">
+    <ClInclude Include="StdAfx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Stdraum.h">
@@ -662,7 +662,7 @@
     <ClInclude Include="net.h">
       <Filter>Header Files\Defines</Filter>
     </ClInclude>
-    <ClInclude Include="NewgamePopup.h">
+    <ClInclude Include="NewGamePopup.h">
       <Filter>Header Files\Screens</Filter>
     </ClInclude>
     <ClInclude Include="Options.h">

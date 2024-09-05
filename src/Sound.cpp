@@ -1,7 +1,7 @@
 //============================================================================================
 // Sound.Cpp - Management von Midi und Wave Routinen
 //============================================================================================
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "Synthese.h"
 #include <filesystem>
 

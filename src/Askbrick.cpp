@@ -1,7 +1,7 @@
 //============================================================================================
 // AskBrick.Cpp : Auswahlmenü für die Bricks des Editors
 //============================================================================================
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "AskBrick.h"
 
 #ifdef _DEBUG

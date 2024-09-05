@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "StdAfx.h"
 
 Uint16 get_pixel16(SDL_Surface *surface, SLONG x, SLONG y);
 

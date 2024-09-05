@@ -3,7 +3,7 @@
 //============================================================================================
 // Link: "Takeoff.h"
 //============================================================================================
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "Abend.h"
 #include "ArabAir.h"
 #include "Aufsicht.h"
@@ -23,7 +23,7 @@
 #include "Makler.h"
 #include "Museum.h"
 #include "Nasa.h"
-#include "NewgamePopup.h" //Fenster zum Wahl der Gegner und der Spielstärke
+#include "NewGamePopup.h" //Fenster zum Wahl der Gegner und der Spielstärke
 #include "Outro.h"
 #include "PlanProp.h"
 #include "Reise.h"

@@ -212,7 +212,7 @@
     </ClCompile>
     <ClCompile Include="Fracht.cpp">
     </ClCompile>
-    <ClCompile Include="Gameframe.cpp">
+    <ClCompile Include="GameFrame.cpp">
     </ClCompile>
     <ClCompile Include="Global.cpp">
     </ClCompile>
@@ -246,7 +246,7 @@
     </ClCompile>
     <ClCompile Include="Nasa.cpp">
     </ClCompile>
-    <ClCompile Include="NewgamePopup.cpp">
+    <ClCompile Include="NewGamePopup.cpp">
     </ClCompile>
     <ClCompile Include="Options.cpp">
     </ClCompile>
@@ -292,7 +292,7 @@
     </ClCompile>
     <ClCompile Include="stdafx.cpp">
     </ClCompile>
-    <ClCompile Include="Stdraum.cpp">
+    <ClCompile Include="StdRaum.cpp">
     </ClCompile>
     <ClCompile Include="Synthese.cpp">
     </ClCompile>
@@ -365,7 +365,7 @@
     <ClInclude Include="Editor.h" />
     <ClInclude Include="fillfile.h" />
     <ClInclude Include="Fracht.h" />
-    <ClInclude Include="Gameframe.h" />
+    <ClInclude Include="GameFrame.h" />
     <ClInclude Include="glabend.h" />
     <ClInclude Include="glarab.h" />
     <ClInclude Include="glauf.h" />
@@ -443,7 +443,7 @@
     <ClInclude Include="Museum.h" />
     <ClInclude Include="Nasa.h" />
     <ClInclude Include="net.h" />
-    <ClInclude Include="NewgamePopup.h" />
+    <ClInclude Include="NewGamePopup.h" />
     <ClInclude Include="Options.h" />
     <ClInclude Include="Outro.h" />
     <ClInclude Include="Personal.h" />
@@ -464,7 +464,7 @@
     <ClInclude Include="Smackprs.h" />
     <ClInclude Include="SSE.h" />
     <ClInclude Include="Statistk.h" />
-    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="StdAfx.h" />
     <ClInclude Include="Stdraum.h" />
     <ClInclude Include="stdstring.h" />
     <ClInclude Include="Synthese.h" />

@@ -1,7 +1,7 @@
 //============================================================================================
 // Route.cpp : Routinen zum verwalten der Flugrouten (CRoute, CRouten)
 //============================================================================================
-#include "stdafx.h"
+#include "StdAfx.h"
 #include <sstream>
 
 SLONG ReadLine(BUFFER_V<UBYTE> &Buffer, SLONG BufferStart, char *Line, SLONG LineLength);
