@@ -28,6 +28,10 @@ CVideo::CVideo(const CString &SmackName) : CStdRaum(FALSE, 0, "", 0) {
     gMouseStartup = TRUE;
     
     pSmack = smk_open_file(FullFilename(SmackName, IntroPath), SMK_MODE_MEMORY);
+    if (pSmack == nullptr) {
+        return;
+    }
+
     smk_enable_video(pSmack, 1U);
 
     smk_info_video(pSmack, &Width, &Height, &Scale);
@@ -68,7 +72,7 @@ CVideo::CVideo(const CString &SmackName) : CStdRaum(FALSE, 0, "", 0) {
 }
 
 //--------------------------------------------------------------------------------------------
-// CVideo-Fenster zerstören:
+// CVideo-Fenster zerstï¿½ren:
 //--------------------------------------------------------------------------------------------
 CVideo::~CVideo() {
     if ((pRoomLib != nullptr) && (pGfxMain != nullptr)) {
@@ -132,6 +136,10 @@ void CVideo::DoAudio() const {
 // void CVideo::OnPaint():
 //--------------------------------------------------------------------------------------------
 void CVideo::OnPaint() {
+    if (pSmack == nullptr) {
+        return;
+    }
+
     if (FrameNum++ < 2) {
         PrimaryBm.BlitFrom(RoomBm);
     }
