@@ -461,13 +461,14 @@ BOOL CTakeOffApp::InitInstance(int argc, char *argv[]) {
         try {
             pGfxMain->LoadLib(const_cast<char *>((LPCTSTR)FullFilename("titel.gli", RoomPath)), &pRoomLib, L_LOCMEM);
         } catch (TeakLibException &e) {
-            AT_Log_I("Did not find titel.gli, trying to continue", e.what());
+            AT_Log_I("Takeoff", "Did not find titel.gli, trying to continue", e.what());
+            e.caught();
         }
 
         try {
             pGfxMain->LoadLib(const_cast<char *>((LPCTSTR)FullFilename("titel2.gli", RoomPath)), &pRoomLib2, L_LOCMEM);
         } catch (TeakLibException &e) {
-            AT_Log_I("Did not find titel2.gli, trying to continue", e.what());
+            AT_Log_I("Takeoff", "Did not find titel2.gli, trying to continue", e.what());
             e.caught();
         }
 

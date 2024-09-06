@@ -71,6 +71,11 @@ CRegistryAccess::~CRegistryAccess() { Close(); }
 // Alten Zugriff schließen:
 //--------------------------------------------------------------------------------------------
 void CRegistryAccess::Close() {
+    if (gQuickTestRun > 0) {
+        json_decref(settingsJSON);
+        settingsJSON = nullptr;
+        return;
+    }
     if (settingsJSON != nullptr) {
         json_dump_file(settingsJSON, "AT.json", JSON_INDENT(3));
         json_decref(settingsJSON);

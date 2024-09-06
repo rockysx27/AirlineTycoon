@@ -4074,7 +4074,11 @@ void COptions::ReadOptions() {
         OptionLastMission3 = min(OptionLastMission3, Sim.MaxDifficulty3);
     }
 
-    WriteOptions();
+    if (gQuickTestRun == 0) {
+        WriteOptions();
+    } else {
+        Sim.Options.OptionFullscreen = 1;
+    }
 }
 
 //--------------------------------------------------------------------------------------------
