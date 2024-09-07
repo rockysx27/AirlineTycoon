@@ -236,7 +236,7 @@ BOOL DoesFileExist(char const *path) {
 #ifdef _DEBUG
     AT_Log("File not found: %s", path);
 #endif
-    return 0;
+    return false;
 }
 
 BOOL DoesDirectoryExist(char const *path) {

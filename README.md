@@ -67,9 +67,9 @@ Keyboard navigation:
 
 Employees:
 * More pilots/attendants available for hire
-* Slightly increase competence of randomly generated personal
+* Slightly increase competence of randomly generated employees
 * Generate randomized advisors as well
-* Regenerate unemployed personal if not hired within 7 days (prevents buildup of low-skill personal in long games)
+* Regenerate unemployed employees if not hired within 7 days (prevents buildup of low-skill candidates in long games)
 * List automatically sorted by skill
 * Update worker happiness based on salary
     * Chance to increase/decrease happiness each day based on how much salary is higher/lower than original salary
@@ -86,7 +86,6 @@ Kerosene:
 * Do not remember selected kerosene quality for auto purchase (was an undocumented and convoluted 'feature')
 
 Bug fixes:
-* Fixed problem where no competent personal can be found in long running games
 * Fixed frozen windows on laptop
 * Integer overflow fixed when emitting lots of stock (resulted in loosing money when emitting)
 * Fixed formula for credit limit
