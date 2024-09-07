@@ -219,7 +219,6 @@ CTakeOffApp::~CTakeOffApp() {
 // CTakeOffApp CLI
 //--------------------------------------------------------------------------------------------
 void CTakeOffApp::CLI(int argc, char *argv[]) {
-    // Schneller Mode zum Debuggen?
     for (int i = 0; i < argc; i++) {
         char *Argument = argv[i];
 
@@ -235,9 +234,11 @@ void CTakeOffApp::CLI(int argc, char *argv[]) {
         // if (stricmp (Argument, "/d")==0) gLanguage = LANGUAGE_D;
         // if (stricmp (Argument, "/f")==0) gLanguage = LANGUAGE_F;
         // if (stricmp (Argument, "/test")==0) bTest = TRUE;
+
         if (stricmp(Argument, "/window") == 0) {
             bFullscreen = FALSE;
         }
+
         if (stricmp(Argument, "/savedata") == 0) {
             CRLEReader::TogglePlainTextSaving(true);
         }
@@ -315,6 +316,30 @@ void CTakeOffApp::CLI(int argc, char *argv[]) {
             LoadCompleteFile(FullFilename("ein_ger.patched.res", PatchPath));
             exit(0);
             return;
+        }
+
+        // Schneller Mode zum Debuggen?
+        if (stricmp(Argument, "/quick") == 0) {
+            CheatAutoSkip = 1;
+            gQuickTestRun = 1;
+            gAutoBotDiff = 3;
+
+            i++;
+            if (i < argc) {
+                gQuickTestRun = 2 + atoi(argv[i]);
+            }
+
+            if (gQuickTestRun == 1) {
+                gAutoQuitOnDay = 99; /* auto-quit in freegame */
+            }
+        }
+        if (stricmp(Argument, "/testbot") == 0) {
+            gAutoBotDiff = 3;
+
+            i++;
+            if (i < argc) {
+                gAutoBotDiff = atoi(argv[i]);
+            }
         }
     }
 }
