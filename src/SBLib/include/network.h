@@ -4,8 +4,6 @@
 
 #include "BaseNetworkType.hpp"
 
-#include <memory>
-
 #ifdef ENET_NETWORK
 
 #ifdef WIN32

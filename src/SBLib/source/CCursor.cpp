@@ -40,8 +40,8 @@ SLONG SB_CCursor::Show(bool show) {
 }
 
 SLONG SB_CCursor::Render(SDL_Renderer *renderer) {
-    SDL_Rect dst = {Position.x, Position.y, Cursor->GetXSize(), Cursor->GetYSize()};
-    if (renderer != nullptr && Cursor->GetTexture()) {
+    SDL_Rect dst = { Position.x, Position.y, Cursor->GetXSize(), Cursor->GetYSize() };
+    if (renderer != nullptr && Cursor->GetTexture() != nullptr) {
         return SDL_RenderCopy(renderer, Cursor->GetTexture(), nullptr, &dst);
     }
     return -1;

@@ -2,8 +2,6 @@
 
 #include "MessageIdentifiers.h"
 
-#include <memory>
-
 // Direct play identifiers
 constexpr auto DPPLAYERTYPE_GROUP = 0x0000;
 constexpr auto DPPLAYERTYPE_PLAYER = 0x0001;
