@@ -9,7 +9,7 @@
 
 #include "BotHelper.h"
 
-#define AT_Log(a,...) AT_Log_I("Sim", a, __VA_ARGS__)
+#define AT_Log(...) AT_Log_I("Sim", __VA_ARGS__)
 
 // Für Menschen     Für Computer
 // Money   Credit   Money    Credit
@@ -134,7 +134,6 @@ SIM::SIM() {
 
     DoAppPath();
     Options.OptionDigiSound = TRUE;
-    LoadOptions();
 
     TafelData.Clear();
 }
@@ -3839,6 +3838,8 @@ SLONG SIM::HoleKerosinPreis(SLONG typ) const {
 // Liest die Optionen aus der Registry:
 //--------------------------------------------------------------------------------------------
 void COptions::ReadOptions() {
+    AT_Log("Reading game options");
+
     SLONG tmp = Sim.MaxDifficulty;
     SLONG tmp2 = Sim.MaxDifficulty2;
     SLONG tmp3 = Sim.MaxDifficulty3;
@@ -4102,6 +4103,8 @@ void COptions::ReadOptions() {
 // Schreibt die Optionen in die Registry:
 //--------------------------------------------------------------------------------------------
 void COptions::WriteOptions() {
+    AT_Log("Writing game options");
+
     SLONG tmp = Sim.MaxDifficulty;
     SLONG tmp2 = Sim.MaxDifficulty2;
     SLONG tmp3 = Sim.MaxDifficulty3;

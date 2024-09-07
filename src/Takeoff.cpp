@@ -56,6 +56,8 @@ extern SBNetwork gNetwork;
 #include "sentry.h"
 #endif
 
+#define AT_Log(...) AT_Log_I("Sim", __VA_ARGS__)
+
 CHLPool HLPool;
 
 #ifdef _DEBUG
@@ -67,8 +69,6 @@ void Unvideo(const CString &Filename, const CString &TargetFilename);
 
 extern SLONG bCAbendOpen;
 extern SLONG SkipPlaneCalculation;
-extern SLONG TankSize[];
-extern SLONG TankPrice[];
 
 static CString PlaneSounds[] = {"prop.raw", "flyby.raw", "flyby2.raw", "flyby3.raw", "flyby4.raw", "flyby5.raw"};
 
@@ -348,6 +348,8 @@ void CTakeOffApp::CLI(int argc, char *argv[]) {
 // CTakeOffApp Read Options from various places (file, registry, cli)
 //--------------------------------------------------------------------------------------------
 void CTakeOffApp::ReadOptions(int argc, char *argv[]) {
+    AT_Log("Reading video options");
+
     // Die Standardsprachen:
     //#define LANGUAGE_D       0             //D-Deutsch, inklusive
     //#define LANGUAGE_E       1             //E-Englisch, bezahlt
@@ -458,6 +460,8 @@ void CTakeOffApp::InitInstance(int argc, char *argv[]) {
     InitPathVars();
     ReadOptions(argc, argv);
     CreateVideo();
+
+    Sim.LoadOptions();
     Sim.SaveOptions();
     // UpdateSavegames();
 
