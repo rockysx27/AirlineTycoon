@@ -6,15 +6,15 @@
 #include "TeakLibW.h"
 
 #include <algorithm>
+#include <filesystem>
 #include <iostream>
 
-#if __cplusplus < 201703L
-#include <experimental/filesystem>
-namespace fs = std::experimental::filesystem;
-#else
-#include <filesystem>
 namespace fs = std::filesystem;
-#endif
+
+#define AT_Error(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_ERROR, "Bot", __VA_ARGS__)
+#define AT_Warn(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "Bot",__VA_ARGS__)
+#define AT_Info(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "Bot",__VA_ARGS__)
+#define AT_Log(...) AT_Log_I("Bot", __VA_ARGS__)
 
 const bool kAlwaysReplan = true;
 float kSchedulingMinScoreRatio = 140 * 1000.0f;
@@ -74,7 +74,7 @@ inline const char *getPrioName(Bot::Prio prio) {
     case Bot::Prio::None:
         return "None";
     default:
-        redprintf("Bot.cpp: Default case should not be reached.");
+        AT_Error("Bot.cpp: Default case should not be reached.");
         DebugBreak();
         return "INVALID";
     }
@@ -113,7 +113,7 @@ void Bot::printStatisticsLine(CString prefix, bool printHeader) {
         printf("AktienGesamt, AktienSA, AktienFL, AktienPT, AktienHA, ");
         printf("Frachtaufträge, Frachttonnen, ");
         printf("ZielSA, ZielFL, ZielPT, ZielHA, ");
-        hprintf("Planetype");
+        printf("Planetype\n");
     }
     std::cout << (LPCTSTR)prefix << ": ";
 
@@ -175,7 +175,7 @@ void Bot::RobotInit() {
         printStatisticsLine("BotStatistics", (Sim.Date == 0));
     } else {
         auto balance = qPlayer.BilanzWoche.Hole();
-        greenprintf("Bot.cpp: Enter RobotInit(): Current day: %d, money: %s $ (op saldo %s = %s %s)", Sim.Date, Insert1000erDots64(qPlayer.Money).c_str(),
+        AT_Info("Bot.cpp: Enter RobotInit(): Current day: %d, money: %s $ (op saldo %s = %s %s)", Sim.Date, Insert1000erDots64(qPlayer.Money).c_str(),
                     Insert1000erDots64(balance.GetOpSaldo()).c_str(), Insert1000erDots64(balance.GetOpGewinn()).c_str(),
                     Insert1000erDots64(balance.GetOpVerlust()).c_str());
     }
@@ -190,7 +190,7 @@ void Bot::RobotInit() {
     printf("\n");
 
     if (mFirstRun) {
-        hprintf("Bot::RobotInit(): First run.");
+        AT_Log("Bot::RobotInit(): First run.");
 
         /* random source */
         LocalRandom.SRand(qPlayer.WaitWorkTill);
@@ -253,7 +253,7 @@ void Bot::RobotInit() {
         }
 
         /* bot level */
-        hprintf("Bot::RobotInit(): We are player %d with bot level = %s.", qPlayer.PlayerNum, StandardTexte.GetS(TOKEN_NEWGAME, 5001 + qPlayer.BotLevel));
+        AT_Log("Bot::RobotInit(): We are player %d with bot level = %s.", qPlayer.PlayerNum, StandardTexte.GetS(TOKEN_NEWGAME, 5001 + qPlayer.BotLevel));
         if (qPlayer.BotLevel <= 1) {
             kMaxTicketPriceFactor = std::min(1.0, kMaxTicketPriceFactor);
             kSchedulingMinScoreRatio = std::min(3.0f, kSchedulingMinScoreRatio);
@@ -292,20 +292,20 @@ void Bot::RobotInit() {
     mIsSickToday = false;
 
     RobotPlan();
-    hprintf("Bot.cpp: Leaving RobotInit()");
+    AT_Log("Bot.cpp: Leaving RobotInit()");
 }
 
 void Bot::RobotPlan() {
     if (mFirstRun) {
-        redprintf("Bot::RobotPlan(): Bot was not initialized!");
+        AT_Error("Bot::RobotPlan(): Bot was not initialized!");
         RobotInit();
-        hprintf("Bot.cpp: Leaving RobotPlan() (not initialized)\n");
+        AT_Log("Bot.cpp: Leaving RobotPlan() (not initialized)\n");
         return;
     }
 
     if (mIsSickToday && qPlayer.HasItem(ITEM_TABLETTEN)) {
         GameMechanic::useItem(qPlayer, ITEM_TABLETTEN);
-        hprintf("Bot::RobotPlan(): Cured sickness using item pills");
+        AT_Log("Bot::RobotPlan(): Cured sickness using item pills");
         mIsSickToday = false;
     }
 
@@ -322,7 +322,7 @@ void Bot::RobotPlan() {
                        ACTION_VISITADS, ACTION_OVERTAKE_AIRLINE};
 
     if (qRobotActions[0].ActionId != ACTION_NONE || qRobotActions[1].ActionId != ACTION_NONE) {
-        hprintf("Bot.cpp: Leaving RobotPlan() (actions already planned)\n");
+        AT_Log("Bot.cpp: Leaving RobotPlan() (actions already planned)\n");
         return;
     }
     qRobotActions[1].ActionId = ACTION_NONE;
@@ -373,7 +373,7 @@ void Bot::RobotPlan() {
     });
 
     /*for (const auto &qAction : prioList) {
-        hprintf("Bot::RobotPlan(): %s with prio %s (%d+%d)", Translate_ACTION(qAction.actionId), getPrioName(qAction.prio), qAction.secondaryScore,
+        AT_Log("Bot::RobotPlan(): %s with prio %s (%d+%d)", Translate_ACTION(qAction.actionId), getPrioName(qAction.prio), qAction.secondaryScore,
                 qAction.walkingDistance);
     }*/
 
@@ -386,33 +386,33 @@ void Bot::RobotPlan() {
     qRobotActions[2].Running = (prioList[1].prio > condNoRun);
     qRobotActions[2].Prio = static_cast<SLONG>(prioList[1].prio);
 
-    hprintf("Bot::RobotPlan(): Current: %s, planned: %s, %s", Translate_ACTION(qRobotActions[0].ActionId), Translate_ACTION(qRobotActions[1].ActionId),
+    AT_Log("Bot::RobotPlan(): Current: %s, planned: %s, %s", Translate_ACTION(qRobotActions[0].ActionId), Translate_ACTION(qRobotActions[1].ActionId),
             Translate_ACTION(qRobotActions[2].ActionId), getPrioName(prioList[1].prio));
 
     if (qRobotActions[1].ActionId == ACTION_NONE) {
-        redprintf("Did not plan action for slot #1");
+        AT_Error("Did not plan action for slot #1");
     }
     if (qRobotActions[2].ActionId == ACTION_NONE) {
-        redprintf("Did not plan action for slot #2");
+        AT_Error("Did not plan action for slot #2");
     }
 }
 
 void Bot::RobotExecuteAction() {
     if (mFirstRun) {
-        redprintf("Bot::RobotExecuteAction(): Bot was not initialized!");
+        AT_Error("Bot::RobotExecuteAction(): Bot was not initialized!");
         RobotInit();
-        hprintf("Bot.cpp: Leaving RobotExecuteAction() (not initialized)\n");
+        AT_Log("Bot.cpp: Leaving RobotExecuteAction() (not initialized)\n");
         return;
     }
 
     /* refuse to work outside working hours (game sometimes calls this too early) */
     if (Sim.Time <= 540000) { /* check if it is precisely 09:00 or earlier */
-        hprintf("Bot.cpp: Leaving RobotExecuteAction() (too early)\n");
+        AT_Log("Bot.cpp: Leaving RobotExecuteAction() (too early)\n");
         forceReplanning();
         return;
     }
     if (Sim.GetHour() >= 18) {
-        hprintf("Bot.cpp: Leaving RobotExecuteAction() (too late)\n");
+        AT_Log("Bot.cpp: Leaving RobotExecuteAction() (too late)\n");
         forceReplanning();
         return;
     }
@@ -428,7 +428,7 @@ void Bot::RobotExecuteAction() {
     LocalRandom.Rand(2); // Sicherheitshalber, damit wir immer genau ein Random ausführen
 
     mNumActionsToday += 1;
-    greenprintf("Bot::RobotExecuteAction(): Executing %s (#%d, %s), current time: %02ld:%02ld, money: %s $ (available: %s $)",
+    AT_Info("Bot::RobotExecuteAction(): Executing %s (#%d, %s), current time: %02ld:%02ld, money: %s $ (available: %s $)",
                 Translate_ACTION(qAction.ActionId), mNumActionsToday, getPrioName(qAction.Prio), Sim.GetHour(), Sim.GetMinute(),
                 (LPCTSTR)Insert1000erDots64(qPlayer.Money), (LPCTSTR)Insert1000erDots64(getMoneyAvailable()));
 
@@ -444,7 +444,7 @@ void Bot::RobotExecuteAction() {
         if (condStartDay() != Prio::None) {
             actionStartDay(moneyAvailable);
         } else {
-            orangeprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+            AT_Warn("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
         qWorkCountdown = 20 * 5;
         break;
@@ -453,7 +453,7 @@ void Bot::RobotExecuteAction() {
         if (condStartDayLaptop() != Prio::None) {
             actionStartDayLaptop(moneyAvailable);
         } else {
-            orangeprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+            AT_Warn("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
         qWorkCountdown = 20 * 5;
         break;
@@ -462,28 +462,28 @@ void Bot::RobotExecuteAction() {
         if (condBuero() != Prio::None) {
             actionBuero();
         } else {
-            orangeprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+            AT_Warn("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
         qWorkCountdown = 20 * 5;
         break;
 
     case ACTION_CALL_INTERNATIONAL:
         if (condCallInternational() != Prio::None) {
-            hprintf("Bot::RobotExecuteAction(): Calling international using office phone.");
+            AT_Log("Bot::RobotExecuteAction(): Calling international using office phone.");
             actionCallInternational(true);
         } else {
-            orangeprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+            AT_Warn("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
         qWorkCountdown = 20 * 5;
         break;
 
     case ACTION_CALL_INTER_HANDY:
         if (condCallInternationalHandy() != Prio::None) {
-            hprintf("Bot::RobotExecuteAction(): Calling international using mobile phone.");
+            AT_Log("Bot::RobotExecuteAction(): Calling international using mobile phone.");
             actionCallInternational(false);
             mOnThePhone = 30;
         } else {
-            orangeprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+            AT_Warn("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
         qWorkCountdown = 20 * 5;
         break;
@@ -493,7 +493,7 @@ void Bot::RobotExecuteAction() {
         if (condCheckLastMinute() != Prio::None) {
             actionCheckLastMinute();
         } else {
-            orangeprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+            AT_Warn("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
         qWorkCountdown = 20 * 7;
         break;
@@ -503,7 +503,7 @@ void Bot::RobotExecuteAction() {
         if (condCheckTravelAgency() != Prio::None) {
             actionCheckTravelAgency();
         } else {
-            orangeprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+            AT_Warn("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
         qWorkCountdown = 20 * 7;
         break;
@@ -513,7 +513,7 @@ void Bot::RobotExecuteAction() {
         if (condCheckFreight() != Prio::None) {
             actionCheckFreightDepot();
         } else {
-            orangeprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+            AT_Warn("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
         qWorkCountdown = 20 * 7;
         break;
@@ -522,7 +522,7 @@ void Bot::RobotExecuteAction() {
         if (condUpgradePlanes() != Prio::None) {
             actionUpgradePlanes();
         } else {
-            orangeprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+            AT_Warn("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
 
         qWorkCountdown = 20 * 5;
@@ -532,7 +532,7 @@ void Bot::RobotExecuteAction() {
         if (condBuyNewPlane(moneyAvailable) != Prio::None) {
             actionBuyNewPlane(moneyAvailable);
         } else {
-            orangeprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+            AT_Warn("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
         qWorkCountdown = 20 * 5;
         break;
@@ -541,7 +541,7 @@ void Bot::RobotExecuteAction() {
         if (condBuyUsedPlane(moneyAvailable) != Prio::None) {
             actionBuyUsedPlane(moneyAvailable);
         } else {
-            orangeprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+            AT_Warn("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
         break;
 
@@ -549,7 +549,7 @@ void Bot::RobotExecuteAction() {
         if (condVisitMuseum() != Prio::None) {
             mBestUsedPlaneIdx = findBestAvailableUsedPlane();
         } else {
-            orangeprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+            AT_Warn("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
         break;
 
@@ -557,7 +557,7 @@ void Bot::RobotExecuteAction() {
         if (condVisitHR() != Prio::None) {
             actionVisitHR();
         } else {
-            orangeprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+            AT_Warn("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
 
         qWorkCountdown = 20 * 5;
@@ -567,7 +567,7 @@ void Bot::RobotExecuteAction() {
         if (condBuyKerosine(moneyAvailable) != Prio::None) {
             actionBuyKerosine(moneyAvailable);
         } else {
-            orangeprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+            AT_Warn("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
         qWorkCountdown = 20 * 5;
         break;
@@ -576,7 +576,7 @@ void Bot::RobotExecuteAction() {
         if (condBuyKerosineTank(moneyAvailable) != Prio::None) {
             actionBuyKerosineTank(moneyAvailable);
         } else {
-            orangeprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+            AT_Warn("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
         qWorkCountdown = 20 * 5;
         break;
@@ -585,7 +585,7 @@ void Bot::RobotExecuteAction() {
         if (condSabotage(moneyAvailable) != Prio::None) {
             actionSabotage(moneyAvailable);
         } else {
-            orangeprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+            AT_Warn("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
         qWorkCountdown = 20 * 5;
         break;
@@ -605,11 +605,11 @@ void Bot::RobotExecuteAction() {
             }
 
             if (_dividende != qPlayer.Dividende) {
-                hprintf("Bot::RobotExecuteAction(): Setting dividend to %d", _dividende);
+                AT_Log("Bot::RobotExecuteAction(): Setting dividend to %d", _dividende);
                 GameMechanic::setDividend(qPlayer, _dividende);
             }
         } else {
-            orangeprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+            AT_Warn("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
         qWorkCountdown = 20 * 5;
         break;
@@ -624,12 +624,12 @@ void Bot::RobotExecuteAction() {
                 m = limit;
             }
             if (m > 0) {
-                hprintf("Bot::RobotExecuteAction(): Taking loan: %s $", (LPCTSTR)Insert1000erDots64(m));
+                AT_Log("Bot::RobotExecuteAction(): Taking loan: %s $", (LPCTSTR)Insert1000erDots64(m));
                 GameMechanic::takeOutCredit(qPlayer, m);
                 moneyAvailable = getMoneyAvailable();
             }
         } else {
-            orangeprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+            AT_Warn("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
         qWorkCountdown = 20 * 5;
         break;
@@ -638,11 +638,11 @@ void Bot::RobotExecuteAction() {
         if (condDropMoney(moneyAvailable) != Prio::None) {
             __int64 m = std::min({qPlayer.Credit, moneyAvailable, getWeeklyOpSaldo()});
             m = std::max(m, 1000LL);
-            hprintf("Bot::RobotExecuteAction(): Paying back loan: %s $", (LPCTSTR)Insert1000erDots64(m));
+            AT_Log("Bot::RobotExecuteAction(): Paying back loan: %s $", (LPCTSTR)Insert1000erDots64(m));
             GameMechanic::payBackCredit(qPlayer, m);
             moneyAvailable = getMoneyAvailable();
         } else {
-            orangeprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+            AT_Warn("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
         qWorkCountdown = 20 * 5;
         break;
@@ -651,7 +651,7 @@ void Bot::RobotExecuteAction() {
         if (condEmitShares() != Prio::None) {
             actionEmitShares();
         } else {
-            orangeprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+            AT_Warn("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
         qWorkCountdown = 20 * 6;
         break;
@@ -660,7 +660,7 @@ void Bot::RobotExecuteAction() {
         if (condSellShares(moneyAvailable) != Prio::None) {
             actionSellShares(moneyAvailable);
         } else {
-            orangeprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+            AT_Warn("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
         qWorkCountdown = 20 * 6;
         break;
@@ -676,7 +676,7 @@ void Bot::RobotExecuteAction() {
             performedAction = true;
         }
         if (!performedAction) {
-            orangeprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+            AT_Warn("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
     }
         qWorkCountdown = 20 * 5;
@@ -686,7 +686,7 @@ void Bot::RobotExecuteAction() {
         if (condOvertakeAirline() != Prio::None) {
             actionOvertakeAirline();
         } else {
-            orangeprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+            AT_Warn("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
         qWorkCountdown = 20 * 6;
         break;
@@ -695,7 +695,7 @@ void Bot::RobotExecuteAction() {
         if (condVisitMech() != Prio::None) {
             actionVisitMech();
         } else {
-            orangeprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+            AT_Warn("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
         qWorkCountdown = 20 * 5;
         break;
@@ -713,7 +713,7 @@ void Bot::RobotExecuteAction() {
                 moneyAvailable = getMoneyAvailable();
             }
         } else {
-            orangeprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+            AT_Warn("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
         qWorkCountdown = 20 * 5;
         break;
@@ -722,7 +722,7 @@ void Bot::RobotExecuteAction() {
     case ACTION_VISITKIOSK:
         if (condVisitMisc() != Prio::None) {
         } else {
-            orangeprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+            AT_Warn("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
         qWorkCountdown = 20 * 5;
         break;
@@ -733,12 +733,12 @@ void Bot::RobotExecuteAction() {
 
             if (mItemAntiStrike == 0) {
                 if (GameMechanic::PickUpItemResult::PickedUp == GameMechanic::pickUpItem(qPlayer, ITEM_BH)) {
-                    hprintf("Bot::RobotExecuteAction(): Picked up item BH");
+                    AT_Log("Bot::RobotExecuteAction(): Picked up item BH");
                     mItemAntiStrike = 1;
                 }
             }
         } else {
-            orangeprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+            AT_Warn("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
         qWorkCountdown = 20 * 5;
         break;
@@ -747,12 +747,12 @@ void Bot::RobotExecuteAction() {
         if (condVisitArab() != Prio::None) {
             if (mItemArabTrust == 1) {
                 if (GameMechanic::useItem(qPlayer, ITEM_MG)) {
-                    hprintf("Bot::RobotExecuteAction(): Used item MG");
+                    AT_Log("Bot::RobotExecuteAction(): Used item MG");
                     mItemArabTrust = 2;
                 }
             }
         } else {
-            orangeprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+            AT_Warn("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
         qWorkCountdown = 20 * 5;
         break;
@@ -761,16 +761,16 @@ void Bot::RobotExecuteAction() {
         if (condVisitRick() != Prio::None) {
             if (mItemAntiStrike == 3) {
                 if (GameMechanic::useItem(qPlayer, ITEM_HUFEISEN)) {
-                    hprintf("Bot::RobotExecuteAction(): Used item horse shoe");
+                    AT_Log("Bot::RobotExecuteAction(): Used item horse shoe");
                     mItemAntiStrike = 4;
                 }
             }
             if (qPlayer.StrikeHours > 0 && qPlayer.StrikeEndType == 0 && mItemAntiStrike == 4) {
-                hprintf("Bot::RobotExecuteAction(): Ended strike using drunk guy");
+                AT_Log("Bot::RobotExecuteAction(): Ended strike using drunk guy");
                 GameMechanic::endStrike(qPlayer, GameMechanic::EndStrikeMode::Drunk);
             }
         } else {
-            orangeprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+            AT_Warn("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
         qWorkCountdown = 20 * 5;
         break;
@@ -779,7 +779,7 @@ void Bot::RobotExecuteAction() {
         if (condVisitDutyFree(moneyAvailable) != Prio::None) {
             actionVisitDutyFree(moneyAvailable);
         } else {
-            orangeprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+            AT_Warn("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
         qWorkCountdown = 20 * 5;
         break;
@@ -788,17 +788,17 @@ void Bot::RobotExecuteAction() {
         if (condVisitBoss(moneyAvailable) != Prio::None) {
             actionVisitBoss();
         } else {
-            orangeprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+            AT_Warn("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
         qWorkCountdown = 20 * 7;
         break;
 
     case ACTION_EXPANDAIRPORT:
         if (condExpandAirport(moneyAvailable) != Prio::None) {
-            hprintf("Bot::RobotExecuteAction(): Expanding Airport");
+            AT_Log("Bot::RobotExecuteAction(): Expanding Airport");
             GameMechanic::expandAirport(qPlayer);
         } else {
-            orangeprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+            AT_Warn("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
         qWorkCountdown = 20 * 7;
         break;
@@ -807,7 +807,7 @@ void Bot::RobotExecuteAction() {
         if (condVisitRouteBoxPlanning() != Prio::None) {
             actionVisitRouteBox();
         } else {
-            orangeprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+            AT_Warn("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
         qWorkCountdown = 20 * 7;
         break;
@@ -816,7 +816,7 @@ void Bot::RobotExecuteAction() {
         if (condVisitRouteBoxRenting(moneyAvailable) != Prio::None) {
             actionRentRoute();
         } else {
-            orangeprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+            AT_Warn("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
         qWorkCountdown = 20 * 7;
         break;
@@ -825,7 +825,7 @@ void Bot::RobotExecuteAction() {
         if (condVisitSecurity(moneyAvailable) != Prio::None) {
             actionVisitSecurity(moneyAvailable);
         } else {
-            orangeprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+            AT_Warn("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
         qWorkCountdown = 20 * 7;
         break;
@@ -833,14 +833,14 @@ void Bot::RobotExecuteAction() {
     case ACTION_VISITSECURITY2:
         if (condSabotageSecurity() != Prio::None) {
             if (GameMechanic::sabotageSecurityOffice(qPlayer)) {
-                hprintf("Bot::RobotExecuteAction(): Successfully sabotaged security office.");
+                AT_Log("Bot::RobotExecuteAction(): Successfully sabotaged security office.");
             } else {
-                redprintf("Bot::RobotExecuteAction(): Failed to sabotage security office!");
+                AT_Error("Bot::RobotExecuteAction(): Failed to sabotage security office!");
             }
             mNeedToShutdownSecurity = false;
             mLastTimeInRoom.erase(ACTION_SABOTAGE); /* allow sabotage again */
         } else {
-            orangeprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+            AT_Warn("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
         qWorkCountdown = 20 * 1;
         break;
@@ -849,7 +849,7 @@ void Bot::RobotExecuteAction() {
         if (condVisitDesigner(moneyAvailable) != Prio::None) {
             actionBuyDesignerPlane(moneyAvailable);
         } else {
-            orangeprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+            AT_Warn("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
         qWorkCountdown = 20 * 7;
         break;
@@ -858,7 +858,7 @@ void Bot::RobotExecuteAction() {
         if (condBuyAdsForRoutes(moneyAvailable) != Prio::None) {
             actionBuyAdsForRoutes(moneyAvailable);
         } else {
-            orangeprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+            AT_Warn("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
         qWorkCountdown = 20 * 7;
         break;
@@ -867,7 +867,7 @@ void Bot::RobotExecuteAction() {
         if (condBuyAds(moneyAvailable) != Prio::None) {
             actionBuyAds(moneyAvailable);
         } else {
-            orangeprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+            AT_Warn("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
         qWorkCountdown = 20 * 7;
         break;
@@ -876,26 +876,26 @@ void Bot::RobotExecuteAction() {
         if (condVisitAds() != Prio::None) {
             if (mItemAntiVirus == 3) {
                 if (GameMechanic::useItem(qPlayer, ITEM_DART)) {
-                    hprintf("Bot::RobotExecuteAction(): Used item darts");
+                    AT_Log("Bot::RobotExecuteAction(): Used item darts");
                     mItemAntiVirus = 4;
                 }
             }
             if (mItemAntiVirus == 4) {
                 if (qPlayer.HasItem(ITEM_DISKETTE) == 0) {
                     GameMechanic::pickUpItem(qPlayer, ITEM_DISKETTE);
-                    hprintf("Bot::RobotExecuteAction(): Picked up item floppy disk");
+                    AT_Log("Bot::RobotExecuteAction(): Picked up item floppy disk");
                 }
             }
             mCurrentImage = qPlayer.Image;
-            hprintf("Bot::RobotExecuteAction(): Checked company image: %d", mCurrentImage);
+            AT_Log("Bot::RobotExecuteAction(): Checked company image: %d", mCurrentImage);
         } else {
-            orangeprintf("Bot::RobotExecuteAction(): Conditions not met anymore.");
+            AT_Warn("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }
         qWorkCountdown = 20 * 7;
         break;
 
     default:
-        redprintf("Bot::RobotExecuteAction(): Trying to execute invalid action: %s", Translate_ACTION(qAction.ActionId));
+        AT_Error("Bot::RobotExecuteAction(): Trying to execute invalid action: %s", Translate_ACTION(qAction.ActionId));
         // DebugBreak();
     }
 
@@ -911,8 +911,8 @@ void Bot::RobotExecuteAction() {
         qWorkCountdown /= 2;
     }
 
-    // hprintf("Bot.cpp: Leaving RobotExecuteAction()\n");
-    hprintf("");
+    // AT_Log("Bot.cpp: Leaving RobotExecuteAction()\n");
+    AT_Log("");
 }
 
 TEAKFILE &operator<<(TEAKFILE &File, const PlaneTime &planeTime) {

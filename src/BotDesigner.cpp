@@ -7,6 +7,8 @@
 #include <iostream>
 #include <sstream>
 
+#define AT_Log(...) AT_Log_I("Bot", __VA_ARGS__)
+
 extern std::vector<CPlanePartRelation> gPlanePartRelations;
 
 const SLONG kMaxBest = 5;
@@ -20,20 +22,20 @@ class PlaneCandidate {
     }
 
     void printPlaneInfo() {
-        hprintf("*** CXPlane %s ***", (LPCTSTR)mPlane.Name);
+        AT_Log("*** CXPlane %s ***", (LPCTSTR)mPlane.Name);
         std::stringstream ss;
         for (const auto &iter : mPartIter) {
             ss << iter.formatPrefix() << "@" << iter.position << ", ";
         }
-        hprintf("Configuration: %s", ss.str().c_str());
-        hprintf("Score = %f (BaseScore = %f)", mScore, mBaseScore);
-        hprintf("Passagiere = %d", mPlane.CalcPassagiere());
-        hprintf("Reichweite = %d", mPlane.CalcReichweite());
-        hprintf("Verbrauch = %d", mPlane.CalcVerbrauch());
-        hprintf("Geschwindigkeit = %d", mPlane.CalcSpeed());
-        hprintf("Lärm = %d", mPlane.CalcNoise());
-        hprintf("Wartung = %d", mPlane.CalcWartung());
-        hprintf("Preis = %s", (LPCTSTR)Insert1000erDots(mPlane.CalcCost()));
+        AT_Log("Configuration: %s", ss.str().c_str());
+        AT_Log("Score = %f (BaseScore = %f)", mScore, mBaseScore);
+        AT_Log("Passagiere = %d", mPlane.CalcPassagiere());
+        AT_Log("Reichweite = %d", mPlane.CalcReichweite());
+        AT_Log("Verbrauch = %d", mPlane.CalcVerbrauch());
+        AT_Log("Geschwindigkeit = %d", mPlane.CalcSpeed());
+        AT_Log("Lärm = %d", mPlane.CalcNoise());
+        AT_Log("Wartung = %d", mPlane.CalcWartung());
+        AT_Log("Preis = %s", (LPCTSTR)Insert1000erDots(mPlane.CalcCost()));
     }
 
     void setPlaneName(SLONG number) {
@@ -275,7 +277,7 @@ BotDesigner::BotDesigner() {
         if (canAdd) {
             it->second.push_back(c);
         } else {
-            hprintf("Dropping relation %d", qRelation.Id);
+            AT_Log("Dropping relation %d", qRelation.Id);
         }
     }
 
@@ -283,7 +285,7 @@ BotDesigner::BotDesigner() {
     for (const auto &iter : mPlaneRelations) {
         count += iter.second.size();
     }
-    hprintf("Reduced from %d to %d relations.", gPlanePartRelations.size(), count);
+    AT_Log("Reduced from %d to %d relations.", gPlanePartRelations.size(), count);
 }
 
 bool BotDesigner::buildPart(CXPlane &plane, const PartIter &partIter) const {
@@ -494,7 +496,7 @@ SLONG BotDesigner::findBestDesignerPlane() {
             if (plane.IsBuildable()) {
                 successfulBuilds++;
                 if (successfulBuilds % 1000 == 0) {
-                    hprintf("Evaluated %d/%d builds so far!", successfulBuilds, totalBuilds);
+                    AT_Log("Evaluated %d/%d builds so far!", successfulBuilds, totalBuilds);
                 }
 
                 for (SLONG i = 0; i < bestPlanes.size(); i++) {
@@ -560,7 +562,7 @@ SLONG BotDesigner::findBestDesignerPlane() {
         }
     }
 
-    hprintf("Evaluated %d/%d builds in total!", successfulBuilds, totalBuilds);
+    AT_Log("Evaluated %d/%d builds in total!", successfulBuilds, totalBuilds);
 
     return 0;
 }

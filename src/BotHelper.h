@@ -144,43 +144,8 @@ struct ScheduleInfo {
         return *this;
     }
 
-    void printGain() {
-        hprintf("Schedule (%s %d - %s %d) with %ld planes gains %s $.", (LPCTSTR)getWeekday(scheduleStart), scheduleStart.getHour(),
-                (LPCTSTR)getWeekday(scheduleEnd), scheduleEnd.getHour(), numPlanes, Insert1000erDots(gain).c_str());
-    }
-    void printDetails() {
-        hprintf("vvvvvvvvvvvvvvvvvvvv");
-        printGain();
-
-        if (uhrigFlights > 0) {
-            hprintf("Flying %ld jobs (%ld from Uhrig, %ld passengers), %ld freight jobs (%ld tons) and %s miles.", jobs, uhrigFlights, passengers, freightJobs,
-                    tons, Insert1000erDots(miles).c_str());
-        } else {
-            hprintf("Flying %ld jobs (%ld passengers), %ld freight jobs (%ld tons) and %s miles.", jobs, passengers, freightJobs, tons,
-                    Insert1000erDots(miles).c_str());
-        }
-        hprintf("%.1f %% of plane schedule are regular flights, %.1f %% are automatic flights (%.1f %% useful kerosene).", getRatioFlights(),
-                getRatioAutoFlights(), getKeroseneRatio());
-
-        std::array<CString, 5> typeStr{"normal", "later", "highriskreward", "scam", "no fine"};
-        std::array<CString, 6> sizeStr{"VIP", "S", "M", "L", "XL", "XXL"};
-        printf("Job types: ");
-        for (SLONG i = 0; i < jobTypes.size(); i++) {
-            printf("%.0f %% %s", 100.0 * jobTypes[i] / (jobs + freightJobs), (LPCTSTR)typeStr[i]);
-            if (i < jobTypes.size() - 1) {
-                printf(", ");
-            }
-        }
-        printf("\nJob sizes: ");
-        for (SLONG i = 0; i < jobSizeTypes.size(); i++) {
-            printf("%.0f %% %s", 100.0 * jobSizeTypes[i] / (jobs + freightJobs), (LPCTSTR)sizeStr[i]);
-            if (i < jobSizeTypes.size() - 1) {
-                printf(", ");
-            }
-        }
-        printf("\n");
-        hprintf("^^^^^^^^^^^^^^^^^^^^");
-    }
+    void printGain();
+    void printDetails();
 };
 
 void printJob(const CAuftrag &qAuftrag);

@@ -6,6 +6,11 @@
 
 #include <array>
 
+#define AT_Error(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_ERROR, "GM", __VA_ARGS__)
+#define AT_Warn(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "GM",__VA_ARGS__)
+#define AT_Info(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "GM",__VA_ARGS__)
+#define AT_Log(...) AT_Log_I("GM", __VA_ARGS__)
+
 SLONG TankSize[4] = {100000, 1000000, 10000000, 100000000};
 SLONG TankPrice[4] = {100000, 800000, 7000000, 60000000};
 
@@ -40,11 +45,11 @@ void GameMechanic::bankruptPlayer(PLAYER &qPlayer) {
 bool GameMechanic::buyKerosinTank(PLAYER &qPlayer, SLONG type, SLONG amount) {
     auto nTankTypes = sizeof(TankSize) / sizeof(TankSize[0]);
     if (type < 0 || type >= nTankTypes) {
-        redprintf("GameMechanic::buyKerosinTank(%s): Invalid tank type (%ld).", (LPCTSTR)qPlayer.AirlineX, type);
+        AT_Error("GameMechanic::buyKerosinTank(%s): Invalid tank type (%ld).", (LPCTSTR)qPlayer.AirlineX, type);
         return false;
     }
     if (amount < 0) {
-        redprintf("GameMechanic::calcKerosinPrice(%s): Negative amount (%ld).", (LPCTSTR)qPlayer.AirlineX, amount);
+        AT_Error("GameMechanic::calcKerosinPrice(%s): Negative amount (%ld).", (LPCTSTR)qPlayer.AirlineX, amount);
         return false;
     }
 
@@ -79,15 +84,15 @@ bool GameMechanic::setKerosinTankOpen(PLAYER &qPlayer, BOOL open) {
 
 bool GameMechanic::buyKerosin(PLAYER &qPlayer, SLONG type, SLONG amount) {
     if (type < 0 || type >= 3) {
-        redprintf("GameMechanic::calcKerosinPrice(%s): Invalid kerosine type (%ld).", (LPCTSTR)qPlayer.AirlineX, type);
+        AT_Error("GameMechanic::calcKerosinPrice(%s): Invalid kerosine type (%ld).", (LPCTSTR)qPlayer.AirlineX, type);
         return false;
     }
     if (amount < 0) {
-        redprintf("GameMechanic::buyKerosin(%s): Negative amount (%ld).", (LPCTSTR)qPlayer.AirlineX, amount);
+        AT_Error("GameMechanic::buyKerosin(%s): Negative amount (%ld).", (LPCTSTR)qPlayer.AirlineX, amount);
         return false;
     }
     if (qPlayer.TankInhalt + amount > qPlayer.Tank) {
-        redprintf("GameMechanic::buyKerosin(%s): Amount too high (%ld, max. is %ld).", (LPCTSTR)qPlayer.AirlineX, amount, qPlayer.Tank - qPlayer.TankInhalt);
+        AT_Error("GameMechanic::buyKerosin(%s): Amount too high (%ld, max. is %ld).", (LPCTSTR)qPlayer.AirlineX, amount, qPlayer.Tank - qPlayer.TankInhalt);
         return false;
     }
 
@@ -115,11 +120,11 @@ bool GameMechanic::buyKerosin(PLAYER &qPlayer, SLONG type, SLONG amount) {
 
 GameMechanic::KerosinTransaction GameMechanic::calcKerosinPrice(PLAYER &qPlayer, __int64 type, __int64 amount) {
     if (type < 0 || type >= 3) {
-        redprintf("GameMechanic::calcKerosinPrice(%s): Invalid kerosine type (%ld).", (LPCTSTR)qPlayer.AirlineX, type);
+        AT_Error("GameMechanic::calcKerosinPrice(%s): Invalid kerosine type (%ld).", (LPCTSTR)qPlayer.AirlineX, type);
         return {};
     }
     if (amount < 0) {
-        redprintf("GameMechanic::calcKerosinPrice(%s): Negative amount (%ld).", (LPCTSTR)qPlayer.AirlineX, amount);
+        AT_Error("GameMechanic::calcKerosinPrice(%s): Negative amount (%ld).", (LPCTSTR)qPlayer.AirlineX, amount);
         return {};
     }
 
@@ -154,7 +159,7 @@ GameMechanic::KerosinTransaction GameMechanic::calcKerosinPrice(PLAYER &qPlayer,
 
 SLONG GameMechanic::setSaboteurTarget(PLAYER &qPlayer, SLONG target) {
     if (target < 0 || target >= 4) {
-        redprintf("GameMechanic::setSaboteurTarget(%s): Invalid target (%ld).", (LPCTSTR)qPlayer.AirlineX, target);
+        AT_Error("GameMechanic::setSaboteurTarget(%s): Invalid target (%ld).", (LPCTSTR)qPlayer.AirlineX, target);
         return -1;
     }
 
@@ -168,26 +173,26 @@ SLONG GameMechanic::setSaboteurTarget(PLAYER &qPlayer, SLONG target) {
 
 GameMechanic::CheckSabotage GameMechanic::checkPrerequisitesForSaboteurJob(PLAYER &qPlayer, SLONG type, SLONG number, BOOL fremdSabotage) {
     if (checkSaboteurBusy(qPlayer)) {
-        hprintf("GameMechanic::checkPrerequisitesForSaboteurJob(%s): Saboteur is busy.", (LPCTSTR)qPlayer.AirlineX);
+        AT_Log("GameMechanic::checkPrerequisitesForSaboteurJob(%s): Saboteur is busy.", (LPCTSTR)qPlayer.AirlineX);
         return {CheckSabotageResult::DeniedSaboteurBusy, 0};
     }
 
     auto victimID = qPlayer.ArabOpferSelection;
     if (victimID < 0 || victimID >= 4) {
-        redprintf("GameMechanic::checkPrerequisitesForSaboteurJob(%s): Invalid victim id (%ld).", (LPCTSTR)qPlayer.AirlineX, victimID);
+        AT_Error("GameMechanic::checkPrerequisitesForSaboteurJob(%s): Invalid victim id (%ld).", (LPCTSTR)qPlayer.AirlineX, victimID);
         return {CheckSabotageResult::DeniedInvalidParam, 0};
     }
     auto &qOpfer = Sim.Players.Players[victimID];
 
     if (number > qPlayer.ArabTrust && fremdSabotage == FALSE) {
-        redprintf("GameMechanic::checkPrerequisitesForSaboteurJob(%s): Not enough trust (have %ld, need %ld).", (LPCTSTR)qPlayer.AirlineX, qPlayer.ArabTrust,
+        AT_Error("GameMechanic::checkPrerequisitesForSaboteurJob(%s): Not enough trust (have %ld, need %ld).", (LPCTSTR)qPlayer.AirlineX, qPlayer.ArabTrust,
                   number);
         return {CheckSabotageResult::DeniedTrust, 0};
     }
 
     if (type == 0) {
         if (number < 1 || number >= 6) {
-            redprintf("GameMechanic::checkPrerequisitesForSaboteurJob(%s): Invalid job number (%ld).", (LPCTSTR)qPlayer.AirlineX, number);
+            AT_Error("GameMechanic::checkPrerequisitesForSaboteurJob(%s): Invalid job number (%ld).", (LPCTSTR)qPlayer.AirlineX, number);
             return {CheckSabotageResult::DeniedInvalidParam, 0};
         }
 
@@ -209,7 +214,7 @@ GameMechanic::CheckSabotage GameMechanic::checkPrerequisitesForSaboteurJob(PLAYE
         }
 
         if (qPlayer.Money - SabotagePrice[number - 1] < DEBT_LIMIT && fremdSabotage == FALSE) {
-            hprintf("GameMechanic::checkPrerequisitesForSaboteurJob(%s): Not enough money", (LPCTSTR)qPlayer.AirlineX);
+            AT_Log("GameMechanic::checkPrerequisitesForSaboteurJob(%s): Not enough money", (LPCTSTR)qPlayer.AirlineX);
             return {CheckSabotageResult::DeniedNotEnoughMoney, 6000};
         }
 
@@ -218,7 +223,7 @@ GameMechanic::CheckSabotage GameMechanic::checkPrerequisitesForSaboteurJob(PLAYE
     }
     if (type == 1) {
         if (number < 1 || number >= 5) {
-            redprintf("GameMechanic::checkPrerequisitesForSaboteurJob(%s): Invalid job number (%ld).", (LPCTSTR)qPlayer.AirlineX, number);
+            AT_Error("GameMechanic::checkPrerequisitesForSaboteurJob(%s): Invalid job number (%ld).", (LPCTSTR)qPlayer.AirlineX, number);
             return {CheckSabotageResult::DeniedInvalidParam, 0};
         }
 
@@ -237,12 +242,12 @@ GameMechanic::CheckSabotage GameMechanic::checkPrerequisitesForSaboteurJob(PLAYE
         }
 
         if (qPlayer.Money - SabotagePrice2[number - 1] < DEBT_LIMIT && fremdSabotage == FALSE) {
-            hprintf("GameMechanic::checkPrerequisitesForSaboteurJob(%s): Not enough money", (LPCTSTR)qPlayer.AirlineX);
+            AT_Log("GameMechanic::checkPrerequisitesForSaboteurJob(%s): Not enough money", (LPCTSTR)qPlayer.AirlineX);
             return {CheckSabotageResult::DeniedNotEnoughMoney, 6000};
         }
 
         if (number == 2 && (qOpfer.HasItem(ITEM_LAPTOP) == 0)) {
-            hprintf("GameMechanic::checkPrerequisitesForSaboteurJob(%s): Victim has no laptop", (LPCTSTR)qPlayer.AirlineX);
+            AT_Log("GameMechanic::checkPrerequisitesForSaboteurJob(%s): Victim has no laptop", (LPCTSTR)qPlayer.AirlineX);
             return {CheckSabotageResult::DeniedNoLaptop, 1300};
         }
 
@@ -251,7 +256,7 @@ GameMechanic::CheckSabotage GameMechanic::checkPrerequisitesForSaboteurJob(PLAYE
     }
     if (type == 2) {
         if (number < 1 || number >= 7) {
-            redprintf("GameMechanic::checkPrerequisitesForSaboteurJob(%s): Invalid job number (%ld).", (LPCTSTR)qPlayer.AirlineX, number);
+            AT_Error("GameMechanic::checkPrerequisitesForSaboteurJob(%s): Invalid job number (%ld).", (LPCTSTR)qPlayer.AirlineX, number);
             return {CheckSabotageResult::DeniedInvalidParam, 0};
         }
 
@@ -276,14 +281,14 @@ GameMechanic::CheckSabotage GameMechanic::checkPrerequisitesForSaboteurJob(PLAYE
         }
 
         if (qPlayer.Money - SabotagePrice3[number - 1] < DEBT_LIMIT && fremdSabotage == FALSE) {
-            hprintf("GameMechanic::checkPrerequisitesForSaboteurJob(%s): Not enough money", (LPCTSTR)qPlayer.AirlineX);
+            AT_Log("GameMechanic::checkPrerequisitesForSaboteurJob(%s): Not enough money", (LPCTSTR)qPlayer.AirlineX);
             return {CheckSabotageResult::DeniedNotEnoughMoney, 6000};
         }
 
         qPlayer.ArabModeSelection = {type, number};
         return {CheckSabotageResult::Ok, 1160};
     }
-    redprintf("GameMechanic::checkPrerequisitesForSaboteurJob(%s): Invalid type (%ld).", (LPCTSTR)qPlayer.AirlineX, type);
+    AT_Error("GameMechanic::checkPrerequisitesForSaboteurJob(%s): Invalid type (%ld).", (LPCTSTR)qPlayer.AirlineX, type);
     return {CheckSabotageResult::DeniedInvalidParam, 0};
 }
 
@@ -299,11 +304,11 @@ bool GameMechanic::activateSaboteurJob(PLAYER &qPlayer, BOOL fremdSabotage) {
     auto &qOpfer = Sim.Players.Players[victimID];
     if (type == 0) {
         if (number < 1 || number >= 6) {
-            redprintf("GameMechanic::activateSaboteurJob(%s): Invalid job number (%ld).", (LPCTSTR)qPlayer.AirlineX, number);
+            AT_Error("GameMechanic::activateSaboteurJob(%s): Invalid job number (%ld).", (LPCTSTR)qPlayer.AirlineX, number);
             return false;
         }
         if (qPlayer.ArabPlaneSelection == -1) {
-            redprintf("GameMechanic::activateSaboteurJob(%s): Need plane or route ID for this job", (LPCTSTR)qPlayer.AirlineX);
+            AT_Error("GameMechanic::activateSaboteurJob(%s): Need plane or route ID for this job", (LPCTSTR)qPlayer.AirlineX);
             return false;
         }
 
@@ -345,7 +350,7 @@ bool GameMechanic::activateSaboteurJob(PLAYER &qPlayer, BOOL fremdSabotage) {
         qPlayer.NetSynchronizeSabotage();
     } else if (type == 1) {
         if (number < 1 || number >= 5) {
-            redprintf("GameMechanic::activateSaboteurJob(%s): Invalid job number (%ld).", (LPCTSTR)qPlayer.AirlineX, number);
+            AT_Error("GameMechanic::activateSaboteurJob(%s): Invalid job number (%ld).", (LPCTSTR)qPlayer.AirlineX, number);
             return false;
         }
 
@@ -385,11 +390,11 @@ bool GameMechanic::activateSaboteurJob(PLAYER &qPlayer, BOOL fremdSabotage) {
         qPlayer.NetSynchronizeSabotage();
     } else if (type == 2) {
         if (number < 1 || number >= 7) {
-            redprintf("GameMechanic::activateSaboteurJob(%s): Invalid job number (%ld).", (LPCTSTR)qPlayer.AirlineX, number);
+            AT_Error("GameMechanic::activateSaboteurJob(%s): Invalid job number (%ld).", (LPCTSTR)qPlayer.AirlineX, number);
             return false;
         }
         if (number >= 5 && qPlayer.ArabPlaneSelection == -1) {
-            redprintf("GameMechanic::activateSaboteurJob(%s): Need plane or route ID for this job", (LPCTSTR)qPlayer.AirlineX);
+            AT_Error("GameMechanic::activateSaboteurJob(%s): Need plane or route ID for this job", (LPCTSTR)qPlayer.AirlineX);
             return false;
         }
 
@@ -428,22 +433,22 @@ bool GameMechanic::activateSaboteurJob(PLAYER &qPlayer, BOOL fremdSabotage) {
 
         qPlayer.NetSynchronizeSabotage();
     } else {
-        redprintf("GameMechanic::activateSaboteurJob(%s): Invalid type (%ld).", (LPCTSTR)qPlayer.AirlineX, type);
+        AT_Error("GameMechanic::activateSaboteurJob(%s): Invalid type (%ld).", (LPCTSTR)qPlayer.AirlineX, type);
         return false;
     }
 
-    hprintf("GameMechanic::activateSaboteurJob: %s=>%s %ld %ld %ld", (LPCTSTR)qPlayer.AirlineX, (LPCTSTR)qOpfer.AirlineX, qPlayer.ArabMode, qPlayer.ArabMode2,
+    AT_Log("GameMechanic::activateSaboteurJob: %s=>%s %ld %ld %ld", (LPCTSTR)qPlayer.AirlineX, (LPCTSTR)qOpfer.AirlineX, qPlayer.ArabMode, qPlayer.ArabMode2,
             qPlayer.ArabMode3);
     return true;
 }
 
 void GameMechanic::paySaboteurFine(SLONG player, SLONG opfer) {
     if (player < 0 || player >= Sim.Players.Players.AnzEntries()) {
-        redprintf("GameMechanic::paySaboteurFine: Invalid player ID (%ld).", player);
+        AT_Error("GameMechanic::paySaboteurFine: Invalid player ID (%ld).", player);
         return;
     }
     if (opfer < 0 || opfer >= Sim.Players.Players.AnzEntries()) {
-        redprintf("GameMechanic::paySaboteurFine: Invalid victim ID (%ld).", opfer);
+        AT_Error("GameMechanic::paySaboteurFine: Invalid victim ID (%ld).", opfer);
         return;
     }
 
@@ -454,7 +459,7 @@ void GameMechanic::paySaboteurFine(SLONG player, SLONG opfer) {
 
 bool GameMechanic::takeOutCredit(PLAYER &qPlayer, __int64 amount) {
     if (amount < 1000 || amount > qPlayer.CalcCreditLimit()) {
-        redprintf("GameMechanic::takeOutCredit(%s): Invalid amount (requested %lld, max is %lld).", (LPCTSTR)qPlayer.AirlineX, amount,
+        AT_Error("GameMechanic::takeOutCredit(%s): Invalid amount (requested %lld, max is %lld).", (LPCTSTR)qPlayer.AirlineX, amount,
                   qPlayer.CalcCreditLimit());
         return false;
     }
@@ -466,7 +471,7 @@ bool GameMechanic::takeOutCredit(PLAYER &qPlayer, __int64 amount) {
 
 bool GameMechanic::payBackCredit(PLAYER &qPlayer, __int64 amount) {
     if (amount > qPlayer.Credit) {
-        redprintf("GameMechanic::payBackCredit(%s): Invalid amount (requested %lld, max is %lld).", (LPCTSTR)qPlayer.AirlineX, amount, qPlayer.Credit);
+        AT_Error("GameMechanic::payBackCredit(%s): Invalid amount (requested %lld, max is %lld).", (LPCTSTR)qPlayer.AirlineX, amount, qPlayer.Credit);
         return false;
     }
     qPlayer.Credit -= amount;
@@ -477,11 +482,11 @@ bool GameMechanic::payBackCredit(PLAYER &qPlayer, __int64 amount) {
 
 void GameMechanic::setPlaneTargetZustand(PLAYER &qPlayer, SLONG idx, SLONG zustand) {
     if (!qPlayer.Planes.IsInAlbum(idx)) {
-        redprintf("GameMechanic::setPlaneTargetZustand(%s): Invalid plane index (%ld).", (LPCTSTR)qPlayer.AirlineX, idx);
+        AT_Error("GameMechanic::setPlaneTargetZustand(%s): Invalid plane index (%ld).", (LPCTSTR)qPlayer.AirlineX, idx);
         return;
     }
     if (zustand < 0 || zustand > 100) {
-        redprintf("GameMechanic::setPlaneTargetZustand(%s): Invalid zustand (%ld).", (LPCTSTR)qPlayer.AirlineX, zustand);
+        AT_Error("GameMechanic::setPlaneTargetZustand(%s): Invalid zustand (%ld).", (LPCTSTR)qPlayer.AirlineX, zustand);
         return;
     }
 
@@ -491,7 +496,7 @@ void GameMechanic::setPlaneTargetZustand(PLAYER &qPlayer, SLONG idx, SLONG zusta
 
 bool GameMechanic::setSecurity(PLAYER &qPlayer, SLONG securityType, bool targetState) {
     if (securityType < 0 || securityType >= 12 || securityType == 9) {
-        redprintf("GameMechanic::toggleSecurity(%s): Invalid security type (%ld).", (LPCTSTR)qPlayer.AirlineX, securityType);
+        AT_Error("GameMechanic::toggleSecurity(%s): Invalid security type (%ld).", (LPCTSTR)qPlayer.AirlineX, securityType);
         return false;
     }
 
@@ -529,7 +534,7 @@ bool GameMechanic::setSecurity(PLAYER &qPlayer, SLONG securityType, bool targetS
 
 bool GameMechanic::toggleSecurity(PLAYER &qPlayer, SLONG securityType) {
     if (securityType < 0 || securityType >= 9) {
-        redprintf("GameMechanic::toggleSecurity(%s): Invalid security type (%ld).", (LPCTSTR)qPlayer.AirlineX, securityType);
+        AT_Error("GameMechanic::toggleSecurity(%s): Invalid security type (%ld).", (LPCTSTR)qPlayer.AirlineX, securityType);
         return false;
     }
 
@@ -557,7 +562,7 @@ bool GameMechanic::toggleSecurity(PLAYER &qPlayer, SLONG securityType) {
 
 bool GameMechanic::sabotageSecurityOffice(PLAYER &qPlayer) {
     if (qPlayer.HasItem(ITEM_ZANGE) == 0) {
-        redprintf("GameMechanic::sabotageSecurityOffice(%s): Player does not have required item.", (LPCTSTR)qPlayer.AirlineX);
+        AT_Error("GameMechanic::sabotageSecurityOffice(%s): Player does not have required item.", (LPCTSTR)qPlayer.AirlineX);
         return false;
     }
 
@@ -577,7 +582,7 @@ bool GameMechanic::sabotageSecurityOffice(PLAYER &qPlayer) {
 
 bool GameMechanic::checkPlaneTypeAvailable(SLONG planeType) {
     if (!PlaneTypes.IsInAlbum(planeType)) {
-        redprintf("GameMechanic::checkPlaneTypeAvailable: Invalid plane type (%ld).", planeType);
+        AT_Error("GameMechanic::checkPlaneTypeAvailable: Invalid plane type (%ld).", planeType);
         return false;
     }
 
@@ -608,15 +613,15 @@ std::vector<SLONG> GameMechanic::getAvailablePlaneTypes() {
 std::vector<SLONG> GameMechanic::buyPlane(PLAYER &qPlayer, SLONG planeType, SLONG amount) {
     std::vector<SLONG> planeIds;
     if (!PlaneTypes.IsInAlbum(planeType)) {
-        redprintf("GameMechanic::buyPlane(%s): Invalid plane type (%ld).", (LPCTSTR)qPlayer.AirlineX, planeType);
+        AT_Error("GameMechanic::buyPlane(%s): Invalid plane type (%ld).", (LPCTSTR)qPlayer.AirlineX, planeType);
         return planeIds;
     }
     if (amount < 0 || amount > 10) {
-        redprintf("GameMechanic::buyPlane(%s): Invalid amount (%ld).", (LPCTSTR)qPlayer.AirlineX, amount);
+        AT_Error("GameMechanic::buyPlane(%s): Invalid amount (%ld).", (LPCTSTR)qPlayer.AirlineX, amount);
         return planeIds;
     }
     if (!checkPlaneTypeAvailable(planeType)) {
-        redprintf("GameMechanic::buyPlane(%s): Plane type not available yet (%ld).", (LPCTSTR)qPlayer.AirlineX, planeType);
+        AT_Error("GameMechanic::buyPlane(%s): Plane type not available yet (%ld).", (LPCTSTR)qPlayer.AirlineX, planeType);
         return planeIds;
     }
 
@@ -643,7 +648,7 @@ std::vector<SLONG> GameMechanic::buyPlane(PLAYER &qPlayer, SLONG planeType, SLON
 
 SLONG GameMechanic::buyUsedPlane(PLAYER &qPlayer, SLONG planeID) {
     if (!Sim.UsedPlanes.IsInAlbum(planeID)) {
-        redprintf("GameMechanic::buyUsedPlane(%s): Invalid plane index (%ld).", (LPCTSTR)qPlayer.AirlineX, planeID);
+        AT_Error("GameMechanic::buyUsedPlane(%s): Invalid plane index (%ld).", (LPCTSTR)qPlayer.AirlineX, planeID);
         return -1;
     }
 
@@ -689,7 +694,7 @@ SLONG GameMechanic::buyUsedPlane(PLAYER &qPlayer, SLONG planeID) {
 
 bool GameMechanic::sellPlane(PLAYER &qPlayer, SLONG planeID) {
     if (!qPlayer.Planes.IsInAlbum(planeID)) {
-        redprintf("GameMechanic::sellPlane(%s): Invalid plane index (%ld).", (LPCTSTR)qPlayer.AirlineX, planeID);
+        AT_Error("GameMechanic::sellPlane(%s): Invalid plane index (%ld).", (LPCTSTR)qPlayer.AirlineX, planeID);
         return false;
     }
 
@@ -717,11 +722,11 @@ bool GameMechanic::sellPlane(PLAYER &qPlayer, SLONG planeID) {
 std::vector<SLONG> GameMechanic::buyXPlane(PLAYER &qPlayer, const CString &filename, SLONG amount) {
     std::vector<SLONG> planeIds;
     if (filename.empty() || DoesFileExist(filename) == 0) {
-        redprintf("GameMechanic::buyXPlane(%s): Invalid filename (%s).", (LPCTSTR)qPlayer.AirlineX, (LPCTSTR)filename);
+        AT_Error("GameMechanic::buyXPlane(%s): Invalid filename (%s).", (LPCTSTR)qPlayer.AirlineX, (LPCTSTR)filename);
         return planeIds;
     }
     if (amount < 0 || amount > 10) {
-        redprintf("GameMechanic::buyXPlane(%s): Invalid amount (%ld).", (LPCTSTR)qPlayer.AirlineX, amount);
+        AT_Error("GameMechanic::buyXPlane(%s): Invalid amount (%ld).", (LPCTSTR)qPlayer.AirlineX, amount);
         return planeIds;
     }
 
@@ -750,11 +755,11 @@ std::vector<SLONG> GameMechanic::buyXPlane(PLAYER &qPlayer, const CString &filen
 
 bool GameMechanic::buyStock(PLAYER &qPlayer, SLONG airlineNum, SLONG amount) {
     if (airlineNum < 0 || airlineNum >= 4) {
-        redprintf("GameMechanic::buyStock(%s): Invalid airline (%ld).", (LPCTSTR)qPlayer.AirlineX, airlineNum);
+        AT_Error("GameMechanic::buyStock(%s): Invalid airline (%ld).", (LPCTSTR)qPlayer.AirlineX, airlineNum);
         return false;
     }
     if (amount < 0) {
-        redprintf("GameMechanic::buyStock(%s): Negative amount (%ld).", (LPCTSTR)qPlayer.AirlineX, amount);
+        AT_Error("GameMechanic::buyStock(%s): Negative amount (%ld).", (LPCTSTR)qPlayer.AirlineX, amount);
         return false;
     }
     if (amount == 0) {
@@ -763,7 +768,7 @@ bool GameMechanic::buyStock(PLAYER &qPlayer, SLONG airlineNum, SLONG amount) {
 
     auto &qPlayerBuyFrom = Sim.Players.Players[airlineNum];
     if (qPlayerBuyFrom.IsOut != 0) {
-        redprintf("GameMechanic::buyStock(%s): Airline already gone.", (LPCTSTR)qPlayer.AirlineX);
+        AT_Error("GameMechanic::buyStock(%s): Airline already gone.", (LPCTSTR)qPlayer.AirlineX);
         return false;
     }
 
@@ -774,7 +779,7 @@ bool GameMechanic::buyStock(PLAYER &qPlayer, SLONG airlineNum, SLONG amount) {
     }
 
     if (amount > freeAmount) {
-        redprintf("GameMechanic::buyStock(%s): Limiting amount bought to %ld (was %ld).", (LPCTSTR)qPlayer.AirlineX, freeAmount, amount);
+        AT_Error("GameMechanic::buyStock(%s): Limiting amount bought to %ld (was %ld).", (LPCTSTR)qPlayer.AirlineX, freeAmount, amount);
         amount = freeAmount;
     }
 
@@ -823,24 +828,24 @@ bool GameMechanic::buyStock(PLAYER &qPlayer, SLONG airlineNum, SLONG amount) {
 
 bool GameMechanic::sellStock(PLAYER &qPlayer, SLONG airlineNum, SLONG amount) {
     if (airlineNum < 0 || airlineNum >= 4) {
-        redprintf("GameMechanic::sellStock(%s): Invalid airline (%ld).", (LPCTSTR)qPlayer.AirlineX, airlineNum);
+        AT_Error("GameMechanic::sellStock(%s): Invalid airline (%ld).", (LPCTSTR)qPlayer.AirlineX, airlineNum);
         return false;
     }
     if (amount < 0) {
-        redprintf("GameMechanic::sellStock(%s): Negative amount (%ld).", (LPCTSTR)qPlayer.AirlineX, amount);
+        AT_Error("GameMechanic::sellStock(%s): Negative amount (%ld).", (LPCTSTR)qPlayer.AirlineX, amount);
         return false;
     }
     if (amount == 0) {
         return false;
     }
     if (amount > qPlayer.OwnsAktien[airlineNum]) {
-        redprintf("GameMechanic::sellStock(%s): Limiting amount sold to %ld (was %ld).", (LPCTSTR)qPlayer.AirlineX, qPlayer.OwnsAktien[airlineNum], amount);
+        AT_Error("GameMechanic::sellStock(%s): Limiting amount sold to %ld (was %ld).", (LPCTSTR)qPlayer.AirlineX, qPlayer.OwnsAktien[airlineNum], amount);
         amount = qPlayer.OwnsAktien[airlineNum];
     }
 
     auto &qPlayerSellFrom = Sim.Players.Players[airlineNum];
     if (qPlayerSellFrom.IsOut != 0) {
-        redprintf("GameMechanic::buyStock(%s): Airline already gone.", (LPCTSTR)qPlayer.AirlineX);
+        AT_Error("GameMechanic::buyStock(%s): Airline already gone.", (LPCTSTR)qPlayer.AirlineX);
         return false;
     }
 
@@ -875,7 +880,7 @@ bool GameMechanic::sellStock(PLAYER &qPlayer, SLONG airlineNum, SLONG amount) {
 
 GameMechanic::OvertakeAirlineResult GameMechanic::canOvertakeAirline(PLAYER &qPlayer, SLONG targetAirline) {
     if (targetAirline < 0 || targetAirline >= 4) {
-        redprintf("GameMechanic::canOvertakeAirline(%s): Invalid targetAirline (%ld).", (LPCTSTR)qPlayer.AirlineX, targetAirline);
+        AT_Error("GameMechanic::canOvertakeAirline(%s): Invalid targetAirline (%ld).", (LPCTSTR)qPlayer.AirlineX, targetAirline);
         return OvertakeAirlineResult::DeniedInvalidParam;
     }
 
@@ -896,7 +901,7 @@ GameMechanic::OvertakeAirlineResult GameMechanic::canOvertakeAirline(PLAYER &qPl
 bool GameMechanic::overtakeAirline(PLAYER &qPlayer, SLONG targetAirline, bool liquidate) {
     auto cond = canOvertakeAirline(qPlayer, targetAirline);
     if (OvertakeAirlineResult::Ok != cond) {
-        redprintf("GameMechanic::overtakeAirline(%s): Conditions not met (%d).", (LPCTSTR)qPlayer.AirlineX, cond);
+        AT_Error("GameMechanic::overtakeAirline(%s): Conditions not met (%d).", (LPCTSTR)qPlayer.AirlineX, cond);
         return false;
     }
 
@@ -924,17 +929,17 @@ bool GameMechanic::emitStock(PLAYER &qPlayer, SLONG neueAktien, SLONG mode) {
     SLONG maxAmount = 0;
     auto cond = canEmitStock(qPlayer, &maxAmount);
     if (EmitStockResult::Ok != cond) {
-        redprintf("GameMechanic::emitStock(%s): Conditions not met (%d).", (LPCTSTR)qPlayer.AirlineX, cond);
+        AT_Error("GameMechanic::emitStock(%s): Conditions not met (%d).", (LPCTSTR)qPlayer.AirlineX, cond);
         return false;
     }
 
     SLONG minAmount = 10 * maxAmount / 100;
     if (neueAktien < minAmount) {
-        redprintf("GameMechanic::emitStock(%s): Amount too low (%ld, min. is %ld).", (LPCTSTR)qPlayer.AirlineX, neueAktien, minAmount);
+        AT_Error("GameMechanic::emitStock(%s): Amount too low (%ld, min. is %ld).", (LPCTSTR)qPlayer.AirlineX, neueAktien, minAmount);
         return false;
     }
     if (neueAktien > maxAmount) {
-        redprintf("GameMechanic::emitStock(%s): Amount too high (%ld, max. is %ld).", (LPCTSTR)qPlayer.AirlineX, neueAktien, maxAmount);
+        AT_Error("GameMechanic::emitStock(%s): Amount too high (%ld, max. is %ld).", (LPCTSTR)qPlayer.AirlineX, neueAktien, maxAmount);
         return false;
     }
 
@@ -951,7 +956,7 @@ bool GameMechanic::emitStock(PLAYER &qPlayer, SLONG neueAktien, SLONG mode) {
         emissionsKurs = stockPrice - 1;
         marktAktien = neueAktien * 6 / 10;
     } else {
-        redprintf("GameMechanic::emitStock(%s): Invalid mode (%ld).", (LPCTSTR)qPlayer.AirlineX, mode);
+        AT_Error("GameMechanic::emitStock(%s): Invalid mode (%ld).", (LPCTSTR)qPlayer.AirlineX, mode);
         return false;
     }
 
@@ -1005,7 +1010,7 @@ bool GameMechanic::emitStock(PLAYER &qPlayer, SLONG neueAktien, SLONG mode) {
 
 bool GameMechanic::setDividend(PLAYER &qPlayer, SLONG dividend) {
     if (dividend < 0 || dividend > 25) {
-        redprintf("GameMechanic::setDividend(%s): Divident not in allowed range (%ld).", (LPCTSTR)qPlayer.AirlineX, dividend);
+        AT_Error("GameMechanic::setDividend(%s): Divident not in allowed range (%ld).", (LPCTSTR)qPlayer.AirlineX, dividend);
         return false;
     }
     qPlayer.Dividende = dividend;
@@ -1032,7 +1037,7 @@ GameMechanic::ExpandAirportResult GameMechanic::canExpandAirport(PLAYER & /*qPla
 bool GameMechanic::expandAirport(PLAYER &qPlayer) {
     auto cond = canExpandAirport(qPlayer);
     if (ExpandAirportResult::Ok != cond) {
-        redprintf("GameMechanic::expandAirport(%s): Conditions not met (%ld).", (LPCTSTR)qPlayer.AirlineX, cond);
+        AT_Error("GameMechanic::expandAirport(%s): Conditions not met (%ld).", (LPCTSTR)qPlayer.AirlineX, cond);
         return false;
     }
 
@@ -1044,7 +1049,7 @@ bool GameMechanic::expandAirport(PLAYER &qPlayer) {
 
 bool GameMechanic::bidOnGate(PLAYER &qPlayer, SLONG idx) {
     if (idx < 0 || idx >= TafelData.Gate.size()) {
-        redprintf("GameMechanic::bidOnGate(%s): Invalid index (%ld).", (LPCTSTR)qPlayer.AirlineX, idx);
+        AT_Error("GameMechanic::bidOnGate(%s): Invalid index (%ld).", (LPCTSTR)qPlayer.AirlineX, idx);
         return false;
     }
 
@@ -1071,7 +1076,7 @@ bool GameMechanic::bidOnGate(PLAYER &qPlayer, SLONG idx) {
 
 bool GameMechanic::bidOnCity(PLAYER &qPlayer, SLONG idx) {
     if (idx < 0 || idx >= TafelData.City.size()) {
-        redprintf("GameMechanic::bidOnCity(%s): Invalid index (%ld).", (LPCTSTR)qPlayer.AirlineX, idx);
+        AT_Error("GameMechanic::bidOnCity(%s): Invalid index (%ld).", (LPCTSTR)qPlayer.AirlineX, idx);
         return false;
     }
 
@@ -1098,7 +1103,7 @@ bool GameMechanic::bidOnCity(PLAYER &qPlayer, SLONG idx) {
 
 SLONG GameMechanic::setMechMode(PLAYER &qPlayer, SLONG mode) {
     if (mode < 0 || mode > 3) {
-        redprintf("GameMechanic::setMechMode(%s): Invalid mode (%ld).", (LPCTSTR)qPlayer.AirlineX, mode);
+        AT_Error("GameMechanic::setMechMode(%s): Invalid mode (%ld).", (LPCTSTR)qPlayer.AirlineX, mode);
         return false;
     }
     qPlayer.MechMode = mode;
@@ -1119,14 +1124,14 @@ void GameMechanic::increaseAllSalaries(PLAYER &qPlayer) {
 void GameMechanic::decreaseAllSalaries(PLAYER &qPlayer) { Workers.Gehaltsaenderung(0, qPlayer.PlayerNum); }
 
 void GameMechanic::planStrike(PLAYER &qPlayer) {
-    hprintf("GameMechanic::planStrike(%s): %02ld:%02ld", (LPCTSTR)qPlayer.AirlineX, Sim.GetHour(), Sim.GetMinute());
+    AT_Log("GameMechanic::planStrike(%s): %02ld:%02ld", (LPCTSTR)qPlayer.AirlineX, Sim.GetHour(), Sim.GetMinute());
     qPlayer.StrikePlanned = TRUE;
     qPlayer.StrikeEndType = 0;
 }
 
 void GameMechanic::endStrike(PLAYER &qPlayer, EndStrikeMode mode) {
     if (qPlayer.StrikeEndType != 0) {
-        redprintf("GameMechanic::endStrike(%s): Strike already ended.", (LPCTSTR)qPlayer.AirlineX);
+        AT_Error("GameMechanic::endStrike(%s): Strike already ended.", (LPCTSTR)qPlayer.AirlineX);
         return;
     }
 
@@ -1134,19 +1139,19 @@ void GameMechanic::endStrike(PLAYER &qPlayer, EndStrikeMode mode) {
         qPlayer.StrikeEndType = 2; // Streik beendet durch Gehaltserhöhung
         qPlayer.StrikeEndCountdown = 2;
         increaseAllSalaries(qPlayer);
-        hprintf("GameMechanic::endStrike(%s): @%02ld:%02ld via salary increase.", (LPCTSTR)qPlayer.AirlineX, Sim.GetHour(), Sim.GetMinute());
+        AT_Log("GameMechanic::endStrike(%s): @%02ld:%02ld via salary increase.", (LPCTSTR)qPlayer.AirlineX, Sim.GetHour(), Sim.GetMinute());
     } else if (mode == EndStrikeMode::Threat) {
         qPlayer.StrikeEndType = 1; // Streik beendet durch Drohung
         qPlayer.StrikeEndCountdown = 4;
         Workers.AddHappiness(qPlayer.PlayerNum, -20);
-        hprintf("GameMechanic::endStrike(%s): @%02ld:%02ld via threat.", (LPCTSTR)qPlayer.AirlineX, Sim.GetHour(), Sim.GetMinute());
+        AT_Log("GameMechanic::endStrike(%s): @%02ld:%02ld via threat.", (LPCTSTR)qPlayer.AirlineX, Sim.GetHour(), Sim.GetMinute());
     } else if (mode == EndStrikeMode::Drunk) {
         if (qPlayer.TrinkerTrust == TRUE) {
             qPlayer.StrikeEndType = 3; // Streik beendet durch Trinker
             qPlayer.StrikeEndCountdown = 4;
-            hprintf("GameMechanic::endStrike(%s): @%02ld:%02ld via help from the drunk.", (LPCTSTR)qPlayer.AirlineX, Sim.GetHour(), Sim.GetMinute());
+            AT_Log("GameMechanic::endStrike(%s): @%02ld:%02ld via help from the drunk.", (LPCTSTR)qPlayer.AirlineX, Sim.GetHour(), Sim.GetMinute());
         } else {
-            redprintf("GameMechanic::endStrike(%s): Drunk does not trust player.", (LPCTSTR)qPlayer.AirlineX);
+            AT_Error("GameMechanic::endStrike(%s): Drunk does not trust player.", (LPCTSTR)qPlayer.AirlineX);
         }
     } else if (mode == EndStrikeMode::Waiting) {
         if (qPlayer.StrikeHours == 0) {
@@ -1155,40 +1160,40 @@ void GameMechanic::endStrike(PLAYER &qPlayer, EndStrikeMode mode) {
             }
             qPlayer.StrikeEndType = 4; // Streik beendet durch abwarten
             Workers.AddHappiness(qPlayer.PlayerNum, -10);
-            hprintf("GameMechanic::endStrike(%s): @%02ld:%02ld by waiting.", (LPCTSTR)qPlayer.AirlineX, Sim.GetHour(), Sim.GetMinute());
+            AT_Log("GameMechanic::endStrike(%s): @%02ld:%02ld by waiting.", (LPCTSTR)qPlayer.AirlineX, Sim.GetHour(), Sim.GetMinute());
         } else {
-            redprintf("GameMechanic::endStrike(%s): Strike hours not yet over.", (LPCTSTR)qPlayer.AirlineX);
+            AT_Error("GameMechanic::endStrike(%s): Strike hours not yet over.", (LPCTSTR)qPlayer.AirlineX);
         }
     } else {
-        redprintf("GameMechanic::endStrike: Invalid EndStrikeMode (%ld).", (LPCTSTR)qPlayer.AirlineX, mode);
+        AT_Error("GameMechanic::endStrike: Invalid EndStrikeMode (%ld).", (LPCTSTR)qPlayer.AirlineX, mode);
     }
 }
 
 bool GameMechanic::buyAdvertisement(PLAYER &qPlayer, SLONG adCampaignType, SLONG adCampaignSize, SLONG routeA) {
     SLONG routeB = -1;
     if (adCampaignType < 0 || adCampaignType >= 3) {
-        redprintf("GameMechanic::buyAdvertisement(%s): Invalid adCampaignType (%ld).", (LPCTSTR)qPlayer.AirlineX, adCampaignType);
+        AT_Error("GameMechanic::buyAdvertisement(%s): Invalid adCampaignType (%ld).", (LPCTSTR)qPlayer.AirlineX, adCampaignType);
         return false;
     }
     if (adCampaignSize < 0 || adCampaignSize >= 6) {
-        redprintf("GameMechanic::buyAdvertisement(%s): Invalid adCampaignSize (%ld).", (LPCTSTR)qPlayer.AirlineX, adCampaignSize);
+        AT_Error("GameMechanic::buyAdvertisement(%s): Invalid adCampaignSize (%ld).", (LPCTSTR)qPlayer.AirlineX, adCampaignSize);
         return false;
     }
     if (adCampaignType == 1) {
         routeA = Routen.find(routeA);
         if (routeA < 0 || routeA >= qPlayer.RentRouten.RentRouten.AnzEntries()) {
-            redprintf("GameMechanic::buyAdvertisement(%s): Invalid routeA (%ld).", (LPCTSTR)qPlayer.AirlineX, routeA);
+            AT_Error("GameMechanic::buyAdvertisement(%s): Invalid routeA (%ld).", (LPCTSTR)qPlayer.AirlineX, routeA);
             return false;
         }
 
         routeB = findRouteInReverse(qPlayer, routeA);
         if (-1 == routeB) {
-            redprintf("GameMechanic::buyAdvertisement(%s): Unable to find route in reverse direction.", (LPCTSTR)qPlayer.AirlineX);
+            AT_Error("GameMechanic::buyAdvertisement(%s): Unable to find route in reverse direction.", (LPCTSTR)qPlayer.AirlineX);
             return false;
         }
     }
     if (adCampaignType != 1 && routeA != -1) {
-        redprintf("GameMechanic::buyAdvertisement(%s): RouteID must not be given for this mode (%ld).", (LPCTSTR)qPlayer.AirlineX, adCampaignType);
+        AT_Error("GameMechanic::buyAdvertisement(%s): RouteID must not be given for this mode (%ld).", (LPCTSTR)qPlayer.AirlineX, adCampaignType);
         return false;
     }
 
@@ -1270,7 +1275,7 @@ bool GameMechanic::buyAdvertisement(PLAYER &qPlayer, SLONG adCampaignType, SLONG
 GameMechanic::BuyItemResult GameMechanic::buyDutyFreeItem(PLAYER &qPlayer, UBYTE item) {
     if (item != ITEM_LAPTOP && item != ITEM_MG && item != ITEM_FILOFAX && item != ITEM_HANDY && item != ITEM_BIER && item != ITEM_PRALINEN &&
         item != ITEM_PRALINEN_A) {
-        redprintf("GameMechanic::buyDutyFreeItem(%s): Invalid item (%ld).", (LPCTSTR)qPlayer.AirlineX, item);
+        AT_Error("GameMechanic::buyDutyFreeItem(%s): Invalid item (%ld).", (LPCTSTR)qPlayer.AirlineX, item);
         return BuyItemResult::DeniedInvalidParam;
     }
 
@@ -1291,7 +1296,7 @@ GameMechanic::BuyItemResult GameMechanic::buyDutyFreeItem(PLAYER &qPlayer, UBYTE
 
     if (item == ITEM_MG) {
         if (Sim.Date <= 0 || qPlayer.ArabTrust != 0) {
-            redprintf("GameMechanic::buyDutyFreeItem(%s): Cannot buy item (%ld).", (LPCTSTR)qPlayer.AirlineX, item);
+            AT_Error("GameMechanic::buyDutyFreeItem(%s): Cannot buy item (%ld).", (LPCTSTR)qPlayer.AirlineX, item);
             return BuyItemResult::DeniedInvalidParam;
         }
     }
@@ -1353,7 +1358,7 @@ GameMechanic::BuyItemResult GameMechanic::buyDutyFreeItem(PLAYER &qPlayer, UBYTE
             qPlayer.LaptopBattery = 1440;
             break;
         default:
-            redprintf("GameMechanic.cpp: Default case should not be reached.");
+            AT_Error("GameMechanic.cpp: Default case should not be reached.");
             DebugBreak();
         }
 
@@ -1365,7 +1370,7 @@ GameMechanic::BuyItemResult GameMechanic::buyDutyFreeItem(PLAYER &qPlayer, UBYTE
 
 GameMechanic::PickUpItemResult GameMechanic::pickUpItem(PLAYER &qPlayer, SLONG item) {
     if ((qPlayer.HasItem(item) != 0) || (qPlayer.HasSpaceForItem() == 0)) {
-        redprintf("GameMechanic::pickUpItem(%s): No space for item (%ld).", (LPCTSTR)qPlayer.AirlineX, item);
+        AT_Error("GameMechanic::pickUpItem(%s): No space for item (%ld).", (LPCTSTR)qPlayer.AirlineX, item);
         return PickUpItemResult::NoSpace;
     }
 
@@ -1374,7 +1379,7 @@ GameMechanic::PickUpItemResult GameMechanic::pickUpItem(PLAYER &qPlayer, SLONG i
     switch (item) {
     case ITEM_OEL:
         if (room != ROOM_WERKSTATT) {
-            hprintf("GameMechanic::pickUpItem(%s): Player is in wrong room (%u).", (LPCTSTR)qPlayer.AirlineX, room);
+            AT_Log("GameMechanic::pickUpItem(%s): Player is in wrong room (%u).", (LPCTSTR)qPlayer.AirlineX, room);
         }
         if (qPlayer.MechTrust == 0) {
             return PickUpItemResult::NotAllowed;
@@ -1383,10 +1388,10 @@ GameMechanic::PickUpItemResult GameMechanic::pickUpItem(PLAYER &qPlayer, SLONG i
         return PickUpItemResult::PickedUp;
     case ITEM_POSTKARTE:
         if (room != ROOM_TAFEL && room != ROOM_AUFSICHT) {
-            hprintf("GameMechanic::pickUpItem(%s): Player is in wrong room (%u).", (LPCTSTR)qPlayer.AirlineX, room);
+            AT_Log("GameMechanic::pickUpItem(%s): Player is in wrong room (%u).", (LPCTSTR)qPlayer.AirlineX, room);
         }
         if ((Sim.ItemPostcard == 0) || qPlayer.SeligTrust != 0 || Sim.Difficulty == DIFF_TUTORIAL) {
-            redprintf("GameMechanic::pickUpItem(%s): Item already taken (%ld).", (LPCTSTR)qPlayer.AirlineX, item);
+            AT_Error("GameMechanic::pickUpItem(%s): Item already taken (%ld).", (LPCTSTR)qPlayer.AirlineX, item);
             return PickUpItemResult::ConditionsNotMet;
         }
         qPlayer.BuyItem(ITEM_POSTKARTE);
@@ -1395,7 +1400,7 @@ GameMechanic::PickUpItemResult GameMechanic::pickUpItem(PLAYER &qPlayer, SLONG i
         return PickUpItemResult::PickedUp;
     case ITEM_TABLETTEN:
         if (room != ROOM_PERSONAL_A && room != ROOM_PERSONAL_B && room != ROOM_PERSONAL_C && room != ROOM_PERSONAL_D) {
-            hprintf("GameMechanic::pickUpItem(%s): Player is in wrong room (%u).", (LPCTSTR)qPlayer.AirlineX, room);
+            AT_Log("GameMechanic::pickUpItem(%s): Player is in wrong room (%u).", (LPCTSTR)qPlayer.AirlineX, room);
         }
         if (qPlayer.SeligTrust == 1) {
             qPlayer.BuyItem(ITEM_TABLETTEN);
@@ -1404,10 +1409,10 @@ GameMechanic::PickUpItemResult GameMechanic::pickUpItem(PLAYER &qPlayer, SLONG i
         return PickUpItemResult::NotAllowed;
     case ITEM_SPINNE:
         if (room != ROOM_REISEBUERO) {
-            hprintf("GameMechanic::pickUpItem(%s): Player is in wrong room (%u).", (LPCTSTR)qPlayer.AirlineX, room);
+            AT_Log("GameMechanic::pickUpItem(%s): Player is in wrong room (%u).", (LPCTSTR)qPlayer.AirlineX, room);
         }
         if (Sim.Difficulty <= 0 && Sim.Difficulty != DIFF_FREEGAME) {
-            redprintf("GameMechanic::pickUpItem(%s): Item not available (%ld).", (LPCTSTR)qPlayer.AirlineX, item);
+            AT_Error("GameMechanic::pickUpItem(%s): Item not available (%ld).", (LPCTSTR)qPlayer.AirlineX, item);
             return PickUpItemResult::ConditionsNotMet;
         }
         qPlayer.BuyItem(ITEM_SPINNE);
@@ -1415,10 +1420,10 @@ GameMechanic::PickUpItemResult GameMechanic::pickUpItem(PLAYER &qPlayer, SLONG i
         return PickUpItemResult::PickedUp;
     case ITEM_DART:
         if (room != ROOM_SABOTAGE) {
-            hprintf("GameMechanic::pickUpItem(%s): Player is in wrong room (%u).", (LPCTSTR)qPlayer.AirlineX, room);
+            AT_Log("GameMechanic::pickUpItem(%s): Player is in wrong room (%u).", (LPCTSTR)qPlayer.AirlineX, room);
         }
         if ((qPlayer.HasItem(ITEM_DISKETTE) != 0) || (qPlayer.WerbungTrust == TRUE)) {
-            redprintf("GameMechanic::pickUpItem(%s): Item not available (%ld).", (LPCTSTR)qPlayer.AirlineX, item);
+            AT_Error("GameMechanic::pickUpItem(%s): Item not available (%ld).", (LPCTSTR)qPlayer.AirlineX, item);
             return PickUpItemResult::ConditionsNotMet;
         }
         if (qPlayer.SpiderTrust == 1) {
@@ -1428,10 +1433,10 @@ GameMechanic::PickUpItemResult GameMechanic::pickUpItem(PLAYER &qPlayer, SLONG i
         return PickUpItemResult::NotAllowed;
     case ITEM_DISKETTE:
         if (room != ROOM_WERBUNG) {
-            hprintf("GameMechanic::pickUpItem(%s): Player is in wrong room (%u).", (LPCTSTR)qPlayer.AirlineX, room);
+            AT_Log("GameMechanic::pickUpItem(%s): Player is in wrong room (%u).", (LPCTSTR)qPlayer.AirlineX, room);
         }
         if (Sim.Difficulty < DIFF_NORMAL && Sim.Difficulty != DIFF_FREEGAME) {
-            redprintf("GameMechanic::pickUpItem(%s): Item not available (%ld).", (LPCTSTR)qPlayer.AirlineX, item);
+            AT_Error("GameMechanic::pickUpItem(%s): Item not available (%ld).", (LPCTSTR)qPlayer.AirlineX, item);
             return PickUpItemResult::ConditionsNotMet;
         }
         if (qPlayer.WerbungTrust == 1) {
@@ -1441,20 +1446,20 @@ GameMechanic::PickUpItemResult GameMechanic::pickUpItem(PLAYER &qPlayer, SLONG i
         return PickUpItemResult::NotAllowed;
     case ITEM_BH:
         if (room != ROOM_MAKLER) {
-            hprintf("GameMechanic::pickUpItem(%s): Player is in wrong room (%u).", (LPCTSTR)qPlayer.AirlineX, room);
+            AT_Log("GameMechanic::pickUpItem(%s): Player is in wrong room (%u).", (LPCTSTR)qPlayer.AirlineX, room);
         }
         if ((qPlayer.HasItem(ITEM_HUFEISEN) != 0) || qPlayer.TrinkerTrust == TRUE || Sim.Difficulty == DIFF_TUTORIAL) {
-            redprintf("GameMechanic::pickUpItem(%s): Item not available (%ld).", (LPCTSTR)qPlayer.AirlineX, item);
+            AT_Error("GameMechanic::pickUpItem(%s): Item not available (%ld).", (LPCTSTR)qPlayer.AirlineX, item);
             return PickUpItemResult::ConditionsNotMet;
         }
         qPlayer.BuyItem(ITEM_BH);
         return PickUpItemResult::PickedUp;
     case ITEM_HUFEISEN:
         if (room != ROOM_SHOP1) {
-            hprintf("GameMechanic::pickUpItem(%s): Player is in wrong room (%u).", (LPCTSTR)qPlayer.AirlineX, room);
+            AT_Log("GameMechanic::pickUpItem(%s): Player is in wrong room (%u).", (LPCTSTR)qPlayer.AirlineX, room);
         }
         if (qPlayer.TrinkerTrust == TRUE) {
-            redprintf("GameMechanic::pickUpItem(%s): Item not available (%ld).", (LPCTSTR)qPlayer.AirlineX, item);
+            AT_Error("GameMechanic::pickUpItem(%s): Item not available (%ld).", (LPCTSTR)qPlayer.AirlineX, item);
             return PickUpItemResult::ConditionsNotMet;
         }
         if (qPlayer.DutyTrust == 1) {
@@ -1464,10 +1469,10 @@ GameMechanic::PickUpItemResult GameMechanic::pickUpItem(PLAYER &qPlayer, SLONG i
         return PickUpItemResult::NotAllowed;
     case ITEM_PAPERCLIP:
         if (room != ROOM_ROUTEBOX) {
-            hprintf("GameMechanic::pickUpItem(%s): Player is in wrong room (%u).", (LPCTSTR)qPlayer.AirlineX, room);
+            AT_Log("GameMechanic::pickUpItem(%s): Player is in wrong room (%u).", (LPCTSTR)qPlayer.AirlineX, room);
         }
         if (Sim.ItemClips == 0) {
-            redprintf("GameMechanic::pickUpItem(%s): Item already taken (%ld).", (LPCTSTR)qPlayer.AirlineX, item);
+            AT_Error("GameMechanic::pickUpItem(%s): Item already taken (%ld).", (LPCTSTR)qPlayer.AirlineX, item);
             return PickUpItemResult::ConditionsNotMet;
         }
         qPlayer.BuyItem(ITEM_PAPERCLIP);
@@ -1476,7 +1481,7 @@ GameMechanic::PickUpItemResult GameMechanic::pickUpItem(PLAYER &qPlayer, SLONG i
         return PickUpItemResult::PickedUp;
     case ITEM_GLUE:
         if (room != ROOM_FRACHT) {
-            hprintf("GameMechanic::pickUpItem(%s): Player is in wrong room (%u).", (LPCTSTR)qPlayer.AirlineX, room);
+            AT_Log("GameMechanic::pickUpItem(%s): Player is in wrong room (%u).", (LPCTSTR)qPlayer.AirlineX, room);
         }
         if (Sim.ItemGlue == 1) {
             qPlayer.BuyItem(ITEM_GLUE);
@@ -1485,16 +1490,16 @@ GameMechanic::PickUpItemResult GameMechanic::pickUpItem(PLAYER &qPlayer, SLONG i
             return PickUpItemResult::PickedUp;
         }
         if (Sim.ItemGlue == 2) {
-            redprintf("GameMechanic::pickUpItem(%s): Item already taken (%ld).", (LPCTSTR)qPlayer.AirlineX, item);
+            AT_Error("GameMechanic::pickUpItem(%s): Item already taken (%ld).", (LPCTSTR)qPlayer.AirlineX, item);
             return PickUpItemResult::ConditionsNotMet;
         }
         return PickUpItemResult::NotAllowed;
     case ITEM_GLOVE:
         if (room != ROOM_ARAB_AIR) {
-            hprintf("GameMechanic::pickUpItem(%s): Player is in wrong room (%u).", (LPCTSTR)qPlayer.AirlineX, room);
+            AT_Log("GameMechanic::pickUpItem(%s): Player is in wrong room (%u).", (LPCTSTR)qPlayer.AirlineX, room);
         }
         if (Sim.ItemGlove != 0) {
-            redprintf("GameMechanic::pickUpItem(%s): Item already taken (%ld).", (LPCTSTR)qPlayer.AirlineX, item);
+            AT_Error("GameMechanic::pickUpItem(%s): Item already taken (%ld).", (LPCTSTR)qPlayer.AirlineX, item);
             return PickUpItemResult::ConditionsNotMet;
         }
         qPlayer.BuyItem(ITEM_GLOVE);
@@ -1503,7 +1508,7 @@ GameMechanic::PickUpItemResult GameMechanic::pickUpItem(PLAYER &qPlayer, SLONG i
         return PickUpItemResult::PickedUp;
     case ITEM_REDBULL:
         if (room != ROOM_AIRPORT) {
-            hprintf("GameMechanic::pickUpItem(%s): Player is in wrong room (%u).", (LPCTSTR)qPlayer.AirlineX, room);
+            AT_Log("GameMechanic::pickUpItem(%s): Player is in wrong room (%u).", (LPCTSTR)qPlayer.AirlineX, room);
         }
         for (SLONG c = 0; c < 6; c++) {
             if (qPlayer.Items[c] == ITEM_GLOVE) {
@@ -1514,7 +1519,7 @@ GameMechanic::PickUpItemResult GameMechanic::pickUpItem(PLAYER &qPlayer, SLONG i
         break;
     case ITEM_STINKBOMBE:
         if (room != ROOM_KIOSK) {
-            hprintf("GameMechanic::pickUpItem(%s): Player is in wrong room (%u).", (LPCTSTR)qPlayer.AirlineX, room);
+            AT_Log("GameMechanic::pickUpItem(%s): Player is in wrong room (%u).", (LPCTSTR)qPlayer.AirlineX, room);
         }
         if (qPlayer.KioskTrust == 1) {
             qPlayer.BuyItem(ITEM_STINKBOMBE);
@@ -1539,10 +1544,10 @@ GameMechanic::PickUpItemResult GameMechanic::pickUpItem(PLAYER &qPlayer, SLONG i
         break;
     case ITEM_ZANGE:
         if (room != ROOM_SABOTAGE) {
-            hprintf("GameMechanic::pickUpItem(%s): Player is in wrong room (%u).", (LPCTSTR)qPlayer.AirlineX, room);
+            AT_Log("GameMechanic::pickUpItem(%s): Player is in wrong room (%u).", (LPCTSTR)qPlayer.AirlineX, room);
         }
         if (Sim.ItemZange == 0) {
-            redprintf("GameMechanic::pickUpItem(%s): Item already taken (%ld).", (LPCTSTR)qPlayer.AirlineX, item);
+            AT_Error("GameMechanic::pickUpItem(%s): Item already taken (%ld).", (LPCTSTR)qPlayer.AirlineX, item);
             return PickUpItemResult::ConditionsNotMet;
         }
         qPlayer.BuyItem(ITEM_ZANGE);
@@ -1551,7 +1556,7 @@ GameMechanic::PickUpItemResult GameMechanic::pickUpItem(PLAYER &qPlayer, SLONG i
         return PickUpItemResult::PickedUp;
     case ITEM_PARFUEM:
         if (room != ROOM_AIRPORT) {
-            hprintf("GameMechanic::pickUpItem(%s): Player is in wrong room (%u).", (LPCTSTR)qPlayer.AirlineX, room);
+            AT_Log("GameMechanic::pickUpItem(%s): Player is in wrong room (%u).", (LPCTSTR)qPlayer.AirlineX, room);
         }
         if (Sim.ItemParfuem != 0) {
             qPlayer.BuyItem(ITEM_PARFUEM);
@@ -1561,7 +1566,7 @@ GameMechanic::PickUpItemResult GameMechanic::pickUpItem(PLAYER &qPlayer, SLONG i
         }
         break;
     default:
-        redprintf("GameMechanic::pickUpItem(%s): Invalid item (%ld).", (LPCTSTR)qPlayer.AirlineX, item);
+        AT_Error("GameMechanic::pickUpItem(%s): Invalid item (%ld).", (LPCTSTR)qPlayer.AirlineX, item);
         DebugBreak();
     }
     return PickUpItemResult::None;
@@ -1576,7 +1581,7 @@ bool GameMechanic::removeItem(PLAYER &qPlayer, SLONG item) {
         }
     }
     if (!remove) {
-        redprintf("GameMechanic::removeItem(%s): Player does not have item (%ld).", (LPCTSTR)qPlayer.AirlineX, item);
+        AT_Error("GameMechanic::removeItem(%s): Player does not have item (%ld).", (LPCTSTR)qPlayer.AirlineX, item);
         return false;
     }
 
@@ -1584,7 +1589,7 @@ bool GameMechanic::removeItem(PLAYER &qPlayer, SLONG item) {
     if (qPlayer.HasItem(ITEM_LAPTOP) == 0) {
         qPlayer.SecurityFlags &= ~(1 << 1);
     }
-    hprintf("GameMechanic::removeItem(%s): Removed item (%ld).", (LPCTSTR)qPlayer.AirlineX, item);
+    AT_Log("GameMechanic::removeItem(%s): Removed item (%ld).", (LPCTSTR)qPlayer.AirlineX, item);
     return true;
 }
 
@@ -1596,7 +1601,7 @@ bool GameMechanic::useItem(PLAYER &qPlayer, SLONG item) {
         }
     }
     if (itemIndex == -1) {
-        redprintf("GameMechanic::useItem(%s): Player does not have item (%ld).", (LPCTSTR)qPlayer.AirlineX, item);
+        AT_Error("GameMechanic::useItem(%s): Player does not have item (%ld).", (LPCTSTR)qPlayer.AirlineX, item);
         return false;
     }
 
@@ -1932,7 +1937,7 @@ bool GameMechanic::useItem(PLAYER &qPlayer, SLONG item) {
         break;
 
     default:
-        redprintf("GameMechanic.cpp: Default case should not be reached.");
+        AT_Error("GameMechanic.cpp: Default case should not be reached.");
         DebugBreak();
     }
     return true;
@@ -1941,7 +1946,7 @@ bool GameMechanic::useItem(PLAYER &qPlayer, SLONG item) {
 bool GameMechanic::takeFlightJob(PLAYER &qPlayer, SLONG jobId, SLONG &outObjectId) {
     outObjectId = -1;
     if (!ReisebueroAuftraege.IsInAlbum(jobId)) {
-        redprintf("GameMechanic::takeFlightJob(%s): Invalid jobId (%ld).", (LPCTSTR)qPlayer.AirlineX, jobId);
+        AT_Error("GameMechanic::takeFlightJob(%s): Invalid jobId (%ld).", (LPCTSTR)qPlayer.AirlineX, jobId);
         return false;
     }
 
@@ -1972,7 +1977,7 @@ bool GameMechanic::takeFlightJob(PLAYER &qPlayer, SLONG jobId, SLONG &outObjectI
 bool GameMechanic::takeLastMinuteJob(PLAYER &qPlayer, SLONG jobId, SLONG &outObjectId) {
     outObjectId = -1;
     if (!LastMinuteAuftraege.IsInAlbum(jobId)) {
-        redprintf("GameMechanic::takeLastMinuteJob(%s): Invalid jobId (%ld).", (LPCTSTR)qPlayer.AirlineX, jobId);
+        AT_Error("GameMechanic::takeLastMinuteJob(%s): Invalid jobId (%ld).", (LPCTSTR)qPlayer.AirlineX, jobId);
         return false;
     }
 
@@ -2004,7 +2009,7 @@ bool GameMechanic::takeLastMinuteJob(PLAYER &qPlayer, SLONG jobId, SLONG &outObj
 bool GameMechanic::takeFreightJob(PLAYER &qPlayer, SLONG jobId, SLONG &outObjectId) {
     outObjectId = -1;
     if (!gFrachten.IsInAlbum(jobId)) {
-        redprintf("GameMechanic::takeFreightJob(%s): Invalid jobId (%ld).", (LPCTSTR)qPlayer.AirlineX, jobId);
+        AT_Error("GameMechanic::takeFreightJob(%s): Invalid jobId (%ld).", (LPCTSTR)qPlayer.AirlineX, jobId);
         return false;
     }
 
@@ -2034,7 +2039,7 @@ bool GameMechanic::takeFreightJob(PLAYER &qPlayer, SLONG jobId, SLONG &outObject
 
 bool GameMechanic::canCallInternational(PLAYER &qPlayer, SLONG cityId) {
     if (!Cities.IsInAlbum(cityId)) {
-        redprintf("GameMechanic::canCallInternational(%s): Invalid cityId (%ld).", (LPCTSTR)qPlayer.AirlineX, cityId);
+        AT_Error("GameMechanic::canCallInternational(%s): Invalid cityId (%ld).", (LPCTSTR)qPlayer.AirlineX, cityId);
         return false;
     }
 
@@ -2062,15 +2067,15 @@ bool GameMechanic::canCallInternational(PLAYER &qPlayer, SLONG cityId) {
 bool GameMechanic::takeInternationalFlightJob(PLAYER &qPlayer, SLONG cityId, SLONG jobId, SLONG &outObjectId) {
     outObjectId = -1;
     if (cityId < 0 || cityId >= AuslandsAuftraege.size()) {
-        redprintf("GameMechanic::takeInternationalFlightJob(%s): Invalid cityId (%ld).", (LPCTSTR)qPlayer.AirlineX, cityId);
+        AT_Error("GameMechanic::takeInternationalFlightJob(%s): Invalid cityId (%ld).", (LPCTSTR)qPlayer.AirlineX, cityId);
         return false;
     }
     if (!AuslandsAuftraege[cityId].IsInAlbum(jobId)) {
-        redprintf("GameMechanic::takeInternationalFlightJob(%s): Invalid jobId (%ld).", (LPCTSTR)qPlayer.AirlineX, jobId);
+        AT_Error("GameMechanic::takeInternationalFlightJob(%s): Invalid jobId (%ld).", (LPCTSTR)qPlayer.AirlineX, jobId);
         return false;
     }
     if (!canCallInternational(qPlayer, cityId)) {
-        redprintf("GameMechanic::takeInternationalFlightJob(%s): Impossible to call this location (%ld).", (LPCTSTR)qPlayer.AirlineX, cityId);
+        AT_Error("GameMechanic::takeInternationalFlightJob(%s): Impossible to call this location (%ld).", (LPCTSTR)qPlayer.AirlineX, cityId);
         return false;
     }
 
@@ -2095,15 +2100,15 @@ bool GameMechanic::takeInternationalFlightJob(PLAYER &qPlayer, SLONG cityId, SLO
 bool GameMechanic::takeInternationalFreightJob(PLAYER &qPlayer, SLONG cityId, SLONG jobId, SLONG &outObjectId) {
     outObjectId = -1;
     if (cityId < 0 || cityId >= AuslandsFrachten.size()) {
-        redprintf("GameMechanic::takeInternationalFreightJob(%s): Invalid cityId (%ld).", (LPCTSTR)qPlayer.AirlineX, cityId);
+        AT_Error("GameMechanic::takeInternationalFreightJob(%s): Invalid cityId (%ld).", (LPCTSTR)qPlayer.AirlineX, cityId);
         return false;
     }
     if (!AuslandsFrachten[cityId].IsInAlbum(jobId)) {
-        redprintf("GameMechanic::takeInternationalFreightJob(%s): Invalid jobId (%ld).", (LPCTSTR)qPlayer.AirlineX, jobId);
+        AT_Error("GameMechanic::takeInternationalFreightJob(%s): Invalid jobId (%ld).", (LPCTSTR)qPlayer.AirlineX, jobId);
         return false;
     }
     if (!canCallInternational(qPlayer, cityId)) {
-        redprintf("GameMechanic::takeInternationalFreightJob(%s): Impossible to call this location (%ld).", (LPCTSTR)qPlayer.AirlineX, cityId);
+        AT_Error("GameMechanic::takeInternationalFreightJob(%s): Impossible to call this location (%ld).", (LPCTSTR)qPlayer.AirlineX, cityId);
         return false;
     }
 
@@ -2127,7 +2132,7 @@ bool GameMechanic::takeInternationalFreightJob(PLAYER &qPlayer, SLONG cityId, SL
 
 bool GameMechanic::killFlightJob(PLAYER &qPlayer, SLONG par1, bool payFine) {
     if (!qPlayer.Auftraege.IsInAlbum(par1)) {
-        redprintf("GameMechanic::killFlightJob(%s): Invalid par1 (%ld).", (LPCTSTR)qPlayer.AirlineX, par1);
+        AT_Error("GameMechanic::killFlightJob(%s): Invalid par1 (%ld).", (LPCTSTR)qPlayer.AirlineX, par1);
         return false;
     }
 
@@ -2155,7 +2160,7 @@ bool GameMechanic::killFlightJob(PLAYER &qPlayer, SLONG par1, bool payFine) {
 
 bool GameMechanic::killFreightJob(PLAYER &qPlayer, SLONG par1, bool payFine) {
     if (!qPlayer.Frachten.IsInAlbum(par1)) {
-        redprintf("GameMechanic::killFreightJob(%s): Invalid par1 (%ld).", (LPCTSTR)qPlayer.AirlineX, par1);
+        AT_Error("GameMechanic::killFreightJob(%s): Invalid par1 (%ld).", (LPCTSTR)qPlayer.AirlineX, par1);
         return false;
     }
 
@@ -2186,20 +2191,20 @@ bool GameMechanic::killFreightJob(PLAYER &qPlayer, SLONG par1, bool payFine) {
 
 bool GameMechanic::removeFromFlightPlan(PLAYER &qPlayer, SLONG planeId, SLONG idx) {
     if (!qPlayer.Planes.IsInAlbum(planeId)) {
-        redprintf("GameMechanic::removeFromFlightPlan(%s): Invalid planeId (%ld).", (LPCTSTR)qPlayer.AirlineX, planeId);
+        AT_Error("GameMechanic::removeFromFlightPlan(%s): Invalid planeId (%ld).", (LPCTSTR)qPlayer.AirlineX, planeId);
         return false;
     }
 
     CFlugplan &qPlan = qPlayer.Planes[planeId].Flugplan;
     if (idx < 0 || idx >= qPlan.Flug.AnzEntries()) {
-        redprintf("GameMechanic::removeFromFlightPlan(%s): Invalid index (%ld).", (LPCTSTR)qPlayer.AirlineX, idx);
+        AT_Error("GameMechanic::removeFromFlightPlan(%s): Invalid index (%ld).", (LPCTSTR)qPlayer.AirlineX, idx);
         return false;
     }
 
     auto &qFPE = qPlan.Flug[idx];
 
     if (qFPE.Startdate == Sim.Date && qFPE.Startzeit <= Sim.GetHour() + 1) {
-        redprintf("GameMechanic::removeFromFlightPlan(%s): Flight is already locked.", (LPCTSTR)qPlayer.AirlineX);
+        AT_Error("GameMechanic::removeFromFlightPlan(%s): Flight is already locked.", (LPCTSTR)qPlayer.AirlineX);
         return false;
     }
 
@@ -2230,19 +2235,19 @@ bool GameMechanic::clearFlightPlan(PLAYER &qPlayer, SLONG planeId) { return clea
 
 bool GameMechanic::clearFlightPlanFrom(PLAYER &qPlayer, SLONG planeId, SLONG date, SLONG hours) {
     if (!qPlayer.Planes.IsInAlbum(planeId)) {
-        redprintf("GameMechanic::clearFlightPlanFrom(%s): Invalid planeId (%ld).", (LPCTSTR)qPlayer.AirlineX, planeId);
+        AT_Error("GameMechanic::clearFlightPlanFrom(%s): Invalid planeId (%ld).", (LPCTSTR)qPlayer.AirlineX, planeId);
         return false;
     }
     if (date < Sim.Date) {
-        redprintf("GameMechanic::clearFlightPlanFrom(%s): Date must not be in the past (%ld).", (LPCTSTR)qPlayer.AirlineX, date);
+        AT_Error("GameMechanic::clearFlightPlanFrom(%s): Date must not be in the past (%ld).", (LPCTSTR)qPlayer.AirlineX, date);
         return false;
     }
     if (hours < 0) {
-        redprintf("GameMechanic::clearFlightPlanFrom(%s): Offset must not be negative (%ld).", (LPCTSTR)qPlayer.AirlineX, hours);
+        AT_Error("GameMechanic::clearFlightPlanFrom(%s): Offset must not be negative (%ld).", (LPCTSTR)qPlayer.AirlineX, hours);
         return false;
     }
     if (date == Sim.Date && hours <= Sim.GetHour() + 1) {
-        hprintf("GameMechanic::clearFlightPlanFrom(%s): Increasing hours to current time + 2 (was %ld).", (LPCTSTR)qPlayer.AirlineX, hours);
+        AT_Log("GameMechanic::clearFlightPlanFrom(%s): Increasing hours to current time + 2 (was %ld).", (LPCTSTR)qPlayer.AirlineX, hours);
         hours = Sim.GetHour() + 2;
     }
 
@@ -2280,7 +2285,7 @@ bool GameMechanic::clearFlightPlanFrom(PLAYER &qPlayer, SLONG planeId, SLONG dat
 
 bool GameMechanic::refillFlightJobs(SLONG cityNum, SLONG minimum) {
     if (cityNum < 0 || cityNum >= AuslandsAuftraege.size()) {
-        redprintf("GameMechanic::refillFlightJobs: Invalid cityNum (%ld).", cityNum);
+        AT_Error("GameMechanic::refillFlightJobs: Invalid cityNum (%ld).", cityNum);
         return false;
     }
 
@@ -2292,11 +2297,11 @@ bool GameMechanic::refillFlightJobs(SLONG cityNum, SLONG minimum) {
 
 bool GameMechanic::planFlightJob(PLAYER &qPlayer, SLONG planeID, SLONG objectID, SLONG date, SLONG time) {
     if (!qPlayer.Auftraege.IsInAlbum(objectID)) {
-        redprintf("GameMechanic::planFlightJob(%s): Invalid job index (%ld).", (LPCTSTR)qPlayer.AirlineX, objectID);
+        AT_Error("GameMechanic::planFlightJob(%s): Invalid job index (%ld).", (LPCTSTR)qPlayer.AirlineX, objectID);
         return false;
     }
     if (qPlayer.Auftraege[objectID].InPlan != 0) {
-        redprintf("GameMechanic::planFlightJob(%s): Job was already planned (%ld).", (LPCTSTR)qPlayer.AirlineX, objectID);
+        AT_Error("GameMechanic::planFlightJob(%s): Job was already planned (%ld).", (LPCTSTR)qPlayer.AirlineX, objectID);
         return false;
     }
     if (objectID < 0x1000000) {
@@ -2306,7 +2311,7 @@ bool GameMechanic::planFlightJob(PLAYER &qPlayer, SLONG planeID, SLONG objectID,
 }
 bool GameMechanic::planFreightJob(PLAYER &qPlayer, SLONG planeID, SLONG objectID, SLONG date, SLONG time) {
     if (!qPlayer.Frachten.IsInAlbum(objectID)) {
-        redprintf("GameMechanic::planFreightJob(%s): Invalid job index (%ld).", (LPCTSTR)qPlayer.AirlineX, objectID);
+        AT_Error("GameMechanic::planFreightJob(%s): Invalid job index (%ld).", (LPCTSTR)qPlayer.AirlineX, objectID);
         return false;
     }
     if (objectID < 0x1000000) {
@@ -2316,7 +2321,7 @@ bool GameMechanic::planFreightJob(PLAYER &qPlayer, SLONG planeID, SLONG objectID
 }
 bool GameMechanic::planRouteJob(PLAYER &qPlayer, SLONG planeID, SLONG objectID, SLONG date, SLONG time) {
     if (!Routen.IsInAlbum(objectID)) {
-        redprintf("GameMechanic::planRouteJob(%s): Invalid job index (%ld).", (LPCTSTR)qPlayer.AirlineX, objectID);
+        AT_Error("GameMechanic::planRouteJob(%s): Invalid job index (%ld).", (LPCTSTR)qPlayer.AirlineX, objectID);
         return false;
     }
     if (objectID < 0x1000000) {
@@ -2326,41 +2331,41 @@ bool GameMechanic::planRouteJob(PLAYER &qPlayer, SLONG planeID, SLONG objectID, 
 }
 bool GameMechanic::_planFlightJob(PLAYER &qPlayer, SLONG planeID, SLONG objectID, SLONG objectType, SLONG date, SLONG time) {
     if (!qPlayer.Planes.IsInAlbum(planeID)) {
-        redprintf("GameMechanic::_planFlightJob(%s): Invalid plane index (%ld).", (LPCTSTR)qPlayer.AirlineX, objectID);
+        AT_Error("GameMechanic::_planFlightJob(%s): Invalid plane index (%ld).", (LPCTSTR)qPlayer.AirlineX, objectID);
         return false;
     }
     if (date < Sim.Date) {
-        redprintf("GameMechanic::_planFlightJob(%s): Invalid day (too early, %ld).", (LPCTSTR)qPlayer.AirlineX, date);
+        AT_Error("GameMechanic::_planFlightJob(%s): Invalid day (too early, %ld).", (LPCTSTR)qPlayer.AirlineX, date);
         return false;
     }
     if (date >= Sim.Date + 7) {
-        redprintf("GameMechanic::_planFlightJob(%s): Invalid day (too late, %ld).", (LPCTSTR)qPlayer.AirlineX, date);
+        AT_Error("GameMechanic::_planFlightJob(%s): Invalid day (too late, %ld).", (LPCTSTR)qPlayer.AirlineX, date);
         return false;
     }
     if (time < 0 || (date == Sim.Date && time < Sim.GetHour() + 2)) {
-        redprintf("GameMechanic::_planFlightJob(%s): Invalid time (too early, %ld).", (LPCTSTR)qPlayer.AirlineX, time);
+        AT_Error("GameMechanic::_planFlightJob(%s): Invalid time (too early, %ld).", (LPCTSTR)qPlayer.AirlineX, time);
         return false;
     }
     if (time >= 24) {
-        redprintf("GameMechanic::_planFlightJob(%s): Invalid time (%ld).", (LPCTSTR)qPlayer.AirlineX, time);
+        AT_Error("GameMechanic::_planFlightJob(%s): Invalid time (%ld).", (LPCTSTR)qPlayer.AirlineX, time);
         return false;
     }
 
     auto &qPlane = qPlayer.Planes[planeID];
     if (qPlayer.Owner == 0 || (qPlayer.Owner == 1 && !qPlayer.RobotUse(ROBOT_USE_FAKE_PERSONAL))) {
         if (qPlane.AnzBegleiter < qPlane.ptAnzBegleiter) {
-            redprintf("GameMechanic::_planFlightJob(%s): Plane %s does not have enough crew members (%ld, need %ld).", (LPCTSTR)qPlayer.AirlineX,
+            AT_Error("GameMechanic::_planFlightJob(%s): Plane %s does not have enough crew members (%ld, need %ld).", (LPCTSTR)qPlayer.AirlineX,
                       (LPCTSTR)qPlane.Name, qPlane.AnzBegleiter, qPlane.ptAnzBegleiter);
             return false;
         }
         if (qPlane.AnzPiloten < qPlane.ptAnzPiloten) {
-            redprintf("GameMechanic::_planFlightJob(%s): Plane %s does not have enough pilots (%ld, need %ld).", (LPCTSTR)qPlayer.AirlineX,
+            AT_Error("GameMechanic::_planFlightJob(%s): Plane %s does not have enough pilots (%ld, need %ld).", (LPCTSTR)qPlayer.AirlineX,
                       (LPCTSTR)qPlane.Name, qPlane.AnzPiloten, qPlane.ptAnzPiloten);
             return false;
         }
     }
     if (qPlane.Problem != 0) {
-        redprintf("GameMechanic::_planFlightJob(%s): Plane %s has a problem for the next %ld hours", (LPCTSTR)qPlayer.AirlineX, (LPCTSTR)qPlane.Name,
+        AT_Error("GameMechanic::_planFlightJob(%s): Plane %s has a problem for the next %ld hours", (LPCTSTR)qPlayer.AirlineX, (LPCTSTR)qPlane.Name,
                   qPlane.Problem);
         return false;
     }
@@ -2399,12 +2404,12 @@ bool GameMechanic::_planFlightJob(PLAYER &qPlayer, SLONG planeID, SLONG objectID
 
 bool GameMechanic::hireWorker(PLAYER &qPlayer, SLONG workerId) {
     if (workerId < 0 || workerId >= Workers.Workers.size()) {
-        redprintf("GameMechanic::hireWorker(%s): Invalid worker id (%ld).", (LPCTSTR)qPlayer.AirlineX, workerId);
+        AT_Error("GameMechanic::hireWorker(%s): Invalid worker id (%ld).", (LPCTSTR)qPlayer.AirlineX, workerId);
         return false;
     }
     auto &qWorker = Workers.Workers[workerId];
     if (qWorker.Employer != WORKER_JOBLESS) {
-        redprintf("GameMechanic::hireWorker(%s): Worker not unemployed.", (LPCTSTR)qPlayer.AirlineX);
+        AT_Error("GameMechanic::hireWorker(%s): Worker not unemployed.", (LPCTSTR)qPlayer.AirlineX);
         return false;
     }
 
@@ -2417,12 +2422,12 @@ bool GameMechanic::hireWorker(PLAYER &qPlayer, SLONG workerId) {
 
 bool GameMechanic::fireWorker(PLAYER &qPlayer, SLONG workerId) {
     if (workerId < 0 || workerId >= Workers.Workers.size()) {
-        redprintf("GameMechanic::fireWorker(%s): Invalid worker id (%ld).", (LPCTSTR)qPlayer.AirlineX, workerId);
+        AT_Error("GameMechanic::fireWorker(%s): Invalid worker id (%ld).", (LPCTSTR)qPlayer.AirlineX, workerId);
         return false;
     }
     auto &qWorker = Workers.Workers[workerId];
     if (qWorker.Employer != qPlayer.PlayerNum) {
-        redprintf("GameMechanic::fireWorker(%s): Worker not employed with player.", (LPCTSTR)qPlayer.AirlineX);
+        AT_Error("GameMechanic::fireWorker(%s): Worker not employed with player.", (LPCTSTR)qPlayer.AirlineX);
         return false;
     }
 
@@ -2438,7 +2443,7 @@ bool GameMechanic::fireWorker(PLAYER &qPlayer, SLONG workerId) {
 
 bool GameMechanic::killCity(PLAYER &qPlayer, SLONG cityID) {
     if (cityID < 0 || cityID >= qPlayer.RentCities.RentCities.size()) {
-        redprintf("GameMechanic::killCity(%s): Invalid cityID (%ld).", (LPCTSTR)qPlayer.AirlineX, cityID);
+        AT_Error("GameMechanic::killCity(%s): Invalid cityID (%ld).", (LPCTSTR)qPlayer.AirlineX, cityID);
         return false;
     }
 
@@ -2497,7 +2502,7 @@ BUFFER_V<BOOL> GameMechanic::getBuyableRoutes(PLAYER &qPlayer) {
 bool GameMechanic::killRoute(PLAYER &qPlayer, SLONG routeA) {
     routeA = Routen.find(routeA);
     if (routeA < 0 || routeA >= qPlayer.RentRouten.RentRouten.size()) {
-        redprintf("GameMechanic::killRoute(%s): Invalid routeA (%ld).", (LPCTSTR)qPlayer.AirlineX, routeA);
+        AT_Error("GameMechanic::killRoute(%s): Invalid routeA (%ld).", (LPCTSTR)qPlayer.AirlineX, routeA);
         return false;
     }
 
@@ -2506,7 +2511,7 @@ bool GameMechanic::killRoute(PLAYER &qPlayer, SLONG routeA) {
     /* find route in reverse direction */
     SLONG routeB = findRouteInReverse(qPlayer, routeA);
     if (-1 == routeB) {
-        redprintf("GameMechanic::rentRoute(%s): Unable to find route in reverse direction.", (LPCTSTR)qPlayer.AirlineX);
+        AT_Error("GameMechanic::rentRoute(%s): Unable to find route in reverse direction.", (LPCTSTR)qPlayer.AirlineX);
         return false;
     }
 
@@ -2554,7 +2559,7 @@ bool GameMechanic::killRoute(PLAYER &qPlayer, SLONG routeA) {
 bool GameMechanic::rentRoute(PLAYER &qPlayer, SLONG routeA) {
     routeA = Routen.find(routeA);
     if (routeA < 0 || routeA >= qPlayer.RentRouten.RentRouten.size()) {
-        redprintf("GameMechanic::rentRoute(%s): Invalid routeA (%ld).", (LPCTSTR)qPlayer.AirlineX, routeA);
+        AT_Error("GameMechanic::rentRoute(%s): Invalid routeA (%ld).", (LPCTSTR)qPlayer.AirlineX, routeA);
         return false;
     }
 
@@ -2563,7 +2568,7 @@ bool GameMechanic::rentRoute(PLAYER &qPlayer, SLONG routeA) {
     /* find route in reverse direction */
     SLONG routeB = findRouteInReverse(qPlayer, routeA);
     if (-1 == routeB) {
-        redprintf("GameMechanic::rentRoute(%s): Unable to find route in reverse direction.", (LPCTSTR)qPlayer.AirlineX);
+        AT_Error("GameMechanic::rentRoute(%s): Unable to find route in reverse direction.", (LPCTSTR)qPlayer.AirlineX);
         return false;
     }
 
@@ -2629,7 +2634,7 @@ bool GameMechanic::setRouteTicketPriceBoth(PLAYER &qPlayer, SLONG routeA, SLONG 
     /* find route in reverse direction */
     SLONG routeB = findRouteInReverse(qPlayer, routeA);
     if (-1 == routeB) {
-        redprintf("GameMechanic::setRouteTicketPrice(%s): Unable to find route in reverse direction.", (LPCTSTR)qPlayer.AirlineX);
+        AT_Error("GameMechanic::setRouteTicketPrice(%s): Unable to find route in reverse direction.", (LPCTSTR)qPlayer.AirlineX);
         return false;
     }
 
@@ -2946,7 +2951,7 @@ void GameMechanic::executeSabotageMode1() {
 
         if (ActNow == FALSE) {
             if (qPlayer.ArabTimeout-- <= 0) {
-                hprintf("GameMechanic::executeSabotageMode1: Job from %s expires", (LPCTSTR)qPlayer.AirlineX);
+                AT_Log("GameMechanic::executeSabotageMode1: Job from %s expires", (LPCTSTR)qPlayer.AirlineX);
                 qPlayer.ArabMode = 0; // apparently, this plane does not fly anymore
             }
             continue;
@@ -2955,7 +2960,7 @@ void GameMechanic::executeSabotageMode1() {
         CPlane &qPlane = qOpfer.Planes[qPlayer.ArabPlane];
         if (qPlane.Flugplan.NextFlight == -1) {
             if (qPlayer.ArabTimeout-- <= 0) {
-                hprintf("GameMechanic::executeSabotageMode1: Job from %s expires", (LPCTSTR)qPlayer.AirlineX);
+                AT_Log("GameMechanic::executeSabotageMode1: Job from %s expires", (LPCTSTR)qPlayer.AirlineX);
                 qPlayer.ArabMode = 0; // apparently, this plane does not fly anymore
             }
             continue;
@@ -3025,7 +3030,7 @@ void GameMechanic::executeSabotageMode1() {
                 qOpfer.RentRouten.RentRouten[Routen(qFPE.ObjectId)].Image = qOpfer.RentRouten.RentRouten[Routen(qFPE.ObjectId)].Image * 90 / 100;
             }
             SLONG e = qPlane.Flugplan.NextStart;
-            hprintf("Moving for tire sabotage:");
+            AT_Log("Moving for tire sabotage:");
             Helper::printFPE(qPlane.Flugplan.Flug[e]);
 
             qPlane.Flugplan.Flug[e].Startzeit++;
@@ -3084,13 +3089,12 @@ void GameMechanic::executeSabotageMode1() {
             PictureId = GetIdFromString("SUPERMAN");
             break;
         default:
-            redprintf("GameMechanic.cpp: Default case should not be reached.");
+            AT_Error("GameMechanic.cpp: Default case should not be reached.");
             DebugBreak();
         }
         if (qOpfer.Kurse[0] < 0) {
             qOpfer.Kurse[0] = 0;
         }
-        // log: redprintf ("Player[%li].Image now (sabo) = %li", (LPCTSTR)qPlayer.ArabOpfer, (LPCTSTR)qOpfer.Image);
 
         // Für's Briefing vermerken:
         Sim.SabotageActs.ReSize(Sim.SabotageActs.AnzEntries() + 1);
@@ -3213,7 +3217,7 @@ void GameMechanic::executeSabotageMode2(bool &outBAnyBombs) {
             qOpfer.StrikePlanned = TRUE;
             break;
         default:
-            redprintf("GameMechanic.cpp: Default case should not be reached.");
+            AT_Error("GameMechanic.cpp: Default case should not be reached.");
             DebugBreak();
         }
 
@@ -3334,7 +3338,7 @@ void GameMechanic::executeSabotageMode3() {
             }
             break;
         default:
-            redprintf("GameMechanic.cpp: Default case should not be reached.");
+            AT_Error("GameMechanic.cpp: Default case should not be reached.");
             DebugBreak();
         }
 
@@ -3375,22 +3379,22 @@ void GameMechanic::injectFakeSabotage() {
         case 0:
             qPlayer.ArabPlaneSelection = qOpfer.Planes.GetRandomUsedIndex(&SaboRand);
             number = SaboRand.getRandInt(1, 4);
-            hprintf("Sim.cpp: Injecting fake sabotage for %s (planes, number = %ld)", (LPCTSTR)qPlayer.AirlineX, number);
+            AT_Log("Sim.cpp: Injecting fake sabotage for %s (planes, number = %ld)", (LPCTSTR)qPlayer.AirlineX, number);
             res = GameMechanic::checkPrerequisitesForSaboteurJob(qPlayer, 0, number, TRUE);
             break;
         case 1:
             number = SaboRand.getRandInt(1, 4);
-            hprintf("Sim.cpp: Injecting fake sabotage for %s (personal, number = %ld)", (LPCTSTR)qPlayer.AirlineX, number);
+            AT_Log("Sim.cpp: Injecting fake sabotage for %s (personal, number = %ld)", (LPCTSTR)qPlayer.AirlineX, number);
             res = GameMechanic::checkPrerequisitesForSaboteurJob(qPlayer, 1, number, TRUE);
             break;
         case 2:
             qPlayer.ArabPlaneSelection = qOpfer.Planes.GetRandomUsedIndex(&SaboRand);
             number = SaboRand.getRandInt(1, 5);
-            hprintf("Sim.cpp: Injecting fake sabotage for %s (special, number = %ld)", (LPCTSTR)qPlayer.AirlineX, number);
+            AT_Log("Sim.cpp: Injecting fake sabotage for %s (special, number = %ld)", (LPCTSTR)qPlayer.AirlineX, number);
             res = GameMechanic::checkPrerequisitesForSaboteurJob(qPlayer, 2, number, TRUE);
             break;
         default:
-            hprintf("Sim.cpp: Default case should not be reached.");
+            AT_Log("Sim.cpp: Default case should not be reached.");
             DebugBreak();
         }
         if (res.result != GameMechanic::CheckSabotageResult::Ok) {

@@ -5,7 +5,10 @@
 #include "AtNet.h"
 #include "BotHelper.h"
 
-#define AT_Log(a,...) AT_Log_I("Schedule", a, __VA_ARGS__)
+#define AT_Error(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_ERROR, "Schedule", __VA_ARGS__)
+#define AT_Warn(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "Schedule",__VA_ARGS__)
+#define AT_Info(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "Schedule",__VA_ARGS__)
+#define AT_Log(...) AT_Log_I("Schedule", __VA_ARGS__)
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -149,7 +152,7 @@ void CFlugplan::UpdateNextStart() {
 void CFlugplan::Dump(bool bHercules) {
     char Buffer[500];
 
-    hprintf("------------------------------------------------------------");
+    AT_Log("------------------------------------------------------------");
     for (SLONG e = 0; e < Flug.AnzEntries(); e++) {
         switch (Flug[e].ObjectType) {
         case 1:
@@ -177,7 +180,7 @@ void CFlugplan::Dump(bool bHercules) {
         }
 
         if (bHercules) {
-            hprintf(Buffer);
+            AT_Log(Buffer);
         } else {
             DisplayBroadcastMessage(Buffer);
         }
@@ -223,7 +226,7 @@ void CFlugplanEintrag::CalcPassengers(SLONG PlayerNum, CPlane &qPlane) {
     if (ObjectType == 1) // Route
     {
         CRoute &qRoute = Routen[ObjectId];
-        // if (PlayerNum == 0) hprintf ("CalcPassengers for player %li for %s-%s", PlayerNum, (LPCTSTR)Cities[qRoute.VonCity].Name,
+        // if (PlayerNum == 0) AT_Log ("CalcPassengers for player %li for %s-%s", PlayerNum, (LPCTSTR)Cities[qRoute.VonCity].Name,
         // (LPCTSTR)Cities[qRoute.NachCity].Name);
 
         // Normale Passagiere: Aber nicht mehr kurz vor dem Start ändern:
@@ -290,12 +293,12 @@ void CFlugplanEintrag::CalcPassengers(SLONG PlayerNum, CPlane &qPlane) {
                     }
                 }
 
-                // if (PlayerNum == 0) hprintf ("Gewichte[%li]=%li", c, Gewichte[c]);
+                // if (PlayerNum == 0) AT_Log ("Gewichte[%li]=%li", c, Gewichte[c]);
 
                 Gesamtgewicht += Gewichte[c];
             }
 
-            // if (PlayerNum == 0) hprintf ("qRoute.Bedarf=%li", qRoute.Bedarf);
+            // if (PlayerNum == 0) AT_Log ("qRoute.Bedarf=%li", qRoute.Bedarf);
 
             // Wie viele wollen mitfliegen?
 #ifdef _DEBUG
@@ -309,7 +312,7 @@ void CFlugplanEintrag::CalcPassengers(SLONG PlayerNum, CPlane &qPlane) {
 #endif
             // Wie viele können mitfliegen (plus Toleranz)?
             tmp = min(tmp, qPlane.MaxPassagiere + qPlane.MaxPassagiere / 2);
-            // if (PlayerNum == 0) hprintf ("tmp=%li (passagiere+toleranz)", tmp);
+            // if (PlayerNum == 0) AT_Log ("tmp=%li (passagiere+toleranz)", tmp);
 
             // NetGenericAsync (24004+ObjectId+Sim.Date*100, tmp);
 
@@ -320,7 +323,7 @@ void CFlugplanEintrag::CalcPassengers(SLONG PlayerNum, CPlane &qPlane) {
             if (HoursBefore < 48) {
                 tmp = tmp * (HoursBefore + 48) / (48 + 48);
             }
-            // if (PlayerNum == 0) hprintf ("tmp=%li (nach tag)", tmp);
+            // if (PlayerNum == 0) AT_Log ("tmp=%li (nach tag)", tmp);
 
             // NetGenericAsync (30000+ObjectId+Sim.Date*100, HoursBefore);
             // NetGenericAsync (23003+ObjectId+Sim.Date*100, tmp);
@@ -335,7 +338,7 @@ void CFlugplanEintrag::CalcPassengers(SLONG PlayerNum, CPlane &qPlane) {
             if (Ticketpreis > Cost && Cost > 10 && Ticketpreis > 0) {
                 tmp = tmp * (Cost - 10) / Ticketpreis;
             }
-            // if (PlayerNum == 0) hprintf ("tmp=%li (nach kosten)", tmp);
+            // if (PlayerNum == 0) AT_Log ("tmp=%li (nach kosten)", tmp);
 
             // NetGenericAsync (19009+ObjectId+Sim.Date*100, tmp);
 
@@ -349,7 +352,7 @@ void CFlugplanEintrag::CalcPassengers(SLONG PlayerNum, CPlane &qPlane) {
             if (Landezeit < 5 || Landezeit > 22) {
                 tmp = tmp * 5 / 6;
             }
-            // if (PlayerNum == 0) hprintf ("tmp=%li (nach zeit)", tmp);
+            // if (PlayerNum == 0) AT_Log ("tmp=%li (nach zeit)", tmp);
 
             // NetGenericAsync (22002+ObjectId+Sim.Date*100, tmp);
 
@@ -359,7 +362,7 @@ void CFlugplanEintrag::CalcPassengers(SLONG PlayerNum, CPlane &qPlane) {
             {
                 CRentRoute &qRentRoute = qPlayer.RentRouten.RentRouten[Routen(ObjectId)];
 
-                // log: hprintf ("qRentRoute.Image=%li, qPlayer.Image=%li",qRentRoute.Image, qPlayer.Image);
+                // log: AT_Log ("qRentRoute.Image=%li, qPlayer.Image=%li",qRentRoute.Image, qPlayer.Image);
                 ImageTotal = qRentRoute.Image * 4;
                 ImageTotal += qPlayer.Image;
                 ImageTotal += 200;
@@ -375,7 +378,7 @@ void CFlugplanEintrag::CalcPassengers(SLONG PlayerNum, CPlane &qPlane) {
                 // NetGenericAsync (30004+ObjectId+Sim.Date*100, qPlayer.Image);
             }
             tmp = UWORD(tmp * (400 + ImageTotal) / 1100);
-            // if (PlayerNum == 0) hprintf ("tmp=%li (nach image)", tmp);
+            // if (PlayerNum == 0) AT_Log ("tmp=%li (nach image)", tmp);
 
             if (qPlane.ptLaerm > 60) {
                 tmp = UWORD(tmp * 1000 / 1100);
@@ -389,7 +392,7 @@ void CFlugplanEintrag::CalcPassengers(SLONG PlayerNum, CPlane &qPlane) {
             if (qPlane.ptLaerm > 110) {
                 tmp = UWORD(tmp * 1000 / 1100);
             }
-            // if (PlayerNum == 0) hprintf ("tmp=%li (nach lärm)", tmp);
+            // if (PlayerNum == 0) AT_Log ("tmp=%li (nach lärm)", tmp);
 
             // NetGenericAsync (21001+ObjectId+Sim.Date*100, tmp);
 
@@ -397,10 +400,10 @@ void CFlugplanEintrag::CalcPassengers(SLONG PlayerNum, CPlane &qPlane) {
             if (Gesamtgewicht > 0) {
                 tmp = min(tmp, qRoute.Bedarf * Gewichte[PlayerNum] / Gesamtgewicht);
             }
-            // if (PlayerNum == 0) hprintf ("tmp=%li (begrenzung nach gewicht)", tmp);
+            // if (PlayerNum == 0) AT_Log ("tmp=%li (begrenzung nach gewicht)", tmp);
 
             tmp = min(tmp, qPlane.MaxPassagiere);
-            // if (PlayerNum == 0) hprintf ("tmp=%li (begrenzung nach Flugzeugkapazität)\n\n", tmp);
+            // if (PlayerNum == 0) AT_Log ("tmp=%li (begrenzung nach Flugzeugkapazität)\n\n", tmp);
 
             Passagiere = static_cast<UWORD>(tmp);
 
@@ -588,8 +591,8 @@ void CFlugplanEintrag::BookFlight(CPlane *Plane, SLONG PlayerNum) {
     PLAYER &qPlayer = Sim.Players.Players[PlayerNum];
 
     if (FlightBooked) {
-        hprintf("==========");
-        redprintf("Schedule.cpp: %ld/%ld: %s: Tried to book flight twice:", Sim.Date, Sim.GetHour(), (LPCTSTR)qPlayer.AirlineX);
+        AT_Log("==========");
+        AT_Error("Schedule.cpp: %ld/%ld: %s: Tried to book flight twice:", Sim.Date, Sim.GetHour(), (LPCTSTR)qPlayer.AirlineX);
         printf("Schedule.cpp: ");
         Helper::printFPE(*this);
         printf("Schedule.cpp: ");
@@ -600,9 +603,9 @@ void CFlugplanEintrag::BookFlight(CPlane *Plane, SLONG PlayerNum) {
         } else if (ObjectType == 4) {
             Helper::printFreight(qPlayer.Frachten[ObjectId]);
         } else {
-            hprintf("None");
+            AT_Log("None");
         }
-        hprintf("==========");
+        AT_Log("==========");
         return;
     }
     FlightBooked = TRUE;
@@ -892,14 +895,14 @@ void CFlugplanEintrag::BookFlight(CPlane *Plane, SLONG PlayerNum) {
 
         if (qPlayer.Owner != 1 || !qPlayer.RobotUse(ROBOT_USE_FAKE_PERSONAL)) {
             // ObjectId wirkt als deterministisches Random
-            // log: hprintf ("Player[%li].Image now (deter) = %li", PlayerNum, qPlayer.Image);
+            // log: AT_Log ("Player[%li].Image now (deter) = %li", PlayerNum, qPlayer.Image);
             if (Plane->PersonalQuality < 50 && (ObjectId) % 10 == 0) {
                 qPlayerX.Image--;
             }
             if (Plane->PersonalQuality > 90 && (ObjectId) % 10 == 0) {
                 qPlayerX.Image++;
             }
-            // log: hprintf ("Player[%li].Image now (deter) = %li", PlayerNum, qPlayer.Image);
+            // log: AT_Log ("Player[%li].Image now (deter) = %li", PlayerNum, qPlayer.Image);
 
             if (ObjectType == 1) { // Auswirkung auf Routenimage
                 if (qPlayer.RentRouten.RentRouten[Routen(ObjectId)].Image > 0) {
@@ -991,11 +994,11 @@ void CFlugplanEintrag::BookFlight(CPlane *Plane, SLONG PlayerNum) {
     }
 
     if (ObjectType == 1) {
-        hprintf("Schedule.cpp: %s: %s $ (+%s $)  (%ld miles, %u * %s $ + %u * %s $ from tickets)", (LPCTSTR)qPlayer.AirlineX,
+        AT_Log("Schedule.cpp: %s: %s $ (+%s $)  (%ld miles, %u * %s $ + %u * %s $ from tickets)", (LPCTSTR)qPlayer.AirlineX,
                 (LPCTSTR)Insert1000erDots64(Saldo), (LPCTSTR)Insert1000erDots64(delta), miles, Passagiere, (LPCTSTR)Insert1000erDots(Ticketpreis), PassagiereFC,
                 (LPCTSTR)Insert1000erDots(TicketpreisFC));
     } else {
-        hprintf("Schedule.cpp: %s: %s $ (+%s $)  (%ld miles, %u + %u passengers)", (LPCTSTR)qPlayer.AirlineX, (LPCTSTR)Insert1000erDots64(Saldo),
+        AT_Log("Schedule.cpp: %s: %s $ (+%s $)  (%ld miles, %u + %u passengers)", (LPCTSTR)qPlayer.AirlineX, (LPCTSTR)Insert1000erDots64(Saldo),
                 (LPCTSTR)Insert1000erDots64(delta), miles, Passagiere, PassagiereFC);
     }
     Helper::printFPE(*this);
@@ -1007,19 +1010,19 @@ void CFlugplanEintrag::BookFlight(CPlane *Plane, SLONG PlayerNum) {
     // auto ZustandAlt = Plane->Zustand;
     if (KerosinGesamtQuali > 1.0) {
         faktorKerosin += 10 * (KerosinGesamtQuali - 1.0) * (KerosinGesamtQuali - 1.0);
-        hprintf("Schedule.cpp: %s: Schlechtes Kerosin (%.2f) reduziert Flugzeugzustand um %d statt um %d", (LPCTSTR)qPlayer.AirlineX, KerosinGesamtQuali,
+        AT_Log("Schedule.cpp: %s: Schlechtes Kerosin (%.2f) reduziert Flugzeugzustand um %d statt um %d", (LPCTSTR)qPlayer.AirlineX, KerosinGesamtQuali,
                 (int)(faktorDistanz * faktorBaujahr * faktorKerosin / 15), (int)(faktorDistanz * faktorBaujahr / 15));
     }
     auto ZustandAlt = Plane->Zustand;
     Plane->Zustand = static_cast<UBYTE>(Plane->Zustand - faktorDistanz * faktorBaujahr * faktorKerosin / 15);
-    hprintf("Schedule.cpp: %s: Plane %s (%s): Zustand: %u => %u (worst = %u), faktorDistanz = %f, faktorBaujahr = %f, faktorKerosin = %f",
+    AT_Log("Schedule.cpp: %s: Plane %s (%s): Zustand: %u => %u (worst = %u), faktorDistanz = %f, faktorBaujahr = %f, faktorKerosin = %f",
             (LPCTSTR)qPlayer.AirlineX, (LPCTSTR)Plane->Name, (Plane->TypeId == -1) ? "Designer" : (LPCTSTR)PlaneTypes[Plane->TypeId].Name, ZustandAlt,
             Plane->Zustand, Plane->WorstZustand, faktorDistanz, faktorBaujahr, faktorKerosin);
     if (Plane->Zustand > 200) {
         Plane->Zustand = 0;
     }
 
-    hprintf("");
+    AT_Log("");
 }
 
 //--------------------------------------------------------------------------------------------

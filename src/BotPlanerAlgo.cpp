@@ -7,6 +7,11 @@
 #include <chrono>
 #include <iostream>
 
+#define AT_Error(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_ERROR, "Bot", __VA_ARGS__)
+#define AT_Warn(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "Bot",__VA_ARGS__)
+#define AT_Info(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "Bot",__VA_ARGS__)
+#define AT_Log(...) AT_Log_I("Bot", __VA_ARGS__)
+
 // #define PRINT_DETAIL 1
 // #define PRINT_OVERALL 1
 
@@ -41,7 +46,7 @@ void BotPlaner::printForPlane(const char *txt, int planeIdx, bool printOnErrorOn
     (void)planeIdx;
     (void)printOnErrorOnly;
 #ifdef PRINT_DETAIL
-    hprintf("=== %s ===", txt);
+    AT_Log("=== %s ===", txt);
     auto &planeState = mPlaneStates[planeIdx];
     genSolutionsFromGraph(planeIdx);
     takeJobs(planeState.currentSolution);
@@ -104,15 +109,15 @@ void BotPlaner::printNodeInfo(const Graph &g, int nodeIdx) const {
     if (nodeIdx < g.nPlanes) {
         auto &qPlaneState = mPlaneStates[nodeIdx];
         const auto &qPlane = qPlanes[qPlaneState.planeId];
-        hprintf("Node %d is start for plane %s, available %s %d", nodeIdx, (LPCTSTR)qPlane.Name, (LPCTSTR)Helper::getWeekday(qPlaneState.availTime.getDate()),
+        AT_Log("Node %d is start for plane %s, available %s %d", nodeIdx, (LPCTSTR)qPlane.Name, (LPCTSTR)Helper::getWeekday(qPlaneState.availTime.getDate()),
                 qPlaneState.availTime.getHour());
     } else {
         const auto &qJob = mJobList[curInfo.jobIdx];
         if (qJob.isScheduled()) {
-            hprintf("Node %d is job %s (scheduled, starting %s %d)", nodeIdx, qJob.getName().c_str(), (LPCTSTR)Helper::getWeekday(curState.startTime.getDate()),
+            AT_Log("Node %d is job %s (scheduled, starting %s %d)", nodeIdx, qJob.getName().c_str(), (LPCTSTR)Helper::getWeekday(curState.startTime.getDate()),
                     curState.startTime.getHour());
         } else {
-            hprintf("Node %d is job %s (unscheduled)", nodeIdx, qJob.getName().c_str());
+            AT_Log("Node %d is job %s (unscheduled)", nodeIdx, qJob.getName().c_str());
         }
     }
 #endif
@@ -288,7 +293,7 @@ int BotPlaner::applySolutionToGraph() {
             }
 
             if (qFPE.Okay != 0) {
-                orangeprintf("BotPlaner::applySolutionToGraph(): Not scheduled correctly, skipping:");
+                AT_Warn("BotPlaner::applySolutionToGraph(): Not scheduled correctly, skipping:");
                 Helper::printFPE(qFPE);
                 skippedNode = true;
                 numJobsSkipped++;
@@ -300,7 +305,7 @@ int BotPlaner::applySolutionToGraph() {
                 if (qFPE.ObjectType == 2) {
                     auto it = mExistingJobsById.find(qFPE.ObjectId);
                     if (it == mExistingJobsById.end()) {
-                        redprintf("BotPlaner::applySolutionToGraph(): Unknown job in flight plan:");
+                        AT_Error("BotPlaner::applySolutionToGraph(): Unknown job in flight plan:");
                         Helper::printFPE(qFPE);
                         skippedNode = true;
                         numJobsSkipped++;
@@ -311,7 +316,7 @@ int BotPlaner::applySolutionToGraph() {
                 } else {
                     auto it = mExistingFreightJobsById.find(qFPE.ObjectId);
                     if (it == mExistingFreightJobsById.end()) {
-                        redprintf("BotPlaner::applySolutionToGraph(): Unknown freight job in flight plan:");
+                        AT_Error("BotPlaner::applySolutionToGraph(): Unknown freight job in flight plan:");
                         Helper::printFPE(qFPE);
                         skippedNode = true;
                         numJobsSkipped++;
@@ -325,7 +330,7 @@ int BotPlaner::applySolutionToGraph() {
                         count++;
                     }
                     if ((nextNode >= g.nNodes) || g.nodeInfo[nextNode].jobIdx != jobIdx) {
-                        redprintf("BotPlaner::applySolutionToGraph(): Not enough node instances for freight job (have %d):", count);
+                        AT_Error("BotPlaner::applySolutionToGraph(): Not enough node instances for freight job (have %d):", count);
                         mJobList[jobIdx].printInfo();
                         skippedNode = true;
                         numJobsSkipped++;
@@ -336,9 +341,9 @@ int BotPlaner::applySolutionToGraph() {
                 /* check duration of any previous automatic flight */
                 auto actualDuration = g.adjMatrix[currentNode][nextNode].duration;
                 if (!(autoFlightDuration == actualDuration || (skippedNode && autoFlightDuration > actualDuration))) {
-                    redprintf("BotPlaner::applySolutionToGraph(): Duration of automatic flight does not match before FPE:");
+                    AT_Error("BotPlaner::applySolutionToGraph(): Duration of automatic flight does not match before FPE:");
                     Helper::printFPE(qFPE);
-                    hprintf("Is %d in plan, but %d in graph", autoFlightDuration, actualDuration);
+                    AT_Log("Is %d in plan, but %d in graph", autoFlightDuration, actualDuration);
                 }
 
                 insertNode(g, p, currentNode, nextNode);
@@ -777,7 +782,7 @@ bool BotPlaner::runAddNodeToBestPlaneInner(int jobIdxToInsert) {
             nodeToInsert++;
         }
         if (g.nodeInfo[nodeToInsert].jobIdx != jobIdxToInsert) {
-            redprintf("BotPlaner::runAddNodeToBestPlaneInner(): Not enough node instances for freight job:");
+            AT_Error("BotPlaner::runAddNodeToBestPlaneInner(): Not enough node instances for freight job:");
             mJobList[jobIdxToInsert].printInfo();
             continue;
         }
@@ -889,12 +894,12 @@ bool BotPlaner::algo(int64_t timeBudget) {
     int numJobsSkipped = applySolutionToGraph();
     if (numJobsSkipped > 0) {
         existingSolutionsHasProblems = true;
-        orangeprintf("BotPlaner::algo(): Existing plane schedules had problems: %d jobs skipped", numJobsSkipped);
+        AT_Warn("BotPlaner::algo(): Existing plane schedules had problems: %d jobs skipped", numJobsSkipped);
     }
     int nRemoved = runPruneFreightJobs();
     if (nRemoved > 0) {
         existingSolutionsHasProblems = true;
-        orangeprintf("BotPlaner::algo(): Existing plane schedules had problems: %d freight jobs pruned", nRemoved);
+        AT_Warn("BotPlaner::algo(): Existing plane schedules had problems: %d freight jobs pruned", nRemoved);
     }
 
     /* save pre-existing solution */
@@ -996,7 +1001,7 @@ bool BotPlaner::algo(int64_t timeBudget) {
         }
 
 #ifdef PRINT_OVERALL
-        hprintf("%f ms left, temp now %d. Current gain = %d (overall = %d)", (timeBudget - delta) / 1000.0, temperature, currentBestGain, overallBestGain);
+        AT_Log("%f ms left, temp now %d. Current gain = %d (overall = %d)", (timeBudget - delta) / 1000.0, temperature, currentBestGain, overallBestGain);
 #endif
     }
 
@@ -1013,7 +1018,7 @@ bool BotPlaner::algo(int64_t timeBudget) {
         genSolutionsFromGraph(planeIdx);
     }
 
-    hprintf("Overall gain improved from %d to %d.", oldGain, overallBestGain);
+    AT_Log("Overall gain improved from %d to %d.", oldGain, overallBestGain);
     bool needToApplySolution = (overallBestGain > oldGain) || existingSolutionsHasProblems;
     return needToApplySolution;
 }

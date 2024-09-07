@@ -59,9 +59,11 @@ PRINTF_ATTR(2, 3) inline void SDL_PRINTF_VARARG_FUNC(2) AT_Log_I(const std::stri
 }
 
 #define AT_Log_Generic(...) AT_Log_I("Generic", __VA_ARGS__)
+// Example implementation AT_Log (should be in each CPP file with appropriate category):
+//#define AT_Log(...) AT_Log_I("EXAMPLE CATEGORY", __VA_ARGS__)
 
-//Example AT_Log implementation:
-//#define AT_Log(...) AT_Log_I("EXAMPLE", __VA_ARGS__)
+// Legacy logging:
+#define hprintf(...) AT_Log_I("Generic", __VA_ARGS__)
 
 template <typename T> inline void Limit(T min, T &value, T max) {
     if (value < min)
@@ -921,25 +923,15 @@ class HDU {
     ~HDU();
 
     void Close();
-    void Disable();
-    void ClearScreen();
-    void HercPrintf(const char *Format, ...);
-    void HercPrintfRed(const char *Format, ...);
-    void HercPrintfOrange(const char *Format, ...);
-    void HercPrintfGreen(const char *Format, ...);
-    void LogPosition(const char *, SLONG);
+    void HercPrintfMsg(SDL_LogPriority lvl, const char *origin, const char *format, ...);
 
   private:
     FILE *Log;
+    SLONG numErrors{};
+    SLONG numWarnings{};
 };
 
 extern HDU Hdu;
-
-#define hprintf Hdu.HercPrintf
-#define hprintvar(x) Hdu.HercPrintf("%d\n", x)
-#define redprintf Hdu.HercPrintfRed
-#define orangeprintf Hdu.HercPrintfOrange
-#define greenprintf Hdu.HercPrintfGreen
 
 class XID {
   public:
@@ -1489,6 +1481,6 @@ class TeakLibException final : public std::runtime_error {
     explicit TeakLibException(const char *_Message) : runtime_error(_Message) {}
 
     void caught() {
-        AT_Log_I("Herc", "Exception was correctly handled");
+        AT_Log_I("Excp", "Exception was correctly handled");
     }
 };

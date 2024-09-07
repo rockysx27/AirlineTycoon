@@ -6,7 +6,7 @@
 #include "StdAfx.h"
 #include "glpers.h"
 
-#define AT_Log(...) AT_Log_I("Personal", __VA_ARGS__)
+#define AT_Log(...) // AT_Log_I("Personal", __VA_ARGS__)
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -350,7 +350,7 @@ void CWorkers::ReInit(const CString &TabFilename, const CString &TabFilename2) {
         try {
             CString name = strtok(Line.getData(), TabSeparator);
             if (name.length() == 0) {
-                AT_Log_I("Loading", "Empty worker found in file \"%s\" at line: %d - skipping...", FullFilename(TabFilename, ExcelPath).c_str(), line);
+                AT_Log("Loading", "Empty worker found in file \"%s\" at line: %d - skipping...", FullFilename(TabFilename, ExcelPath).c_str(), line);
                 continue;
             }
 
@@ -379,7 +379,7 @@ void CWorkers::ReInit(const CString &TabFilename, const CString &TabFilename2) {
             }
         } catch (...) {
             if (Num >= Workers.AnzEntries()) {
-                AT_Log_I("Loading", "Failed to load new worker in file \"%s\" at line: %d", FullFilename(TabFilename, ExcelPath).c_str(), Num + 1);
+                AT_Log("Loading", "Failed to load new worker in file \"%s\" at line: %d", FullFilename(TabFilename, ExcelPath).c_str(), Num + 1);
             }
         }
         Num++;

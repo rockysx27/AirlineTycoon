@@ -4,6 +4,11 @@
 #include <stdexcept>
 #include <mutex>
 
+#define AT_Error(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_ERROR, "Dbg", __VA_ARGS__)
+#define AT_Warn(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "Dbg",__VA_ARGS__)
+#define AT_Info(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "Dbg",__VA_ARGS__)
+#define AT_Log(...) AT_Log_I("Dbg", __VA_ARGS__)
+
 const char *ExcAssert = "Assert (called from %s:%li) failed!";
 const char *ExcGuardian = "Con/Des guardian %lx failed!";
 const char *ExcStrangeMem = "Strange new: %li bytes!";
@@ -48,7 +53,7 @@ HDU::HDU() : Log(nullptr) {
         const SDL_LogOutputFunction func = reinterpret_cast<SDL_LogOutputFunction>(userdata);
         func(userdata, category, priority, finalMessage);
 
-        if(Hdu.Log){
+        if(Hdu.Log) {
             
             fprintf(Hdu.Log, "%s\n", finalMessage);
             fflush(Hdu.Log);
@@ -73,59 +78,49 @@ void HDU::Close() {
     Log = nullptr;
 }
 
-void HDU::HercPrintf(const char *format, ...) {
+void HDU::HercPrintfMsg(SDL_LogPriority lvl, const char *origin, const char *format, ...) {
     if (Log == nullptr) {
         return;
     }
-    va_list args;
-    va_start(args, format);
-    //vfprintf(Log, format, args);
-    V_AT_Log_I("Herc", format, args);
-    va_end(args);
-}
 
-void HDU::HercPrintfRed(const char *format, ...) {
-    if (Log == nullptr) {
-        return;
+    if (lvl == SDL_LOG_PRIORITY_ERROR) {
+        numErrors = std::min(9999, numErrors + 1);
+    } else if (lvl == SDL_LOG_PRIORITY_WARN) {
+        numWarnings = std::min(9999, numWarnings + 1);
     }
-    static SLONG numErrors = 0;
-    fprintf(Log, "\e[1;31mERR %d: ", numErrors++);
-    va_list args;
-    va_start(args, format);
-    vfprintf(Log, format, args);
-    va_end(args);
-    fprintf(Log, "\e[m\n");
-    fflush(Log);
-}
 
-void HDU::HercPrintfOrange(const char *format, ...) {
-    if (Log == nullptr) {
-        return;
+    std::string prefix{};
+    std::string suffix{};
+    if (lvl == SDL_LOG_PRIORITY_ERROR) {
+        int size = snprintf(nullptr, 0, "\e[1;31m#%d %s || ", numErrors, origin) + 1;
+        std::unique_ptr<char[]> buf(new char[size]);
+        snprintf(buf.get(), size, "\e[1;31m#%d %s || ", numErrors, origin);
+        prefix = {buf.get(), buf.get() + size - 1};
+
+        suffix = "\e[m";
+    } else if (lvl == SDL_LOG_PRIORITY_WARN) {
+        int size = snprintf(nullptr, 0, "\e[1;33m#%d %s || ", numWarnings, origin) + 1;
+        std::unique_ptr<char[]> buf(new char[size]);
+        snprintf(buf.get(), size, "\e[1;33m#%d %s || ", numWarnings, origin);
+        prefix = {buf.get(), buf.get() + size - 1};
+
+        suffix = "\e[m";
+    } else {
+        int size = snprintf(nullptr, 0, "\e[1;32m%s || ", origin) + 1;
+        std::unique_ptr<char[]> buf(new char[size]);
+        snprintf(buf.get(), size, "\e[1;32m%s || ", origin);
+        prefix = {buf.get(), buf.get() + size - 1};
+
+        suffix = "\e[m";
     }
-    static SLONG numWarnings = 0;
-    fprintf(Log, "\e[1;33mWARN %d: ", numWarnings++);
+
     va_list args;
     va_start(args, format);
-    vfprintf(Log, format, args);
+    SDL_LogMessageV(SDL_LOG_CATEGORY_APPLICATION, lvl, (prefix + format + suffix).c_str(), args);
     va_end(args);
-    fprintf(Log, "\e[m\n");
-    fflush(Log);
 }
 
-void HDU::HercPrintfGreen(const char *format, ...) {
-    if (Log == nullptr) {
-        return;
-    }
-    fprintf(Log, "\e[1;32m");
-    va_list args;
-    va_start(args, format);
-    vfprintf(Log, format, args);
-    va_end(args);
-    fprintf(Log, "\e[m\n");
-    fflush(Log);
-}
-
-void here(char *file, SLONG line) { hprintf("Here in %s, line %li", file, line); }
+void here(char *file, SLONG line) { AT_Info("Here in %s, line %li", file, line); }
 
 SLONG TeakLibW_Exception(const char *file, SLONG line, const char *format, ...) {
     char buffer[128];
@@ -134,11 +129,11 @@ SLONG TeakLibW_Exception(const char *file, SLONG line, const char *format, ...) 
     vsnprintf(buffer, sizeof(buffer), format, args);
     va_end(args);
 
-    hprintf("====================================================================");
-    hprintf("Exception in File %s, Line %li:", file, line);
-    hprintf(buffer);
-    hprintf("====================================================================");
-    hprintf("C++ Exception thrown. Program will probably be terminated.");
+    AT_Error("====================================================================");
+    AT_Error("Exception in File %s, Line %li:", file, line);
+    AT_Error(buffer);
+    AT_Error("====================================================================");
+    AT_Error("C++ Exception thrown. Program will probably be terminated.");
 
     delete lastError;
     
