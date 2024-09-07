@@ -414,13 +414,13 @@ void CTakeOffApp::CreateVideo() {
 void CTakeOffApp::InitInstance(int argc, char *argv[]) {
     // Header
     time_t start_time = time(nullptr);
-    Hdu.HercPrintf(0, "Airline Tycoon Deluxe logfile");
-    Hdu.HercPrintf(0, VersionString);
-    Hdu.HercPrintf(0, "===============================================================================");
-    Hdu.HercPrintf(0, "Copyright (C) 2002 Spellbound Software");
-    Hdu.HercPrintf(0, "Application was compiled at %s at %s", __DATE__, __TIME__);
-    Hdu.HercPrintf(0, "===============================================================================");
-    Hdu.HercPrintf(0, "logging starts %s", asctime(localtime(&start_time)));
+    hprintf("Airline Tycoon Deluxe logfile");
+    hprintf(VersionString);
+    hprintf("===============================================================================");
+    hprintf("Copyright (C) 2002 Spellbound Software");
+    hprintf("Application was compiled at %s at %s", __DATE__, __TIME__);
+    hprintf("===============================================================================");
+    hprintf("logging starts %s", asctime(localtime(&start_time)));
 
     pTakeOffApp = this;
 

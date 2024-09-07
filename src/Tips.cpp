@@ -1014,9 +1014,9 @@ void DrawMoneyTip(SBBM &TipBm, SLONG PlayerNum, SLONG Page) {
     SB_CFont FontBankBlack;
     SB_CFont FontBankRed;
 
-    Hdu.HercPrintf(0, "bank_bl.mcf");
+    hprintf("bank_bl.mcf");
     FontBankBlack.Load(lpDD, const_cast<char *>((LPCTSTR)FullFilename("bank_bl.mcf", MiscPath)));
-    Hdu.HercPrintf(0, "bank_ro.mcf");
+    hprintf("bank_ro.mcf");
     FontBankRed.Load(lpDD, const_cast<char *>((LPCTSTR)FullFilename("bank_ro.mcf", MiscPath)));
 
     // Fenster-Überschrift:

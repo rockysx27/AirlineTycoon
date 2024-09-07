@@ -146,7 +146,6 @@ CRLEReader::CRLEReader(const char *path) : Ctx(nullptr), SeqLength(0), SeqUsed(0
 }
 
 CRLEReader::~CRLEReader() { Close(); }
-
 bool CRLEReader::AlwaysSaveAsPlainText = false;
 bool CRLEReader::UpdateDataBeforeOpening = false;
 

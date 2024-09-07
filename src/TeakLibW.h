@@ -923,7 +923,6 @@ class HDU {
     void Close();
     void Disable();
     void ClearScreen();
-    void HercPrintf(SLONG, const char *Format, ...);
     void HercPrintf(const char *Format, ...);
     void HercPrintfRed(const char *Format, ...);
     void HercPrintfOrange(const char *Format, ...);

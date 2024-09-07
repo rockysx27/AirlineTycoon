@@ -24,9 +24,9 @@ Bank::Bank(BOOL bHandy, ULONG PlayerNum) : CStdRaum(bHandy, PlayerNum, "bank.gli
 
     Sim.FocusPerson = -1;
 
-    Hdu.HercPrintf(0, "bank_bl.mcf");
+    hprintf("bank_bl.mcf");
     FontBankBlack.Load(lpDD, const_cast<char *>((LPCTSTR)FullFilename("bank_bl.mcf", MiscPath)));
-    Hdu.HercPrintf(0, "bank_ro.mcf");
+    hprintf("bank_ro.mcf");
     FontBankRed.Load(lpDD, const_cast<char *>((LPCTSTR)FullFilename("bank_ro.mcf", MiscPath)));
 
     SP_Modem.ReSize(1);

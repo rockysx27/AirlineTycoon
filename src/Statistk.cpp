@@ -383,7 +383,7 @@ CStatistik::CStatistik(BOOL bHandy, ULONG PlayerNum) : CStdRaum(bHandy, PlayerNu
     Sim.Players.UpdateStatistics();
 
     for (c = 1; c < 5; c++) {
-        Hdu.HercPrintf(0, "stat_%li.mcf", c);
+        hprintf("stat_%li.mcf", c);
         StatFonts[c - 1].Load(lpDD, const_cast<char *>((LPCTSTR)FullFilename("stat_%li.mcf", MiscPath, c)));
     }
 

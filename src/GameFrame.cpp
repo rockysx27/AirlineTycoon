@@ -436,7 +436,7 @@ GameFrame::~GameFrame() {
     }
 
     bLeaveGameLoop = TRUE;
-    Hdu.HercPrintf(0, "logging ends..");
+    hprintf("logging ends..");
 }
 
 void GameFrame::ProcessEvent(const SDL_Event &event) const {

@@ -55,7 +55,7 @@ CVideo::CVideo(const CString &SmackName) : CStdRaum(FALSE, 0, "", 0) {
     desired.userdata = nullptr;
     audioDevice = SDL_OpenAudioDevice(nullptr, 0, &desired, nullptr, 0);
     if (audioDevice == 0U) {
-        Hdu.HercPrintf(SDL_GetError());
+        hprintf(SDL_GetError());
     }
     
     Bitmap.ReSize(XY(Width, Height), CREATE_SYSMEM | CREATE_INDEXED);
