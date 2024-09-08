@@ -329,7 +329,7 @@ void CTakeOffApp::CLI(int argc, char *argv[]) {
                 gQuickTestRun = 2 + atoi(argv[i]);
             }
 
-            if (gQuickTestRun == 1) {
+            if (gQuickTestRun > 0) {
                 gAutoQuitOnDay = 99; /* auto-quit in freegame */
             }
         }
@@ -462,7 +462,9 @@ void CTakeOffApp::InitInstance(int argc, char *argv[]) {
     CreateVideo();
 
     Sim.LoadOptions();
-    Sim.SaveOptions();
+    if (gQuickTestRun == 0) {
+        Sim.SaveOptions();
+    }
     // UpdateSavegames();
 
     FrameWnd = new GameFrame;

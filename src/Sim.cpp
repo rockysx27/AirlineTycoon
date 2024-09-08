@@ -4094,7 +4094,7 @@ void COptions::ReadOptions() {
         }
     }
 
-    if (gQuickTestRun != 0) {
+    if (gQuickTestRun > 0) {
         Sim.Options.OptionFullscreen = 1;
     }
 }
