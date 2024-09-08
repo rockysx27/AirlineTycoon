@@ -484,8 +484,6 @@ void CTakeOffApp::InitInstance(int argc, char *argv[]) {
     MessagePump();
     InitFonts();
 
-    FrameWnd->UpdateFrameSize();
-
     // Waiting Area
     {
         CWait Waiting;

@@ -571,7 +571,8 @@ void BLOCK::LinkeSeiteIndex(XY TitleArea, XY ClientArea) {
             }
 
             Bitmap.PrintAt(Table.Values[0 + c * Table.AnzColums], *f, TEC_FONT_LEFT, ClientArea + XY(0, (c - Page) * 26), Bitmap.Size);
-            Bitmap.PrintAt(Table.Values[1 + c * Table.AnzColums], *f, TEC_FONT_LEFT, ClientArea + XY(123, (c - Page) * 26), Bitmap.Size);
+            Bitmap.PrintAt(Table.Values[1 + c * Table.AnzColums], *f, TEC_FONT_RIGHT, ClientArea + XY(145, (c - Page) * 26),
+                           ClientArea + XY(175, (c - Page) * 26 + 10));
 
             Bitmap.PrintAt(Table.Values[3 + c * Table.AnzColums], *f, TEC_FONT_LEFT, ClientArea + XY(0, (c - Page) * 26 + 10), Bitmap.Size);
 
@@ -579,24 +580,24 @@ void BLOCK::LinkeSeiteIndex(XY TitleArea, XY ClientArea) {
             PLAYER &qPlayer = Sim.Players.Players[PlayerNum];
             for (SLONG i = 0; i < (SLONG)qPlayer.Planes.AnzEntries(); i++) {
                 if (qPlayer.Planes.IsInAlbum(i)) {
-                    CPlane& qPlane = qPlayer.Planes[i];
+                    CPlane &qPlane = qPlayer.Planes[i];
 
                     // check if plane name is correct, some are mixed up
-                    if (qPlane.Name == Table.Values[0 + c * Table.AnzColums])
-                    {
+                    if (qPlane.Name == Table.Values[0 + c * Table.AnzColums]) {
 
                         XY left = ClientArea + XY(110, (c - Page) * 26);
                         XY right = ClientArea + XY(143, (c - Page) * 26 + 10);
 
-                        if(BlockTypeB == 6) {
-                            //Freight
+                        if (BlockTypeB == 6) {
+                            // Freight
                             Bitmap.PrintAt(Einheiten[EINH_T].bString(qPlane.ptPassagiere / 10), FontSmallGrey, TEC_FONT_RIGHT, left, right);
-                        }else if(BlockTypeB == 4) { //Routes
+                        } else if (BlockTypeB == 4) { // Routes
                             Bitmap.PrintAt(bprintf("(%li/%li)", qPlane.MaxPassagiere, qPlane.MaxPassagiereFC), FontSmallGrey, TEC_FONT_RIGHT, left, right);
-                        }else{
+                        } else {
                             Bitmap.PrintAt(bprintf("(%li)", qPlane.MaxPassagiere + qPlane.MaxPassagiereFC), FontSmallGrey, TEC_FONT_RIGHT, left, right);
                         }
-                        Bitmap.PrintAt(Einheiten[EINH_KM].bString(qPlane.ptReichweite), FontSmallGrey, TEC_FONT_LEFT, ClientArea + XY(123, (c - Page) * 26 + 10), Bitmap.Size);
+                        Bitmap.PrintAt(Einheiten[EINH_KM].bString(qPlane.ptReichweite), FontSmallGrey, TEC_FONT_LEFT,
+                                       ClientArea + XY(123, (c - Page) * 26 + 10), Bitmap.Size);
                         break;
                     }
                 }
@@ -771,9 +772,6 @@ void BLOCK::LinkeSeiteInhalt(XY TitleArea, XY ClientArea) {
                                     !(Plan.Flug[c].Startdate > Sim.Date || Plan.Flug[c].Startzeit > Sim.GetHour() + 1)) {
                                     Bitmap.BlitFromT(FlugplanBms[17], ClientArea + XY(24 - 8 + px, py + 4));
                                 }
-                                /*if (d > 0 && d == (Plan.Flug[c].Startzeit + 1) % 24 && (Plan.Flug[c].FlightBooked)) {
-                                    Bitmap.BlitFromT(FlugplanBms[17], ClientArea + XY(24 + px, py + 4));
-                                }*/
                                 if (Plan.Flug[c].VonCity == static_cast<ULONG>(Sim.HomeAirportId) && d == Plan.Flug[c].Startzeit &&
                                     (Plan.Flug[c].ObjectType == 1 || Plan.Flug[c].ObjectType == 2) && (Plan.Flug[c].GateWarning != 0U)) {
                                     Bitmap.BlitFromT(FlugplanBms[18], ClientArea + XY(24 + px, py + 4));

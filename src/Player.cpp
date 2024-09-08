@@ -3553,7 +3553,6 @@ void PLAYER::RobotPlanRoutes() {
 
             for (e = 0; e < qPlan.Flug.AnzEntries(); e++) {
                 if (qPlan.Flug[e].ObjectType == 0) {
-                    // qPlan.Flug[e] = {};
                     qPlan.Flug[e].ObjectType = 1;
                     qPlan.Flug[e].ObjectId = c;
 
@@ -3660,7 +3659,6 @@ void PLAYER::RobotPlanRoutes() {
 
             for (d = 0; d < qPlan.Flug.AnzEntries(); d++) {
                 if (qPlan.Flug[d].ObjectType == 0) {
-                    // qPlan.Flug[d] = {};
                     qPlan.Flug[d].ObjectType = 1;
                     qPlan.Flug[d].ObjectId = BestC;
 
@@ -3719,7 +3717,6 @@ void PLAYER::RobotPlanRoutes() {
             if (qPlan.Flug[e].ObjectType == 3) {
                 forall(c, Routen) if ((Routen.IsInAlbum(c) != 0) && (RentRouten.RentRouten[c].Rang != 0U)) {
                     if (Routen[c].VonCity == qPlan.Flug[e].VonCity && Routen[c].NachCity == qPlan.Flug[e].NachCity) {
-                        // qPlan.Flug[e] = {};
                         qPlan.Flug[e].ObjectType = 1;
                         qPlan.Flug[e].ObjectId = c;
 
