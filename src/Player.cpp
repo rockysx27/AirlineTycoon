@@ -7193,13 +7193,13 @@ TEAKFILE &operator>>(TEAKFILE &File, PLAYER &Player) {
 
                     File >> Player.NumFracht >> Player.NumFrachtFree;
                     File >> Player.NumMiles >> Player.NumServicePoints;
-                    File >> Player.bWasInMuseumToday >> Player.bHasPlanesUpgradedToday;
-                    File >> Player.BotLevel;
+                    File >> Player.bWasInMuseumToday;
                     if (SaveVersionSub >= 200) {
                         File >> Player.bHasPlanesUpgradedToday;
-                    }else {
+                    } else {
                         Player.bHasPlanesUpgradedToday = FALSE;
                     }
+                    File >> Player.BotLevel;
                     File >> Player.NumOrderFlights >> Player.NumOrderFlightsToday;
                     File >> Player.NumOrderFlightsToday2 >> Player.IsStuck;
 
