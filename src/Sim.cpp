@@ -132,7 +132,6 @@ SIM::SIM() {
 
     gDisablePauseKey = FALSE;
 
-    DoAppPath();
     Options.OptionDigiSound = TRUE;
 
     TafelData.Clear();

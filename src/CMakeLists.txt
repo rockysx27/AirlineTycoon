@@ -227,8 +227,8 @@ add_custom_command(
 )
 
 install(TARGETS AT DESTINATION "${PROJECT_INSTALL_DIR}")
-install(FILES "$<TARGET_FILE_DIR:AT>/patch/dlg_ger.patched.res" DESTINATION "${PROJECT_INSTALL_DIR}")
-install(FILES "$<TARGET_FILE_DIR:AT>/patch/ein_ger.patched.res" DESTINATION "${PROJECT_INSTALL_DIR}")
-install(FILES "$<TARGET_FILE_DIR:AT>/patch/modded_ger.res" DESTINATION "${PROJECT_INSTALL_DIR}")
-install(FILES "$<TARGET_FILE_DIR:AT>/patch/std_ger.patched.res" DESTINATION "${PROJECT_INSTALL_DIR}")
+install(FILES "$<TARGET_FILE_DIR:AT>/patch/dlg_ger.patched.res" DESTINATION "${PROJECT_INSTALL_DIR}/patch/")
+install(FILES "$<TARGET_FILE_DIR:AT>/patch/ein_ger.patched.res" DESTINATION "${PROJECT_INSTALL_DIR}/patch/")
+install(FILES "$<TARGET_FILE_DIR:AT>/patch/modded_ger.res" DESTINATION "${PROJECT_INSTALL_DIR}/patch/")
+install(FILES "$<TARGET_FILE_DIR:AT>/patch/std_ger.patched.res" DESTINATION "${PROJECT_INSTALL_DIR}/patch/")
 

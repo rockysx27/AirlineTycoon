@@ -56,7 +56,7 @@ extern SBNetwork gNetwork;
 #include "sentry.h"
 #endif
 
-#define AT_Log(...) AT_Log_I("Sim", __VA_ARGS__)
+#define AT_Log(...) AT_Log_I("Takeoff", __VA_ARGS__)
 
 CHLPool HLPool;
 
@@ -247,8 +247,6 @@ void CTakeOffApp::CLI(int argc, char *argv[]) {
             CRLEReader::ToggleUpdateDataBeforeOpening(true);
         }
 
-        // if (stricmp (Argument, "/windowed")==0) bFullscreen = FALSE;
-
         if (stricmp(Argument, "/novgaram") == 0) {
             bNoVgaRam = TRUE;
         }
@@ -380,41 +378,37 @@ void CTakeOffApp::ReadOptions(int argc, char *argv[]) {
     }
 
     // gUpdatingPools = TRUE; //Zum testen; für Release auskommentieren
-    {
-        CRegistryAccess reg(chRegKey);
 
-        SLONG bConfigNoVgaRam = 0;
-        SLONG bConfigNoSpeedyMouse = 0;
-        SLONG bConfigWinMouse = 0;
-        SLONG bConfigNoDigiSound = 0;
+    CRegistryAccess reg(chRegKey);
 
-        reg.ReadRegistryKey_l(bConfigNoVgaRam);
-        reg.ReadRegistryKey_l(bConfigNoSpeedyMouse);
-        reg.ReadRegistryKey_l(bConfigWinMouse);
-        reg.ReadRegistryKey_l(bConfigNoDigiSound);
+    SLONG bConfigNoVgaRam = 0;
+    SLONG bConfigNoSpeedyMouse = 0;
+    SLONG bConfigWinMouse = 0;
+    SLONG bConfigNoDigiSound = 0;
 
-        if (bConfigNoVgaRam != 0) {
-            bNoVgaRam = TRUE;
-        }
-        if (bConfigNoSpeedyMouse != 0) {
-            bNoQuickMouse = TRUE;
-        }
-        if (bConfigWinMouse != 0) {
-            gUseWindowsMouse = TRUE;
-        }
-        if (bConfigNoDigiSound != 0) {
-            Sim.Options.OptionDigiSound = FALSE;
-        }
+    reg.ReadRegistryKey_l(bConfigNoVgaRam);
+    reg.ReadRegistryKey_l(bConfigNoSpeedyMouse);
+    reg.ReadRegistryKey_l(bConfigWinMouse);
+    reg.ReadRegistryKey_l(bConfigNoDigiSound);
 
-        // Options from CLI
-        CLI(argc, argv);
-
-        // Write registry and move on
-        reg.WriteFile();
-    
-        bFirstClass |=
-            static_cast<SLONG>((DoesFileExist(FullFilename("builds.csv", ExcelPath)) == 0) && (DoesFileExist(FullFilename("relation.csv", ExcelPath))) == 0);
+    if (bConfigNoVgaRam != 0) {
+        bNoVgaRam = TRUE;
     }
+    if (bConfigNoSpeedyMouse != 0) {
+        bNoQuickMouse = TRUE;
+    }
+    if (bConfigWinMouse != 0) {
+        gUseWindowsMouse = TRUE;
+    }
+    if (bConfigNoDigiSound != 0) {
+        Sim.Options.OptionDigiSound = FALSE;
+    }
+
+    // Options from CLI
+    CLI(argc, argv);
+
+    // Write registry and move on
+    reg.WriteFile();
 }
 
 void CTakeOffApp::CreateVideo() {
@@ -441,13 +435,13 @@ void CTakeOffApp::CreateVideo() {
 void CTakeOffApp::InitInstance(int argc, char *argv[]) {
     // Header
     time_t start_time = time(nullptr);
-    hprintf("Airline Tycoon Deluxe logfile");
-    hprintf(VersionString);
-    hprintf("===============================================================================");
-    hprintf("Copyright (C) 2002 Spellbound Software");
-    hprintf("Application was compiled at %s at %s", __DATE__, __TIME__);
-    hprintf("===============================================================================");
-    hprintf("logging starts %s", asctime(localtime(&start_time)));
+    AT_Log("Airline Tycoon Deluxe logfile");
+    AT_Log(VersionString);
+    AT_Log("===============================================================================");
+    AT_Log("Copyright (C) 2002 Spellbound Software");
+    AT_Log("Application was compiled at %s at %s", __DATE__, __TIME__);
+    AT_Log("===============================================================================");
+    AT_Log("logging starts %s", asctime(localtime(&start_time)));
 
     pTakeOffApp = this;
 
@@ -457,15 +451,19 @@ void CTakeOffApp::InitInstance(int argc, char *argv[]) {
     bCursorCaptured = FALSE;
     gMouseStartup = TRUE;
 
-    InitPathVars();
-    ReadOptions(argc, argv);
-    CreateVideo();
+    DoAppPath();                /* get installation directory */
+    ReadOptions(argc, argv);    /* read options and language settings in some versions (sabbel.dat). Needs installation directory! */
+    InitPathVars();             /* sets path for all game files needs both installation directory AND language settings */
+
+    bFirstClass |=
+        static_cast<SLONG>((DoesFileExist(FullFilename("builds.csv", ExcelPath)) == 0) && (DoesFileExist(FullFilename("relation.csv", ExcelPath))) == 0);
 
     Sim.LoadOptions();
     if (gQuickTestRun == 0) {
         Sim.SaveOptions();
     }
-    // UpdateSavegames();
+
+    CreateVideo();
 
     FrameWnd = new GameFrame;
 
@@ -2166,7 +2164,7 @@ void CTakeOffApp::GameLoop(void * /*unused*/) {
           }
           }
           }*/
-        
+
         MessagePump();
     }
 
