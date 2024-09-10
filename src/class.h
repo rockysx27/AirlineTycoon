@@ -354,14 +354,14 @@ class /**/ PERIOD // Eine Zeitperiode vom Datum x bis Datum y
 //--------------------------------------------------------------------------------------------
 class /**/ CTafelZettel {
   public:
-    enum    Type { ROUTE, GATE, CITY };
-    SLONG   ZettelId{}; // 0 oder Key im Routen/City Array
-    SLONG   Player{};   //-1 oder der derzeitige Hauptbieter (0-3)
-    SLONG   Preis{};    // Gebot (=Monatsmiete)
-    SLONG   Rang{};
-    BOOL    WasInterested{}; // Hat der Spieler mitgeboten?
-    XY      Position;
-    Type    Type;
+    enum Type { ROUTE, GATE, CITY };
+    SLONG ZettelId{}; // 0 oder Key im Routen/City Array
+    SLONG Player{};   //-1 oder der derzeitige Hauptbieter (0-3)
+    SLONG Preis{};    // Gebot (=Monatsmiete)
+    SLONG Rang{};
+    BOOL WasInterested{}; // Hat der Spieler mitgeboten?
+    XY Position;
+    Type Type;
 
     friend TEAKFILE &operator<<(TEAKFILE &File, const CTafelZettel &TafelZettel);
     friend TEAKFILE &operator>>(TEAKFILE &File, CTafelZettel &TafelZettel);
@@ -370,9 +370,9 @@ class /**/ CTafelZettel {
 
 class /**/ CTafelData {
   public:
-    std::array<CTafelZettel, 7> Route;          // Bis zu 7 Routen werden versteigert
-    std::array<CTafelZettel, 7> City;           // Bis zu 7 Orte werden versteigert
-    std::array<CTafelZettel, 7> Gate;           // Bis zu 7 Gates werden versteigert
+    std::array<CTafelZettel, 7> Route; // Bis zu 7 Routen werden versteigert
+    std::array<CTafelZettel, 7> City;  // Bis zu 7 Orte werden versteigert
+    std::array<CTafelZettel, 7> Gate;  // Bis zu 7 Gates werden versteigert
 
     // <TODO> Rework the whole code to only have "Entities" with a type
     std::vector<CTafelZettel *> ByPositions; // Bis zu 7 Gates werden versteigert
@@ -427,25 +427,25 @@ class /**/ CPlaneType {
 
     // Technische Beschreibung
   public:
-    CString Hersteller;      // Textstring, z.B. "Boing"
-    SLONG Erstbaujahr{};     // Zahl, z.B. 1980
-    SLONG Passagiere{};      // Maximale Zahl der Passagiere (ein erste Klasse Passagier verbraucht 2 Plätze)
-    SLONG Reichweite{};      // Reichweite in km
-    SLONG Geschwindigkeit{}; // in km/h
-    SLONG Spannweite{};      // in m
-    SLONG Laenge{};          // in m
-    SLONG Hoehe{};           // in m
-    SLONG Startgewicht{};    // maximales Startgewicht
-    CString Triebwerke;      // Als Textstring
-    SLONG Schub{};           // in lb
-    SLONG AnzPiloten{};      // Piloten und Co-Piloten
-    SLONG AnzBegleiter{};    // Zahl der Stewardessen
-    SLONG Tankgroesse{};     // Kerosin in l
-    SLONG Verbrauch{};       // Kerosin in l/h
-    SLONG Preis{};           // Der Neupreis in DM
-    FLOAT Wartungsfaktor{};  // Faktor für die Wartungskosten
+    CString Hersteller;                   // Textstring, z.B. "Boing"
+    SLONG Erstbaujahr{};                  // Zahl, z.B. 1980
+    SLONG Passagiere{};                   // Maximale Zahl der Passagiere (ein erste Klasse Passagier verbraucht 2 Plätze)
+    SLONG Reichweite{};                   // Reichweite in km
+    SLONG Geschwindigkeit{};              // in km/h
+    SLONG Spannweite{};                   // in m
+    SLONG Laenge{};                       // in m
+    SLONG Hoehe{};                        // in m
+    SLONG Startgewicht{};                 // maximales Startgewicht
+    CString Triebwerke;                   // Als Textstring
+    SLONG Schub{};                        // in lb
+    SLONG AnzPiloten{};                   // Piloten und Co-Piloten
+    SLONG AnzBegleiter{};                 // Zahl der Stewardessen
+    SLONG Tankgroesse{};                  // Kerosin in l
+    SLONG Verbrauch{};                    // Kerosin in l/h
+    SLONG Preis{};                        // Der Neupreis in DM
+    FLOAT Wartungsfaktor{};               // Faktor für die Wartungskosten
     std::vector<Available> AvailableIn{}; // Availability
-    CString Kommentar;       // Ggf. allgemeines über diese Maschine
+    CString Kommentar;                    // Ggf. allgemeines über diese Maschine
 };
 
 class /**/ CPlaneTypes : public ALBUM_V<CPlaneType> {

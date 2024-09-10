@@ -1725,15 +1725,16 @@ SLONG BLOCK::PrintLine(XY ClientArea, SLONG rowID, SLONG textID) const {
     if (textID == -1) {
         return 0;
     }
-    const char *str = StandardTexte.GetS(TOKEN_EXPERT, textID);
-    Bitmap.PrintAt(str, FontSmallBlack, TEC_FONT_LEFT, ClientArea + XY(2, rowID * 13), ClientArea + XY(172, 170));
-
+    char *str = StandardTexte.GetS(TOKEN_EXPERT, textID);
     SLONG count = 0;
-    for (SLONG i = 0; str[i] != 0; i++) {
-        if (str[i] == '\n') {
+    for (SLONG i = 1; (str[i - 1] != 0 && str[i] != 0); i++) {
+        if (str[i - 1] == ';' && str[i] == ';') {
             ++count;
+            str[i - 1] = '\r';
+            str[i] = '\n';
         }
     }
+    Bitmap.PrintAt(str, FontSmallBlack, TEC_FONT_LEFT, ClientArea + XY(2, rowID * 13), ClientArea + XY(172, 170));
     return count;
 }
 void BLOCK::PrintLineAlignRight(XY ClientArea, SLONG rowID, SLONG textID) const {
