@@ -153,10 +153,6 @@ else Sleep(1000);
 }*/
 
 void GameFrame::UpdateWindow() const {
-    // windowed size:
-    SLONG width = 640;
-    SLONG height = 480;
-
     SDL_DisplayMode DM;
     SDL_GetDesktopDisplayMode(0, &DM);
     SLONG screenWidth = DM.w;
@@ -169,8 +165,7 @@ void GameFrame::UpdateWindow() const {
         break;
     case (1): // Windowed
         // check if default window size, if so set to MaximizeWindow else set as from last session
-        if (Sim.Options.OptionScreenWindowedWidth == 640 && Sim.Options.OptionScreenWindowedHeight == 480)
-        {
+        if (Sim.Options.OptionScreenWindowedWidth == 640 && Sim.Options.OptionScreenWindowedHeight == 480) {
             SDL_SetWindowFullscreen(m_hWnd, 0);
             SDL_SetWindowResizable(m_hWnd, SDL_TRUE);
             SDL_SetWindowBordered(m_hWnd, SDL_TRUE);
@@ -262,7 +257,6 @@ void GameFrame::TranslatePointToScreenSpace(SLONG &x, SLONG &y) const {
     _y /= 480;
     _y *= static_cast<FLOAT>(screenH);
 
-    
     if (Sim.Options.OptionKeepAspectRatio == 1) {
         _x += static_cast<FLOAT>(origScreenW - aspectWidth) / 2.0f;
     }
@@ -286,7 +280,6 @@ GameFrame::GameFrame() {
     // Base backup screen size - only used in windowed mode
     SLONG width = Sim.Options.OptionScreenWindowedWidth;
     SLONG height = Sim.Options.OptionScreenWindowedHeight;
-
 
     if (!static_cast<bool>(bFullscreen) || Sim.Options.OptionFullscreen == 0 || Sim.Options.OptionFullscreen == 2) {
         SDL_DisplayMode DM;
@@ -320,6 +313,7 @@ GameFrame::GameFrame() {
         SimpleMessageBox(MESSAGEBOX_ERROR, "ERROR", "CreateWindow failed");
         return;
     }
+
     m_hWnd = h;
 
     pGfxMain = new GfxMain(lpDD);
@@ -340,7 +334,7 @@ GameFrame::GameFrame() {
     gCursorMoveHBm.ReSize(pGLibBasis, GFX_CURSORV, CREATE_VIDMEM);
     gCursorMoveVBm.ReSize(pGLibBasis, GFX_CURSORW, CREATE_VIDMEM);
     gCursorSandBm.ReSize(pGLibBasis, GFX_CURSORS, CREATE_VIDMEM);
-    gCursorNoBm.ReSize(XY(10, 10),  0);
+    gCursorNoBm.ReSize(XY(10, 10), 0);
     gCursorNoBm.FillWith(0);
 
     CRect cliprect(2, 2, 638, 478);
@@ -485,11 +479,11 @@ void GameFrame::ProcessEvent(const SDL_Event &event) const {
     case SDL_TEXTINPUT:
         FrameWnd->OnChar(event.text.text[0], 0, 0);
 
-        FrameWnd->OnKeyDown(event.text.text[0], 0, 0);
+        FrameWnd->OnKeyDown(event.text.text[0], 0, InputFlags::FromTextInput);
         break;
     case SDL_KEYDOWN: {
         // UINT nFlags = event.key.keysym.scancode | ((SDL_GetModState() & KMOD_LALT) << 5);
-        FrameWnd->OnKeyDown(toupper(event.key.keysym.sym), event.key.repeat, InputFlags::None);
+        FrameWnd->OnKeyDown(KeycodeToUpper(event.key.keysym.sym), event.key.repeat, InputFlags::None);
     } break;
     case SDL_MOUSEBUTTONDOWN: {
         CPoint pos = CPoint(event.button.x, event.button.y);

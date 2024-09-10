@@ -1320,7 +1320,7 @@ void SIM::DoTimeStep() {
 
     OldMinute = GetMinute();
 
-    Time += bNetwork ?  ServerGameSpeed : GameSpeed;
+    Time += bNetwork ? ServerGameSpeed : GameSpeed;
     PlayerDidntMove++; // Wird ggf. bei WalkPersons resettet
 
     if (Time >= 24 * 60000) {
@@ -2284,7 +2284,7 @@ void SIM::NewDay() {
     Date++;
     Time = 0;
     UpdateSeason();
-    hprintf("Sim.cpp: Start of new day: %ld (%s)", Date, (LPCTSTR)Helper::getWeekday(Sim.Date));
+    AT_Log("Start of new day: %ld (%s)", Date, (LPCTSTR)Helper::getWeekday(Sim.Date));
 
     // In den Reisebüros die Zettel nachfüllen:
     gFrachten.Random.SRand(Date);
@@ -4096,7 +4096,6 @@ void COptions::ReadOptions() {
         if (!reg.ReadRegistryKey_u(Sim.GameSpeed)) {
             Sim.GameSpeed = 30;
         }
-
     }
 
     if (gQuickTestRun > 0) {
@@ -4127,7 +4126,6 @@ void COptions::WriteOptions() {
     reg.WriteRegistryKey_u(OptionRentOfficeTriggerPercent);
     reg.WriteRegistryKey_u(OptionRentOfficeMinAvailable);
     reg.WriteRegistryKey_u(OptionRentOfficeMaxAvailable);
-
 
     // Regular
     reg.WriteRegistryKey_l(OptionScreenWindowedWidth);
@@ -4252,13 +4250,12 @@ void SValue::NewDay() {
 //--------------------------------------------------------------------------------------------
 __int64 SValue::GetSum() { return std::accumulate(Days.begin(), Days.end(), 0); }
 
-
 TEAKFILE &operator<<(TEAKFILE &File, const SValue &Value) {
     File << Value.Days;
     return (File);
 }
 
-TEAKFILE & operator>>(TEAKFILE &File, SValue &Value) {
+TEAKFILE &operator>>(TEAKFILE &File, SValue &Value) {
     File >> Value.Days;
 
     if (SaveVersionSub < 200) {
