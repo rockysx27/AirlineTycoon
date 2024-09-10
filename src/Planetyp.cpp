@@ -49,7 +49,7 @@ void CPlaneTypes::ReInit(const CString &TabFilename) {
 
     SLONG planes = CountLines(FileData, FileP);
     BOOL numberOfColumns = strchrcount(Line.getData(), TabSeparator);
-    
+
     PlaneTypes.ReSize(planes);
 
     while (true) {
@@ -115,8 +115,7 @@ void CPlaneTypes::ReInit(const CString &TabFilename) {
 //--------------------------------------------------------------------------------------------
 // Sucht einen zufälligen (bereits erfundenen) Flugzeugtyp raus:
 //--------------------------------------------------------------------------------------------
-ULONG CPlaneTypes::GetRandomExistingType(
-    TEAKRAND *pRand, CPlaneType::Available in) {
+ULONG CPlaneTypes::GetRandomExistingType(TEAKRAND *pRand, CPlaneType::Available in) {
     SLONG c = 0;
     SLONG Anz = 0;
     SLONG rnd = 0;

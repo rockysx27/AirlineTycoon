@@ -41,7 +41,8 @@ class NewGamePopup : public CStdRaum {
         MP_LOADING = 99,
     };
     constexpr BOOL isPlayerSelect(PAGE_TYPE PageNum) {
-        return PageNum == PAGE_TYPE::SELECT_PLAYER_SINGLEPLAYER || PageNum == PAGE_TYPE::SELECT_PLAYER_CAMPAIGN || PageNum == PAGE_TYPE::SELECT_PLAYER_MULTIPLAYER || PageNum == PAGE_TYPE::SELECT_BOT_SINGLEPLAYER || PageNum == PAGE_TYPE::SELECT_BOT_CAMPAIGN;
+        return PageNum == PAGE_TYPE::SELECT_PLAYER_SINGLEPLAYER || PageNum == PAGE_TYPE::SELECT_PLAYER_CAMPAIGN ||
+               PageNum == PAGE_TYPE::SELECT_PLAYER_MULTIPLAYER || PageNum == PAGE_TYPE::SELECT_BOT_SINGLEPLAYER || PageNum == PAGE_TYPE::SELECT_BOT_CAMPAIGN;
     }
 
     BOOL TimerFailure{};
@@ -65,7 +66,7 @@ class NewGamePopup : public CStdRaum {
 
     SBFX ClickFx;
 
-   SBList<std::shared_ptr<SBStr>>* pNetworkSessions;
+    SBList<std::shared_ptr<SBStr>> *pNetworkSessions{};
     SBList<SBStr> *pNetworkConnections{};
     SBList<SBNetworkPlayer *> *pNetworkPlayers{};
 

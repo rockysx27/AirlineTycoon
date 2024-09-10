@@ -6,8 +6,8 @@
 #include "BotHelper.h"
 
 #define AT_Error(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_ERROR, "Schedule", __VA_ARGS__)
-#define AT_Warn(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "Schedule",__VA_ARGS__)
-#define AT_Info(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "Schedule",__VA_ARGS__)
+#define AT_Warn(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "Schedule", __VA_ARGS__)
+#define AT_Info(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "Schedule", __VA_ARGS__)
 #define AT_Log(...) AT_Log_I("Schedule", __VA_ARGS__)
 
 #ifdef _DEBUG
@@ -88,7 +88,13 @@ TEAKFILE &operator>>(TEAKFILE &File, CFlugplanEintrag &Eintrag) {
         if (Eintrag.ObjectType != 0) {
             File >> Eintrag.Okay >> Eintrag.HoursBefore >> Eintrag.Passagiere >> Eintrag.PassagiereFC >> Eintrag.PArrived >> Eintrag.Gate >> Eintrag.VonCity >>
                 Eintrag.GateWarning >> Eintrag.NachCity >> Eintrag.Startzeit >> Eintrag.Landezeit >> Eintrag.Startdate >> Eintrag.Landedate >>
-                Eintrag.ObjectId >> Eintrag.Ticketpreis >> Eintrag.TicketpreisFC >> Eintrag.FlightBooked;
+                Eintrag.ObjectId >> Eintrag.Ticketpreis >> Eintrag.TicketpreisFC;
+
+            if (SaveVersionSub >= 200) {
+                File >> Eintrag.FlightBooked;
+            } else {
+                Eintrag.FlightBooked = FALSE;
+            }
         } else {
             Eintrag.Okay = 0;
             Eintrag.Gate = -1;
@@ -994,12 +1000,12 @@ void CFlugplanEintrag::BookFlight(CPlane *Plane, SLONG PlayerNum) {
     }
 
     if (ObjectType == 1) {
-        AT_Log("Schedule.cpp: %s: %s $ (+%s $)  (%ld miles, %u * %s $ + %u * %s $ from tickets)", (LPCTSTR)qPlayer.AirlineX,
-                (LPCTSTR)Insert1000erDots64(Saldo), (LPCTSTR)Insert1000erDots64(delta), miles, Passagiere, (LPCTSTR)Insert1000erDots(Ticketpreis), PassagiereFC,
-                (LPCTSTR)Insert1000erDots(TicketpreisFC));
+        AT_Log("Schedule.cpp: %s: %s $ (+%s $)  (%ld miles, %u * %s $ + %u * %s $ from tickets)", (LPCTSTR)qPlayer.AirlineX, (LPCTSTR)Insert1000erDots64(Saldo),
+               (LPCTSTR)Insert1000erDots64(delta), miles, Passagiere, (LPCTSTR)Insert1000erDots(Ticketpreis), PassagiereFC,
+               (LPCTSTR)Insert1000erDots(TicketpreisFC));
     } else {
         AT_Log("Schedule.cpp: %s: %s $ (+%s $)  (%ld miles, %u + %u passengers)", (LPCTSTR)qPlayer.AirlineX, (LPCTSTR)Insert1000erDots64(Saldo),
-                (LPCTSTR)Insert1000erDots64(delta), miles, Passagiere, PassagiereFC);
+               (LPCTSTR)Insert1000erDots64(delta), miles, Passagiere, PassagiereFC);
     }
     Helper::printFPE(*this);
 
@@ -1007,22 +1013,19 @@ void CFlugplanEintrag::BookFlight(CPlane *Plane, SLONG PlayerNum) {
     double faktorDistanz = (1 + 10.0 * Cities.CalcDistance(VonCity, NachCity) / 40040174);
     double faktorBaujahr = (2015 - Plane->Baujahr);
     double faktorKerosin = 1.0;
-    // auto ZustandAlt = Plane->Zustand;
     if (KerosinGesamtQuali > 1.0) {
         faktorKerosin += 10 * (KerosinGesamtQuali - 1.0) * (KerosinGesamtQuali - 1.0);
         AT_Log("Schedule.cpp: %s: Schlechtes Kerosin (%.2f) reduziert Flugzeugzustand um %d statt um %d", (LPCTSTR)qPlayer.AirlineX, KerosinGesamtQuali,
-                (int)(faktorDistanz * faktorBaujahr * faktorKerosin / 15), (int)(faktorDistanz * faktorBaujahr / 15));
+               (int)(faktorDistanz * faktorBaujahr * faktorKerosin / 15), (int)(faktorDistanz * faktorBaujahr / 15));
     }
     auto ZustandAlt = Plane->Zustand;
     Plane->Zustand = static_cast<UBYTE>(Plane->Zustand - faktorDistanz * faktorBaujahr * faktorKerosin / 15);
     AT_Log("Schedule.cpp: %s: Plane %s (%s): Zustand: %u => %u (worst = %u), faktorDistanz = %f, faktorBaujahr = %f, faktorKerosin = %f",
-            (LPCTSTR)qPlayer.AirlineX, (LPCTSTR)Plane->Name, (Plane->TypeId == -1) ? "Designer" : (LPCTSTR)PlaneTypes[Plane->TypeId].Name, ZustandAlt,
-            Plane->Zustand, Plane->WorstZustand, faktorDistanz, faktorBaujahr, faktorKerosin);
+           (LPCTSTR)qPlayer.AirlineX, (LPCTSTR)Plane->Name, (Plane->TypeId == -1) ? "Designer" : (LPCTSTR)PlaneTypes[Plane->TypeId].Name, ZustandAlt,
+           Plane->Zustand, Plane->WorstZustand, faktorDistanz, faktorBaujahr, faktorKerosin);
     if (Plane->Zustand > 200) {
         Plane->Zustand = 0;
     }
-
-    AT_Log("");
 }
 
 //--------------------------------------------------------------------------------------------

@@ -1249,7 +1249,7 @@ void AirportView::OnPaint() {
                                         SDL_BlitSurface(Text, nullptr, Surf, &Dst);
                                         SDL_FreeSurface(Text);
                                         TTF_CloseFont(Font);
-                                    }else {
+                                    } else {
                                         enableEditor = false;
                                     }
                                 }

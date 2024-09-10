@@ -295,9 +295,9 @@ void CTafel::OnLButtonDown(UINT nFlags, CPoint point) {
                             }
 
                             GameMechanic::bidOnCity(qPlayer, c - 7);
-                        } else if (c >= 14 && TafelData.Gate[c - 14].Player != PlayerNum) {
-                            if ((Sim.bNetwork != 0) && TafelData.City[c - 7].Player != -1 && Sim.Players.Players[TafelData.City[c - 7].Player].Owner == 2) {
-                                SIM::SendSimpleMessage(ATNET_ADVISOR, Sim.Players.Players[TafelData.City[c - 7].Player].NetworkID, 0, PlayerNum, c);
+                        } else if (entry->Type == CTafelZettel::Type::GATE && entry->Player != PlayerNum) {
+                            if ((Sim.bNetwork != 0) && entry->Player != -1 && Sim.Players.Players[entry->Player].Owner == 2) {
+                                SIM::SendSimpleMessage(ATNET_ADVISOR, Sim.Players.Players[entry->Player].NetworkID, 0, PlayerNum, c);
                             }
 
                             GameMechanic::bidOnGate(qPlayer, c - 14);

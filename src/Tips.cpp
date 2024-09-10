@@ -1077,7 +1077,7 @@ void DrawPlanesNotepad(SBBM &NotepadBm, CDataTable *Table, SLONG CountFrom, SBBM
     NotepadBm.ReSize((*pMenuBms)[0].Size); // gNotepadBm
     NotepadBm.BlitFrom((*pMenuBms)[0]);
 
-    //Überschriften:
+    // Überschriften:
     NotepadBm.PrintAt(Table->ColTitle[0], FontSmallBlack, TEC_FONT_LEFT, XY(216, 12), (*pMenuBms)[0].Size);
 
     if (DisplayWartungskosten != 0) {

@@ -143,13 +143,13 @@ static const ULONG ATNET_GENERICSYNC = 0xadaa1701;  // Hello all, let's get in s
 static const ULONG ATNET_GENERICSYNCX = 0xadaa1702; // Hello all, let's get in sync for a nonspecified reason
 static const ULONG ATNET_GENERICASYNC = 0xadaa1703; // Hello all, let's get in sync for a nonspecified reason
 
-// Weitere Synchronisierungen:
-static const ULONG ATNET_BODYGUARD = 0xadaa1800;       // Hello all, I got Bodyguard Rebate
-static const ULONG ATNET_CHANGEMONEY = 0xadaa1801;     // Hello all, I changed money due to something
-static const ULONG ATNET_SYNCKEROSIN = 0xadaa1802;     // Hello all, I here's my kerosine state
-static const ULONG ATNET_SYNCGEHALT = 0xadaa1803;      // Hello all, I'm paying this much for workers
-static const ULONG ATNET_SYNCNUMFLUEGE = 0xadaa1804;   // Hello all, I've accepted this many flights
-static const ULONG ATNET_SYNCROUTECHANGE = 0xadaa1805; // Hello all, I've just change my route paramters
+//Weitere Synchronisierungen:
+static const ULONG ATNET_BODYGUARD          = 0xadaa1800;  //Hello all, I got Bodyguard Rebate
+static const ULONG ATNET_CHANGEMONEY        = 0xadaa1801;  //Hello all, I changed money due to something
+static const ULONG ATNET_SYNCKEROSIN        = 0xadaa1802;  //Hello all, I here's my kerosine state
+static const ULONG ATNET_SYNCGEHALT         = 0xadaa1803;  //Hello all, I'm paying this much for workers
+static const ULONG ATNET_SYNCNUMFLUEGE      = 0xadaa1804;  //Hello all, I've accepted this many flights
+static const ULONG ATNET_SYNCROUTECHANGE    = 0xadaa1805;  //Hello all, I've just change my route paramters
 
 START_NAME_MAP(ATNET)
 DEFINE_NAME_ENTRY(ATNET_WANNAJOIN,)

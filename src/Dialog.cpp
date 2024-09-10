@@ -642,7 +642,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                 } else {
                     MenuStart(MENU_BANK, tmp, 1);
                 }
-              } break;
+            } break;
 
             case 102: {
                 // Will Kredit zurückzahlen:
@@ -655,7 +655,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                 } else {
                     MenuStart(MENU_BANK, tmp, 2);
                 }
-              } break;
+            } break;
 
             case 109:
                 MakeSayWindow(1, TOKEN_BANK, 101, 103, FALSE, &FontDialog, &FontDialogLight);
@@ -911,7 +911,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
             case 3002: {
                 SLONG tmp = (qPlayer.MaxAktien - qPlayer.AnzAktien) / 100 * 100;
                 MakeSayWindow(1, TOKEN_BANK, 3010, 3015, 1, &FontDialog, &FontDialogLight, tmp / 10, tmp / 4, tmp / 2, tmp * 3 / 4, tmp);
-               } break;
+            } break;
             case 3010: // 10%
             case 3011: // 25%
             case 3012: // 50%
@@ -933,7 +933,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
             case 3022: {
                 SLONG tmp = SLONG(qPlayer.Kurse[0]);
                 MakeSayWindow(1, TOKEN_BANK, 3030, 3033, 1, &FontDialog, &FontDialogLight, tmp - 5, tmp - 3, tmp - 1);
-               } break;
+            } break;
             case 3030:
             case 3031:
             case 3032: // Sicherheitsabfrage:
@@ -4153,7 +4153,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                         break;
                     }
                 }
-              } break;
+            } break;
 
             case 140: // Spieler kauft doch nicht
                 MakeSayWindow(0, TOKEN_MAKLER, 160, pFontPartner);

@@ -3053,8 +3053,7 @@ void CStdRaum::PostPaint() {
     if (gBroadcastBm.Size.y > 10) {
         ColorFX.BlitWhiteTrans(TRUE, gBroadcastBm.pBitmap, &PrimaryBm.PrimaryBm, XY(10, 10));
     } else if (gBroadcastBm.Size.y > 0) {
-        ColorFX.BlitWhiteTrans(TRUE, gBroadcastBm.pBitmap, &PrimaryBm.PrimaryBm,
-                               XY(10 - (10 - gBroadcastBm.Size.y) * 20, 10 + (10 - gBroadcastBm.Size.y) * 5));
+        ColorFX.BlitWhiteTrans(TRUE, gBroadcastBm.pBitmap, &PrimaryBm.PrimaryBm, XY(10 - (10 - gBroadcastBm.Size.y) * 20, 10 + (10 - gBroadcastBm.Size.y) * 5));
     }
 
     Rand = 0;
@@ -4810,34 +4809,29 @@ void CStdRaum::MenuRepaint() {
 
             // Volume total
             OnscreenBitmap.PrintAt(Einheiten[EINH_DM].bString(Kerosinpreis), FontSmallBlack, TEC_FONT_LEFT, 200, 37, 325, 113);
-                OnscreenBitmap.PrintAt(
+            OnscreenBitmap.PrintAt(
                 bprintf(ETexte.GetS(1000, 3000 + (Sim.Players.Players[PlayerNum].Tank > 1)), LPCTSTR(Shorten1000erDots(Sim.Players.Players[PlayerNum].Tank))),
-                    FontSmallBlack, TEC_FONT_LEFT, 200,
-                                   50,
-                                   325, 113);
+                FontSmallBlack, TEC_FONT_LEFT, 200, 50, 325, 113);
 
             // Volume available
             OnscreenBitmap.PrintAt(bprintf(ETexte.GetS(1000, 3000 + (Sim.Players.Players[PlayerNum].TankInhalt > 1)),
-                                               LPCTSTR(Shorten1000erDots(Sim.Players.Players[PlayerNum].TankInhalt))),
-                                       FontSmallBlack,
-                                    TEC_FONT_RIGHT, 56, 76, 225, 113);
+                                           LPCTSTR(Shorten1000erDots(Sim.Players.Players[PlayerNum].TankInhalt))),
+                                   FontSmallBlack, TEC_FONT_RIGHT, 56, 76, 225, 113);
             OnscreenBitmap.PrintAt(Einheiten[EINH_P].bString(Sim.Players.Players[PlayerNum].TankInhalt * 100 / _tank), FontSmallBlack, TEC_FONT_RIGHT, 56, 76,
                                    256, 113);
 
             // Buy
-            OnscreenBitmap.PrintAt(bprintf(ETexte.GetS(1000, 3000 + (MenuPar2 > 1)), LPCTSTR(Shorten1000erDots(MenuPar2))),
-                                   FontSmallBlack, TEC_FONT_RIGHT, 0, 89, 225, 113);
+            OnscreenBitmap.PrintAt(bprintf(ETexte.GetS(1000, 3000 + (MenuPar2 > 1)), LPCTSTR(Shorten1000erDots(MenuPar2))), FontSmallBlack, TEC_FONT_RIGHT, 0,
+                                   89, 225, 113);
 
             OnscreenBitmap.PrintAt(Einheiten[EINH_P].bString(MenuPar2 * 100 / _tank), FontSmallBlack, TEC_FONT_RIGHT, 56, 89, 256, 113);
             OnscreenBitmap.PrintAt(Einheiten[EINH_DM].bShortString(MenuInfo), FontSmallBlack, TEC_FONT_RIGHT, 56, 89, 327, 113);
 
-            
             // New volume
             OnscreenBitmap.PrintAt(bprintf(ETexte.GetS(1000, 3000 + (MenuPar2 + Sim.Players.Players[PlayerNum].TankInhalt > 1)),
                                            LPCTSTR(Shorten1000erDots((MenuPar2 + Sim.Players.Players[PlayerNum].TankInhalt)))),
-                                   FontSmallBlack,
-                                    TEC_FONT_RIGHT, 0, 102, 225, 160);
- 
+                                   FontSmallBlack, TEC_FONT_RIGHT, 0, 102, 225, 160);
+
             OnscreenBitmap.PrintAt(Einheiten[EINH_P].bString((MenuPar2 + Sim.Players.Players[PlayerNum].TankInhalt) * 100 / _tank), FontSmallBlack,
                                    TEC_FONT_RIGHT, 56, 102, 256, 160);
 

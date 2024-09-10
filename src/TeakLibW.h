@@ -1,6 +1,7 @@
 #pragma once
 
 #include <random>
+#include <vector>
 
 extern void memswap(void *, void *, ULONG);
 extern char *bprintf(char const *, ...);
@@ -60,7 +61,7 @@ PRINTF_ATTR(2, 3) inline void SDL_PRINTF_VARARG_FUNC(2) AT_Log_I(const std::stri
 
 #define AT_Log_Generic(...) AT_Log_I("Generic", __VA_ARGS__)
 // Example implementation AT_Log (should be in each CPP file with appropriate category):
-//#define AT_Log(...) AT_Log_I("EXAMPLE CATEGORY", __VA_ARGS__)
+// #define AT_Log(...) AT_Log_I("EXAMPLE CATEGORY", __VA_ARGS__)
 
 // Legacy logging:
 #define hprintf(...) AT_Log_I("Generic", __VA_ARGS__)
@@ -526,23 +527,23 @@ class CRLEReader {
 
 class CRLEWriter {
   public:
-                        CRLEWriter(const char *path);
-                        ~CRLEWriter(void);
+    CRLEWriter(const char *path);
+    ~CRLEWriter(void);
 
-    bool                Close(void);
-    void                Write(const unsigned char *buffer, SLONG size);
-    SLONG               GetNextSequence(const unsigned char *buffer, SLONG size, SLONG consumed);
-    void                UpdateFromPlainText();
+    bool Close(void);
+    void Write(const unsigned char *buffer, SLONG size);
+    SLONG GetNextSequence(const unsigned char *buffer, SLONG size, SLONG consumed);
+    void UpdateFromPlainText();
 
   private:
-    SDL_RWops           *Ctx;
-    SLONG               Version;      // Will always be 0x102
-    SLONG               Key;          // Will always be 0xA5
-    const char          Magic[6];     // Will always be xtRLE
+    SDL_RWops *Ctx;
+    SLONG Version;       // Will always be 0x102
+    SLONG Key;           // Will always be 0xA5
+    const char Magic[6]; // Will always be xtRLE
 
-    BYTE                Sequence[132];
+    BYTE Sequence[132];
 
-    const char          *Path;
+    const char *Path;
 };
 
 class TEAKRAND {
@@ -790,11 +791,11 @@ class TEXTRES {
   private:
     char *FindOverridenS(ULONG, ULONG);
 
-    BUFFER_V<char>                  Path;
-    BUFFER_V<char>                  Strings;
-    BUFFER_V<TEXTRES_CACHE_ENTRY>   Entries;
-    BOOL                            hasOverride = false;
-    TEXTRES                         *override;
+    BUFFER_V<char> Path;
+    BUFFER_V<char> Strings;
+    BUFFER_V<TEXTRES_CACHE_ENTRY> Entries;
+    BOOL hasOverride = false;
+    TEXTRES *override;
 };
 
 // static_assert(sizeof(TEXTRES) == 36, "TEXTRES size check");
@@ -1086,7 +1087,6 @@ extern bool run_regression();
 template <typename T> class ALBUM_V {
   public:
     /* album iter */
-
     using element_type = std::pair<T, ULONG>;
     class Iter {
       public:
@@ -1480,7 +1480,5 @@ class TeakLibException final : public std::runtime_error {
 
     explicit TeakLibException(const char *_Message) : runtime_error(_Message) {}
 
-    void caught() {
-        AT_Log_I("Excp", "Exception was correctly handled");
-    }
+    void caught() { AT_Log_I("Excp", "Exception was correctly handled"); }
 };

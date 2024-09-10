@@ -9,8 +9,8 @@
 #define forall(c, object) for ((c) = 0; (c) < SLONG((object).AnzEntries()); (c)++)
 
 #define AT_Error(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_ERROR, "Player", __VA_ARGS__)
-#define AT_Warn(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "Player",__VA_ARGS__)
-#define AT_Info(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "Player",__VA_ARGS__)
+#define AT_Warn(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "Player", __VA_ARGS__)
+#define AT_Info(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "Player", __VA_ARGS__)
 #define AT_Log(...) AT_Log_I("Player", __VA_ARGS__)
 
 extern SLONG SabotagePrice[];
@@ -230,10 +230,10 @@ void PLAYER::ChangeMoney(__int64 Money, SLONG Reason, const CString &Par1, char 
     if (PlayerNum == 3) {
         if (Money > 0) {
             AT_Log("ChangeMoney: %s: Erhält %s $ wegen %s (%ld)", (LPCTSTR)AirlineX, (LPCTSTR)Insert1000erDots(Money),
-                    (LPCTSTR)bprintf(StandardTexte.GetS(TOKEN_MONEY, Reason), (LPCTSTR)Par1, Par2), Reason);
+                   (LPCTSTR)bprintf(StandardTexte.GetS(TOKEN_MONEY, Reason), (LPCTSTR)Par1, Par2), Reason);
         } else if (Money < 0) {
             AT_Log("ChangeMoney: %s: Gibt %s $ für %s (%ld) aus", (LPCTSTR)AirlineX, (LPCTSTR)Insert1000erDots(-Money),
-                    (LPCTSTR)bprintf(StandardTexte.GetS(TOKEN_MONEY, Reason), (LPCTSTR)Par1, Par2), Reason);
+                   (LPCTSTR)bprintf(StandardTexte.GetS(TOKEN_MONEY, Reason), (LPCTSTR)Par1, Par2), Reason);
         }
     }
 
@@ -1740,7 +1740,7 @@ void PLAYER::NewDay() {
 
                     SLONG delta = salary + costImprovement + costRepairs;
                     AT_Log("Player.cpp: %s: Repair of plane %s (%u => %u; worst %u => %u) costs: %ld+%ld+%ld=%ld", (LPCTSTR)AirlineX, (LPCTSTR)Planes[c].Name,
-                            OldZustand, Planes[c].Zustand, OldWorst, Planes[c].WorstZustand, salary, costImprovement, costRepairs, delta);
+                           OldZustand, Planes[c].Zustand, OldWorst, Planes[c].WorstZustand, salary, costImprovement, costRepairs, delta);
                     if (delta < 0) {
                         delta = 0;
                         AT_Error("Player.cpp: Repair cost for Player %li negative!", PlayerNum);
@@ -4006,10 +4006,10 @@ void PLAYER::RobotExecuteAction() {
     // Die exakte Zeit des Ausführens auf dem Server simulieren
     SLONG RealLocalTime = Sim.Time;
 
-    AT_Log("AI", "Player %li: Action: %s, %s at %li/%li\n", PlayerNum, Translate_ACTION(RobotActions[0].ActionId), Translate_ACTION(RobotActions[1].ActionId),
-           WaitWorkTill, WaitWorkTill2);
-    NetGenericSync (770 + PlayerNum, RobotActions[0].ActionId);
-    NetGenericSync (740 + PlayerNum, RobotActions[1].ActionId);
+    /*AT_Log("Player %li: Action: %s, %s at %li/%li\n", PlayerNum, Translate_ACTION(RobotActions[0].ActionId), Translate_ACTION(RobotActions[1].ActionId),
+           WaitWorkTill, WaitWorkTill2);*/
+    NetGenericSync(770 + PlayerNum, RobotActions[0].ActionId);
+    NetGenericSync(740 + PlayerNum, RobotActions[1].ActionId);
 
     if (Sim.bNetwork != 0) {
         Sim.Time = WaitWorkTill2;
@@ -4253,7 +4253,7 @@ void PLAYER::RobotExecuteAction() {
                             SLONG VonCity = 0;
                             SLONG VonZeit = 0;
 
-                            if((Planes[c].ptPassagiere / 10) <= 0) {
+                            if ((Planes[c].ptPassagiere / 10) <= 0) {
                                 continue;
                             }
 
@@ -5184,7 +5184,7 @@ void PLAYER::RobotExecuteAction() {
                     SLONG VonCity = 0;
                     SLONG VonZeit = 0;
 
-                    if((Planes[c].ptPassagiere / 10) <= 0) {
+                    if ((Planes[c].ptPassagiere / 10) <= 0) {
                         continue;
                     }
 
@@ -7154,7 +7154,7 @@ TEAKFILE &operator>>(TEAKFILE &File, PLAYER &Player) {
     File >> Player.Image;
     if (SaveVersionSub >= 200) {
         File >> Player.KerosinQuali;
-    }else {
+    } else {
         File.Skip(sizeof(SLONG)); // old SLONG BadKerosin
         Player.KerosinQuali = 0;
     }
@@ -7252,7 +7252,7 @@ TEAKFILE &operator>>(TEAKFILE &File, PLAYER &Player) {
         UBYTE gates[24 * 7]{};
 
         File.Read(gates, 24 * 7);
-        for (int i = 0; i < 24*7; i++) {
+        for (int i = 0; i < 24 * 7; i++) {
             Player.Gates.Auslastung[i] = gates[i];
         }
 

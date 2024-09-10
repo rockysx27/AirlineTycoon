@@ -187,9 +187,8 @@ void CRouteBox::OnPaint() {
                 i = -1;
             }
 
-
             SLONG movedIndex = i + RoutePage * ListSize;
-            if ((i != -1 &&  movedIndex!= CurrentTipIndex) || (i == -1 && i != CurrentTip)) {
+            if ((i != -1 && movedIndex != CurrentTipIndex) || (i == -1 && i != CurrentTip)) {
                 if (movedIndex >= 0)
                     CurrentTip = Table.LineIndex[i + RoutePage * ListSize];
                 if (i != -1) {
@@ -209,7 +208,7 @@ void CRouteBox::OnPaint() {
 
             for (c = Routen.AnzEntries() - 1; c >= 0; c--) {
                 if ((Routen.IsInAlbum(c) != 0) && Routen[c].VonCity < Routen[c].NachCity) {
-                
+
                     XY von = XY(Cities[Routen[c].VonCity].MapPosition);
                     XY nach = XY(Cities[Routen[c].NachCity].MapPosition);
 

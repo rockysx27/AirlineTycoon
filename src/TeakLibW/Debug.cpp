@@ -5,8 +5,8 @@
 #include <mutex>
 
 #define AT_Error(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_ERROR, "Dbg", __VA_ARGS__)
-#define AT_Warn(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "Dbg",__VA_ARGS__)
-#define AT_Info(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "Dbg",__VA_ARGS__)
+#define AT_Warn(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "Dbg", __VA_ARGS__)
+#define AT_Info(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "Dbg", __VA_ARGS__)
 #define AT_Log(...) AT_Log_I("Dbg", __VA_ARGS__)
 
 const char *ExcAssert = "Assert (called from %s:%li) failed!";
@@ -28,7 +28,7 @@ HDU::HDU() : Log(nullptr) {
     strcpy(path.data(), base);
     strcat(path.data(), file);
     Log = fopen(path.data(), "w");
-    //Log = stdout;
+    // Log = stdout;
     SDL_free(base);
 
     SDL_LogOutputFunction defaultOut;
@@ -38,9 +38,9 @@ HDU::HDU() : Log(nullptr) {
     SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
 #endif
 
-    auto func = [](void* userdata, int category, SDL_LogPriority priority, const char* message) {
+    auto func = [](void *userdata, int category, SDL_LogPriority priority, const char *message) {
         logMutex.lock();
-        char* finalMessage = const_cast<char*>(message);
+        char *finalMessage = const_cast<char *>(message);
 
         bool modified = false;
         if (strstr(message, "||") == nullptr) {
@@ -53,20 +53,20 @@ HDU::HDU() : Log(nullptr) {
         const SDL_LogOutputFunction func = reinterpret_cast<SDL_LogOutputFunction>(userdata);
         func(userdata, category, priority, finalMessage);
 
-        if(Hdu.Log) {
-            
+        if (Hdu.Log) {
+
             fprintf(Hdu.Log, "%s\n", finalMessage);
             fflush(Hdu.Log);
         }
 
-        if(modified) {
+        if (modified) {
             delete[] finalMessage;
         }
 
         logMutex.unlock();
     };
 
-    SDL_LogSetOutputFunction(func, reinterpret_cast<void*>(defaultOut));
+    SDL_LogSetOutputFunction(func, reinterpret_cast<void *>(defaultOut));
 }
 
 HDU::~HDU() { Close(); }
@@ -136,7 +136,7 @@ SLONG TeakLibW_Exception(const char *file, SLONG line, const char *format, ...) 
     AT_Error("C++ Exception thrown. Program will probably be terminated.");
 
     delete lastError;
-    
+
     throw *(lastError = new TeakLibException(buffer));
 }
 
