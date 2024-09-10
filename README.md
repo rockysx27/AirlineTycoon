@@ -163,6 +163,7 @@ Misc:
 * Strikes will start after 9 am now to give player chance to react
 * Make planes in main menu comically long
 * Decryption of data files with the run argument "/savedata"
+* Option "OptionTicketPriceIncrement" to increase ticket price increment per click
 * Director's board now allow for more post-it
 * Added options "OptionRentOffice*" to customise the branch number available / day.
 * Director's board post-it system improved and allow for more cities (up to 7)

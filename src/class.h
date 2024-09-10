@@ -2427,6 +2427,7 @@ class COptions {
     BOOL OptionRoundNumber{};
     BOOL OptionSpeechBubble{};
     BOOL OptionRandomStartday{};
+    ULONG OptionTicketPriceIncrement{};
     ULONG OptionRentOfficeTriggerPercent{};
     ULONG OptionRentOfficeMinAvailable{};
     ULONG OptionRentOfficeMaxAvailable{};

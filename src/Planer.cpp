@@ -273,7 +273,10 @@ void CPlaner::PaintGlobeRoutes() {
                     f = 0;
                 }
 
-                SB_Hardwarecolor color = GlobeBm.pBitmap->GetHardwarecolor((c >= 2) ? f : 0, (c == 1 || c == 3) ? f : 0, (c == 0) ? f : 0);
+                SB_Hardwarecolor color = GlobeBm.pBitmap->GetHardwarecolor((c >= 2) ? f : 0,
+                                                                           (c == 1 || c == 3) ? f : 0,
+                                                                           (c == 0) ? f : 0);
+
 
                 GlobeBm.pBitmap->SetPixel(pxy.x - 6, pxy.y, color);
                 GlobeBm.pBitmap->SetPixel(pxy.x - 6 - 1, pxy.y, color);
@@ -341,7 +344,9 @@ void CPlaner::PaintGlobeRoutes() {
                         f = 0;
                     }
 
-                    SB_Hardwarecolor color = GlobeBm.pBitmap->GetHardwarecolor((c >= 2) ? f : 0, (c == 1 || c == 3) ? f : 0, (c == 0) ? f : 0);
+                    SB_Hardwarecolor color = GlobeBm.pBitmap->GetHardwarecolor((c >= 2) ? f : 0,
+                                                                               (c == 1 || c == 3) ? f : 0,
+                                                                               (c == 0) ? f : 0);
 
                     GlobeBm.pBitmap->Line(pxy.x - 6, pxy.y, lastpxy.x - 6, lastpxy.y, color);
                 }
@@ -413,7 +418,9 @@ void CPlaner::PaintGlobeRoutes() {
                         f = 0;
                     }
 
-                    SB_Hardwarecolor color = GlobeBm.pBitmap->GetHardwarecolor((c >= 2) ? f : 0, (c == 1 || c == 3) ? f : 0, (c == 0) ? f : 0);
+                    SB_Hardwarecolor color = GlobeBm.pBitmap->GetHardwarecolor((c >= 2) ? f : 0,
+                                                                               (c == 1 || c == 3) ? f : 0,
+                                                                               (c == 0) ? f : 0);
 
                     GlobeBm.pBitmap->Line(pxy.x - 6, pxy.y, lastpxy.x - 6, lastpxy.y, color);
                 }
@@ -2291,26 +2298,26 @@ void CPlaner::HandleLButtonDown() {
 
                 if (ClientPosB.IfIsWithin(148, 40 - 2 - 13, 160, 40 - 2 - 13 + 14)) {
                     if (AtGetAsyncKeyState(ATKEY_CONTROL) / 256 != 0) {
-                        ticketPreis += 1000;
-                        ticketPreisFC += 2000;
+                        ticketPreis += 100 * Sim.Options.OptionTicketPriceIncrement;
+                        ticketPreisFC += 200 * Sim.Options.OptionTicketPriceIncrement;
                     } else if (AtGetAsyncKeyState(ATKEY_SHIFT) / 256 != 0) {
-                        ticketPreis += 100;
-                        ticketPreisFC += 200;
+                        ticketPreis += 10 * Sim.Options.OptionTicketPriceIncrement;
+                        ticketPreisFC += 20 * Sim.Options.OptionTicketPriceIncrement;
                     } else {
-                        ticketPreis += 10;
-                        ticketPreisFC += 20;
+                        ticketPreis += Sim.Options.OptionTicketPriceIncrement;
+                        ticketPreisFC += 2 * Sim.Options.OptionTicketPriceIncrement;
                     }
                 }
                 if (ClientPosB.IfIsWithin(160, 40 - 2 - 13, 172, 40 - 2 - 13 + 14)) {
                     if (AtGetAsyncKeyState(ATKEY_CONTROL) / 256 != 0) {
-                        ticketPreis -= 1000;
-                        ticketPreisFC -= 2000;
+                        ticketPreis -= 100 * Sim.Options.OptionTicketPriceIncrement;
+                        ticketPreisFC -= 200 * Sim.Options.OptionTicketPriceIncrement;
                     } else if (AtGetAsyncKeyState(ATKEY_SHIFT) / 256 != 0) {
-                        ticketPreis -= 100;
-                        ticketPreisFC -= 200;
+                        ticketPreis -= 10 * Sim.Options.OptionTicketPriceIncrement;
+                        ticketPreisFC -= 20 * Sim.Options.OptionTicketPriceIncrement;
                     } else {
-                        ticketPreis -= 10;
-                        ticketPreisFC -= 20;
+                        ticketPreis -= Sim.Options.OptionTicketPriceIncrement;
+                        ticketPreisFC -= 2 * Sim.Options.OptionTicketPriceIncrement;
                     }
                 }
                 /*if ((ClientPosB.y-27)/13==0)
