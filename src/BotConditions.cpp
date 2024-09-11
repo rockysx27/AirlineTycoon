@@ -6,8 +6,8 @@
 #include "TeakLibW.h"
 
 #define AT_Error(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_ERROR, "Bot", __VA_ARGS__)
-#define AT_Warn(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "Bot",__VA_ARGS__)
-#define AT_Info(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "Bot",__VA_ARGS__)
+#define AT_Warn(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "Bot", __VA_ARGS__)
+#define AT_Info(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "Bot", __VA_ARGS__)
 #define AT_Log(...) AT_Log_I("Bot", __VA_ARGS__)
 
 // Preise verstehen sich pro Sitzplatz:
@@ -634,7 +634,7 @@ Bot::Prio Bot::condBuyNemesisShares(__int64 &moneyAvailable) {
 
 Bot::Prio Bot::condBuyOwnShares(__int64 &moneyAvailable) {
     moneyAvailable = getMoneyAvailable() - kMoneyReserveBuyOwnShares;
-    if (mRunToFinalObjective > FinalPhase::No) {
+    if (mRunToFinalObjective < FinalPhase::TargetRun) {
         return Prio::None;
     }
     if (qPlayer.RobotUse(ROBOT_USE_DONTBUYANYSHARES)) {
@@ -642,6 +642,11 @@ Bot::Prio Bot::condBuyOwnShares(__int64 &moneyAvailable) {
     }
     if (qPlayer.OwnsAktien[qPlayer.PlayerNum] >= (qPlayer.AnzAktien * kOwnStockPosessionRatio / 100)) {
         return Prio::None;
+    }
+    if (qPlayer.HasBerater(BERATERTYP_GELD) >= 50) { /* do we know how much stock the enemy holds? */
+        if (calcNumOfFreeShares(qPlayer.PlayerNum) <= 0) {
+            return Prio::None;
+        }
     }
     if ((moneyAvailable >= 0) && (qPlayer.Credit == 0)) {
         return Prio::Low;

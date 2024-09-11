@@ -227,7 +227,7 @@ ULONG PLAYER::BuyPlane(CXPlane &plane, TEAKRAND *pRnd) {
 //--------------------------------------------------------------------------------------------
 void PLAYER::ChangeMoney(__int64 Money, SLONG Reason, const CString &Par1, char *Par2) {
 
-    if (PlayerNum == 3) {
+    if (IsSuperBot()) {
         if (Money > 0) {
             AT_Log("ChangeMoney: %s: Erhält %s $ wegen %s (%ld)", (LPCTSTR)AirlineX, (LPCTSTR)Insert1000erDots(Money),
                    (LPCTSTR)bprintf(StandardTexte.GetS(TOKEN_MONEY, Reason), (LPCTSTR)Par1, Par2), Reason);
@@ -6257,7 +6257,7 @@ void PLAYER::DoBodyguardRabatt(SLONG Money) {
 //--------------------------------------------------------------------------------------------
 // Wirft alle Arbeiter raus:
 //--------------------------------------------------------------------------------------------
-void PLAYER::SackWorkers() const {
+void PLAYER::SackWorkers() {
     SLONG c = 0;
 
     for (c = 0; c < Workers.Workers.AnzEntries(); c++) {
@@ -6269,6 +6269,8 @@ void PLAYER::SackWorkers() const {
             }
         }
     }
+
+    UpdatePilotCount();
 }
 
 //--------------------------------------------------------------------------------------------
@@ -7886,7 +7888,7 @@ bool PLAYER::RobotUse(SLONG FeatureId) const {
 
     /* specialization of computer players. SuperBot ignores all but the first one. */
     case ROBOT_USE_WORKQUICK_2:
-        return (PlayerNum == 2 || IsSuperBot());
+        return (PlayerNum == 2 || (BotLevel > 1));
     case ROBOT_USE_EXTRA_SABOTAGE:
         return (PlayerNum == 0);
     case ROBOT_USE_SABO_AFFORD_FINE:

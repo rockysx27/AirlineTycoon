@@ -13,8 +13,8 @@
 #include <cmath>
 
 #define AT_Error(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_ERROR, "Bot", __VA_ARGS__)
-#define AT_Warn(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "Bot",__VA_ARGS__)
-#define AT_Info(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "Bot",__VA_ARGS__)
+#define AT_Warn(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "Bot", __VA_ARGS__)
+#define AT_Info(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "Bot", __VA_ARGS__)
 #define AT_Log(...) AT_Log_I("Bot", __VA_ARGS__)
 
 // #define PRINT_ROUTE_DETAILS 1
@@ -308,7 +308,7 @@ void Bot::actionUpgradePlanes() {
         }
     }
     AT_Log("Bot::actionUpgradePlanes(): We are reserving %s $ for plane upgrades, available money: %s $",
-            (LPCTSTR)Insert1000erDots64(mMoneyReservedForUpgrades), (LPCTSTR)Insert1000erDots64(getMoneyAvailable()));
+           (LPCTSTR)Insert1000erDots64(mMoneyReservedForUpgrades), (LPCTSTR)Insert1000erDots64(getMoneyAvailable()));
 
     mRoutesNextStep = RoutesNextStep::None;
 }
@@ -360,7 +360,7 @@ void Bot::actionBuyNewPlane(__int64 /*moneyAvailable*/) {
             qRoute.planeIds.push_back(planeId);
             mPlanesForRoutes.push_back(planeId);
             AT_Log("Bot::actionBuyNewPlane(): Assigning new plane %s to route %s", Helper::getPlaneName(qPlane).c_str(),
-                    Helper::getRouteName(getRoute(qRoute)).c_str());
+                   Helper::getRouteName(getRoute(qRoute)).c_str());
             mRoutesNextStep = RoutesNextStep::None;
         } else {
             mPlanesForRoutesUnassigned.push_back(planeId);
@@ -436,7 +436,7 @@ void Bot::actionBuyDesignerPlane(__int64 /*moneyAvailable*/) {
             qRoute.planeIds.push_back(planeId);
             mPlanesForRoutes.push_back(planeId);
             AT_Log("Bot::actionBuyDesignerPlane(): Assigning new plane %s to route %s", Helper::getPlaneName(qPlane).c_str(),
-                    Helper::getRouteName(getRoute(qRoute)).c_str());
+                   Helper::getRouteName(getRoute(qRoute)).c_str());
             mRoutesNextStep = RoutesNextStep::None;
         } else {
             mPlanesForRoutesUnassigned.push_back(planeId);
@@ -949,14 +949,14 @@ void Bot::actionVisitMech() {
         auto worstZustand = std::min(qPlane.WorstZustand, qPlane.Zustand);
         if (qPlane.TargetZustand > iter.second) {
             AT_Log("Bot::actionVisitMech(): Increasing repair target of plane %s: %u => %u (Zustand = %u, WorstZustand = %u)",
-                    Helper::getPlaneName(qPlane, 1).c_str(), iter.second, qPlane.TargetZustand, qPlane.Zustand, worstZustand);
+                   Helper::getPlaneName(qPlane, 1).c_str(), iter.second, qPlane.TargetZustand, qPlane.Zustand, worstZustand);
         } else if (qPlane.TargetZustand < iter.second) {
             AT_Log("Bot::actionVisitMech(): Lowering repair target of plane %s: %u => %u (Zustand = %u, WorstZustand = %u)",
-                    Helper::getPlaneName(qPlane, 1).c_str(), iter.second, qPlane.TargetZustand, qPlane.Zustand, worstZustand);
+                   Helper::getPlaneName(qPlane, 1).c_str(), iter.second, qPlane.TargetZustand, qPlane.Zustand, worstZustand);
         }
     }
     AT_Log("Bot::actionVisitMech(): We are reserving %s $ for repairs, available money: %s $", (LPCTSTR)Insert1000erDots64(mMoneyReservedForRepairs),
-            (LPCTSTR)Insert1000erDots64(getMoneyAvailable()));
+           (LPCTSTR)Insert1000erDots64(getMoneyAvailable()));
 }
 
 void Bot::actionVisitDutyFree(__int64 moneyAvailable) {
@@ -1120,7 +1120,7 @@ void Bot::actionRentRoute() {
     mRoutes.emplace_back(routeA, routeB, mPlaneTypeForNewRoute);
     mRoutes.back().ticketCostFactor = kDefaultTicketPriceFactor;
     AT_Log("Bot::actionRentRoute(): Renting route %s (using plane type %s): ", Helper::getRouteName(getRoute(mRoutes.back())).c_str(),
-            (LPCTSTR)PlaneTypes[mPlaneTypeForNewRoute].Name);
+           (LPCTSTR)PlaneTypes[mPlaneTypeForNewRoute].Name);
     mPlaneTypeForNewRoute = -1;
 
     /* update sorted list */
@@ -1186,8 +1186,8 @@ void Bot::actionBuyAdsForRoutes(__int64 moneyAvailable) {
     SLONG oldImage = getRentRoute(qRoute).Image;
     GameMechanic::buyAdvertisement(qPlayer, 1, adCampaignSize, qRoute.routeId);
     SLONG newImage = getRentRoute(qRoute).Image;
-    AT_Log("Bot::actionBuyAdsForRoutes(): Buying advertisement for route %s for %d $ (image improved %d => %d)",
-            Helper::getRouteName(getRoute(qRoute)).c_str(), cost, oldImage, newImage);
+    AT_Log("Bot::actionBuyAdsForRoutes(): Buying advertisement for route %s for %d $ (image improved %d => %d)", Helper::getRouteName(getRoute(qRoute)).c_str(),
+           cost, oldImage, newImage);
 
     qRoute.image = newImage;
 

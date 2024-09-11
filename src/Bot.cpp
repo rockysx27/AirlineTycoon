@@ -12,8 +12,8 @@
 namespace fs = std::filesystem;
 
 #define AT_Error(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_ERROR, "Bot", __VA_ARGS__)
-#define AT_Warn(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "Bot",__VA_ARGS__)
-#define AT_Info(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "Bot",__VA_ARGS__)
+#define AT_Warn(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "Bot", __VA_ARGS__)
+#define AT_Info(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "Bot", __VA_ARGS__)
 #define AT_Log(...) AT_Log_I("Bot", __VA_ARGS__)
 
 const bool kAlwaysReplan = true;
@@ -36,7 +36,7 @@ const SLONG kPlaneTargetZustand = 100;
 const SLONG kUsedPlaneMinimumScore = 40;
 DOUBLE kMaxKerosinQualiZiel = 1.2;
 SLONG kNumRoutesStartBuyingTanks = 3;
-SLONG kOwnStockPosessionRatio = 25;
+SLONG kOwnStockPosessionRatio = 51;
 const SLONG kStockEmissionMode = 2;
 const bool kReduceDividend = false;
 const SLONG kMaxSabotageHints = 99;
@@ -176,8 +176,8 @@ void Bot::RobotInit() {
     } else {
         auto balance = qPlayer.BilanzWoche.Hole();
         AT_Info("Bot.cpp: Enter RobotInit(): Current day: %d, money: %s $ (op saldo %s = %s %s)", Sim.Date, Insert1000erDots64(qPlayer.Money).c_str(),
-                    Insert1000erDots64(balance.GetOpSaldo()).c_str(), Insert1000erDots64(balance.GetOpGewinn()).c_str(),
-                    Insert1000erDots64(balance.GetOpVerlust()).c_str());
+                Insert1000erDots64(balance.GetOpSaldo()).c_str(), Insert1000erDots64(balance.GetOpGewinn()).c_str(),
+                Insert1000erDots64(balance.GetOpVerlust()).c_str());
     }
 
     /* print inventory */
@@ -254,13 +254,7 @@ void Bot::RobotInit() {
 
         /* bot level */
         AT_Log("Bot::RobotInit(): We are player %d with bot level = %s.", qPlayer.PlayerNum, StandardTexte.GetS(TOKEN_NEWGAME, 5001 + qPlayer.BotLevel));
-        if (qPlayer.BotLevel <= 1) {
-            kMaxTicketPriceFactor = std::min(1.0, kMaxTicketPriceFactor);
-            kSchedulingMinScoreRatio = std::min(3.0f, kSchedulingMinScoreRatio);
-            kSchedulingMinScoreRatioLastMinute = std::min(3.0f, kSchedulingMinScoreRatioLastMinute);
-            kPlaneMinimumZustand = std::min(80, kPlaneMinimumZustand);
-            kNumRoutesStartBuyingTanks = 99;
-        } else if (qPlayer.BotLevel <= 2) {
+        if (qPlayer.BotLevel <= 2) {
             kMaxTicketPriceFactor = std::min(2.0, kMaxTicketPriceFactor);
             kSchedulingMinScoreRatio = std::min(5.0f, kSchedulingMinScoreRatio);
             kSchedulingMinScoreRatioLastMinute = std::min(5.0f, kSchedulingMinScoreRatioLastMinute);
@@ -387,7 +381,7 @@ void Bot::RobotPlan() {
     qRobotActions[2].Prio = static_cast<SLONG>(prioList[1].prio);
 
     AT_Log("Bot::RobotPlan(): Current: %s, planned: %s, %s", Translate_ACTION(qRobotActions[0].ActionId), Translate_ACTION(qRobotActions[1].ActionId),
-            Translate_ACTION(qRobotActions[2].ActionId), getPrioName(prioList[1].prio));
+           Translate_ACTION(qRobotActions[2].ActionId), getPrioName(prioList[1].prio));
 
     if (qRobotActions[1].ActionId == ACTION_NONE) {
         AT_Error("Did not plan action for slot #1");
@@ -428,9 +422,9 @@ void Bot::RobotExecuteAction() {
     LocalRandom.Rand(2); // Sicherheitshalber, damit wir immer genau ein Random ausführen
 
     mNumActionsToday += 1;
-    AT_Info("Bot::RobotExecuteAction(): Executing %s (#%d, %s), current time: %02ld:%02ld, money: %s $ (available: %s $)",
-                Translate_ACTION(qAction.ActionId), mNumActionsToday, getPrioName(qAction.Prio), Sim.GetHour(), Sim.GetMinute(),
-                (LPCTSTR)Insert1000erDots64(qPlayer.Money), (LPCTSTR)Insert1000erDots64(getMoneyAvailable()));
+    AT_Info("Bot::RobotExecuteAction(): Executing %s (#%d, %s), current time: %02ld:%02ld, money: %s $ (available: %s $)", Translate_ACTION(qAction.ActionId),
+            mNumActionsToday, getPrioName(qAction.Prio), Sim.GetHour(), Sim.GetMinute(), (LPCTSTR)Insert1000erDots64(qPlayer.Money),
+            (LPCTSTR)Insert1000erDots64(getMoneyAvailable()));
 
     mOnThePhone = 0;
 
