@@ -5,8 +5,8 @@
 #include "TeakLibW.h"
 
 #define AT_Error(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_ERROR, "Bot", __VA_ARGS__)
-#define AT_Warn(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "Bot",__VA_ARGS__)
-#define AT_Info(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "Bot",__VA_ARGS__)
+#define AT_Warn(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "Bot", __VA_ARGS__)
+#define AT_Info(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "Bot", __VA_ARGS__)
 #define AT_Log(...) AT_Log_I("Bot", __VA_ARGS__)
 
 void Bot::printRobotFlags() {
@@ -305,12 +305,12 @@ bool Bot::checkPlaneAvailable(SLONG planeId, bool printIfAvailable, bool areWeIn
     }
     if (qPlane.AnzBegleiter < qPlane.ptAnzBegleiter) {
         AT_Error("Bot::checkPlaneAvailable: Plane %s does not have enough crew members (%d, need %d).", Helper::getPlaneName(qPlane).c_str(),
-                  qPlane.AnzBegleiter, qPlane.ptAnzBegleiter);
+                 qPlane.AnzBegleiter, qPlane.ptAnzBegleiter);
         return false;
     }
     if (qPlane.AnzPiloten < qPlane.ptAnzPiloten) {
         AT_Error("Bot::checkPlaneAvailable: Plane %s does not have enough pilots (%d, need %d).", Helper::getPlaneName(qPlane).c_str(), qPlane.AnzPiloten,
-                  qPlane.ptAnzPiloten);
+                 qPlane.ptAnzPiloten);
         return false;
     }
     if (qPlane.Problem != 0) {
@@ -344,7 +344,7 @@ bool Bot::checkPlaneLists() {
         uniquePlaneIds[i] = 1;
         newPlanesForJobs.push_back(i);
         AT_Log("Bot::checkPlaneLists(): Jobs: Plane %s gains %s $", Helper::getPlaneName(qPlanes[i]).c_str(),
-                (LPCTSTR)Insert1000erDots64(qPlanes[i].GetSaldo()));
+               (LPCTSTR)Insert1000erDots64(qPlanes[i].GetSaldo()));
     }
     std::swap(mPlanesForJobs, newPlanesForJobs);
 
@@ -364,7 +364,7 @@ bool Bot::checkPlaneLists() {
         uniquePlaneIds[i] = 2;
         newPlanesForRoutes.push_back(i);
         AT_Log("Bot::checkPlaneLists(): Routes: Plane %s gains %s $", Helper::getPlaneName(qPlanes[i]).c_str(),
-                (LPCTSTR)Insert1000erDots64(qPlanes[i].GetSaldo()));
+               (LPCTSTR)Insert1000erDots64(qPlanes[i].GetSaldo()));
     }
     std::swap(mPlanesForRoutes, newPlanesForRoutes);
 
@@ -383,7 +383,7 @@ bool Bot::checkPlaneLists() {
         uniquePlaneIds[i] = 3;
         newPlanesJobsUnassigned.push_back(i);
         AT_Log("Bot::checkPlaneLists(): Jobs unassigned: Plane %s gains %s $", Helper::getPlaneName(qPlanes[i]).c_str(),
-                (LPCTSTR)Insert1000erDots64(qPlanes[i].GetSaldo()));
+               (LPCTSTR)Insert1000erDots64(qPlanes[i].GetSaldo()));
     }
     std::swap(mPlanesForJobsUnassigned, newPlanesJobsUnassigned);
 
@@ -402,7 +402,7 @@ bool Bot::checkPlaneLists() {
         uniquePlaneIds[i] = 4;
         newPlanesRoutesUnassigned.push_back(i);
         AT_Log("Bot::checkPlaneLists(): Routes unassigned: Plane %s gains %s $", Helper::getPlaneName(qPlanes[i]).c_str(),
-                (LPCTSTR)Insert1000erDots64(qPlanes[i].GetSaldo()));
+               (LPCTSTR)Insert1000erDots64(qPlanes[i].GetSaldo()));
     }
     std::swap(mPlanesForRoutesUnassigned, newPlanesRoutesUnassigned);
 
@@ -425,7 +425,7 @@ bool Bot::checkPlaneLists() {
 
     AT_Log("Bot::checkPlaneLists(): Planes for jobs: %d / %d are available.", mPlanesForJobs.size(), mPlanesForJobs.size() + mPlanesForJobsUnassigned.size());
     AT_Log("Bot::checkPlaneLists(): Planes for routes: %d / %d are available.", mPlanesForRoutes.size(),
-            mPlanesForRoutes.size() + mPlanesForRoutesUnassigned.size());
+           mPlanesForRoutes.size() + mPlanesForRoutesUnassigned.size());
 
     return foundProblem || planesGoneMissing;
 }
@@ -436,7 +436,7 @@ void Bot::findPlanesNotAvailableForService(std::vector<SLONG> &listAvailable, st
         auto &qPlane = qPlayer.Planes[id];
         auto worstZustand = std::min(qPlane.WorstZustand, qPlane.Zustand);
         AT_Log("Bot::findPlanesNotAvailableForService(): Plane %s: Zustand = %u, WorstZustand = %u, Baujahr = %d", Helper::getPlaneName(qPlane).c_str(),
-                qPlane.Zustand, worstZustand, qPlane.Baujahr);
+               qPlane.Zustand, worstZustand, qPlane.Baujahr);
 
         SLONG mode = 0; /* 0: keep plane in service */
         if (qPlane.Zustand <= kPlaneMinimumZustand) {
@@ -468,7 +468,7 @@ void Bot::findPlanesAvailableForService(std::deque<SLONG> &listUnassigned, std::
         auto &qPlane = qPlayer.Planes[id];
         auto worstZustand = std::min(qPlane.WorstZustand, qPlane.Zustand);
         AT_Log("Bot::findPlanesAvailableForService(): Plane %s: Zustand = %u, WorstZustand = %u, Baujahr = %d", Helper::getPlaneName(qPlane).c_str(),
-                qPlane.Zustand, worstZustand, qPlane.Baujahr);
+               qPlane.Zustand, worstZustand, qPlane.Baujahr);
 
         if (qPlane.Zustand < 100 && (qPlane.Zustand < qPlane.TargetZustand)) {
             AT_Log("Bot::findPlanesAvailableForService(): Plane %s still not available for service: Needs repairs.", Helper::getPlaneName(qPlane).c_str());
@@ -528,7 +528,7 @@ void Bot::setHardcodedDesignerPlaneLarge() {
     mDesignerPlane.Parts[3].Pos3d.x = 174;
     mDesignerPlane.Parts[3].Pos3d.y = 99;
     mDesignerPlane.Parts[3].Shortname = "B2";
-    mDesignerPlane.Parts[3].ParentShortname = "";
+    mDesignerPlane.Parts[3].ParentShortname.clear();
     mDesignerPlane.Parts[3].ParentRelationId = 1;
     mDesignerPlane.Parts[4].Pos2d.x = -171;
     mDesignerPlane.Parts[4].Pos2d.y = -83;
@@ -583,7 +583,7 @@ void Bot::setHardcodedDesignerPlaneEco() {
     mDesignerPlane.Parts[3].Pos3d.x = 247;
     mDesignerPlane.Parts[3].Pos3d.y = 137;
     mDesignerPlane.Parts[3].Shortname = "B1";
-    mDesignerPlane.Parts[3].ParentShortname = "";
+    mDesignerPlane.Parts[3].ParentShortname.clear();
     mDesignerPlane.Parts[3].ParentRelationId = 0;
     mDesignerPlane.Parts[4].Pos2d.x = -92;
     mDesignerPlane.Parts[4].Pos2d.y = -76;
