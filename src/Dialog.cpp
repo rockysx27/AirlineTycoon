@@ -43,14 +43,14 @@ void printPostGameInfo() {
         for (SLONG c = 0; c < 4; c++) {
             printf(", Sieg%s", (LPCTSTR)Sim.Players.Players[c].Abk);
         }
-        hprintf(", BesterGegner");
+        printf(", BesterGegner\n");
 
         printf("BotMission: %d, %d", Sim.Difficulty, Sim.Date);
         for (SLONG c = 0; c < 4; c++) {
             auto &qP = Sim.Players.Players[c];
             printf(", %d", (qP.HasWon() != 0 && qP.IsOut == 0) ? 1 : 0);
         }
-        hprintf(", %ld", bestEnemy);
+        printf(", %ld\n", bestEnemy);
 
         qPlayer.mBot->printStatisticsLine("BotStatistics2", true);
 
