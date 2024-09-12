@@ -1005,8 +1005,7 @@ void Bot::actionVisitBoss() {
     /* what is available? how much money are we currently bidding in total? */
     mMoneyReservedForAuctions = 0;
     mBossGateAvailable = false;
-    for (SLONG c = 0; c < 7; c++) {
-        const auto &qZettel = TafelData.Gate[c];
+    for (const auto &qZettel : TafelData.Gate) {
         if (qZettel.ZettelId < 0) {
             continue;
         }
@@ -1016,8 +1015,7 @@ void Bot::actionVisitBoss() {
         }
     }
     mBossNumCitiesAvailable = 0;
-    for (SLONG c = 0; c < 7; c++) {
-        const auto &qZettel = TafelData.City[c];
+    for (const auto &qZettel : TafelData.City) {
         if (qZettel.ZettelId < 0) {
             continue;
         }
@@ -1030,34 +1028,26 @@ void Bot::actionVisitBoss() {
     auto moneyAvailable = getMoneyAvailable() - kMoneyReserveBossOffice;
 
     /* auction for gates */
-    for (SLONG c = 0; c < 7; c++) {
+    for (SLONG c = 0; c < TafelData.Gate.size(); c++) {
         const auto &qZettel = TafelData.Gate[c];
-        if (qZettel.ZettelId < 0) {
-            continue;
-        }
-        if (qZettel.Player == qPlayer.PlayerNum) {
+        if (qZettel.ZettelId < 0 || qZettel.Player == qPlayer.PlayerNum) {
             continue;
         }
         if (qZettel.Preis > moneyAvailable) {
             continue;
         }
 
-        GameMechanic::bidOnGate(qPlayer, c);
-        mMoneyReservedForAuctions += qZettel.Preis;
-        moneyAvailable = getMoneyAvailable() - kMoneyReserveBossOffice;
-        AT_Log("Bot::actionVisitBoss(): Bidding on gate: %d $", qZettel.Preis);
+        if (GameMechanic::bidOnGate(qPlayer, c)) {
+            mMoneyReservedForAuctions += qZettel.Preis;
+            moneyAvailable = getMoneyAvailable() - kMoneyReserveBossOffice;
+            AT_Log("Bot::actionVisitBoss(): Bidding on gate: %d $", qZettel.Preis);
+        }
     }
 
     /* auction for subsidiaries */
-    mBossNumCitiesAvailable = 0;
-    for (SLONG c = 0; c < 7; c++) {
+    for (SLONG c = 0; c < TafelData.City.size(); c++) {
         const auto &qZettel = TafelData.City[c];
-        if (qZettel.ZettelId < 0) {
-            continue;
-        }
-        mBossNumCitiesAvailable++;
-        if (qZettel.Player == qPlayer.PlayerNum) {
-            moneyAvailable -= qZettel.Preis;
+        if (qZettel.ZettelId < 0 || qZettel.Player == qPlayer.PlayerNum) {
             continue;
         }
         if (qPlayer.RentCities.RentCities[Cities(qZettel.ZettelId)].Rang != 0) {
@@ -1067,8 +1057,7 @@ void Bot::actionVisitBoss() {
             continue;
         }
 
-        if (qZettel.Player == -1 || LocalRandom.Rand(3) == 0) {
-            GameMechanic::bidOnCity(qPlayer, c);
+        if (GameMechanic::bidOnCity(qPlayer, c)) {
             mMoneyReservedForAuctions += qZettel.Preis;
             moneyAvailable = getMoneyAvailable() - kMoneyReserveBossOffice;
             AT_Log("Bot::actionVisitBoss(): Bidding on city %s: %d $", (LPCTSTR)Cities[qZettel.ZettelId].Name, qZettel.Preis);

@@ -49,7 +49,7 @@ const SLONG kMoneyReserveIncreaseDividend = 100 * 1000;
 const SLONG kMoneyReservePaybackCredit = 1500 * 1000;
 const SLONG kMoneyReserveBuyOwnShares = 2000 * 1000;
 const SLONG kMoneyReserveBuyNemesisShares = 80 * 1e6;
-const SLONG kMoneyReserveBossOffice = 10 * 1000;
+const SLONG kMoneyReserveBossOffice = 0;
 const SLONG kMoneyReserveExpandAirport = 1000 * 1000;
 const SLONG kMoneyReserveSabotage = 200 * 1000;
 
