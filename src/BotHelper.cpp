@@ -8,9 +8,8 @@
 #include <unordered_map>
 
 #define AT_Error(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_ERROR, "Bot", __VA_ARGS__)
-#define AT_Warn(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "Bot",__VA_ARGS__)
-#define AT_Info(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "Bot",__VA_ARGS__)
-#define AT_Log(...) AT_Log_I("Bot", __VA_ARGS__)
+#define AT_Warn(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "Bot", __VA_ARGS__)
+#define AT_Info(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "Bot", __VA_ARGS__)
 
 // Öffnungszeiten:
 extern SLONG timeDutyOpen;
@@ -45,44 +44,44 @@ inline void setColorForFlightJob(const PLAYER &qPlayer, const CFlugplanEintrag &
 inline void resetColor() { std::cout << "\e[m"; }
 
 namespace Helper {
-    void ScheduleInfo::printGain() {
-        AT_Log("Schedule (%s %d - %s %d) with %ld planes gains %s $.", (LPCTSTR)getWeekday(scheduleStart), scheduleStart.getHour(),
-                (LPCTSTR)getWeekday(scheduleEnd), scheduleEnd.getHour(), numPlanes, Insert1000erDots(gain).c_str());
+void ScheduleInfo::printGain() {
+    printf("Schedule (%s %d - %s %d) with %ld planes gains %s $.\n", (LPCTSTR)getWeekday(scheduleStart), scheduleStart.getHour(),
+           (LPCTSTR)getWeekday(scheduleEnd), scheduleEnd.getHour(), numPlanes, Insert1000erDots(gain).c_str());
+}
+
+void ScheduleInfo::printDetails() {
+    printf("vvvvvvvvvvvvvvvvvvvv\n");
+    printGain();
+
+    if (uhrigFlights > 0) {
+        printf("Flying %ld jobs (%ld from Uhrig, %ld passengers), %ld freight jobs (%ld tons) and %s miles.\n", jobs, uhrigFlights, passengers, freightJobs,
+               tons, Insert1000erDots(miles).c_str());
+    } else {
+        printf("Flying %ld jobs (%ld passengers), %ld freight jobs (%ld tons) and %s miles.\n", jobs, passengers, freightJobs, tons,
+               Insert1000erDots(miles).c_str());
     }
+    printf("%.1f %% of plane schedule are regular flights, %.1f %% are automatic flights (%.1f %% useful kerosene).\n", getRatioFlights(),
+           getRatioAutoFlights(), getKeroseneRatio());
 
-    void ScheduleInfo::printDetails() {
-        AT_Log("vvvvvvvvvvvvvvvvvvvv");
-        printGain();
-
-        if (uhrigFlights > 0) {
-            AT_Log("Flying %ld jobs (%ld from Uhrig, %ld passengers), %ld freight jobs (%ld tons) and %s miles.", jobs, uhrigFlights, passengers, freightJobs,
-                    tons, Insert1000erDots(miles).c_str());
-        } else {
-            AT_Log("Flying %ld jobs (%ld passengers), %ld freight jobs (%ld tons) and %s miles.", jobs, passengers, freightJobs, tons,
-                    Insert1000erDots(miles).c_str());
+    std::array<CString, 5> typeStr{"normal", "later", "highriskreward", "scam", "no fine"};
+    std::array<CString, 6> sizeStr{"VIP", "S", "M", "L", "XL", "XXL"};
+    printf("Job types: ");
+    for (SLONG i = 0; i < jobTypes.size(); i++) {
+        printf("%.0f %% %s", 100.0 * jobTypes[i] / (jobs + freightJobs), (LPCTSTR)typeStr[i]);
+        if (i < jobTypes.size() - 1) {
+            printf(", ");
         }
-        AT_Log("%.1f %% of plane schedule are regular flights, %.1f %% are automatic flights (%.1f %% useful kerosene).", getRatioFlights(),
-                getRatioAutoFlights(), getKeroseneRatio());
-
-        std::array<CString, 5> typeStr{"normal", "later", "highriskreward", "scam", "no fine"};
-        std::array<CString, 6> sizeStr{"VIP", "S", "M", "L", "XL", "XXL"};
-        printf("Job types: ");
-        for (SLONG i = 0; i < jobTypes.size(); i++) {
-            printf("%.0f %% %s", 100.0 * jobTypes[i] / (jobs + freightJobs), (LPCTSTR)typeStr[i]);
-            if (i < jobTypes.size() - 1) {
-                printf(", ");
-            }
-        }
-        printf("\nJob sizes: ");
-        for (SLONG i = 0; i < jobSizeTypes.size(); i++) {
-            printf("%.0f %% %s", 100.0 * jobSizeTypes[i] / (jobs + freightJobs), (LPCTSTR)sizeStr[i]);
-            if (i < jobSizeTypes.size() - 1) {
-                printf(", ");
-            }
-        }
-        printf("\n");
-        AT_Log("^^^^^^^^^^^^^^^^^^^^");
     }
+    printf("\nJob sizes: ");
+    for (SLONG i = 0; i < jobSizeTypes.size(); i++) {
+        printf("%.0f %% %s", 100.0 * jobSizeTypes[i] / (jobs + freightJobs), (LPCTSTR)sizeStr[i]);
+        if (i < jobSizeTypes.size() - 1) {
+            printf(", ");
+        }
+    }
+    printf("\n");
+    printf("^^^^^^^^^^^^^^^^^^^^\n");
+}
 
 CString getWeekday(UWORD date) { return StandardTexte.GetS(TOKEN_SCHED, 3010 + (date + Sim.StartWeekday) % 7); }
 CString getWeekday(const PlaneTime &time) { return StandardTexte.GetS(TOKEN_SCHED, 3010 + (time.getDate() + Sim.StartWeekday) % 7); }
@@ -92,14 +91,14 @@ void printJob(const CAuftrag &qAuftrag) {
     CString strDist(Einheiten[EINH_KM].bString(Cities.CalcDistance(qAuftrag.VonCity, qAuftrag.NachCity) / 1000));
     CString strPraemie(Insert1000erDots(qAuftrag.Praemie));
     CString strStrafe(Insert1000erDots(qAuftrag.Strafe));
-    AT_Log("%s -> %s (%u) (%s, %s, %s $ / %s $)", (LPCTSTR)Cities[qAuftrag.VonCity].Name, (LPCTSTR)Cities[qAuftrag.NachCity].Name, qAuftrag.Personen,
-            (LPCTSTR)strDist, (LPCTSTR)strDate, (LPCTSTR)strPraemie, (LPCTSTR)strStrafe);
+    printf("%s -> %s (%u) (%s, %s, %s $ / %s $)\n", (LPCTSTR)Cities[qAuftrag.VonCity].Name, (LPCTSTR)Cities[qAuftrag.NachCity].Name, qAuftrag.Personen,
+           (LPCTSTR)strDist, (LPCTSTR)strDate, (LPCTSTR)strPraemie, (LPCTSTR)strStrafe);
 }
 
 void printRoute(const CRoute &qRoute) {
     CString strDist(Einheiten[EINH_KM].bString(Cities.CalcDistance(qRoute.VonCity, qRoute.NachCity) / 1000));
-    AT_Log("%s -> %s (Bedarf: %d, Faktor: %f, %s)", (LPCTSTR)Cities[qRoute.VonCity].Name, (LPCTSTR)Cities[qRoute.NachCity].Name, qRoute.Bedarf, qRoute.Faktor,
-            (LPCTSTR)strDist);
+    printf("%s -> %s (Bedarf: %d, Faktor: %f, %s)\n", (LPCTSTR)Cities[qRoute.VonCity].Name, (LPCTSTR)Cities[qRoute.NachCity].Name, qRoute.Bedarf, qRoute.Faktor,
+           (LPCTSTR)strDist);
 }
 
 void printFreight(const CFracht &qAuftrag) {
@@ -107,8 +106,9 @@ void printFreight(const CFracht &qAuftrag) {
     CString strDist(Einheiten[EINH_KM].bString(Cities.CalcDistance(qAuftrag.VonCity, qAuftrag.NachCity) / 1000));
     CString strPraemie(Insert1000erDots(qAuftrag.Praemie));
     CString strStrafe(Insert1000erDots(qAuftrag.Strafe));
-    AT_Log("%s -> %s (%d tons total, %d left, %d open) (%s, %s, %s $ / %s $)", (LPCTSTR)Cities[qAuftrag.VonCity].Name, (LPCTSTR)Cities[qAuftrag.NachCity].Name,
-            qAuftrag.Tons, qAuftrag.TonsLeft, qAuftrag.TonsOpen, (LPCTSTR)strDist, (LPCTSTR)strDate, (LPCTSTR)strPraemie, (LPCTSTR)strStrafe);
+    printf("%s -> %s (%d tons total, %d left, %d open) (%s, %s, %s $ / %s $)\n", (LPCTSTR)Cities[qAuftrag.VonCity].Name,
+           (LPCTSTR)Cities[qAuftrag.NachCity].Name, qAuftrag.Tons, qAuftrag.TonsLeft, qAuftrag.TonsOpen, (LPCTSTR)strDist, (LPCTSTR)strDate,
+           (LPCTSTR)strPraemie, (LPCTSTR)strStrafe);
 }
 
 std::string getRouteName(const CRoute &qRoute) { return {bprintf("%s -> %s", (LPCTSTR)Cities[qRoute.VonCity].Name, (LPCTSTR)Cities[qRoute.NachCity].Name)}; }
@@ -142,7 +142,7 @@ void printFPE(const CFlugplanEintrag &qFPE) {
         strType = "Fracht ";
     }
     CString strDist(Einheiten[EINH_KM].bString(Cities.CalcDistance(qFPE.VonCity, qFPE.NachCity) / 1000));
-    AT_Log("%s: %s (%u, %s)", (LPCTSTR)strType, (LPCTSTR)strInfo, qFPE.Passagiere, (LPCTSTR)strDist);
+    printf("%s: %s (%u, %s)\n", (LPCTSTR)strType, (LPCTSTR)strInfo, qFPE.Passagiere, (LPCTSTR)strDist);
 }
 
 const CFlugplanEintrag *getLastFlight(const CPlane &qPlane) {
@@ -226,7 +226,7 @@ SLONG _checkPlaneSchedule(const PLAYER &qPlayer, const CPlane &qPlane, std::unor
         auto time = startTime + Cities.CalcFlugdauer(qFPE.VonCity, qFPE.NachCity, qPlane.ptGeschwindigkeit);
         if ((qFPE.Landedate != time.getDate()) || (qFPE.Landezeit != time.getHour())) {
             AT_Error("Helper::checkPlaneSchedule(): CFlugplanEintrag has invalid landing time: %s %d, should be %s %d", (LPCTSTR)getWeekday(qFPE.Landedate),
-                      qFPE.Landezeit, (LPCTSTR)getWeekday(time.getDate()), time.getHour());
+                     qFPE.Landezeit, (LPCTSTR)getWeekday(time.getDate()), time.getHour());
             printFPE(qFPE);
         }
 
@@ -236,8 +236,8 @@ SLONG _checkPlaneSchedule(const PLAYER &qPlayer, const CPlane &qPlane, std::unor
                 (qFPE.Startdate == qFlightPlan[d - 1].Landedate && qFPE.Startzeit < qFlightPlan[d - 1].Landezeit)) {
                 nIncorrect++;
                 AT_Error("Helper::checkPlaneSchedule(): Job (%s -> %s) on plane %s overlaps with previous job (%s -> %s)",
-                          (LPCTSTR)Cities[qFPE.VonCity].Kuerzel, (LPCTSTR)Cities[qFPE.NachCity].Kuerzel, (LPCTSTR)qPlane.Name,
-                          (LPCTSTR)Cities[qFlightPlan[d - 1].VonCity].Kuerzel, (LPCTSTR)Cities[qFlightPlan[d - 1].NachCity].Kuerzel);
+                         (LPCTSTR)Cities[qFPE.VonCity].Kuerzel, (LPCTSTR)Cities[qFPE.NachCity].Kuerzel, (LPCTSTR)qPlane.Name,
+                         (LPCTSTR)Cities[qFlightPlan[d - 1].VonCity].Kuerzel, (LPCTSTR)Cities[qFlightPlan[d - 1].NachCity].Kuerzel);
             }
             if (qFPE.VonCity != qFlightPlan[d - 1].NachCity) {
                 nIncorrect++;
@@ -262,7 +262,7 @@ SLONG _checkPlaneSchedule(const PLAYER &qPlayer, const CPlane &qPlane, std::unor
             if (qFPE.Okay != 0) {
                 nIncorrect++;
                 AT_Warn("Helper::checkPlaneSchedule(): Route (%s) for plane %s is not scheduled correctly", getRouteName(qAuftrag).c_str(),
-                             (LPCTSTR)qPlane.Name);
+                        (LPCTSTR)qPlane.Name);
             }
 
             if (qPlane.ptReichweite * 1000 < Cities.CalcDistance(qAuftrag.VonCity, qAuftrag.NachCity)) {
@@ -278,7 +278,7 @@ SLONG _checkPlaneSchedule(const PLAYER &qPlayer, const CPlane &qPlane, std::unor
             if (assignedJobs.find(id) != assignedJobs.end()) {
                 nIncorrect++;
                 AT_Error("Helper::checkPlaneSchedule(): Job (%s) for plane %s is also scheduled for plane %s", getJobName(qAuftrag).c_str(),
-                          (LPCTSTR)qPlane.Name, (LPCTSTR)assignedJobs[id]);
+                         (LPCTSTR)qPlane.Name, (LPCTSTR)assignedJobs[id]);
                 printJob(qAuftrag);
                 printFPE(qFPE);
             }
@@ -286,8 +286,7 @@ SLONG _checkPlaneSchedule(const PLAYER &qPlayer, const CPlane &qPlane, std::unor
 
             if (qFPE.VonCity != qAuftrag.VonCity || qFPE.NachCity != qAuftrag.NachCity) {
                 nIncorrect++;
-                AT_Error("Helper::checkPlaneSchedule(): CFlugplanEintrag start/destination does not match CAuftrag for job (%s)",
-                          getJobName(qAuftrag).c_str());
+                AT_Error("Helper::checkPlaneSchedule(): CFlugplanEintrag start/destination does not match CAuftrag for job (%s)", getJobName(qAuftrag).c_str());
                 printJob(qAuftrag);
                 printFPE(qFPE);
             }
@@ -301,8 +300,7 @@ SLONG _checkPlaneSchedule(const PLAYER &qPlayer, const CPlane &qPlane, std::unor
 
             if (qFPE.Okay != 0) {
                 nIncorrect++;
-                AT_Warn("Helper::checkPlaneSchedule(): Job (%s) for plane %s is not scheduled correctly", getJobName(qAuftrag).c_str(),
-                             (LPCTSTR)qPlane.Name);
+                AT_Warn("Helper::checkPlaneSchedule(): Job (%s) for plane %s is not scheduled correctly", getJobName(qAuftrag).c_str(), (LPCTSTR)qPlane.Name);
             }
 
             if (qPlane.ptReichweite * 1000 < Cities.CalcDistance(qAuftrag.VonCity, qAuftrag.NachCity)) {
@@ -313,13 +311,13 @@ SLONG _checkPlaneSchedule(const PLAYER &qPlayer, const CPlane &qPlane, std::unor
             if (qFPE.Startdate < qAuftrag.Date) {
                 nIncorrect++;
                 AT_Error("Helper::checkPlaneSchedule(): Job (%s) starts too early (%s instead of %s) for plane %s", getJobName(qAuftrag).c_str(),
-                          (LPCTSTR)getWeekday(qFPE.Startdate), (LPCTSTR)getWeekday(qAuftrag.Date), (LPCTSTR)qPlane.Name);
+                         (LPCTSTR)getWeekday(qFPE.Startdate), (LPCTSTR)getWeekday(qAuftrag.Date), (LPCTSTR)qPlane.Name);
             }
 
             if (qFPE.Startdate > qAuftrag.BisDate) {
                 nIncorrect++;
                 AT_Warn("Helper::checkPlaneSchedule(): Job (%s) starts too late (%s instead of %s) for plane %s", getJobName(qAuftrag).c_str(),
-                             (LPCTSTR)getWeekday(qFPE.Startdate), (LPCTSTR)getWeekday(qAuftrag.BisDate), (LPCTSTR)qPlane.Name);
+                        (LPCTSTR)getWeekday(qFPE.Startdate), (LPCTSTR)getWeekday(qAuftrag.BisDate), (LPCTSTR)qPlane.Name);
             }
 
             if (qPlane.ptPassagiere < SLONG(qAuftrag.Personen)) {
@@ -354,7 +352,7 @@ SLONG _checkPlaneSchedule(const PLAYER &qPlayer, const CPlane &qPlane, std::unor
             if (qFPE.Okay != 0) {
                 nIncorrect++;
                 AT_Warn("Helper::checkPlaneSchedule(): Freight job (%s) for plane %s is not scheduled correctly", getFreightName(qAuftrag).c_str(),
-                             (LPCTSTR)qPlane.Name);
+                        (LPCTSTR)qPlane.Name);
             }
 
             if (qPlane.ptReichweite * 1000 < Cities.CalcDistance(qAuftrag.VonCity, qAuftrag.NachCity)) {
@@ -365,13 +363,13 @@ SLONG _checkPlaneSchedule(const PLAYER &qPlayer, const CPlane &qPlane, std::unor
             if (qFPE.Startdate < qAuftrag.Date) {
                 nIncorrect++;
                 AT_Error("Helper::checkPlaneSchedule(): Freight job (%s) starts too early (%s instead of %s) for plane %s", getFreightName(qAuftrag).c_str(),
-                          (LPCTSTR)getWeekday(qFPE.Startdate), (LPCTSTR)getWeekday(qAuftrag.Date), (LPCTSTR)qPlane.Name);
+                         (LPCTSTR)getWeekday(qFPE.Startdate), (LPCTSTR)getWeekday(qAuftrag.Date), (LPCTSTR)qPlane.Name);
             }
 
             if (qFPE.Startdate > qAuftrag.BisDate) {
                 nIncorrect++;
                 AT_Warn("Helper::checkPlaneSchedule(): Freight job (%s) starts too late (%s instead of %s) for plane %s", getFreightName(qAuftrag).c_str(),
-                             (LPCTSTR)getWeekday(qFPE.Startdate), (LPCTSTR)getWeekday(qAuftrag.BisDate), (LPCTSTR)qPlane.Name);
+                        (LPCTSTR)getWeekday(qFPE.Startdate), (LPCTSTR)getWeekday(qAuftrag.BisDate), (LPCTSTR)qPlane.Name);
             }
         }
     }
@@ -393,7 +391,7 @@ void printFlightJobs(const PLAYER &qPlayer, SLONG planeId) {
 void printFlightJobs(const PLAYER &qPlayer, const CPlane &qPlane) {
     auto &qFlightPlan = qPlane.Flugplan.Flug;
 
-    AT_Log("Helper::printFlightJobs(): Schedule for plane %s:", Helper::getPlaneName(qPlane).c_str());
+    printf("Helper::printFlightJobs(): Schedule for plane %s:\n", Helper::getPlaneName(qPlane).c_str());
 
     /* print job list */
     for (SLONG d = 0; d < qFlightPlan.AnzEntries(); d++) {
@@ -550,19 +548,19 @@ SLONG checkFlightJobs(const PLAYER &qPlayer, bool alwaysPrint, bool verboseInfo)
         if ((-info.tonsOpen) >= info.smallestDecrement) {
             printInfo = true;
             AT_Error("Helper::checkPlaneSchedule(): At least one instance of job %s can be removed (overscheduled: %d, smallest: %d)",
-                      getFreightName(qAuftrag).c_str(), (-info.tonsOpen), info.smallestDecrement);
+                     getFreightName(qAuftrag).c_str(), (-info.tonsOpen), info.smallestDecrement);
         }
 
         if (printInfo) {
             assert(info.planeNames.size() == info.FPEs.size());
             for (SLONG i = 0; i < info.FPEs.size(); i++) {
-                AT_Log("+ %d t on %s", info.tonsPerPlane[i], info.planeNames[i].c_str());
+                printf("+ %d t on %s\n", info.tonsPerPlane[i], info.planeNames[i].c_str());
                 Helper::printFPE(info.FPEs[i]);
             }
         }
     }
 
-    AT_Log("Helper::checkFlightJobs(): %s: Found %d problems for %d planes.", (LPCTSTR)qPlayer.AirlineX, nIncorrect, nPlanes);
+    printf("Helper::checkFlightJobs(): %s: Found %d problems for %d planes.\n", (LPCTSTR)qPlayer.AirlineX, nIncorrect, nPlanes);
     if (verboseInfo) {
         overallInfo.printDetails();
     } else {
@@ -574,9 +572,9 @@ SLONG checkFlightJobs(const PLAYER &qPlayer, bool alwaysPrint, bool verboseInfo)
 void printAllSchedules(bool infoOnly) {
     for (SLONG d = 0; d < 4; d++) {
         const auto &qPlayer = Sim.Players.Players[d];
-        AT_Log("========== %s ==========", (LPCTSTR)qPlayer.AirlineX);
+        printf("========== %s ==========\n", (LPCTSTR)qPlayer.AirlineX);
         checkFlightJobs(qPlayer, !infoOnly, !infoOnly);
-        AT_Log("==============================");
+        printf("==============================\n");
     }
 }
 
