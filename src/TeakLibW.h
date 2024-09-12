@@ -581,6 +581,18 @@ class TEAKRAND {
     std::mt19937 mMT{};
 };
 
+class TeakURBG {
+  public:
+    using result_type = ULONG;
+    TeakURBG(ULONG seed) : rnd(seed) {}
+    static constexpr result_type min() { return 0; }
+    static constexpr result_type max() { return UINT16_MAX; }
+    result_type operator()() { return rnd.Rand(); }
+
+  private:
+    TEAKRAND rnd;
+};
+
 template <typename T> class TXY {
   public:
     T x, y;

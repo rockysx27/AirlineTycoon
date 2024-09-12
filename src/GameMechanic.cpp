@@ -7,8 +7,8 @@
 #include <array>
 
 #define AT_Error(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_ERROR, "GM", __VA_ARGS__)
-#define AT_Warn(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "GM",__VA_ARGS__)
-#define AT_Info(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "GM",__VA_ARGS__)
+#define AT_Warn(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "GM", __VA_ARGS__)
+#define AT_Info(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "GM", __VA_ARGS__)
 #define AT_Log(...) AT_Log_I("GM", __VA_ARGS__)
 
 SLONG TankSize[4] = {100000, 1000000, 10000000, 100000000};
@@ -186,7 +186,7 @@ GameMechanic::CheckSabotage GameMechanic::checkPrerequisitesForSaboteurJob(PLAYE
 
     if (number > qPlayer.ArabTrust && fremdSabotage == FALSE) {
         AT_Error("GameMechanic::checkPrerequisitesForSaboteurJob(%s): Not enough trust (have %ld, need %ld).", (LPCTSTR)qPlayer.AirlineX, qPlayer.ArabTrust,
-                  number);
+                 number);
         return {CheckSabotageResult::DeniedTrust, 0};
     }
 
@@ -438,7 +438,7 @@ bool GameMechanic::activateSaboteurJob(PLAYER &qPlayer, BOOL fremdSabotage) {
     }
 
     AT_Log("GameMechanic::activateSaboteurJob: %s=>%s %ld %ld %ld", (LPCTSTR)qPlayer.AirlineX, (LPCTSTR)qOpfer.AirlineX, qPlayer.ArabMode, qPlayer.ArabMode2,
-            qPlayer.ArabMode3);
+           qPlayer.ArabMode3);
     return true;
 }
 
@@ -460,7 +460,7 @@ void GameMechanic::paySaboteurFine(SLONG player, SLONG opfer) {
 bool GameMechanic::takeOutCredit(PLAYER &qPlayer, __int64 amount) {
     if (amount < 1000 || amount > qPlayer.CalcCreditLimit()) {
         AT_Error("GameMechanic::takeOutCredit(%s): Invalid amount (requested %lld, max is %lld).", (LPCTSTR)qPlayer.AirlineX, amount,
-                  qPlayer.CalcCreditLimit());
+                 qPlayer.CalcCreditLimit());
         return false;
     }
     qPlayer.Credit += amount;
@@ -1048,12 +1048,12 @@ bool GameMechanic::expandAirport(PLAYER &qPlayer) {
 }
 
 bool GameMechanic::bidOnGate(PLAYER &qPlayer, SLONG idx) {
-    if (idx < 0 || idx >= TafelData.Gate.size()) {
+    if (idx < 0 || idx >= TafelData.ByPositions.size()) {
         AT_Error("GameMechanic::bidOnGate(%s): Invalid index (%ld).", (LPCTSTR)qPlayer.AirlineX, idx);
         return false;
     }
 
-    auto &qGate = TafelData.Gate[idx];
+    auto &qGate = *TafelData.ByPositions[idx];
     if (qGate.Player == qPlayer.PlayerNum) {
         return false;
     }
@@ -1075,12 +1075,12 @@ bool GameMechanic::bidOnGate(PLAYER &qPlayer, SLONG idx) {
 }
 
 bool GameMechanic::bidOnCity(PLAYER &qPlayer, SLONG idx) {
-    if (idx < 0 || idx >= TafelData.City.size()) {
+    if (idx < 0 || idx >= TafelData.ByPositions.size()) {
         AT_Error("GameMechanic::bidOnCity(%s): Invalid index (%ld).", (LPCTSTR)qPlayer.AirlineX, idx);
         return false;
     }
 
-    auto &qCity = TafelData.City[idx];
+    auto &qCity = *TafelData.ByPositions[idx];
     if (qCity.Player == qPlayer.PlayerNum) {
         return false;
     }
@@ -2355,18 +2355,18 @@ bool GameMechanic::_planFlightJob(PLAYER &qPlayer, SLONG planeID, SLONG objectID
     if (qPlayer.Owner == 0 || (qPlayer.Owner == 1 && !qPlayer.RobotUse(ROBOT_USE_FAKE_PERSONAL))) {
         if (qPlane.AnzBegleiter < qPlane.ptAnzBegleiter) {
             AT_Error("GameMechanic::_planFlightJob(%s): Plane %s does not have enough crew members (%ld, need %ld).", (LPCTSTR)qPlayer.AirlineX,
-                      (LPCTSTR)qPlane.Name, qPlane.AnzBegleiter, qPlane.ptAnzBegleiter);
+                     (LPCTSTR)qPlane.Name, qPlane.AnzBegleiter, qPlane.ptAnzBegleiter);
             return false;
         }
         if (qPlane.AnzPiloten < qPlane.ptAnzPiloten) {
-            AT_Error("GameMechanic::_planFlightJob(%s): Plane %s does not have enough pilots (%ld, need %ld).", (LPCTSTR)qPlayer.AirlineX,
-                      (LPCTSTR)qPlane.Name, qPlane.AnzPiloten, qPlane.ptAnzPiloten);
+            AT_Error("GameMechanic::_planFlightJob(%s): Plane %s does not have enough pilots (%ld, need %ld).", (LPCTSTR)qPlayer.AirlineX, (LPCTSTR)qPlane.Name,
+                     qPlane.AnzPiloten, qPlane.ptAnzPiloten);
             return false;
         }
     }
     if (qPlane.Problem != 0) {
         AT_Error("GameMechanic::_planFlightJob(%s): Plane %s has a problem for the next %ld hours", (LPCTSTR)qPlayer.AirlineX, (LPCTSTR)qPlane.Name,
-                  qPlane.Problem);
+                 qPlane.Problem);
         return false;
     }
 
