@@ -430,14 +430,14 @@ Bot::Prio Bot::condBuyKerosine(__int64 &moneyAvailable) {
     if (!qPlayer.RobotUse(ROBOT_USE_PETROLAIR)) {
         return Prio::None;
     }
-    if (qPlayer.HasBerater(BERATERTYP_KEROSIN) < 30 || !checkLaptop()) {
-        return Prio::None; /* no access to advisor report */
-    }
-    if (!haveDiscount()) {
-        return Prio::None; /* wait until we have some discount */
-    }
-    if ((qPlayer.TankInhalt * 100) / qPlayer.Tank > 90) {
+    if (qPlayer.Tank <= 0) {
         return Prio::None;
+    }
+    if (qPlayer.HasBerater(BERATERTYP_KEROSIN) >= 30 && checkLaptop()) {
+        /*  access to advisor report */
+        if ((qPlayer.TankInhalt * 100) / qPlayer.Tank > 90) {
+            return Prio::None;
+        }
     }
     if (moneyAvailable >= 0) {
         return Prio::Medium;

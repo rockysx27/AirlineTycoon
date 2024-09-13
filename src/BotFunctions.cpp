@@ -589,30 +589,7 @@ std::pair<SLONG, SLONG> Bot::kerosineQualiOptimization(__int64 moneyAvailable, D
     DOUBLE tankContent = qPlayer.TankInhalt;
     DOUBLE tankMax = qPlayer.Tank * targetFillRatio;
 
-    if (qPlayer.HasBerater(BERATERTYP_KEROSIN) < 70) {
-        /* just buy normal kerosine */
-        DOUBLE amount = moneyAvailable / priceGood; /* simply buy normal kerosine */
-        if (amount + tankContent > tankMax) {
-            amount = tankMax - tankContent;
-        }
-        if (amount > INT_MAX) {
-            amount = INT_MAX;
-        }
-        res.first = static_cast<SLONG>(std::floor(amount));
-        res.second = 0;
-        return res;
-    }
-
-    DOUBLE qualiZiel = 1.0;
-    if (qPlayer.HasBerater(BERATERTYP_KEROSIN) >= 90) {
-        qualiZiel = 1.3;
-    } else if (qPlayer.HasBerater(BERATERTYP_KEROSIN) >= 80) {
-        qualiZiel = 1.2;
-    } else if (qPlayer.HasBerater(BERATERTYP_KEROSIN) >= 70) {
-        qualiZiel = 1.1;
-    }
-    qualiZiel = std::min(qualiZiel, kMaxKerosinQualiZiel);
-
+    DOUBLE qualiZiel = kMaxKerosinQualiZiel;
     DOUBLE qualiStart = qPlayer.KerosinQuali;
     DOUBLE amountGood = 0;
     DOUBLE amountBad = 0;
