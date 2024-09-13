@@ -42,11 +42,12 @@ You can see the instructions to build and run the project in [BUILDING.md](BUILD
 | Plane constraints | ❌ Ignores maximum range | ✅ Respects maximum range |
 | | ❌ Ignores number of seats | ✅ Respects number of seats |
 | | ❌ Ignores freight capacity | ✅ Respects freight capacity |
-| Charter flights | ❌ Does not pay fine | ✅ Pays fine if not executed correctly |
+| Charter flights | ❌ Ignores date constraints | ✅ Respects date constraints |
+| | ❌ Does not pay fine | ✅ Pays fine if not executed correctly |
 | Hidden bonus | ❌ Up to 10% higher premium for charter flights | ✅ No hidden bonus |
 | | ❌ Up to 25% bonus when competing for routes | ✅ No hidden bonus |
+| | ❌ Small bonus to image every day | ✅ No hidden bonus |
 | Employees | ❌ Completely fakes airline employees | ✅ Needs to hire employees |
-| Image | ❌ Small improvement to image every day | ✅ No cheating |
 | Laptop virus | ❌ Removed next day | ✅ Has to act himself |
 | Strike | ❌ Will end randomly | ✅ Has to act himself |
 | Illness | ❌ No action taken | ✅ Uses medicine |
@@ -66,7 +67,7 @@ You can see the instructions to build and run the project in [BUILDING.md](BUILD
 | Missions | ❌ Only small strategy adaptations | ✅ Intricate strategies for several missions |
 | Overtake | ❌ Will not overtake competitors | ✅ Overtakes competitors if given the chance |
 | Items | ❌ Only uses pliers | ✅ Uses more items |
-| Sabotage | ❌ No strategy | ✅ Uses sabotage only in specific missions for particular goals |
+| Sabotage | ❌ No strategy, sabotages very often and mostly randomly | ✅ Uses sabotage only in specific missions for particular goals |
 | Planes | Buys only used planes | Buys only new planes |
 
 ### Statistics screen
