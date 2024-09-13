@@ -1396,7 +1396,7 @@ void NewGamePopup::OnLButtonDown(UINT nFlags, CPoint point) {
                     RefreshKlackerField();
                     return;
                 }
-                if (PageNum == PAGE_TYPE::SELECT_PLAYER_SINGLEPLAYER) {
+                if (PageNum == PAGE_TYPE::SELECT_PLAYER_CAMPAIGN) {
                     if (Sim.Difficulty >= DIFF_ATFS && Sim.Difficulty <= DIFF_ATFS10) {
                         PageNum = PAGE_TYPE::FLIGHT_SECURITY_MISSION_SELECT;
                     } else {
@@ -1679,7 +1679,7 @@ void NewGamePopup::OnLButtonDown(UINT nFlags, CPoint point) {
                     }
                 }
             }
-        } else if (PageNum == PAGE_TYPE::OTHERS_LOADING) {
+        } else if (PageNum == PAGE_TYPE::SETTINGS_CHOOSE_AIRPORT) {
             if (PageSub > 0 && Column >= 10 && Column <= 11) {
                 PageSub -= 12;
                 if (PageSub < 0) {

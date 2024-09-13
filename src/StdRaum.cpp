@@ -6704,6 +6704,7 @@ void CStdRaum::MenuLeftClick(XY Pos) {
 
     case MENU_BROADCAST:
         if (MouseClickArea == -101 && MouseClickId == MENU_RENAMEPLANE && MouseClickPar1 == 1) {
+            MenuStop();
 
             for (SLONG c = 0; c < 4; c++) {
                 if (((MenuPar1 & (1 << c)) != 0) && Sim.Players.Players[c].Owner == 2 && (strlen(Optionen[0]) != 0U)) {
@@ -6714,7 +6715,6 @@ void CStdRaum::MenuLeftClick(XY Pos) {
             }
 
             DisplayBroadcastMessage(Optionen[0], Sim.localPlayer);
-            MenuStop();
         }
         if (MouseClickArea == -101 && MouseClickId == MENU_RENAMEPLANE && MouseClickPar1 == 2) {
             MenuStop();
