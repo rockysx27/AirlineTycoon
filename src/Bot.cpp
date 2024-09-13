@@ -211,7 +211,7 @@ void Bot::RobotInit() {
             mItemAntiVirus = -1; /* item not available */
         }
 
-        if (Sim.Difficulty == DIFF_NORMAL) {
+        if (qPlayer.RobotUse(ROBOT_USE_ROUTEMISSION)) {
             kMaximumRouteUtilization = 20;
         }
 

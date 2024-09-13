@@ -412,9 +412,6 @@ void Bot::grabFlights(BotPlaner &planer, bool areWeInOffice) {
     case DIFF_FIRST:
         planer.setPassengerFactor(10 * 1000); /* need to fly as many passengers as possible */
         break;
-    case DIFF_ADDON02:
-        planer.setFreightBonus(5000 * 1000);
-        break;
     case DIFF_ADDON04:
         planer.setDistanceFactor(1);
         planer.setMinSpeedRatio(0.6f);
@@ -428,6 +425,8 @@ void Bot::grabFlights(BotPlaner &planer, bool areWeInOffice) {
 
     if (qPlayer.RobotUse(ROBOT_USE_FREE_FRACHT)) {
         planer.setFreeFreightBonus(5000 * 1000);
+    } else if (qPlayer.RobotUse(ROBOT_USE_MUCH_FRACHT)) {
+        planer.setFreightBonus(5000 * 1000);
     }
 
     int extraBufferTime = kAvailTimeExtra;
