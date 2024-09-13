@@ -10,6 +10,7 @@ Deluxe edition of the game. You can purchase these assets from GOG.com: https://
 
 - Native Linux support
 - Dedicated server browser and NAT-punchthrough multiplayer (open source server at: https://github.com/WizzardMaker/ATDMasterServer)
+- New computer player that plays well without cheating
 
 ## License
 
@@ -29,11 +30,46 @@ You can see the instructions to build and run the project in [BUILDING.md](BUILD
 
 ## Changes
 
-General:
+### General
 * Now runnable on Linux
 * Allow the game to be ran Windowed / Borderless / Fullscreen
 
-Statistics screen:
+### New computer player
+* Respects the rules of the game
+
+| Rules | Existing computer player | New computer player |
+| -------- | ------- | ------- |
+| Plane constraints | ❌ Ignores maximum range | ✅ Respects maximum range |
+| | ❌ Ignores number of seats | ✅ Respects number of seats |
+| | ❌ Ignores freight capacity | ✅ Respects freight capacity |
+| Charter flights | ❌ Does not pay fine | ✅ Pays fine if not executed correctly |
+| Hidden bonus | ❌ Up to 10% higher premium for charter flights | ✅ No hidden bonus |
+| | ❌ Up to 25% bonus when competing for routes | ✅ No hidden bonus |
+| Employees | ❌ Completely fakes airline employees | ✅ Needs to hire employees |
+| Image | ❌ Small improvement to image every day | ✅ No cheating |
+| Laptop virus | ❌ Removed next day | ✅ Has to act himself |
+| Strike | ❌ Will end randomly | ✅ Has to act himself |
+| Illness | ❌ No action taken | ✅ Uses medicine |
+| Missions | ❌ Uses various cheats | ✅ No cheating |
+| Info | ❌ Accesses game state directly | ✅ Only acts on information that would be available to human player |
+
+* Improved core aspects of the computer player
+
+| Features | Existing computer player | New computer player |
+| -------- | ------- | ------- |
+| Flight planning | ❌ Simple greedy heuristc | ✅ 'Simulated annealing' heuristic minimizing empty flights |
+| Plane repairs | ❌ Usually high repair costs | ✅ Low repair cost by putting planes with repair deficit temporarily out of service |
+| Delays | ❌ Does not fix schedule if flight was bumped to next day | ✅ Tries to reorganize to avoid delays |
+| Route ticket pricing | ❌ Only based on competitor prices | ✅ Sophisticated strategy to improve route utilization and optimize income |
+| Kerosene | ❌ Does not buy kerosene at ArabAir | ✅ Buys tanks and kerosene to save money when price is low |
+| Bankruptcy avoidance | ❌ Frequently goes bankrupt, especially in last mission | ✅ Able to forecast high future expenses, acts accordingly |
+| Missions | ❌ Only small strategy adaptations | ✅ Intricate strategies for several missions |
+| Overtake | ❌ Will not overtake competitors | ✅ Overtakes competitors if given the chance |
+| Items | ❌ Only uses pliers | ✅ Uses more items |
+| Sabotage | ❌ No strategy | ✅ Uses sabotage only in specific missions for particular goals |
+| Planes | Buys only used planes | Buys only new planes |
+
+### Statistics screen
 * Showing far more categories where money was spent
    * For example income from freight jobs, total tons transported, money spent on planes, sabotage or stocks and money gained from interest, credit or stocks
 * Accurate summation of money spent
@@ -43,17 +79,17 @@ Statistics screen:
 * Fix rendering of graph when zooming out
 * Fix display of mission target
 
-Information menu:
+### Information menu
 * Much more information on balance sheet depending on skill of your financial advisor
 * New financial summary for quick assessment of the financial health of your airline (e.g. operating profit)
 * Multiple balance sheets (for previous day / week / overall)
 * More information from spy (e.g. weekly balance and financial summary for each competitor)
 * Detailed information from kerosene advisor (quality / value of kerosene, money saved by using tanks)
 
-Option menu:
+### Option menu
 * Game Speed is adjustable in options menu. Available values: 1, 5, 10, 15, 20, 25, 30 (default value). The hosts game speed is synced to clients in a network game.
 
-Keyboard navigation:
+### Keyboard navigation
 * Allow Enter/Backspace in calculator
 * Enable keyboard navigation in Laptop / Globe (arrow keys)
 * Enable keyboard navigation in HR folder
@@ -65,7 +101,7 @@ Keyboard navigation:
 * Adjust route ticket prices in larger steps (using Shift/Ctrl)
 * Arrow key navigation for many different menus
 
-Employees:
+### Employees
 * More pilots/attendants available for hire
 * Slightly increase competence of randomly generated employees
 * Generate randomized advisors as well
@@ -76,7 +112,7 @@ Employees:
 * The 10% change when increasing/decreasing salary now always refers to the original salary
 * Regularly increase worker happiness if company image is great
 
-Kerosene:
+### Kerosene
 * Adjust impact of bad kerosene:
     * Now depends on ratio of bad kerosene in tank (quadratic function now instead of yes/no)
     * Amount of plane damage due to bad kerosene increased
@@ -85,7 +121,7 @@ Kerosene:
 * ArabAir offers much larger kerosene tanks
 * Do not remember selected kerosene quality for auto purchase (was an undocumented and convoluted 'feature')
 
-Bug fixes:
+### Bug fixes
 * Fixed frozen windows on laptop
 * Integer overflow fixed when emitting lots of stock (resulted in loosing money when emitting)
 * Fixed formula for credit limit
@@ -127,7 +163,7 @@ Bug fixes:
 * Evolution mission 02: Only need to have five planes with full safety upgrades, not all of them in case more than five were bought
 * Fixed many random crashes
   
-Default computer player:
+### Default computer player
 * Uses now same credit limit
 * Uses now same rules for trading stock
     * Trading fee (100 + 10% of volume) now also for computer players (fee existed only for player)
@@ -145,7 +181,7 @@ Default computer player:
     * Computer players however will use a small cheat that regularly improves their image
 * Fixed bug where computer player buys or sells more stock than available
 
-Misc:
+### Misc
 * Reduce (~ half) cost of plane security upgrades
 * Spy reports enemy activity based on skill
 * ArabAir opens one hour earlier
@@ -174,3 +210,6 @@ Misc:
 - [CrossVR](https://github.com/CrossVR) - Original contributor
 - [mertenpopp](https://github.com/mertenpopp) - Contributor
 - [wackfx](https://github.com/wackfx) - Contributor
+- [CrazyOrange](https://github.com/CrazyOrange) - Contributor
+- [Heftie](https://github.com/Heftie) - Contributor
+
