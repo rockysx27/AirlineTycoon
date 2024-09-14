@@ -41,7 +41,7 @@ You can see the instructions to build and run the project in [BUILDING.md](BUILD
 | -------- | ------- | ------- |
 | Plane constraints | ❌ Ignores maximum range | ✅ Respects maximum range |
 | | ❌ Ignores number of seats | ✅ Respects number of seats |
-| | ❌ Ignores freight capacity | ✅ Respects freight capacity |
+| | ✅ Respects freight capacity | ✅ Respects freight capacity |
 | Charter flights | ❌ Ignores date constraints | ✅ Respects date constraints |
 | | ❌ Does not pay fine | ✅ Pays fine if not executed correctly |
 | Hidden bonus | ❌ Up to 10% higher premium for charter flights | ✅ No hidden bonus |
