@@ -1983,24 +1983,45 @@ void NewGamePopup::OnLButtonDown(UINT nFlags, CPoint point) {
 void NewGamePopup::OnRButtonDown(UINT /*nFlags*/, CPoint point) {
     if (MenuIsOpen() != 0) {
         MenuRightClick(point);
-    } else {
-        DefaultOnRButtonDown();
+        return;
+    }
 
-        if (PageNum == PAGE_TYPE::SETTINGS_CHOOSE_AIRPORT) {
-            PageNum = PAGE_TYPE::MAIN_MENU;
+    DefaultOnRButtonDown();
+
+    if (PageNum == PAGE_TYPE::SETTINGS_CHOOSE_AIRPORT) {
+        PageNum = PAGE_TYPE::MAIN_MENU;
+        RefreshKlackerField();
+    } else if (PageNum == PAGE_TYPE::MULTIPLAYER_CREATE_SESSION) {
+        SLONG Line = (gMousePosition.y - 63) / 22;
+        SLONG Column = (gMousePosition.x - 128) / 16;
+        XY GridPos = XY(Column, Line);
+
+        if (GridPos.IfIsWithin(1, 6, 24, 7)) {
+            SessionMissionID--;
+            if (SessionMissionID < 0) {
+                SessionMissionID = countof(MissionValues) - 1;
+            }
+
+            Sim.Difficulty = MissionValues[SessionMissionID];
             RefreshKlackerField();
-        } else if (PageNum == PAGE_TYPE::MULTIPLAYER_CREATE_SESSION) {
-            SLONG Line = (gMousePosition.y - 63) / 22;
-            SLONG Column = (gMousePosition.x - 128) / 16;
-            XY GridPos = XY(Column, Line);
-
-            if (GridPos.IfIsWithin(1, 6, 24, 7)) {
-                SessionMissionID--;
-                if (SessionMissionID < 0) {
-                    SessionMissionID = countof(MissionValues) - 1;
+        }
+    } else if (PageNum == PAGE_TYPE::SELECT_BOT_SINGLEPLAYER || PageNum == PAGE_TYPE::SELECT_BOT_CAMPAIGN) {
+        for (SLONG c = 0; c < 4; c++) {
+            // Check for Click at Persons
+            if (point.x >= 128 && point.x <= 128 + 16 * 24 && point.y >= c * 22 * 3 + 129 && point.y <= c * 22 * 3 + 129 + 44) {
+                auto &qPlayer = Sim.Players.Players[c];
+                if (qPlayer.Owner == 1) {
+                    qPlayer.BotLevel -= 1;
+                    if (qPlayer.BotLevel < 0) {
+                        qPlayer.BotLevel = 3;
+                    }
                 }
 
-                Sim.Difficulty = MissionValues[SessionMissionID];
+                if (point.x < 175 + 48) {
+                    CursorX = CursorY = -1;
+                }
+
+                CheckNames();
                 RefreshKlackerField();
             }
         }
