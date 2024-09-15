@@ -2051,9 +2051,11 @@ bool GameMechanic::canCallInternational(PLAYER &qPlayer, SLONG cityId) {
         return false;
     }
 
-    auto *qLocationWin = Sim.Players.Players[Sim.localPlayer].LocationWin;
-    if ((qLocationWin != nullptr) && (qLocationWin)->CurrentMenu == MENU_AUSLANDSAUFTRAG && Cities.find((qLocationWin)->MenuPar1) == idx) {
-        return false; // Skip it, because Player is just phoning it.
+    if (qPlayer.Owner == 1) {
+        auto *qLocationWin = Sim.Players.Players[Sim.localPlayer].LocationWin;
+        if ((qLocationWin != nullptr) && (qLocationWin)->CurrentMenu == MENU_AUSLANDSAUFTRAG && Cities.find((qLocationWin)->MenuPar1) == idx) {
+            return false; // Skip it, because Player is just phoning it.
+        }
     }
 
     if (qPlayer.RentCities.RentCities[idx].Rang != 0U) {

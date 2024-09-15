@@ -379,6 +379,7 @@ void BotPlaner::genSolutionsFromGraph(int planeIdx) {
 
         qJobList.emplace_back(jobIdx, g.nodeState[node].startTime, g.nodeState[node].startTime + g.nodeInfo[node].duration);
         qJobList.back().bIsFreight = qJob.isFreight();
+        qJobList.back().scoreRatio = g.nodeInfo[node].scoreRatio;
 
         node = g.nodeState[node].nextNode;
     }

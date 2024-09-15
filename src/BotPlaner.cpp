@@ -445,7 +445,7 @@ std::vector<Graph> BotPlaner::prepareGraph() {
 
             /* calculate job score for this plane type */
             int score = 0;
-            int scoreRatio = 0.f;
+            float scoreRatio = 0.0F;
             std::tie(score, scoreRatio) = mJobList[jobIdx].calculateScore(mFactors, duration, cost, numRequired);
 
             /* check job score */
@@ -464,6 +464,7 @@ std::vector<Graph> BotPlaner::prepareGraph() {
                     qNodeInfo.earliest = job.getDate();
                     qNodeInfo.latest = job.getBisDate();
                     qNodeInfo.score = score;
+                    qNodeInfo.scoreRatio = scoreRatio;
                     qNodeInfo.duration = duration + kDurationExtra;
                 }
             }

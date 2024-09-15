@@ -1007,6 +1007,7 @@ TEAKFILE &operator<<(TEAKFILE &File, const Bot &bot) {
             File << i.jobIdx;
             File << i.objectId;
             File << i.bIsFreight;
+            File << i.scoreRatio;
             File << i.start;
             File << i.end;
         }
@@ -1162,6 +1163,7 @@ TEAKFILE &operator>>(TEAKFILE &File, Bot &bot) {
             File >> i.jobIdx;
             File >> i.objectId;
             File >> i.bIsFreight;
+            File >> i.scoreRatio;
             File >> i.start;
             File >> i.end;
         }

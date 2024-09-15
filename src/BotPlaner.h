@@ -27,6 +27,7 @@ class Graph {
     struct Node {
         int jobIdx{-1};
         int score{0};
+        float scoreRatio{0.0F};
         int duration{0};
         int earliest{0};
         int latest{INT_MAX};
@@ -94,6 +95,7 @@ class BotPlaner {
         int jobIdx{-1};
         int objectId{-1};
         bool bIsFreight{false};
+        float scoreRatio{0.0F};
         PlaneTime start;
         PlaneTime end;
     };

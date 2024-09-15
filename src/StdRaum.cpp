@@ -5140,7 +5140,7 @@ void CStdRaum::MenuRepaint() {
         for (c = 0; c < 6; c++) {
             CAuftrag &qAuftrag = AuslandsAuftraege[MenuPar1][c];
 
-            if (qAuftrag.Praemie != 0) {
+            if (qAuftrag.Praemie > 0) {
                 CITY &qVon = Cities[qAuftrag.VonCity];
                 CITY &qNach = Cities[qAuftrag.NachCity];
 
