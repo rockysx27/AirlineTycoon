@@ -1952,6 +1952,7 @@ bool GameMechanic::takeFlightJob(PLAYER &qPlayer, SLONG jobId, SLONG &outObjectI
 
     auto &qAuftrag = ReisebueroAuftraege[jobId];
     if (qAuftrag.Praemie <= 0) {
+        AT_Error("GameMechanic::takeFlightJob(%s): Invalid job.", (LPCTSTR)qPlayer.AirlineX);
         return false;
     }
     if (qPlayer.Auftraege.GetNumFree() < 3) {
@@ -1983,6 +1984,7 @@ bool GameMechanic::takeLastMinuteJob(PLAYER &qPlayer, SLONG jobId, SLONG &outObj
 
     auto &qAuftrag = LastMinuteAuftraege[jobId];
     if (qAuftrag.Praemie <= 0) {
+        AT_Error("GameMechanic::takeLastMinuteJob(%s): Invalid job.", (LPCTSTR)qPlayer.AirlineX);
         return false;
     }
     if (qPlayer.Auftraege.GetNumFree() < 3) {
@@ -2015,6 +2017,7 @@ bool GameMechanic::takeFreightJob(PLAYER &qPlayer, SLONG jobId, SLONG &outObject
 
     auto &qAuftrag = gFrachten[jobId];
     if (qAuftrag.Praemie < 0) {
+        AT_Error("GameMechanic::takeFreightJob(%s): Invalid job.", (LPCTSTR)qPlayer.AirlineX);
         return false;
     }
     if (qPlayer.Frachten.GetNumFree() < 3) {
@@ -2081,6 +2084,7 @@ bool GameMechanic::takeInternationalFlightJob(PLAYER &qPlayer, SLONG cityId, SLO
 
     auto &qAuftrag = AuslandsAuftraege[cityId][jobId];
     if (qAuftrag.Praemie <= 0) {
+        AT_Error("GameMechanic::takeInternationalFlightJob(%s): Invalid job.", (LPCTSTR)qPlayer.AirlineX);
         return false;
     }
     if (qPlayer.Auftraege.GetNumFree() < 3) {
@@ -2114,6 +2118,7 @@ bool GameMechanic::takeInternationalFreightJob(PLAYER &qPlayer, SLONG cityId, SL
 
     auto &qFracht = AuslandsFrachten[cityId][jobId];
     if (qFracht.Praemie < 0) {
+        AT_Error("GameMechanic::takeInternationalFreightJob(%s): Invalid job.", (LPCTSTR)qPlayer.AirlineX);
         return false;
     }
     if (qPlayer.Frachten.GetNumFree() < 3) {

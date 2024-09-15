@@ -440,6 +440,7 @@ void Bot::grabFlights(BotPlaner &planer, bool areWeInOffice) {
 
     mPlanerSolution = planer.generateSolution(mPlanesForJobs, mPlanesForJobsUnassigned, extraBufferTime);
     if (!mPlanerSolution.empty()) {
+        BotPlaner::takeAllJobs(qPlayer, mPlanerSolution);
         requestPlanFlights(areWeInOffice);
     }
 }
@@ -472,6 +473,7 @@ void Bot::planFlights() {
         BotPlaner planer(qPlayer, qPlayer.Planes);
         mPlanerSolution = planer.generateSolution(mPlanesForJobs, mPlanesForJobsUnassigned, kAvailTimeExtra);
         if (!mPlanerSolution.empty()) {
+            BotPlaner::takeAllJobs(qPlayer, mPlanerSolution);
             BotPlaner::applySolution(qPlayer, mPlanerSolution);
         }
     }
@@ -486,7 +488,6 @@ void Bot::planFlights() {
     } else {
         AT_Log("Bot::planFlights(): Total gain got worse: %s $ (%s $)", Insert1000erDots(newGain).c_str(), Insert1000erDots(diff).c_str());
     }
-    Helper::checkFlightJobs(qPlayer, false, true);
 
     /* replace automatic flights with routes */
     SLONG count = 0;
@@ -509,6 +510,7 @@ void Bot::planFlights() {
         }
         mMoneyReservedForFines += job.Strafe;
         num++;
+        AT_Info("Job %s not planned, fine +%s", Helper::getJobName(job).c_str(), (LPCTSTR)Insert1000erDots64(job.Strafe));
     }
     for (SLONG i = 0; i < qPlayer.Frachten.AnzEntries(); i++) {
         if (qPlayer.Frachten.IsInAlbum(i) == 0) {
@@ -520,6 +522,7 @@ void Bot::planFlights() {
         }
         mMoneyReservedForFines += job.Strafe;
         num++;
+        AT_Info("Freight job %s not planned, fine +%s", Helper::getFreightName(job).c_str(), (LPCTSTR)Insert1000erDots64(job.Strafe));
     }
     if (mMoneyReservedForFines > 0) {
         AT_Warn("Bot::planFlights(): %d jobs not planned, need to reserve %s $ for future fines, available money: %s $", num,

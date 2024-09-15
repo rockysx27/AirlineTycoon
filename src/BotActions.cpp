@@ -493,7 +493,9 @@ void Bot::actionVisitHR() {
         }
         /* hire best candidate and fire everyone of same type */
         if (bestCandidateId != -1) {
-            AT_Log("Bot::actionVisitHR(): Upgrading advisor %d to skill level %d", advisorType, bestCandidateSkill);
+            CString typeStr = StandardTexte.GetS(TOKEN_JOBS, 2000 + advisorType);
+            CString skillStr = StandardTexte.GetS(TOKEN_JOBS, 5020 + bestCandidateSkill / 10);
+            AT_Log("Bot::actionVisitHR(): Upgrading advisor %s to '%s' (%d)", (LPCTSTR)typeStr, (LPCTSTR)skillStr, bestCandidateSkill);
             /* fire existing adivsors */
             for (SLONG c = 0; c < Workers.Workers.AnzEntries(); c++) {
                 const auto &qWorker = Workers.Workers[c];

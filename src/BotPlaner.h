@@ -97,6 +97,14 @@ class BotPlaner {
         PlaneTime start;
         PlaneTime end;
     };
+    struct JobToTake {
+        JobToTake() = default;
+        JobToTake(int i, int o, int s, JobOwner j) : jobIdx{i}, objectId(o), sourceId(s), owner(j) {}
+        int jobIdx{-1};
+        int objectId{-1};
+        int sourceId{-1};
+        JobOwner owner{};
+    };
     struct Solution {
         Solution() = default;
         Solution(int p) : totalPremium(p) {}
@@ -104,15 +112,19 @@ class BotPlaner {
         int totalPremium{0};
         int planeId{-1};
         PlaneTime scheduleFromTime;
-
         inline bool empty() const { return jobs.empty(); }
     };
-    using SolutionList = std::vector<BotPlaner::Solution>;
+    struct SolutionList {
+        SolutionList() = default;
+        std::vector<JobToTake> toTake;
+        std::vector<Solution> list;
+        inline bool empty() const { return list.empty(); }
+    };
 
     BotPlaner() = default;
     BotPlaner(PLAYER &player, const CPlanes &planes);
 
-    void addJobSource(JobOwner jobOwner, std::vector<int> intJobSource);
+    void addJobSource(JobOwner jobOwner, const std::vector<int> intJobSource);
 
     /* score weighting factors */
     void setDistanceFactor(int val) { mFactors.distanceFactor = val; }
@@ -126,6 +138,7 @@ class BotPlaner {
     void setMinSpeedRatio(float val) { mMinSpeedRatio = val; }
 
     SolutionList generateSolution(const std::vector<int> &planeIdsInput, const std::deque<int> &planeIdsExtraInput, int extraBufferTime);
+    static bool takeAllJobs(PLAYER &qPlayer, SolutionList &solutions);
     static bool applySolution(PLAYER &qPlayer, const SolutionList &solutions);
 
   private:
@@ -156,7 +169,6 @@ class BotPlaner {
         FlightJob(int i, int j, CFracht a, JobOwner o);
 
         inline int getId() const { return id; }
-        inline void rewriteId(int i) { id = i; }
         inline int getSourceId() const { return sourceId; }
         inline JobOwner getOwner() const { return owner; }
         inline void setOwner(JobOwner o) { owner = o; }
@@ -287,7 +299,6 @@ class BotPlaner {
     bool algo(int64_t timeBudget);
 
     /* apply solution */
-    bool takeJobs(Solution &currentSolution);
     static bool removeInvalidFlightsForPlane(PLAYER &qPlayer, int planeId);
     static bool applySolutionForPlane(PLAYER &qPlayer, int planeId, const BotPlaner::Solution &solution);
 

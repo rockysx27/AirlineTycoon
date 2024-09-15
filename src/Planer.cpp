@@ -3036,7 +3036,8 @@ void CPlaner::AutoPlan(SLONG mode) {
         bot.setMinScoreRatio(1);
         bot.setMinScoreRatioLastMinute(1);
         auto solutions = bot.generateSolution(planeIds, {}, kAvailTimeExtra);
-        bot.applySolution(qPlayer, solutions);
+        BotPlaner::takeAllJobs(qPlayer, solutions);
+        BotPlaner::applySolution(qPlayer, solutions);
         Helper::checkFlightJobs(qPlayer, true, true);
         return;
     }
@@ -3047,7 +3048,8 @@ void CPlaner::AutoPlan(SLONG mode) {
         bot.setMinScoreRatio(1);
         bot.setMinScoreRatioLastMinute(1);
         auto solutions = bot.generateSolution(planeIds, {}, kAvailTimeExtra);
-        bot.applySolution(qPlayer, solutions);
+        BotPlaner::takeAllJobs(qPlayer, solutions);
+        BotPlaner::applySolution(qPlayer, solutions);
         Helper::checkFlightJobs(qPlayer, true, true);
         return;
     }

@@ -1000,20 +1000,27 @@ TEAKFILE &operator<<(TEAKFILE &File, const Bot &bot) {
 
     File << bot.mItemPills << bot.mItemAntiVirus << bot.mItemAntiStrike << bot.mItemArabTrust << bot.mIsSickToday;
 
-    File << static_cast<SLONG>(bot.mPlanerSolution.size());
-    for (const auto &solution : bot.mPlanerSolution) {
+    File << static_cast<SLONG>(bot.mPlanerSolution.list.size());
+    for (const auto &solution : bot.mPlanerSolution.list) {
         File << static_cast<SLONG>(solution.jobs.size());
         for (const auto &i : solution.jobs) {
             File << i.jobIdx;
-            File << i.start;
-            File << i.end;
             File << i.objectId;
             File << i.bIsFreight;
+            File << i.start;
+            File << i.end;
         }
 
         File << solution.totalPremium;
         File << solution.planeId;
         File << solution.scheduleFromTime;
+    }
+    File << static_cast<SLONG>(bot.mPlanerSolution.toTake.size());
+    for (const auto &i : bot.mPlanerSolution.toTake) {
+        File << i.jobIdx;
+        File << i.objectId;
+        File << i.sourceId;
+        File << static_cast<SLONG>(i.owner);
     }
 
     File << bot.mOnThePhone;
@@ -1145,27 +1152,33 @@ TEAKFILE &operator>>(TEAKFILE &File, Bot &bot) {
     File >> bot.mItemPills >> bot.mItemAntiVirus >> bot.mItemAntiStrike >> bot.mItemArabTrust >> bot.mIsSickToday;
 
     File >> size;
-    bot.mPlanerSolution.resize(size);
-    for (SLONG i = 0; i < bot.mPlanerSolution.size(); i++) {
-        auto &solution = bot.mPlanerSolution[i];
+    bot.mPlanerSolution.list.resize(size);
+    for (SLONG i = 0; i < bot.mPlanerSolution.list.size(); i++) {
+        auto &solution = bot.mPlanerSolution.list[i];
 
         File >> size;
-        for (SLONG j = 0; j < size; j++) {
-            SLONG jobId;
-            PlaneTime start;
-            PlaneTime end;
-            File >> jobId;
-            File >> start;
-            File >> end;
-
-            solution.jobs.emplace_back(jobId, start, end);
-            File >> solution.jobs.back().objectId;
-            File >> solution.jobs.back().bIsFreight;
+        solution.jobs.resize(size);
+        for (auto &i : solution.jobs) {
+            File >> i.jobIdx;
+            File >> i.objectId;
+            File >> i.bIsFreight;
+            File >> i.start;
+            File >> i.end;
         }
 
         File >> solution.totalPremium;
         File >> solution.planeId;
         File >> solution.scheduleFromTime;
+    }
+    File >> size;
+    bot.mPlanerSolution.toTake.resize(size);
+    for (auto &i : bot.mPlanerSolution.toTake) {
+        File >> i.jobIdx;
+        File >> i.objectId;
+        File >> i.sourceId;
+        SLONG owner;
+        File >> owner;
+        i.owner = static_cast<BotPlaner::JobOwner>(owner);
     }
 
     File >> bot.mOnThePhone;

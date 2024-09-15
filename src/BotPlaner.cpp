@@ -8,8 +8,8 @@
 #include <unordered_map>
 
 #define AT_Error(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_ERROR, "Bot", __VA_ARGS__)
-#define AT_Warn(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "Bot",__VA_ARGS__)
-#define AT_Info(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "Bot",__VA_ARGS__)
+#define AT_Warn(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "Bot", __VA_ARGS__)
+#define AT_Info(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "Bot", __VA_ARGS__)
 #define AT_Log(...) AT_Log_I("Bot", __VA_ARGS__)
 
 // #define PRINT_DETAIL 1
@@ -76,7 +76,7 @@ void BotPlaner::FlightJob::printInfo() const {
     if (isFreight()) {
         Helper::printFreight(fracht);
         AT_Log("- Internal calculation: numStillNeeded=%d, numToTransport=%d, numLocked=%d, numNotLocked=%d", numStillNeeded, numToTransport, numLocked,
-                numNotLocked);
+               numNotLocked);
     } else {
         Helper::printJob(auftrag);
     }
@@ -110,7 +110,7 @@ std::pair<int, float> BotPlaner::FlightJob::calculateScore(const Factors &f, int
 
 BotPlaner::BotPlaner(PLAYER &player, const CPlanes &planes) : qPlayer(player), qPlanes(planes) {}
 
-void BotPlaner::addJobSource(JobOwner jobOwner, std::vector<int> intJobSource) {
+void BotPlaner::addJobSource(JobOwner jobOwner, const std::vector<int> intJobSource) {
     if (jobOwner == JobOwner::International) {
         for (const auto &i : intJobSource) {
             if (i < 0 || i >= AuslandsAuftraege.size()) {
@@ -367,14 +367,14 @@ void BotPlaner::collectAllFlightJobs(const std::vector<int> &planeIds, const std
             }
             if ((job.getTonsLeft() - tonsOpen) > (job.getNumLocked() + job.getNumNotLocked())) {
                 AT_Error("BotPlaner::collectAllFlightJobs(): Tons currently planned for job does not match our calculation: "
-                          "%d left - %d open > %d locked + %d not locked.",
-                          job.getTonsLeft(), tonsOpen, job.getNumLocked(), job.getNumNotLocked());
+                         "%d left - %d open > %d locked + %d not locked.",
+                         job.getTonsLeft(), tonsOpen, job.getNumLocked(), job.getNumNotLocked());
                 job.printInfo();
             }
             if ((job.getTonsLeft()) != (job.getNumToTransport() + job.getNumLocked())) {
                 AT_Error("BotPlaner::collectAllFlightJobs(): Tons to transport for job not calculated correctly: "
-                          "%d left != %d to transport + %d locked.",
-                          job.getTonsLeft(), job.getNumToTransport(), job.getNumLocked());
+                         "%d left != %d to transport + %d locked.",
+                         job.getTonsLeft(), job.getNumToTransport(), job.getNumLocked());
                 job.printInfo();
             }
 
@@ -520,57 +520,6 @@ std::vector<Graph> BotPlaner::prepareGraph() {
     return graphs;
 }
 
-bool BotPlaner::takeJobs(Solution &currentSolution) {
-    bool ok = true;
-    for (auto &jobScheduled : currentSolution.jobs) {
-        auto &job = mJobList[jobScheduled.jobIdx];
-        if (!job.isScheduled()) {
-            continue;
-        }
-
-        /* take jobs that have not been taken yet */
-        if (!job.wasTaken()) {
-            int outAuftragsId = -1;
-            switch (job.getOwner()) {
-            case JobOwner::TravelAgency:
-                GameMechanic::takeFlightJob(qPlayer, job.getId(), outAuftragsId);
-                break;
-            case JobOwner::LastMinute:
-                GameMechanic::takeLastMinuteJob(qPlayer, job.getId(), outAuftragsId);
-                break;
-            case JobOwner::Freight:
-                GameMechanic::takeFreightJob(qPlayer, job.getId(), outAuftragsId);
-                break;
-            case JobOwner::International:
-                assert(job.getSourceId() != -1);
-                GameMechanic::takeInternationalFlightJob(qPlayer, job.getSourceId(), job.getId(), outAuftragsId);
-                break;
-            case JobOwner::InternationalFreight:
-                assert(job.getSourceId() != -1);
-                GameMechanic::takeInternationalFreightJob(qPlayer, job.getSourceId(), job.getId(), outAuftragsId);
-                break;
-            default:
-                AT_Error("BotPlaner::takeJobs(): Unknown job source: %d", job.getOwner());
-                return false;
-            }
-
-            if (outAuftragsId < 0) {
-                AT_Error("BotPlaner::takeJobs(): GameMechanic returned error when trying to take job!");
-                ok = false;
-                continue;
-            }
-            job.rewriteId(outAuftragsId);
-            if (job.isFreight()) {
-                job.setOwner(JobOwner::BacklogFreight);
-            } else {
-                job.setOwner(JobOwner::Backlog);
-            }
-        }
-        jobScheduled.objectId = job.getId();
-    }
-    return ok;
-}
-
 bool BotPlaner::removeInvalidFlightsForPlane(PLAYER &qPlayer, int planeId) {
     const auto &qPlanes = qPlayer.Planes;
     if (planeId < 0x1000000 || !qPlanes.IsInAlbum(planeId)) {
@@ -630,7 +579,7 @@ bool BotPlaner::applySolutionForPlane(PLAYER &qPlayer, int planeId, const BotPla
             if (!GameMechanic::planFlightJob(qPlayer, planeId, iter.objectId, startTime.getDate(), startTime.getHour())) {
                 AT_Error("BotPlaner::applySolutionForPlane(): GameMechanic::planFlightJob returned error!");
                 AT_Error("Tried to schedule %s at %s %d", Helper::getJobName(auftrag).c_str(), Helper::getWeekday(startTime.getDate()).c_str(),
-                          startTime.getHour());
+                         startTime.getHour());
             }
         } else {
             if (!qPlayer.Frachten.IsInAlbum(iter.objectId)) {
@@ -642,7 +591,7 @@ bool BotPlaner::applySolutionForPlane(PLAYER &qPlayer, int planeId, const BotPla
             if (!GameMechanic::planFreightJob(qPlayer, planeId, iter.objectId, startTime.getDate(), startTime.getHour())) {
                 AT_Error("BotPlaner::applySolutionForPlane(): GameMechanic::planFreightJob returned error!");
                 AT_Error("Tried to schedule %s at %s %d", Helper::getFreightName(auftrag).c_str(), Helper::getWeekday(startTime.getDate()).c_str(),
-                          startTime.getHour());
+                         startTime.getHour());
             }
         }
     }
@@ -670,12 +619,12 @@ bool BotPlaner::applySolutionForPlane(PLAYER &qPlayer, int planeId, const BotPla
         if (isFreight) {
             if (freightHash.find(qFPE.ObjectId) == freightHash.end()) {
                 AT_Error("BotPlaner::applySolutionForPlane(): Plane %s, schedule entry %d: Unknown freight job scheduled: %s", (LPCTSTR)qPlanes[planeId].Name,
-                          d, strJob.c_str());
+                         d, strJob.c_str());
                 continue;
             }
             if (freightHash[qFPE.ObjectId].empty()) {
                 AT_Error("BotPlaner::applySolutionForPlane(): Plane %s, schedule entry %d: Too many instances of freight job scheduled: %s",
-                          (LPCTSTR)qPlanes[planeId].Name, d, strJob.c_str());
+                         (LPCTSTR)qPlanes[planeId].Name, d, strJob.c_str());
                 continue;
             }
             iter = freightHash[qFPE.ObjectId].back();
@@ -693,16 +642,16 @@ bool BotPlaner::applySolutionForPlane(PLAYER &qPlayer, int planeId, const BotPla
 
         if (PlaneTime(qFPE.Startdate, qFPE.Startzeit) != startTime) {
             AT_Error("BotPlaner::applySolutionForPlane(): Plane %s, schedule entry %d: GameMechanic scheduled job (%s) at different start time (%s %d "
-                      "instead of %s %d)!",
-                      (LPCTSTR)qPlanes[planeId].Name, d, strJob.c_str(), (LPCTSTR)Helper::getWeekday(qFPE.Startdate), qFPE.Startzeit,
-                      (LPCTSTR)Helper::getWeekday(startTime.getDate()), startTime.getHour());
+                     "instead of %s %d)!",
+                     (LPCTSTR)qPlanes[planeId].Name, d, strJob.c_str(), (LPCTSTR)Helper::getWeekday(qFPE.Startdate), qFPE.Startzeit,
+                     (LPCTSTR)Helper::getWeekday(startTime.getDate()), startTime.getHour());
             ok = false;
         }
         if (PlaneTime(qFPE.Landedate, qFPE.Landezeit) != endTime) {
             AT_Error("BotPlaner::applySolutionForPlane(): Plane %s, schedule entry %d: GameMechanic scheduled job (%s) with different landing time (%s %d "
-                      "instead of %s %d)!",
-                      (LPCTSTR)qPlanes[planeId].Name, d, strJob.c_str(), (LPCTSTR)Helper::getWeekday(qFPE.Landedate), qFPE.Landezeit,
-                      (LPCTSTR)Helper::getWeekday(endTime.getDate()), endTime.getHour());
+                     "instead of %s %d)!",
+                     (LPCTSTR)qPlanes[planeId].Name, d, strJob.c_str(), (LPCTSTR)Helper::getWeekday(qFPE.Landedate), qFPE.Landezeit,
+                     (LPCTSTR)Helper::getWeekday(endTime.getDate()), endTime.getHour());
             ok = false;
         }
     }
@@ -717,7 +666,7 @@ bool BotPlaner::applySolutionForPlane(PLAYER &qPlayer, int planeId, const BotPla
         if (!iter.second.empty()) {
             const auto strJob = Helper::getFreightName(qPlayer.Frachten[iter.second.front().objectId]);
             AT_Error("BotPlaner::applySolutionForPlane(): Not enough instances of freight job %s in flight plan of %s (%d missing)!", strJob.c_str(),
-                      (LPCTSTR)qPlanes[planeId].Name, iter.second.size());
+                     (LPCTSTR)qPlanes[planeId].Name, iter.second.size());
             ok = false;
 
             Helper::checkPlaneSchedule(qPlayer, planeId, true);
@@ -808,8 +757,8 @@ BotPlaner::SolutionList BotPlaner::generateSolution(const std::vector<int> &plan
 #ifdef PRINT_DETAIL
         Helper::checkPlaneSchedule(qPlayer, i, false);
         AT_Log("BotPlaner::generateSolution(): After %s %d: Plane %s is in %s @ %s %d", (LPCTSTR)Helper::getWeekday(mScheduleFromTime.getDate()),
-                mScheduleFromTime.getHour(), (LPCTSTR)qPlanes[i].Name, (LPCTSTR)Cities[planeState.startCity].Kuerzel,
-                (LPCTSTR)Helper::getWeekday(planeState.availTime.getDate()), planeState.availTime.getHour());
+               mScheduleFromTime.getHour(), (LPCTSTR)qPlanes[i].Name, (LPCTSTR)Cities[planeState.startCity].Kuerzel,
+               (LPCTSTR)Helper::getWeekday(planeState.availTime.getDate()), planeState.availTime.getHour());
 #endif
     }
 
@@ -889,29 +838,106 @@ BotPlaner::SolutionList BotPlaner::generateSolution(const std::vector<int> &plan
     }
 #endif
 
-    /* now take all jobs */
-    for (auto &planeState : mPlaneStates) {
-        takeJobs(planeState.currentSolution);
-    }
-
     /* generate solution */
-    SolutionList list;
+    SolutionList solutions;
     for (const auto &plane : mPlaneStates) {
-        list.emplace_back(std::move(plane.currentSolution));
+        solutions.list.emplace_back(std::move(plane.currentSolution));
     }
 
     /* enqueue empty solution to clear schedules from invalid jobs */
     for (auto i : planeIdsExtra) {
-        list.emplace_back();
-        list.back().planeId = i;
+        solutions.list.emplace_back();
+        solutions.list.back().planeId = i;
     }
 
-    return list;
+    /* generate list of jobs with info required to officially 'take' them */
+    for (int i = 0; i < mJobList.size(); i++) {
+        const auto &job = mJobList[i];
+        if (job.isScheduled()) {
+            solutions.toTake.emplace_back(i, job.getId(), job.getSourceId(), job.getOwner());
+        }
+    }
+
+    return solutions;
+}
+
+bool BotPlaner::takeAllJobs(PLAYER &qPlayer, SolutionList &solutions) {
+    std::unordered_map<int, int> jobsTaken;
+
+    /* take jobs that have not been taken yet */
+    bool ok = true;
+    for (auto &job : solutions.toTake) {
+        int outAuftragsId = -1;
+        switch (job.owner) {
+        case JobOwner::TravelAgency:
+            GameMechanic::takeFlightJob(qPlayer, job.objectId, outAuftragsId);
+            job.owner = JobOwner::Backlog;
+            assert(qPlayer.Auftraege.IsInAlbum(outAuftragsId));
+            AT_Info("Take job %s", Helper::getJobName(qPlayer.Auftraege[outAuftragsId]).c_str());
+            break;
+        case JobOwner::LastMinute:
+            GameMechanic::takeLastMinuteJob(qPlayer, job.objectId, outAuftragsId);
+            job.owner = JobOwner::Backlog;
+            assert(qPlayer.Auftraege.IsInAlbum(outAuftragsId));
+            AT_Info("Take job %s", Helper::getJobName(qPlayer.Auftraege[outAuftragsId]).c_str());
+            break;
+        case JobOwner::Freight:
+            GameMechanic::takeFreightJob(qPlayer, job.objectId, outAuftragsId);
+            job.owner = JobOwner::BacklogFreight;
+            assert(qPlayer.Frachten.IsInAlbum(outAuftragsId));
+            AT_Info("Take freight job %s", Helper::getFreightName(qPlayer.Frachten[outAuftragsId]).c_str());
+            break;
+        case JobOwner::International:
+            assert(job.sourceId != -1);
+            GameMechanic::takeInternationalFlightJob(qPlayer, job.sourceId, job.objectId, outAuftragsId);
+            job.owner = JobOwner::Backlog;
+            assert(qPlayer.Auftraege.IsInAlbum(outAuftragsId));
+            AT_Info("Take job %s", Helper::getJobName(qPlayer.Auftraege[outAuftragsId]).c_str());
+            break;
+        case JobOwner::InternationalFreight:
+            assert(job.sourceId != -1);
+            GameMechanic::takeInternationalFreightJob(qPlayer, job.sourceId, job.objectId, outAuftragsId);
+            job.owner = JobOwner::BacklogFreight;
+            assert(qPlayer.Frachten.IsInAlbum(outAuftragsId));
+            AT_Info("Take freight job %s", Helper::getFreightName(qPlayer.Frachten[outAuftragsId]).c_str());
+            break;
+        case JobOwner::Planned:
+            [[fallthrough]];
+        case JobOwner::Backlog:
+            outAuftragsId = job.objectId;
+            assert(qPlayer.Auftraege.IsInAlbum(job.objectId));
+            break;
+        case JobOwner::PlannedFreight:
+            [[fallthrough]];
+        case JobOwner::BacklogFreight:
+            outAuftragsId = job.objectId;
+            assert(qPlayer.Frachten.IsInAlbum(job.objectId));
+            break;
+        default:
+            AT_Error("BotPlaner::takeJobs(): Default case should not be reached.");
+        }
+
+        if (outAuftragsId == -1) {
+            AT_Error("BotPlaner::takeJobs(): GameMechanic returned error when trying to take job!");
+            ok = false;
+        }
+        jobsTaken[job.jobIdx] = outAuftragsId;
+    }
+
+    /* update objectId in solutions */
+    for (auto &solution : solutions.list) {
+        for (auto &job : solution.jobs) {
+            assert(jobsTaken.find(job.jobIdx) != jobsTaken.end());
+            job.objectId = jobsTaken[job.jobIdx];
+        }
+    }
+
+    return ok;
 }
 
 bool BotPlaner::applySolution(PLAYER &qPlayer, const SolutionList &solutions) {
     /* kill existing flight plans */
-    for (const auto &solution : solutions) {
+    for (const auto &solution : solutions.list) {
         int planeId = solution.planeId;
 
         /* remove from entire flight plan (also before scheduleFromTime) */
@@ -934,7 +960,7 @@ bool BotPlaner::applySolution(PLAYER &qPlayer, const SolutionList &solutions) {
 #endif
 
     /* apply solution */
-    for (const auto &solution : solutions) {
+    for (const auto &solution : solutions.list) {
         int planeId = solution.planeId;
 
 #ifdef PRINT_DETAIL

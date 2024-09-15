@@ -8,8 +8,8 @@
 #include <iostream>
 
 #define AT_Error(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_ERROR, "Bot", __VA_ARGS__)
-#define AT_Warn(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "Bot",__VA_ARGS__)
-#define AT_Info(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "Bot",__VA_ARGS__)
+#define AT_Warn(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "Bot", __VA_ARGS__)
+#define AT_Info(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "Bot", __VA_ARGS__)
 #define AT_Log(...) AT_Log_I("Bot", __VA_ARGS__)
 
 // #define PRINT_DETAIL 1
@@ -110,12 +110,12 @@ void BotPlaner::printNodeInfo(const Graph &g, int nodeIdx) const {
         auto &qPlaneState = mPlaneStates[nodeIdx];
         const auto &qPlane = qPlanes[qPlaneState.planeId];
         AT_Log("Node %d is start for plane %s, available %s %d", nodeIdx, (LPCTSTR)qPlane.Name, (LPCTSTR)Helper::getWeekday(qPlaneState.availTime.getDate()),
-                qPlaneState.availTime.getHour());
+               qPlaneState.availTime.getHour());
     } else {
         const auto &qJob = mJobList[curInfo.jobIdx];
         if (qJob.isScheduled()) {
             AT_Log("Node %d is job %s (scheduled, starting %s %d)", nodeIdx, qJob.getName().c_str(), (LPCTSTR)Helper::getWeekday(curState.startTime.getDate()),
-                    curState.startTime.getHour());
+                   curState.startTime.getHour());
         } else {
             AT_Log("Node %d is job %s (unscheduled)", nodeIdx, qJob.getName().c_str());
         }
@@ -373,10 +373,12 @@ void BotPlaner::genSolutionsFromGraph(int planeIdx) {
     int node = g.nodeState[planeIdx].nextNode;
     while (node != -1) {
         int jobIdx = g.nodeInfo[node].jobIdx;
-        assert(mJobList[jobIdx].isFullyScheduled());
+        const auto &qJob = mJobList[jobIdx];
+        assert(qJob.isFullyScheduled());
+        assert(qJob.getId() != -1);
 
         qJobList.emplace_back(jobIdx, g.nodeState[node].startTime, g.nodeState[node].startTime + g.nodeInfo[node].duration);
-        qJobList.back().bIsFreight = mJobList[jobIdx].isFreight();
+        qJobList.back().bIsFreight = qJob.isFreight();
 
         node = g.nodeState[node].nextNode;
     }
