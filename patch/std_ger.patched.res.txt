@@ -1310,6 +1310,56 @@
   D::Routenberater
 
 //
+// Advi
+//
+>Advi
+>>0010000
+  B::There is a profitable job %s at the travel agency that our plane %s could fly %s, %d o'clock for %s!
+  E::There is a profitable job %s at the travel agency that our plane %s could fly %s, %d o'clock for %s!
+  F::There is a profitable job %s at the travel agency that our plane %s could fly %s, %d o'clock for %s!
+  I::There is a profitable job %s at the travel agency that our plane %s could fly %s, %d o'clock for %s!
+  N::There is a profitable job %s at the travel agency that our plane %s could fly %s, %d o'clock for %s!
+  O::There is a profitable job %s at the travel agency that our plane %s could fly %s, %d o'clock for %s!
+  S::There is a profitable job %s at the travel agency that our plane %s could fly %s, %d o'clock for %s!
+  D::Im Reisebüro gibt es den lukrativen Auftrag %s, den unser Flugzeug %s %s um %d Uhr für %s fliegen könnte!
+>>0010001
+  B::There is a profitable job %s at the last minute counter that our plane %s could fly %s, %d o'clock for %s!
+  E::There is a profitable job %s at the last minute counter that our plane %s could fly %s, %d o'clock for %s!
+  F::There is a profitable job %s at the last minute counter that our plane %s could fly %s, %d o'clock for %s!
+  I::There is a profitable job %s at the last minute counter that our plane %s could fly %s, %d o'clock for %s!
+  N::There is a profitable job %s at the last minute counter that our plane %s could fly %s, %d o'clock for %s!
+  O::There is a profitable job %s at the last minute counter that our plane %s could fly %s, %d o'clock for %s!
+  S::There is a profitable job %s at the last minute counter that our plane %s could fly %s, %d o'clock for %s!
+  D::Am Last-Minute Schalter gibt es den lukrativen Auftrag %s, den unser Flugzeug %s %s um %d Uhr für %s fliegen könnte!
+>>0010002
+  B::There is a profitable freight job %s at the freight depot that our plane %s could fly %s, %d o'clock for %s!
+  E::There is a profitable freight job %s at the freight depot that our plane %s could fly %s, %d o'clock for %s!
+  F::There is a profitable freight job %s at the freight depot that our plane %s could fly %s, %d o'clock for %s!
+  I::There is a profitable freight job %s at the freight depot that our plane %s could fly %s, %d o'clock for %s!
+  N::There is a profitable freight job %s at the freight depot that our plane %s could fly %s, %d o'clock for %s!
+  O::There is a profitable freight job %s at the freight depot that our plane %s could fly %s, %d o'clock for %s!
+  S::There is a profitable freight job %s at the freight depot that our plane %s could fly %s, %d o'clock for %s!
+  D::Im Frachtdepot gibt es den lukrativen Frachtauftrag %s, den unser Flugzeug %s %s um %d Uhr für %s fliegen könnte!
+>>0010003
+  B::There is a profitable job %s at our office in %s that our plane %s could fly %s, %d o'clock for %s!
+  E::There is a profitable job %s at our office in %s that our plane %s could fly %s, %d o'clock for %s!
+  F::There is a profitable job %s at our office in %s that our plane %s could fly %s, %d o'clock for %s!
+  I::There is a profitable job %s at our office in %s that our plane %s could fly %s, %d o'clock for %s!
+  N::There is a profitable job %s at our office in %s that our plane %s could fly %s, %d o'clock for %s!
+  O::There is a profitable job %s at our office in %s that our plane %s could fly %s, %d o'clock for %s!
+  S::There is a profitable job %s at our office in %s that our plane %s could fly %s, %d o'clock for %s!
+  D::In unserer Niederlassung in %s gibt es den lukrativen Auftrag %s, den unser Flugzeug %s %s um %d Uhr für %s fliegen könnte!
+>>0010004
+  B::There is a profitable freight job %s at our office in %s that our plane %s could fly %s, %d o'clock for %s!
+  E::There is a profitable freight job %s at our office in %s that our plane %s could fly %s, %d o'clock for %s!
+  F::There is a profitable freight job %s at our office in %s that our plane %s could fly %s, %d o'clock for %s!
+  I::There is a profitable freight job %s at our office in %s that our plane %s could fly %s, %d o'clock for %s!
+  N::There is a profitable freight job %s at our office in %s that our plane %s could fly %s, %d o'clock for %s!
+  O::There is a profitable freight job %s at our office in %s that our plane %s could fly %s, %d o'clock for %s!
+  S::There is a profitable freight job %s at our office in %s that our plane %s could fly %s, %d o'clock for %s!
+  D::In unserer Niederlassung in %s gibt es den lukrativen Frachtauftrag %s, den unser Flugzeug %s %s um %d Uhr für %s fliegen könnte!
+
+//
 // Misc
 //
 >Misc

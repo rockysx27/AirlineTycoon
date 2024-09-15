@@ -5,6 +5,7 @@
 #include "AtNet.h"
 #include "Bot.h"
 #include "BotHelper.h"
+#include "BotPlaner.h"
 
 #define forall(c, object) for ((c) = 0; (c) < SLONG((object).AnzEntries()); (c)++)
 
@@ -5653,73 +5654,114 @@ void PLAYER::DelayFlightsIfNecessary() {
 //--------------------------------------------------------------------------------------------
 // Der Berater gibt Nachrichten für zwischendurch aus:
 //--------------------------------------------------------------------------------------------
-void PLAYER::RandomBeraterMessage() {
-    SLONG Which = rand() % 3;
 
-    if ((HasBerater(BERATERTYP_PERSONAL) != 0) && Which == 0) {
-        SLONG c = 0;
-        SLONG d = 0;
-        SLONG n = 0;
+void PLAYER::RandomBeraterMessagePersonal() {
+    if (HasBerater(BERATERTYP_PERSONAL) == 0) {
+        return;
+    }
 
-        d = -1;
+    SLONG c = 0;
+    SLONG d = 0;
+    SLONG n = 0;
 
-        for (c = n = 0; c < Workers.Workers.AnzEntries(); c++) {
-            if (Workers.Workers[c].Employer == PlayerNum && Workers.Workers[c].Happyness < -40) {
-                if (Workers.Workers[c].WarnedToday == 0) {
-                    d = c;
+    d = -1;
+
+    for (c = n = 0; c < Workers.Workers.AnzEntries(); c++) {
+        if (Workers.Workers[c].Employer == PlayerNum && Workers.Workers[c].Happyness < -40) {
+            if (Workers.Workers[c].WarnedToday == 0) {
+                d = c;
+            }
+            n++;
+        }
+    }
+
+    if (d != -1) {
+        if (n > 10) {
+            for (c = n = 0; c < Workers.Workers.AnzEntries(); c++) {
+                if (Workers.Workers[c].Employer == PlayerNum && Workers.Workers[c].Happyness < -40) {
+                    Workers.Workers[c].WarnedToday = TRUE;
                 }
-                n++;
+            }
+
+            Messages.AddMessage(BERATERTYP_PERSONAL, StandardTexte.GetS(TOKEN_ADVICE, 2299));
+        } else {
+            Workers.Workers[d].WarnedToday = TRUE;
+
+            if (Workers.Workers[d].Typ < WORKER_PILOT) {
+                Messages.AddMessage(BERATERTYP_PERSONAL,
+                                    bprintf(StandardTexte.GetS(TOKEN_ADVICE, 2200 + Workers.Workers[d].Geschlecht * 10), Workers.Workers[d].Name.c_str()));
+            }
+            if (Workers.Workers[d].Typ == WORKER_PILOT) {
+                Messages.AddMessage(BERATERTYP_PERSONAL,
+                                    bprintf(StandardTexte.GetS(TOKEN_ADVICE, 2201 + Workers.Workers[d].Geschlecht * 10), Workers.Workers[d].Name.c_str()));
+            }
+            if (Workers.Workers[d].Typ == WORKER_STEWARDESS) {
+                Messages.AddMessage(BERATERTYP_PERSONAL,
+                                    bprintf(StandardTexte.GetS(TOKEN_ADVICE, 2202 + Workers.Workers[d].Geschlecht * 10), Workers.Workers[d].Name.c_str()));
             }
         }
+    }
+}
 
-        if (d != -1) {
-            if (n > 10) {
-                for (c = n = 0; c < Workers.Workers.AnzEntries(); c++) {
-                    if (Workers.Workers[c].Employer == PlayerNum && Workers.Workers[c].Happyness < -40) {
-                        Workers.Workers[c].WarnedToday = TRUE;
+void PLAYER::RandomBeraterMessageKerosene() {
+    if (HasBerater(BERATERTYP_KEROSIN) == 0) {
+        return;
+    }
+
+    if (Sim.Kerosin > 600 && (TankOpen == 0) && TankInhalt > 0) {
+        // Tank aufmachen!
+        Messages.AddMessage(BERATERTYP_KEROSIN, StandardTexte.GetS(TOKEN_ADVICE, 3011));
+    } else if (Sim.Kerosin < 400 && TankInhalt > Tank / 2 && Money > 20000 && Tank < SLONG(Planes.GetNumUsed() * 4000)) {
+        // Tanks kaufen:
+        Messages.AddMessage(BERATERTYP_KEROSIN, StandardTexte.GetS(TOKEN_ADVICE, 3012));
+    } else if (Sim.Kerosin < 470 && Sim.KerosinPast[9] > Sim.KerosinPast[8] && Sim.KerosinPast[7] > Sim.KerosinPast[8] &&
+               Sim.KerosinPast[6] > Sim.KerosinPast[7] && Sim.KerosinPast[5] > Sim.KerosinPast[6] && TankInhalt < Tank / 3 && Money > 20000) {
+        // Kerosin kaufen:
+        Messages.AddMessage(BERATERTYP_KEROSIN, StandardTexte.GetS(TOKEN_ADVICE, 3010));
+    }
+}
+
+void PLAYER::RandomBeraterMessagePlane() {
+    if (HasBerater(BERATERTYP_FLUGZEUG) == 0) {
+        return;
+    }
+
+    SLONG c = 0;
+    SLONG Anz = 0;
+    CString PlaneList;
+    CString Comment;
+
+    if (MechMode == 0 || MechMode == 1 || MechMode == 2) {
+        for (c = 0; c < SLONG(Planes.AnzEntries()); c++) {
+            if (Planes.IsInAlbum(c) != 0) {
+                if (Planes[c].Zustand < 30) {
+                    Anz++;
+                    if (PlaneList.GetLength() > 0) {
+                        PlaneList += ", ";
                     }
-                }
-
-                Messages.AddMessage(BERATERTYP_PERSONAL, StandardTexte.GetS(TOKEN_ADVICE, 2299));
-            } else {
-                Workers.Workers[d].WarnedToday = TRUE;
-
-                if (Workers.Workers[d].Typ < WORKER_PILOT) {
-                    Messages.AddMessage(BERATERTYP_PERSONAL,
-                                        bprintf(StandardTexte.GetS(TOKEN_ADVICE, 2200 + Workers.Workers[d].Geschlecht * 10), Workers.Workers[d].Name.c_str()));
-                }
-                if (Workers.Workers[d].Typ == WORKER_PILOT) {
-                    Messages.AddMessage(BERATERTYP_PERSONAL,
-                                        bprintf(StandardTexte.GetS(TOKEN_ADVICE, 2201 + Workers.Workers[d].Geschlecht * 10), Workers.Workers[d].Name.c_str()));
-                }
-                if (Workers.Workers[d].Typ == WORKER_STEWARDESS) {
-                    Messages.AddMessage(BERATERTYP_PERSONAL,
-                                        bprintf(StandardTexte.GetS(TOKEN_ADVICE, 2202 + Workers.Workers[d].Geschlecht * 10), Workers.Workers[d].Name.c_str()));
+                    PlaneList += Planes[c].Name;
                 }
             }
         }
-    } else if ((HasBerater(BERATERTYP_KEROSIN) != 0) && Which == 1) {
-        if (Sim.Kerosin > 600 && (TankOpen == 0) && TankInhalt > 0) {
-            // Tank aufmachen!
-            Messages.AddMessage(BERATERTYP_KEROSIN, StandardTexte.GetS(TOKEN_ADVICE, 3011));
-        } else if (Sim.Kerosin < 400 && TankInhalt > Tank / 2 && Money > 20000 && Tank < SLONG(Planes.GetNumUsed() * 4000)) {
-            // Tanks kaufen:
-            Messages.AddMessage(BERATERTYP_KEROSIN, StandardTexte.GetS(TOKEN_ADVICE, 3012));
-        } else if (Sim.Kerosin < 470 && Sim.KerosinPast[9] > Sim.KerosinPast[8] && Sim.KerosinPast[7] > Sim.KerosinPast[8] &&
-                   Sim.KerosinPast[6] > Sim.KerosinPast[7] && Sim.KerosinPast[5] > Sim.KerosinPast[6] && TankInhalt < Tank / 3 && Money > 20000) {
-            // Kerosin kaufen:
-            Messages.AddMessage(BERATERTYP_KEROSIN, StandardTexte.GetS(TOKEN_ADVICE, 3010));
-        }
-    } else if ((HasBerater(BERATERTYP_FLUGZEUG) != 0) && Which == 2) {
-        SLONG c = 0;
-        SLONG Anz = 0;
-        CString PlaneList;
-        CString Comment;
 
-        if (MechMode == 0 || MechMode == 1 || MechMode == 2) {
+        if (Anz != 0) {
+            if (Anz > 1) {
+                Comment = bprintf(StandardTexte.GetS(TOKEN_ADVICE, 4011), (LPCTSTR)PlaneList);
+            } else {
+                Comment = bprintf(StandardTexte.GetS(TOKEN_ADVICE, 4010), (LPCTSTR)PlaneList);
+            }
+
+            if (MechMode == 0) {
+                Comment = Comment + " " + StandardTexte.GetS(TOKEN_ADVICE, 4030);
+            }
+            if (MechMode == 1) {
+                Comment = Comment + " " + StandardTexte.GetS(TOKEN_ADVICE, 4031);
+            }
+            Messages.AddMessage(BERATERTYP_FLUGZEUG, Comment);
+        } else {
             for (c = 0; c < SLONG(Planes.AnzEntries()); c++) {
                 if (Planes.IsInAlbum(c) != 0) {
-                    if (Planes[c].Zustand < 30) {
+                    if (Planes[c].Zustand < 55) {
                         Anz++;
                         if (PlaneList.GetLength() > 0) {
                             PlaneList += ", ";
@@ -5731,9 +5773,9 @@ void PLAYER::RandomBeraterMessage() {
 
             if (Anz != 0) {
                 if (Anz > 1) {
-                    Comment = bprintf(StandardTexte.GetS(TOKEN_ADVICE, 4011), (LPCTSTR)PlaneList);
+                    Comment = bprintf(StandardTexte.GetS(TOKEN_ADVICE, 4021), (LPCTSTR)PlaneList);
                 } else {
-                    Comment = bprintf(StandardTexte.GetS(TOKEN_ADVICE, 4010), (LPCTSTR)PlaneList);
+                    Comment = bprintf(StandardTexte.GetS(TOKEN_ADVICE, 4020), (LPCTSTR)PlaneList);
                 }
 
                 if (MechMode == 0) {
@@ -5743,36 +5785,143 @@ void PLAYER::RandomBeraterMessage() {
                     Comment = Comment + " " + StandardTexte.GetS(TOKEN_ADVICE, 4031);
                 }
                 Messages.AddMessage(BERATERTYP_FLUGZEUG, Comment);
-            } else {
-                for (c = 0; c < SLONG(Planes.AnzEntries()); c++) {
-                    if (Planes.IsInAlbum(c) != 0) {
-                        if (Planes[c].Zustand < 55) {
-                            Anz++;
-                            if (PlaneList.GetLength() > 0) {
-                                PlaneList += ", ";
-                            }
-                            PlaneList += Planes[c].Name;
-                        }
-                    }
-                }
+            }
+        }
+    }
+}
 
-                if (Anz != 0) {
-                    if (Anz > 1) {
-                        Comment = bprintf(StandardTexte.GetS(TOKEN_ADVICE, 4021), (LPCTSTR)PlaneList);
-                    } else {
-                        Comment = bprintf(StandardTexte.GetS(TOKEN_ADVICE, 4020), (LPCTSTR)PlaneList);
-                    }
+void PLAYER::RandomBeraterMessageJobs() {
+    TEAKRAND rnd(Sim.Time);
+    if (HasBerater(BERATERTYP_AUFTRAG) < rnd.getRandInt(0, 100)) {
+        return;
+    }
 
-                    if (MechMode == 0) {
-                        Comment = Comment + " " + StandardTexte.GetS(TOKEN_ADVICE, 4030);
-                    }
-                    if (MechMode == 1) {
-                        Comment = Comment + " " + StandardTexte.GetS(TOKEN_ADVICE, 4031);
-                    }
-                    Messages.AddMessage(BERATERTYP_FLUGZEUG, Comment);
+    std::vector<int> cities;
+    for (SLONG n = 0; n < Cities.AnzEntries(); n++) {
+        if (!GameMechanic::canCallInternational(*this, n)) {
+            continue;
+        }
+        cities.push_back(n);
+    }
+
+    std::vector<int> planeIds;
+    for (SLONG i = 0; i < Planes.AnzEntries(); i++) {
+        if (Planes.IsInAlbum(i)) {
+            planeIds.push_back(Planes.GetIdFromIndex(i));
+        }
+    }
+
+    BotPlaner bot(*this, Planes);
+    if (Helper::checkRoomOpen(ACTION_CHECKAGENT2)) {
+        bot.addJobSource(BotPlaner::JobOwner::TravelAgency, {});
+    }
+    if (Helper::checkRoomOpen(ACTION_CHECKAGENT1)) {
+        bot.addJobSource(BotPlaner::JobOwner::LastMinute, {});
+    }
+    if (Helper::checkRoomOpen(ACTION_CHECKAGENT3)) {
+        bot.addJobSource(BotPlaner::JobOwner::Freight, {});
+    }
+    if (!cities.empty()) {
+        bot.addJobSource(BotPlaner::JobOwner::International, cities);
+        bot.addJobSource(BotPlaner::JobOwner::InternationalFreight, cities);
+    }
+    bot.setMinScoreRatio(14 * 1000.0f);
+    bot.setMinScoreRatioLastMinute(1 * 1000.0f);
+    auto solutions = bot.generateSolution(planeIds, {}, kAvailTimeExtra);
+
+    FLOAT bestScoreRatio = 0.0F;
+    std::vector<std::pair<FLOAT, CString>> bestJobs;
+    for (const auto &toTake : solutions.toTake) {
+        SLONG premium = 0;
+        CString jobName;
+        CString cityName;
+        ULONG textId = 0;
+        switch (toTake.owner) {
+        case BotPlaner::JobOwner::TravelAgency:
+            premium = ReisebueroAuftraege[toTake.objectId].Praemie;
+            jobName = Helper::getJobName(ReisebueroAuftraege[toTake.objectId]);
+            textId = 10000;
+            break;
+        case BotPlaner::JobOwner::LastMinute:
+            premium = LastMinuteAuftraege[toTake.objectId].Praemie;
+            jobName = Helper::getJobName(LastMinuteAuftraege[toTake.objectId]);
+            textId = 10001;
+            break;
+        case BotPlaner::JobOwner::Freight:
+            premium = gFrachten[toTake.objectId].Praemie;
+            jobName = Helper::getFreightName(gFrachten[toTake.objectId]);
+            textId = 10002;
+            break;
+        case BotPlaner::JobOwner::International:
+            premium = AuslandsAuftraege[toTake.sourceId][toTake.objectId].Praemie;
+            jobName = Helper::getJobName(AuslandsAuftraege[toTake.sourceId][toTake.objectId]);
+            cityName = Cities[toTake.sourceId].Name;
+            textId = 10003;
+            break;
+        case BotPlaner::JobOwner::InternationalFreight:
+            premium = AuslandsFrachten[toTake.sourceId][toTake.objectId].Praemie;
+            jobName = Helper::getFreightName(AuslandsFrachten[toTake.sourceId][toTake.objectId]);
+            cityName = Cities[toTake.sourceId].Name;
+            textId = 10004;
+            break;
+        default:
+            continue;
+        }
+
+        /* find plane */
+        SLONG planeId = -1;
+        PlaneTime start{};
+        FLOAT scoreRatio = 0.0F;
+        for (const auto &solution : solutions.list) {
+            for (const auto &job : solution.jobs) {
+                if (job.jobIdx == toTake.jobIdx) {
+                    planeId = solution.planeId;
+                    start = job.start;
+                    scoreRatio = job.scoreRatio;
+                    break;
                 }
             }
         }
+        if (planeId == -1) {
+            continue;
+        }
+        if (scoreRatio <= 10 * 1000.0F) {
+            continue;
+        }
+        bestScoreRatio = std::max(bestScoreRatio, scoreRatio);
+
+        CString premiumStr{Einheiten[EINH_DM].bString(premium)};
+        if (textId == 10003U || textId == 10004U) {
+            bestJobs.emplace_back(scoreRatio, bprintf(StandardTexte.GetS(TOKEN_ADVICE, textId), cityName.c_str(), jobName.c_str(), Planes[planeId].Name.c_str(),
+                                                      Helper::getWeekday(start.getDate()).c_str(), start.getHour(), premiumStr.c_str()));
+        } else {
+            bestJobs.emplace_back(scoreRatio, bprintf(StandardTexte.GetS(TOKEN_ADVICE, textId), jobName.c_str(), Planes[planeId].Name.c_str(),
+                                                      Helper::getWeekday(start.getDate()).c_str(), start.getHour(), premiumStr.c_str()));
+        }
+    }
+    std::sort(bestJobs.begin(), bestJobs.end(),
+              [](const std::pair<FLOAT, std::string> &a, const std::pair<FLOAT, std::string> &b) { return (a.first > b.first); });
+
+    SLONG idx = rnd.getRandInt(0, bestJobs.size() - 1);
+    Messages.AddMessage(BERATERTYP_PERSONAL, bestJobs[idx].second);
+}
+
+void PLAYER::RandomBeraterMessage() {
+    switch (rand() % 4) {
+    case 0:
+        RandomBeraterMessagePersonal();
+        break;
+    case 1:
+        RandomBeraterMessageKerosene();
+        break;
+    case 2:
+        RandomBeraterMessagePlane();
+        break;
+    case 3:
+        RandomBeraterMessageJobs();
+        break;
+    default:
+        return;
     }
 }
 

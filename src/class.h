@@ -2232,6 +2232,10 @@ class PLAYER {
     void UpdatePilotCount(void);
     void NewDay(void); // Läßt neuen Tag & ggf. Monat beginnen
     void PlanGates(void);
+    void RandomBeraterMessagePersonal(void);
+    void RandomBeraterMessageKerosene(void);
+    void RandomBeraterMessagePlane(void);
+    void RandomBeraterMessageJobs(void);
     void RandomBeraterMessage(void);
     void ReformIcons(void);
     void RentRoute(SLONG City1, SLONG City2, SLONG Miete);
