@@ -1,21 +1,19 @@
 #include "Bot.h"
 
-#include "BotHelper.h"
 #include "BotPlaner.h"
-#include "class.h"
 #include "GameMechanic.h"
-#include "global.h"
 #include "TeakLibW.h"
+#include "class.h"
 
 #include <algorithm>
+#include <array>
 #include <cassert>
-#include <climits>
 #include <cmath>
 
-#define AT_Error(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_ERROR, "Bot", __VA_ARGS__)
-#define AT_Warn(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "Bot", __VA_ARGS__)
-#define AT_Info(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "Bot", __VA_ARGS__)
-#define AT_Log(...) AT_Log_I("Bot", __VA_ARGS__)
+template <class... Types> void AT_Error(Types... args) { Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_ERROR, "Bot", args...); }
+template <class... Types> void AT_Warn(Types... args) { Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "Bot", args...); }
+template <class... Types> void AT_Info(Types... args) { Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "Bot", args...); }
+template <class... Types> void AT_Log(Types... args) { AT_Log_I("Bot", args...); }
 
 // #define PRINT_ROUTE_DETAILS 1
 
@@ -748,10 +746,10 @@ void Bot::actionSabotage(__int64 moneyAvailable) {
     }
 }
 
-__int64 Bot::calcBuyShares(__int64 moneyAvailable, DOUBLE kurs) const { return static_cast<__int64>(std::floor((moneyAvailable - 100) / (1.1 * kurs))); }
-__int64 Bot::calcSellShares(__int64 moneyToGet, DOUBLE kurs) const { return static_cast<__int64>(std::floor((moneyToGet + 100) / (0.9 * kurs))); }
+__int64 Bot::calcBuyShares(__int64 moneyAvailable, DOUBLE kurs) { return static_cast<__int64>(std::floor((moneyAvailable - 100) / (1.1 * kurs))); }
+__int64 Bot::calcSellShares(__int64 moneyToGet, DOUBLE kurs) { return static_cast<__int64>(std::floor((moneyToGet + 100) / (0.9 * kurs))); }
 
-__int64 Bot::calcNumOfFreeShares(SLONG playerId) const {
+__int64 Bot::calcNumOfFreeShares(SLONG playerId) {
     auto &player = Sim.Players.Players[playerId];
     __int64 amount = player.AnzAktien;
     for (SLONG c = 0; c < 4; c++) {

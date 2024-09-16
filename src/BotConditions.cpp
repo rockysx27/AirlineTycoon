@@ -1,14 +1,14 @@
 #include "Bot.h"
 
-#include "BotHelper.h"
 #include "GameMechanic.h"
-#include "global.h"
 #include "TeakLibW.h"
 
-#define AT_Error(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_ERROR, "Bot", __VA_ARGS__)
-#define AT_Warn(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "Bot", __VA_ARGS__)
-#define AT_Info(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "Bot", __VA_ARGS__)
-#define AT_Log(...) AT_Log_I("Bot", __VA_ARGS__)
+#include <cassert>
+
+template <class... Types> void AT_Error(Types... args) { Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_ERROR, "Bot", args...); }
+template <class... Types> void AT_Warn(Types... args) { Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "Bot", args...); }
+template <class... Types> void AT_Info(Types... args) { Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "Bot", args...); }
+template <class... Types> void AT_Log(Types... args) { AT_Log_I("Bot", args...); }
 
 // Preise verstehen sich pro Sitzplatz:
 extern SLONG SeatCosts[];
@@ -921,7 +921,8 @@ Bot::Prio Bot::condVisitSecurity(__int64 &moneyAvailable) {
     }
     if (isLateGame()) {
         return Prio::Medium; /* enable security measures */
-    } else if (mUsingSecurity) {
+    }
+    if (mUsingSecurity) {
         return Prio::High; /* deactivate security measures */
     }
     return Prio::None;

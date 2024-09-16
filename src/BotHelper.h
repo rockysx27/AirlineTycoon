@@ -3,10 +3,11 @@
 
 #include <array>
 #include <cassert>
-#include <climits>
 #include <iostream>
 #include <optional>
 #include <vector>
+
+#include <limits.h>
 
 inline constexpr int ceil_div(int a, int b) {
     assert(b != 0);
@@ -89,9 +90,9 @@ CString getWeekday(UWORD date);
 CString getWeekday(const PlaneTime &time);
 
 struct FreightInfo {
-    std::vector<CString> planeNames;
-    std::vector<SLONG> tonsPerPlane;
-    std::vector<CFlugplanEintrag> FPEs;
+    std::vector<CString> planeNames{};
+    std::vector<SLONG> tonsPerPlane{};
+    std::vector<CFlugplanEintrag> FPEs{};
     SLONG tonsOpen{0};
     SLONG smallestDecrement{INT_MAX};
 };

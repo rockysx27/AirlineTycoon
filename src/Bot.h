@@ -54,7 +54,7 @@ extern SLONG kTestMode;
 
 class Bot {
   public:
-    Bot(PLAYER &player);
+    explicit Bot(PLAYER &player);
 
     void printStatisticsLine(CString prefix, bool printHeader);
 
@@ -115,7 +115,7 @@ class Bot {
         SLONG planeUtilization{};
         SLONG planeUtilizationFC{};
         DOUBLE ticketCostFactor{2}; /* 0.5: discount / 1: flight cost / 2: normal price / 4: deluxe price */
-        std::vector<SLONG> planeIds;
+        std::vector<SLONG> planeIds{};
         bool canUpgrade{false};
     };
 
@@ -181,9 +181,9 @@ class Bot {
     void actionBuyKerosine(__int64 moneyAvailable);
     void actionBuyKerosineTank(__int64 moneyAvailable);
     void actionSabotage(__int64 moneyAvailable);
-    __int64 calcBuyShares(__int64 moneyAvailable, DOUBLE kurs) const;
-    __int64 calcSellShares(__int64 moneyToGet, DOUBLE kurs) const;
-    __int64 calcNumOfFreeShares(SLONG playerId) const;
+    static __int64 calcBuyShares(__int64 moneyAvailable, DOUBLE kurs);
+    static __int64 calcSellShares(__int64 moneyToGet, DOUBLE kurs);
+    static __int64 calcNumOfFreeShares(SLONG playerId);
     __int64 calcAmountToBuy(SLONG buyFromPlayerId, SLONG desiredRatio, __int64 moneyAvailable) const;
     void actionEmitShares();
     void actionBuyNemesisShares(__int64 moneyAvailable);
@@ -258,21 +258,21 @@ class Bot {
     bool getOnThePhone() const { return mOnThePhone > 0; }
     void decOnThePhone() { mOnThePhone--; }
 
-    TEAKRAND LocalRandom;
+    TEAKRAND LocalRandom{};
     PLAYER &qPlayer;
 
     /* action economy */
-    std::unordered_map<SLONG, SLONG> mLastTimeInRoom;
+    std::unordered_map<SLONG, SLONG> mLastTimeInRoom{};
     SLONG mNumActionsToday{0};
 
     /* planes used for what? */
-    std::vector<SLONG> mPlanesForJobs;
-    std::deque<SLONG> mPlanesForJobsUnassigned;
-    std::vector<SLONG> mPlanesForRoutes;
-    std::deque<SLONG> mPlanesForRoutesUnassigned;
+    std::vector<SLONG> mPlanesForJobs{};
+    std::deque<SLONG> mPlanesForJobsUnassigned{};
+    std::vector<SLONG> mPlanesForRoutes{};
+    std::deque<SLONG> mPlanesForRoutesUnassigned{};
 
     /* known plane types */
-    std::vector<SLONG> mKnownPlaneTypes;
+    std::vector<SLONG> mKnownPlaneTypes{};
 
     /* strategy state */
     bool mLongTermStrategy{true};
@@ -280,7 +280,7 @@ class Bot {
     SLONG mBestUsedPlaneIdx{-1};
     SLONG mBuyPlaneForRouteId{-1};
     SLONG mPlaneTypeForNewRoute{-1};
-    std::vector<SLONG> mPlanesForNewRoute;
+    std::vector<SLONG> mPlanesForNewRoute{};
     SLONG mWantToRentRouteId{-1};
     bool mFirstRun{true};
     bool mDayStarted{false};
@@ -312,8 +312,8 @@ class Bot {
     SLONG mKerosineLevelLastChecked{0};
 
     /* routes */
-    std::vector<RouteInfo> mRoutes;
-    std::vector<SLONG> mRoutesSortedByOwnUtilization;
+    std::vector<RouteInfo> mRoutes{};
+    std::vector<SLONG> mRoutesSortedByOwnUtilization{};
     bool mRoutesUpdated{false};
     bool mRoutesUtilizationUpdated{false};
     RoutesNextStep mRoutesNextStep{RoutesNextStep::None};
@@ -338,8 +338,8 @@ class Bot {
     SLONG mOnThePhone{0};
 
     /* designer plane */
-    CXPlane mDesignerPlane;
-    CString mDesignerPlaneFile;
+    CXPlane mDesignerPlane{};
+    CString mDesignerPlaneFile{};
 };
 
 TEAKFILE &operator<<(TEAKFILE &File, const PlaneTime &planeTime);

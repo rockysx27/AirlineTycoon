@@ -2,14 +2,17 @@
 
 #include "BotPlaner.h"
 
+#include <cstdio>
 #include <iomanip>
 #include <iostream>
-#include <sstream>
+#include <string>
 #include <unordered_map>
+#include <utility>
 
-#define AT_Error(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_ERROR, "Bot", __VA_ARGS__)
-#define AT_Warn(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "Bot", __VA_ARGS__)
-#define AT_Info(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "Bot", __VA_ARGS__)
+template <class... Types> void AT_Error(Types... args) { Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_ERROR, "Bot", args...); }
+template <class... Types> void AT_Warn(Types... args) { Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "Bot", args...); }
+template <class... Types> void AT_Info(Types... args) { Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "Bot", args...); }
+template <class... Types> void AT_Log(Types... args) { AT_Log_I("Bot", args...); }
 
 // Öffnungszeiten:
 extern SLONG timeDutyOpen;

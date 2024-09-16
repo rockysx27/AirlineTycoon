@@ -7,10 +7,10 @@
 #include <iostream>
 #include <unordered_map>
 
-#define AT_Error(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_ERROR, "Bot", __VA_ARGS__)
-#define AT_Warn(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "Bot", __VA_ARGS__)
-#define AT_Info(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "Bot", __VA_ARGS__)
-#define AT_Log(...) AT_Log_I("Bot", __VA_ARGS__)
+template <class... Types> void AT_Error(Types... args) { Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_ERROR, "Bot", args...); }
+template <class... Types> void AT_Warn(Types... args) { Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "Bot", args...); }
+template <class... Types> void AT_Info(Types... args) { Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "Bot", args...); }
+template <class... Types> void AT_Log(Types... args) { AT_Log_I("Bot", args...); }
 
 // #define PRINT_DETAIL 1
 #define PRINT_OVERALL 1
@@ -102,7 +102,7 @@ std::pair<int, float> BotPlaner::FlightJob::calculateScore(const Factors &f, int
         score += f.uhrigBonus * auftrag.bUhrigFlight;
     }
 
-    float _scoreRatio = 1.0f * score / (hours * numRequired);
+    float _scoreRatio = 1.0F * score / (hours * numRequired);
     scoreRatio = std::max(scoreRatio, _scoreRatio);
 
     return {score, _scoreRatio};

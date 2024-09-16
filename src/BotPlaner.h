@@ -9,6 +9,7 @@
 #include <random>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 extern const int kAvailTimeExtra;
@@ -31,7 +32,7 @@ class Graph {
         int duration{0};
         int earliest{0};
         int latest{INT_MAX};
-        std::vector<int> bestNeighbors;
+        std::vector<int> bestNeighbors{};
     };
 
     struct Edge {
@@ -79,11 +80,11 @@ class Graph {
     int nPlanes{0};
     int nNodes{0};
     int planeTypePassengers{0};
-    std::vector<Node> nodeInfo;
-    std::vector<NodeState> nodeState;
-    std::vector<std::vector<Edge>> adjMatrix;
+    std::vector<Node> nodeInfo{};
+    std::vector<NodeState> nodeState{};
+    std::vector<std::vector<Edge>> adjMatrix{};
 
-    std::unordered_map<int, int> mapJobIdToNode;
+    std::unordered_map<int, int> mapJobIdToNode{};
 };
 
 class BotPlaner {
@@ -96,8 +97,8 @@ class BotPlaner {
         int objectId{-1};
         bool bIsFreight{false};
         float scoreRatio{0.0F};
-        PlaneTime start;
-        PlaneTime end;
+        PlaneTime start{};
+        PlaneTime end{};
     };
     struct JobToTake {
         JobToTake() = default;
@@ -109,24 +110,24 @@ class BotPlaner {
     };
     struct Solution {
         Solution() = default;
-        Solution(int p) : totalPremium(p) {}
-        std::deque<JobScheduled> jobs;
+        explicit Solution(int p) : totalPremium(p) {}
+        std::deque<JobScheduled> jobs{};
         int totalPremium{0};
         int planeId{-1};
-        PlaneTime scheduleFromTime;
+        PlaneTime scheduleFromTime{};
         inline bool empty() const { return jobs.empty(); }
     };
     struct SolutionList {
         SolutionList() = default;
-        std::vector<JobToTake> toTake;
-        std::vector<Solution> list;
+        std::vector<JobToTake> toTake{};
+        std::vector<Solution> list{};
         inline bool empty() const { return list.empty(); }
     };
 
     BotPlaner() = default;
     BotPlaner(PLAYER &player, const CPlanes &planes);
 
-    void addJobSource(JobOwner jobOwner, const std::vector<int> intJobSource);
+    void addJobSource(JobOwner jobOwner, std::vector<int> intJobSource);
 
     /* score weighting factors */
     void setDistanceFactor(int val) { mFactors.distanceFactor = val; }
@@ -238,8 +239,8 @@ class BotPlaner {
         std::pair<int, float> calculateScore(const Factors &f, int hours, int cost, int numRequired);
 
       private:
-        CAuftrag auftrag;
-        CFracht fracht;
+        CAuftrag auftrag{};
+        CFracht fracht{};
         int id{};
         int sourceId{-1};
         JobOwner owner;
@@ -311,27 +312,27 @@ class BotPlaner {
     }
 
     PLAYER &qPlayer;
-    std::vector<JobSource> mJobSources;
+    std::vector<JobSource> mJobSources{};
     const CPlanes &qPlanes;
-    PlaneTime mScheduleFromTime;
+    PlaneTime mScheduleFromTime{};
 
     /* score weighting factors */
-    Factors mFactors;
+    Factors mFactors{};
 
     /* score thresholds */
-    float mMinScoreRatio{1.0f};
-    float mMinScoreRatioLastMinute{1.0f};
-    float mMinSpeedRatio{0.0f};
+    float mMinScoreRatio{1.0F};
+    float mMinScoreRatioLastMinute{1.0F};
+    float mMinSpeedRatio{0.0F};
 
     /* state */
-    std::vector<const CPlane *> mPlaneTypeToPlane;
-    std::vector<FlightJob> mJobList;
-    std::vector<int> mJobListSorted;
-    std::unordered_map<int, int> mExistingJobsById;
-    std::unordered_map<int, int> mExistingFreightJobsById;
-    std::vector<PlaneState> mPlaneStates;
-    std::vector<int> mPlaneIdxSortedBySize;
-    std::vector<Graph> mGraphs;
+    std::vector<const CPlane *> mPlaneTypeToPlane{};
+    std::vector<FlightJob> mJobList{};
+    std::vector<int> mJobListSorted{};
+    std::unordered_map<int, int> mExistingJobsById{};
+    std::unordered_map<int, int> mExistingFreightJobsById{};
+    std::vector<PlaneState> mPlaneStates{};
+    std::vector<int> mPlaneIdxSortedBySize{};
+    std::vector<Graph> mGraphs{};
 
     /* randomness source */
     std::random_device mRD;

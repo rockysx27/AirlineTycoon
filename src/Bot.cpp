@@ -6,19 +6,21 @@
 #include "TeakLibW.h"
 
 #include <algorithm>
+#include <cassert>
+#include <cstdio>
 #include <filesystem>
 #include <iostream>
 
 namespace fs = std::filesystem;
 
-#define AT_Error(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_ERROR, "Bot", __VA_ARGS__)
-#define AT_Warn(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "Bot", __VA_ARGS__)
-#define AT_Info(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "Bot", __VA_ARGS__)
-#define AT_Log(...) AT_Log_I("Bot", __VA_ARGS__)
+template <class... Types> void AT_Error(Types... args) { Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_ERROR, "Bot", args...); }
+template <class... Types> void AT_Warn(Types... args) { Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "Bot", args...); }
+template <class... Types> void AT_Info(Types... args) { Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "Bot", args...); }
+template <class... Types> void AT_Log(Types... args) { AT_Log_I("Bot", args...); }
 
 const bool kAlwaysReplan = true;
-float kSchedulingMinScoreRatio = 140 * 1000.0f;
-float kSchedulingMinScoreRatioLastMinute = 10 * 1000.0f;
+float kSchedulingMinScoreRatio = 140 * 1000.0F;
+float kSchedulingMinScoreRatioLastMinute = 10 * 1000.0F;
 SLONG kSwitchToRoutesNumPlanesMin = 2;
 SLONG kSwitchToRoutesNumPlanesMax = 4;
 const SLONG kSmallestAdCampaign = 4;
@@ -256,8 +258,8 @@ void Bot::RobotInit() {
         AT_Log("Bot::RobotInit(): We are player %d with bot level = %s.", qPlayer.PlayerNum, StandardTexte.GetS(TOKEN_NEWGAME, 5001 + qPlayer.BotLevel));
         if (qPlayer.BotLevel <= 2) {
             kMaxTicketPriceFactor = std::min(2.0, kMaxTicketPriceFactor);
-            kSchedulingMinScoreRatio = std::min(5.0f, kSchedulingMinScoreRatio);
-            kSchedulingMinScoreRatioLastMinute = std::min(5.0f, kSchedulingMinScoreRatioLastMinute);
+            kSchedulingMinScoreRatio = std::min(5.0F, kSchedulingMinScoreRatio);
+            kSchedulingMinScoreRatioLastMinute = std::min(5.0F, kSchedulingMinScoreRatioLastMinute);
             kMaxKerosinQualiZiel = std::min(1.0, kMaxKerosinQualiZiel);
         }
 
@@ -305,15 +307,15 @@ void Bot::RobotPlan() {
 
     auto &qRobotActions = qPlayer.RobotActions;
 
-    SLONG actions[] = {ACTION_STARTDAY, ACTION_STARTDAY_LAPTOP,
-                       /* repeated actions */
-                       ACTION_BUERO, ACTION_CALL_INTERNATIONAL, ACTION_CALL_INTER_HANDY, ACTION_CHECKAGENT1, ACTION_CHECKAGENT2, ACTION_CHECKAGENT3,
-                       ACTION_UPGRADE_PLANES, ACTION_BUYNEWPLANE, ACTION_BUYUSEDPLANE, ACTION_VISITMUSEUM, ACTION_PERSONAL, ACTION_BUY_KEROSIN,
-                       ACTION_BUY_KEROSIN_TANKS, ACTION_SABOTAGE, ACTION_SET_DIVIDEND, ACTION_RAISEMONEY, ACTION_DROPMONEY, ACTION_EMITSHARES,
-                       ACTION_SELLSHARES, ACTION_BUYSHARES, ACTION_VISITMECH, ACTION_VISITNASA, ACTION_VISITTELESCOPE, ACTION_VISITMAKLER, ACTION_VISITARAB,
-                       ACTION_VISITRICK, ACTION_VISITKIOSK, ACTION_VISITDUTYFREE, ACTION_VISITAUFSICHT, ACTION_EXPANDAIRPORT, ACTION_VISITROUTEBOX,
-                       ACTION_VISITROUTEBOX2, ACTION_VISITSECURITY, ACTION_VISITSECURITY2, ACTION_VISITDESIGNER, ACTION_WERBUNG_ROUTES, ACTION_WERBUNG,
-                       ACTION_VISITADS, ACTION_OVERTAKE_AIRLINE};
+    std::array<SLONG, 41> actions = {ACTION_STARTDAY, ACTION_STARTDAY_LAPTOP,
+                                     /* repeated actions */
+                                     ACTION_BUERO, ACTION_CALL_INTERNATIONAL, ACTION_CALL_INTER_HANDY, ACTION_CHECKAGENT1, ACTION_CHECKAGENT2,
+                                     ACTION_CHECKAGENT3, ACTION_UPGRADE_PLANES, ACTION_BUYNEWPLANE, ACTION_BUYUSEDPLANE, ACTION_VISITMUSEUM, ACTION_PERSONAL,
+                                     ACTION_BUY_KEROSIN, ACTION_BUY_KEROSIN_TANKS, ACTION_SABOTAGE, ACTION_SET_DIVIDEND, ACTION_RAISEMONEY, ACTION_DROPMONEY,
+                                     ACTION_EMITSHARES, ACTION_SELLSHARES, ACTION_BUYSHARES, ACTION_VISITMECH, ACTION_VISITNASA, ACTION_VISITTELESCOPE,
+                                     ACTION_VISITMAKLER, ACTION_VISITARAB, ACTION_VISITRICK, ACTION_VISITKIOSK, ACTION_VISITDUTYFREE, ACTION_VISITAUFSICHT,
+                                     ACTION_EXPANDAIRPORT, ACTION_VISITROUTEBOX, ACTION_VISITROUTEBOX2, ACTION_VISITSECURITY, ACTION_VISITSECURITY2,
+                                     ACTION_VISITDESIGNER, ACTION_WERBUNG_ROUTES, ACTION_WERBUNG, ACTION_VISITADS, ACTION_OVERTAKE_AIRLINE};
 
     if (qRobotActions[0].ActionId != ACTION_NONE || qRobotActions[1].ActionId != ACTION_NONE) {
         AT_Log("Bot.cpp: Leaving RobotPlan() (actions already planned)\n");

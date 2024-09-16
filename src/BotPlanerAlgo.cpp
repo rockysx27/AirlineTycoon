@@ -1,16 +1,13 @@
 #include "BotPlaner.h"
 
-#include "BotHelper.h"
-#include "TeakLibW.h"
-
-#include <array>
 #include <chrono>
+#include <cmath>
 #include <iostream>
 
-#define AT_Error(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_ERROR, "Bot", __VA_ARGS__)
-#define AT_Warn(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "Bot", __VA_ARGS__)
-#define AT_Info(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "Bot", __VA_ARGS__)
-#define AT_Log(...) AT_Log_I("Bot", __VA_ARGS__)
+template <class... Types> void AT_Error(Types... args) { Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_ERROR, "Bot", args...); }
+template <class... Types> void AT_Warn(Types... args) { Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "Bot", args...); }
+template <class... Types> void AT_Info(Types... args) { Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "Bot", args...); }
+template <class... Types> void AT_Log(Types... args) { AT_Log_I("Bot", args...); }
 
 // #define PRINT_DETAIL 1
 // #define PRINT_OVERALL 1
@@ -21,7 +18,6 @@ int kNumToRemove = 1;
 int kTempStart = 1000;
 int kTempStep = 100;
 int kJobSelectRandomization = 1;
-extern const int kScheduleForNextDays;
 
 inline int pathLength(const Graph &g, int start) {
     int n = g.nodeState[start].nextNode;
@@ -365,7 +361,7 @@ void BotPlaner::genSolutionsFromGraph(int planeIdx) {
     auto &planeState = mPlaneStates[planeIdx];
     const auto &g = mGraphs[planeState.planeTypeId];
 
-    planeState.currentSolution = {planeState.currentPremium - planeState.currentCost};
+    planeState.currentSolution = Solution{planeState.currentPremium - planeState.currentCost};
     planeState.currentSolution.planeId = planeState.planeId;
     planeState.currentSolution.scheduleFromTime = mScheduleFromTime;
 

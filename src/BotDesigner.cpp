@@ -7,7 +7,7 @@
 #include <iostream>
 #include <sstream>
 
-#define AT_Log(...) AT_Log_I("Bot", __VA_ARGS__)
+template <class... Types> void AT_Log(Types... args) { AT_Log_I("Bot", args...); }
 
 extern std::vector<CPlanePartRelation> gPlanePartRelations;
 

@@ -1,16 +1,20 @@
 #include "Bot.h"
 
 #include "BotHelper.h"
-#include "class.h"
 #include "GameMechanic.h"
 #include "TeakLibW.h"
+#include "class.h"
 
 #include <algorithm>
+#include <cassert>
+#include <cmath>
+#include <string>
+#include <utility>
 
-#define AT_Error(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_ERROR, "Bot", __VA_ARGS__)
-#define AT_Warn(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "Bot", __VA_ARGS__)
-#define AT_Info(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "Bot", __VA_ARGS__)
-#define AT_Log(...) AT_Log_I("Bot", __VA_ARGS__)
+template <class... Types> void AT_Error(Types... args) { Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_ERROR, "Bot", args...); }
+template <class... Types> void AT_Warn(Types... args) { Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "Bot", args...); }
+template <class... Types> void AT_Info(Types... args) { Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "Bot", args...); }
+template <class... Types> void AT_Log(Types... args) { AT_Log_I("Bot", args...); }
 
 // #define PRINT_ROUTE_DETAILS 1
 
@@ -30,7 +34,7 @@ struct RouteScore {
     DOUBLE score{};
     SLONG routeId{-1};
     SLONG planeTypeId{-1};
-    std::vector<SLONG> planeId;
+    std::vector<SLONG> planeId{};
     SLONG numPlanesToBuy{-1};
 
     bool operator<(const RouteScore &other) const {
@@ -414,7 +418,7 @@ void Bot::grabFlights(BotPlaner &planer, bool areWeInOffice) {
         break;
     case DIFF_ADDON04:
         planer.setDistanceFactor(1);
-        planer.setMinSpeedRatio(0.6f);
+        planer.setMinSpeedRatio(0.6F);
         break;
     case DIFF_ADDON09:
         planer.setUhrigBonus(1000 * 1000);
