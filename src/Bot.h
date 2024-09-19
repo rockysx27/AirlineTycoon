@@ -68,7 +68,7 @@ class Bot {
     enum class Prio {
         None,   /* conditions not met: Forbidden to perform this action! */
         Lowest, /* unimportant actions (mostly wasting time at bar, telescope, shops, ...) */
-        Low,    /* not completely unimportant (for example collect items) */
+        Low,    /* not completely unimportant (for example collecting items) */
         Medium, /* most main tasks that do not need higher priority */
         High,   /* important to do soon (grab flights, important investments) */
         Higher, /* important to do very soon (grab flights from travel agency) */
@@ -137,6 +137,7 @@ class Bot {
     Prio condBuyKerosine(__int64 &moneyAvailable);
     Prio condBuyKerosineTank(__int64 &moneyAvailable);
     Prio condSabotage(__int64 &moneyAvailable);
+    Prio condVisitSaboteur();
     Prio condIncreaseDividend(__int64 &moneyAvailable);
     Prio condTakeOutLoan();
     Prio condDropMoney(__int64 &moneyAvailable);
@@ -181,6 +182,7 @@ class Bot {
     void actionBuyKerosine(__int64 moneyAvailable);
     void actionBuyKerosineTank(__int64 moneyAvailable);
     void actionSabotage(__int64 moneyAvailable);
+    void actionVisitSaboteur();
     static __int64 calcBuyShares(__int64 moneyAvailable, DOUBLE kurs);
     static __int64 calcSellShares(__int64 moneyToGet, DOUBLE kurs);
     static __int64 calcNumOfFreeShares(SLONG playerId);
@@ -197,6 +199,7 @@ class Bot {
     void actionRentRoute();
     void actionBuyAdsForRoutes(__int64 moneyAvailable);
     void actionBuyAds(__int64 moneyAvailable);
+    void actionVisitAds();
     void actionVisitSecurity(__int64 moneyAvailable);
 
     /* in BotFunctions.cpp */
@@ -231,7 +234,7 @@ class Bot {
     bool haveDiscount() const;
     bool checkLaptop();
     enum class HowToPlan { None, Laptop, Office };
-    HowToPlan canWePlanFlights();
+    HowToPlan howToPlanFlights();
     __int64 getMoneyAvailable() const;
     AreWeBroke areWeBroke() const;
     HowToGetMoney howToGetMoney();

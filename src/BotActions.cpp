@@ -176,7 +176,7 @@ void Bot::actionCheckTravelAgency() {
             AT_Log("Bot::actionCheckTravelAgency(): Picked up item tarantula");
             mItemAntiVirus = 1;
         }
-        if (HowToPlan::None == canWePlanFlights()) {
+        if (HowToPlan::None == howToPlanFlights()) {
             return; /* avoid warning in grabFlights(). We only came here for the item */
         }
     }
@@ -221,6 +221,10 @@ void Bot::actionUpgradePlanes() {
         qPlane.TriebwerkTarget = qPlane.Triebwerk;
         qPlane.SicherheitTarget = qPlane.Sicherheit;
         qPlane.ElektronikTarget = qPlane.Elektronik;
+    }
+
+    if (planes.empty()) {
+        return;
     }
 
     /* plan new plane ugprades until we run out of money */
@@ -651,33 +655,13 @@ void Bot::actionBuyKerosineTank(__int64 moneyAvailable) {
 }
 
 void Bot::actionSabotage(__int64 moneyAvailable) {
-    if (mItemAntiVirus == 1) {
-        if (GameMechanic::useItem(qPlayer, ITEM_SPINNE)) {
-            AT_Log("Bot::actionSabotage(): Used item tarantula");
-            mItemAntiVirus = 2;
-        }
-    }
-    if (mItemAntiVirus == 2) {
-        if (GameMechanic::PickUpItemResult::PickedUp == GameMechanic::pickUpItem(qPlayer, ITEM_DART)) {
-            AT_Log("Bot::actionSabotage(): Picked up item dart");
-            mItemAntiVirus = 3;
-        }
-    }
-    if (Sim.ItemZange == 1) {
-        if (qPlayer.HasItem(ITEM_ZANGE) == 1) {
-            GameMechanic::removeItem(qPlayer, ITEM_ZANGE);
-        }
-        if (GameMechanic::PickUpItemResult::PickedUp == GameMechanic::pickUpItem(qPlayer, ITEM_ZANGE)) {
-            AT_Log("Bot::actionSabotage(): Picked up item pliers");
-        }
-    }
+    actionVisitSaboteur();
 
     if (!qPlayer.RobotUse(ROBOT_USE_EXTREME_SABOTAGE) || mNemesis == -1) {
-        return;
+        AT_Error("Bot::actionSabotage(): Conditions not met.");
     }
 
-    /* decide which saboge. Default: Spiked coffee
-     * money/hints already checked in condition */
+    /* decide which sabotage. Default: Spiked coffee */
     SLONG jobType = 1;
     SLONG jobNumber = 1;
     SLONG jobHints = 8;
@@ -743,6 +727,29 @@ void Bot::actionSabotage(__int64 moneyAvailable) {
         break;
     default:
         AT_Error("Bot::actionSabotage(): Cannot sabotage nemesis %s: Unknown error", (LPCTSTR)nemesisName);
+    }
+}
+
+void Bot::actionVisitSaboteur() {
+    if (mItemAntiVirus == 1) {
+        if (GameMechanic::useItem(qPlayer, ITEM_SPINNE)) {
+            AT_Log("Bot::actionVisitSaboteur(): Used item tarantula");
+            mItemAntiVirus = 2;
+        }
+    }
+    if (mItemAntiVirus == 2) {
+        if (GameMechanic::PickUpItemResult::PickedUp == GameMechanic::pickUpItem(qPlayer, ITEM_DART)) {
+            AT_Log("Bot::actionVisitSaboteur(): Picked up item dart");
+            mItemAntiVirus = 3;
+        }
+    }
+    if (Sim.ItemZange == 1) {
+        if (qPlayer.HasItem(ITEM_ZANGE) == 1) {
+            GameMechanic::removeItem(qPlayer, ITEM_ZANGE);
+        }
+        if (GameMechanic::PickUpItemResult::PickedUp == GameMechanic::pickUpItem(qPlayer, ITEM_ZANGE)) {
+            AT_Log("Bot::actionVisitSaboteur(): Picked up item pliers");
+        }
     }
 }
 
@@ -1141,11 +1148,10 @@ void Bot::actionRentRoute() {
 }
 
 void Bot::actionBuyAdsForRoutes(__int64 moneyAvailable) {
-    mCurrentImage = qPlayer.Image;
-    AT_Log("Bot::actionBuyAdsForRoutes(): Checked company image: %d", mCurrentImage);
+    actionVisitAds();
 
     if (mRoutesNextStep != RoutesNextStep::BuyAdsForRoute) {
-        AT_Warn("Bot::actionBuyAdsForRoutes(): Conditions not met anymore.");
+        AT_Error("Bot::actionBuyAdsForRoutes(): Conditions not met.");
         return;
     }
 
@@ -1184,8 +1190,7 @@ void Bot::actionBuyAdsForRoutes(__int64 moneyAvailable) {
 }
 
 void Bot::actionBuyAds(__int64 moneyAvailable) {
-    mCurrentImage = qPlayer.Image;
-    AT_Log("Bot::actionBuyAds(): Checked company image: %d", mCurrentImage);
+    actionVisitAds();
 
     assert(kSmallestAdCampaign >= 1);
     for (SLONG adCampaignSize = 5; adCampaignSize >= kSmallestAdCampaign; adCampaignSize--) {
@@ -1211,13 +1216,30 @@ void Bot::actionBuyAds(__int64 moneyAvailable) {
     }
 }
 
+void Bot::actionVisitAds() {
+    if (mItemAntiVirus == 3) {
+        if (GameMechanic::useItem(qPlayer, ITEM_DART)) {
+            AT_Log("Bot::actionVisitAds(): Used item darts");
+            mItemAntiVirus = 4;
+        }
+    }
+    if (mItemAntiVirus == 4) {
+        if (qPlayer.HasItem(ITEM_DISKETTE) == 0) {
+            GameMechanic::pickUpItem(qPlayer, ITEM_DISKETTE);
+            AT_Log("Bot::actionVisitAds(): Picked up item floppy disk");
+        }
+    }
+    mCurrentImage = qPlayer.Image;
+    AT_Log("Bot::actionVisitAds(): Checked company image: %d", mCurrentImage);
+}
+
 void Bot::actionVisitSecurity(__int64 moneyAvailable) {
     bool targetState = isLateGame();
     GameMechanic::setSecurity(qPlayer, 0, targetState); /* office: spiked coffee, bomb */
     GameMechanic::setSecurity(qPlayer, 1, targetState); /* laptop: virus */
     GameMechanic::setSecurity(qPlayer, 2, targetState); /* HR: strike */
     GameMechanic::setSecurity(qPlayer, 3, targetState); /* bank: hacking */
-    GameMechanic::setSecurity(qPlayer, 4, targetState); /* routebox: route steeling */
+    GameMechanic::setSecurity(qPlayer, 4, targetState); /* routebox: route stealing */
     GameMechanic::setSecurity(qPlayer, 5, targetState); /* admin: cut phones, fake announcement */
     GameMechanic::setSecurity(qPlayer, 6, targetState); /* planes: food, tv, crash */
     GameMechanic::setSecurity(qPlayer, 7, targetState); /* planes: tire, engines */

@@ -620,6 +620,10 @@ bool checkRoomOpen(SLONG roomId) {
         return (Sim.Difficulty >= DIFF_ADDON01 || Sim.Difficulty == DIFF_FREEGAME);
     case ACTION_VISITNASA:
         return (Sim.Difficulty == DIFF_FINAL || Sim.Difficulty == DIFF_ADDON10);
+    case ACTION_SABOTAGE:
+        [[fallthrough]];
+    case ACTION_VISITSABOTEUR:
+        return (Sim.Difficulty >= DIFF_FIRST || Sim.Difficulty == DIFF_FREEGAME);
     default:
         return true;
     }
@@ -705,6 +709,8 @@ SLONG getRoomFromAction(SLONG PlayerNum, SLONG actionId) {
     case ACTION_VISITSECURITY2:
         return ROOM_SECURITY;
     case ACTION_SABOTAGE:
+        [[fallthrough]];
+    case ACTION_VISITSABOTEUR:
         return ROOM_SABOTAGE;
     case ACTION_BUYUSEDPLANE:
         return ROOM_MUSEUM;

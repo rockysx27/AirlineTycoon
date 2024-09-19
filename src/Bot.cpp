@@ -307,15 +307,15 @@ void Bot::RobotPlan() {
 
     auto &qRobotActions = qPlayer.RobotActions;
 
-    std::array<SLONG, 41> actions = {ACTION_STARTDAY, ACTION_STARTDAY_LAPTOP,
-                                     /* repeated actions */
-                                     ACTION_BUERO, ACTION_CALL_INTERNATIONAL, ACTION_CALL_INTER_HANDY, ACTION_CHECKAGENT1, ACTION_CHECKAGENT2,
-                                     ACTION_CHECKAGENT3, ACTION_UPGRADE_PLANES, ACTION_BUYNEWPLANE, ACTION_BUYUSEDPLANE, ACTION_VISITMUSEUM, ACTION_PERSONAL,
-                                     ACTION_BUY_KEROSIN, ACTION_BUY_KEROSIN_TANKS, ACTION_SABOTAGE, ACTION_SET_DIVIDEND, ACTION_RAISEMONEY, ACTION_DROPMONEY,
-                                     ACTION_EMITSHARES, ACTION_SELLSHARES, ACTION_BUYSHARES, ACTION_VISITMECH, ACTION_VISITNASA, ACTION_VISITTELESCOPE,
-                                     ACTION_VISITMAKLER, ACTION_VISITARAB, ACTION_VISITRICK, ACTION_VISITKIOSK, ACTION_VISITDUTYFREE, ACTION_VISITAUFSICHT,
-                                     ACTION_EXPANDAIRPORT, ACTION_VISITROUTEBOX, ACTION_VISITROUTEBOX2, ACTION_VISITSECURITY, ACTION_VISITSECURITY2,
-                                     ACTION_VISITDESIGNER, ACTION_WERBUNG_ROUTES, ACTION_WERBUNG, ACTION_VISITADS, ACTION_OVERTAKE_AIRLINE};
+    std::array<SLONG, 42> actions = {
+        ACTION_STARTDAY, ACTION_STARTDAY_LAPTOP,
+        /* repeated actions */
+        ACTION_BUERO, ACTION_CALL_INTERNATIONAL, ACTION_CALL_INTER_HANDY, ACTION_CHECKAGENT1, ACTION_CHECKAGENT2, ACTION_CHECKAGENT3, ACTION_UPGRADE_PLANES,
+        ACTION_BUYNEWPLANE, ACTION_BUYUSEDPLANE, ACTION_VISITMUSEUM, ACTION_PERSONAL, ACTION_BUY_KEROSIN, ACTION_BUY_KEROSIN_TANKS, ACTION_SABOTAGE,
+        ACTION_SET_DIVIDEND, ACTION_RAISEMONEY, ACTION_DROPMONEY, ACTION_EMITSHARES, ACTION_SELLSHARES, ACTION_BUYSHARES, ACTION_VISITMECH, ACTION_VISITNASA,
+        ACTION_VISITTELESCOPE, ACTION_VISITMAKLER, ACTION_VISITARAB, ACTION_VISITRICK, ACTION_VISITKIOSK, ACTION_VISITDUTYFREE, ACTION_VISITAUFSICHT,
+        ACTION_EXPANDAIRPORT, ACTION_VISITROUTEBOX, ACTION_VISITROUTEBOX2, ACTION_VISITSECURITY, ACTION_VISITSECURITY2, ACTION_VISITDESIGNER,
+        ACTION_WERBUNG_ROUTES, ACTION_WERBUNG, ACTION_VISITADS, ACTION_OVERTAKE_AIRLINE, ACTION_VISITSABOTEUR};
 
     if (qRobotActions[0].ActionId != ACTION_NONE || qRobotActions[1].ActionId != ACTION_NONE) {
         AT_Log("Bot.cpp: Leaving RobotPlan() (actions already planned)\n");
@@ -586,6 +586,15 @@ void Bot::RobotExecuteAction() {
         qWorkCountdown = 20 * 5;
         break;
 
+    case ACTION_VISITSABOTEUR:
+        if (condVisitSaboteur() != Prio::None) {
+            actionVisitSaboteur();
+        } else {
+            AT_Warn("Bot::RobotExecuteAction(): Conditions not met anymore.");
+        }
+        qWorkCountdown = 20 * 5;
+        break;
+
     case ACTION_SET_DIVIDEND:
         if (condIncreaseDividend(moneyAvailable) != Prio::None) {
             SLONG _dividende = qPlayer.Dividende;
@@ -633,7 +642,6 @@ void Bot::RobotExecuteAction() {
     case ACTION_DROPMONEY:
         if (condDropMoney(moneyAvailable) != Prio::None) {
             __int64 m = std::min({qPlayer.Credit, moneyAvailable, getWeeklyOpSaldo()});
-            m = std::max(m, 1000LL);
             AT_Log("Bot::RobotExecuteAction(): Paying back loan: %s $", (LPCTSTR)Insert1000erDots64(m));
             GameMechanic::payBackCredit(qPlayer, m);
             moneyAvailable = getMoneyAvailable();
@@ -870,20 +878,7 @@ void Bot::RobotExecuteAction() {
 
     case ACTION_VISITADS:
         if (condVisitAds() != Prio::None) {
-            if (mItemAntiVirus == 3) {
-                if (GameMechanic::useItem(qPlayer, ITEM_DART)) {
-                    AT_Log("Bot::RobotExecuteAction(): Used item darts");
-                    mItemAntiVirus = 4;
-                }
-            }
-            if (mItemAntiVirus == 4) {
-                if (qPlayer.HasItem(ITEM_DISKETTE) == 0) {
-                    GameMechanic::pickUpItem(qPlayer, ITEM_DISKETTE);
-                    AT_Log("Bot::RobotExecuteAction(): Picked up item floppy disk");
-                }
-            }
-            mCurrentImage = qPlayer.Image;
-            AT_Log("Bot::RobotExecuteAction(): Checked company image: %d", mCurrentImage);
+            actionVisitAds();
         } else {
             AT_Warn("Bot::RobotExecuteAction(): Conditions not met anymore.");
         }

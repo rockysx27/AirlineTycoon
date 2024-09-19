@@ -399,7 +399,7 @@ SLONG Bot::findBestAvailableUsedPlane() const {
 }
 
 void Bot::grabFlights(BotPlaner &planer, bool areWeInOffice) {
-    auto res = canWePlanFlights();
+    auto res = howToPlanFlights();
     if (HowToPlan::None == res) {
         AT_Error("Bot::grabFlights(): Tried to grab plans without ability to plan them");
         return;
@@ -450,7 +450,7 @@ void Bot::grabFlights(BotPlaner &planer, bool areWeInOffice) {
 }
 
 void Bot::requestPlanFlights(bool areWeInOffice) {
-    auto res = canWePlanFlights();
+    auto res = howToPlanFlights();
     if (res == HowToPlan::Laptop) {
         AT_Log("Bot::requestPlanFlights(): Planning using laptop");
         planFlights();
@@ -905,7 +905,7 @@ std::pair<Bot::RoutesNextStep, SLONG> Bot::routesFindNextStep() const {
 }
 
 void Bot::requestPlanRoutes(bool areWeInOffice) {
-    auto res = canWePlanFlights();
+    auto res = howToPlanFlights();
     if (res == HowToPlan::Laptop) {
         AT_Log("Bot::requestPlanRoutes(): Planning using laptop");
         planRoutes();

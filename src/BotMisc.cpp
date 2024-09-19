@@ -30,7 +30,7 @@ void Bot::printRobotFlags() {
         if (robotUses == i.second) {
             AT_Info("Bot::printRobotFlags(): %s is %s (default)", Translate_ROBOT_USE(i.first), (robotUses ? "SET" : "UNSET"));
         } else {
-            AT_Error("Bot::printRobotFlags(): %s is %s (mission specialization)", Translate_ROBOT_USE(i.first), (robotUses ? "SET" : "UNSET"));
+            AT_Warn("Bot::printRobotFlags(): %s is %s (mission specialization)", Translate_ROBOT_USE(i.first), (robotUses ? "SET" : "UNSET"));
         }
     }
 }
@@ -78,7 +78,7 @@ bool Bot::checkLaptop() {
     return false;
 }
 
-Bot::HowToPlan Bot::canWePlanFlights() {
+Bot::HowToPlan Bot::howToPlanFlights() {
     if (!mDayStarted) {
         return HowToPlan::None;
     }
@@ -251,7 +251,7 @@ bool Bot::canWeCallInternational() {
         return false; /* previously grabbed flights still not scheduled */
     }
 
-    auto res = canWePlanFlights();
+    auto res = howToPlanFlights();
     if (HowToPlan::None == res) {
         return false;
     }
