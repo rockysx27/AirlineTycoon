@@ -1035,8 +1035,11 @@ void Bot::actionVisitBoss() {
     auto moneyAvailable = getMoneyAvailable() - kMoneyReserveBossOffice;
 
     /* auction for gates */
-    for (SLONG c = 0; c < TafelData.Gate.size(); c++) {
-        const auto &qZettel = TafelData.Gate[c];
+    for (SLONG c = 0; c < TafelData.ByPositions.size(); c++) {
+        auto &qZettel = *TafelData.ByPositions[c];
+        if (qZettel.Type != CTafelZettel::Type::GATE) {
+            continue;
+        }
         if (qZettel.ZettelId < 0 || qZettel.Player == qPlayer.PlayerNum) {
             continue;
         }
@@ -1052,8 +1055,11 @@ void Bot::actionVisitBoss() {
     }
 
     /* auction for subsidiaries */
-    for (SLONG c = 0; c < TafelData.City.size(); c++) {
-        const auto &qZettel = TafelData.City[c];
+    for (SLONG c = 0; c < TafelData.ByPositions.size(); c++) {
+        auto &qZettel = *TafelData.ByPositions[c];
+        if (qZettel.Type != CTafelZettel::Type::CITY) {
+            continue;
+        }
         if (qZettel.ZettelId < 0 || qZettel.Player == qPlayer.PlayerNum) {
             continue;
         }

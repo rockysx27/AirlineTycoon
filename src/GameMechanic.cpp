@@ -101,7 +101,10 @@ bool GameMechanic::buyKerosin(PLAYER &qPlayer, SLONG type, SLONG amount) {
     auto cost = transaction.Kosten - transaction.Rabatt;
     amount = transaction.Menge;
 
-    if ((cost <= 0) || qPlayer.Money - cost < DEBT_LIMIT) {
+    if (cost <= 0) {
+        return false;
+    }
+    if (qPlayer.Money - cost < DEBT_LIMIT) {
         AT_Error("GameMechanic::buyKerosin(%s): Player cannot afford to buy this amount (%ld).", (LPCTSTR)qPlayer.AirlineX, amount);
         return false;
     }
@@ -1061,6 +1064,11 @@ bool GameMechanic::bidOnGate(PLAYER &qPlayer, SLONG idx) {
     }
 
     auto &qGate = *TafelData.ByPositions[idx];
+    if (qGate.Type != CTafelZettel::Type::GATE) {
+        AT_Error("GameMechanic::bidOnGate(%s): Not a gate (%ld).", (LPCTSTR)qPlayer.AirlineX, idx);
+        return false;
+    }
+
     if (qGate.Player == qPlayer.PlayerNum) {
         AT_Error("GameMechanic::bidOnGate(%s): Player is already bidding on gate (%ld).", (LPCTSTR)qPlayer.AirlineX, idx);
         return false;
@@ -1089,6 +1097,11 @@ bool GameMechanic::bidOnCity(PLAYER &qPlayer, SLONG idx) {
     }
 
     auto &qCity = *TafelData.ByPositions[idx];
+    if (qCity.Type != CTafelZettel::Type::CITY) {
+        AT_Error("GameMechanic::bidOnCity(%s): Not a city (%ld).", (LPCTSTR)qPlayer.AirlineX, idx);
+        return false;
+    }
+
     if (qCity.Player == qPlayer.PlayerNum) {
         AT_Error("GameMechanic::bidOnCity(%s): Player is already bidding on city (%ld).", (LPCTSTR)qPlayer.AirlineX, idx);
         return false;
