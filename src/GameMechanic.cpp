@@ -49,7 +49,7 @@ bool GameMechanic::buyKerosinTank(PLAYER &qPlayer, SLONG type, SLONG amount) {
         return false;
     }
     if (amount < 0) {
-        AT_Error("GameMechanic::calcKerosinPrice(%s): Negative amount (%ld).", (LPCTSTR)qPlayer.AirlineX, amount);
+        AT_Error("GameMechanic::buyKerosinTank(%s): Negative amount (%ld).", (LPCTSTR)qPlayer.AirlineX, amount);
         return false;
     }
 
@@ -57,6 +57,7 @@ bool GameMechanic::buyKerosinTank(PLAYER &qPlayer, SLONG type, SLONG amount) {
     SLONG size = TankSize[type];
 
     if (qPlayer.Money - cost * amount < DEBT_LIMIT) {
+        AT_Error("GameMechanic::buyKerosinTank(%s): Player cannot afford this number of tanks (%ld).", (LPCTSTR)qPlayer.AirlineX, amount);
         return false;
     }
 
@@ -84,7 +85,7 @@ bool GameMechanic::setKerosinTankOpen(PLAYER &qPlayer, BOOL open) {
 
 bool GameMechanic::buyKerosin(PLAYER &qPlayer, SLONG type, SLONG amount) {
     if (type < 0 || type >= 3) {
-        AT_Error("GameMechanic::calcKerosinPrice(%s): Invalid kerosine type (%ld).", (LPCTSTR)qPlayer.AirlineX, type);
+        AT_Error("GameMechanic::buyKerosin(%s): Invalid kerosine type (%ld).", (LPCTSTR)qPlayer.AirlineX, type);
         return false;
     }
     if (amount < 0) {
@@ -101,6 +102,7 @@ bool GameMechanic::buyKerosin(PLAYER &qPlayer, SLONG type, SLONG amount) {
     amount = transaction.Menge;
 
     if ((cost <= 0) || qPlayer.Money - cost < DEBT_LIMIT) {
+        AT_Error("GameMechanic::buyKerosin(%s): Player cannot afford to buy this amount (%ld).", (LPCTSTR)qPlayer.AirlineX, amount);
         return false;
     }
 
@@ -442,19 +444,20 @@ bool GameMechanic::activateSaboteurJob(PLAYER &qPlayer, BOOL fremdSabotage) {
     return true;
 }
 
-void GameMechanic::paySaboteurFine(SLONG player, SLONG opfer) {
+bool GameMechanic::paySaboteurFine(SLONG player, SLONG opfer) {
     if (player < 0 || player >= Sim.Players.Players.AnzEntries()) {
         AT_Error("GameMechanic::paySaboteurFine: Invalid player ID (%ld).", player);
-        return;
+        return false;
     }
     if (opfer < 0 || opfer >= Sim.Players.Players.AnzEntries()) {
         AT_Error("GameMechanic::paySaboteurFine: Invalid victim ID (%ld).", opfer);
-        return;
+        return false;
     }
 
     auto fine = Sim.Players.Players[player].ArabHints * 10000;
     Sim.Players.Players[player].ChangeMoney(-fine, 2200, "");
     Sim.Players.Players[opfer].ChangeMoney(fine, 2201, "");
+    return true;
 }
 
 bool GameMechanic::takeOutCredit(PLAYER &qPlayer, __int64 amount) {
@@ -480,27 +483,29 @@ bool GameMechanic::payBackCredit(PLAYER &qPlayer, __int64 amount) {
     return true;
 }
 
-void GameMechanic::setPlaneTargetZustand(PLAYER &qPlayer, SLONG idx, SLONG zustand) {
+bool GameMechanic::setPlaneTargetZustand(PLAYER &qPlayer, SLONG idx, SLONG zustand) {
     if (!qPlayer.Planes.IsInAlbum(idx)) {
         AT_Error("GameMechanic::setPlaneTargetZustand(%s): Invalid plane index (%ld).", (LPCTSTR)qPlayer.AirlineX, idx);
-        return;
+        return false;
     }
     if (zustand < 0 || zustand > 100) {
         AT_Error("GameMechanic::setPlaneTargetZustand(%s): Invalid zustand (%ld).", (LPCTSTR)qPlayer.AirlineX, zustand);
-        return;
+        return false;
     }
 
     qPlayer.Planes[idx].TargetZustand = UBYTE(zustand);
     qPlayer.NetUpdatePlaneProps(idx);
+    return true;
 }
 
 bool GameMechanic::setSecurity(PLAYER &qPlayer, SLONG securityType, bool targetState) {
     if (securityType < 0 || securityType >= 12 || securityType == 9) {
-        AT_Error("GameMechanic::toggleSecurity(%s): Invalid security type (%ld).", (LPCTSTR)qPlayer.AirlineX, securityType);
+        AT_Error("GameMechanic::setSecurity(%s): Invalid security type (%ld).", (LPCTSTR)qPlayer.AirlineX, securityType);
         return false;
     }
 
     if (securityType == 1 && (qPlayer.HasItem(ITEM_LAPTOP) == 0)) {
+        AT_Error("GameMechanic::setSecurity(%s): No laptop.", (LPCTSTR)qPlayer.AirlineX);
         return false;
     }
 
@@ -539,6 +544,7 @@ bool GameMechanic::toggleSecurity(PLAYER &qPlayer, SLONG securityType) {
     }
 
     if (securityType == 1 && (qPlayer.HasItem(ITEM_LAPTOP) == 0)) {
+        AT_Error("GameMechanic::toggleSecurity(%s): No laptop.", (LPCTSTR)qPlayer.AirlineX);
         return false;
     }
 
@@ -787,6 +793,7 @@ bool GameMechanic::buyStock(PLAYER &qPlayer, SLONG airlineNum, SLONG amount) {
     auto aktienWert = static_cast<__int64>(qPlayerBuyFrom.Kurse[0]) * amount;
     auto gesamtPreis = aktienWert + aktienWert / 10 + 100;
     if (qPlayer.Money - gesamtPreis < DEBT_LIMIT) {
+        AT_Error("GameMechanic::buyStock(%s): Player cannot afford to buy this amount (%ld).", (LPCTSTR)qPlayer.AirlineX, amount);
         return false;
     }
 
@@ -845,7 +852,7 @@ bool GameMechanic::sellStock(PLAYER &qPlayer, SLONG airlineNum, SLONG amount) {
 
     auto &qPlayerSellFrom = Sim.Players.Players[airlineNum];
     if (qPlayerSellFrom.IsOut != 0) {
-        AT_Error("GameMechanic::buyStock(%s): Airline already gone.", (LPCTSTR)qPlayer.AirlineX);
+        AT_Error("GameMechanic::sellStock(%s): Airline already gone.", (LPCTSTR)qPlayer.AirlineX);
         return false;
     }
 
@@ -1055,6 +1062,7 @@ bool GameMechanic::bidOnGate(PLAYER &qPlayer, SLONG idx) {
 
     auto &qGate = *TafelData.ByPositions[idx];
     if (qGate.Player == qPlayer.PlayerNum) {
+        AT_Error("GameMechanic::bidOnGate(%s): Player is already bidding on gate (%ld).", (LPCTSTR)qPlayer.AirlineX, idx);
         return false;
     }
 
@@ -1082,6 +1090,7 @@ bool GameMechanic::bidOnCity(PLAYER &qPlayer, SLONG idx) {
 
     auto &qCity = *TafelData.ByPositions[idx];
     if (qCity.Player == qPlayer.PlayerNum) {
+        AT_Error("GameMechanic::bidOnCity(%s): Player is already bidding on city (%ld).", (LPCTSTR)qPlayer.AirlineX, idx);
         return false;
     }
 
@@ -1199,6 +1208,7 @@ bool GameMechanic::buyAdvertisement(PLAYER &qPlayer, SLONG adCampaignType, SLONG
 
     SLONG cost = gWerbePrice[adCampaignType * 6 + adCampaignSize];
     if (qPlayer.Money - cost < DEBT_LIMIT) {
+        AT_Error("GameMechanic::buyAdvertisement(%s): Player cannot afford campaign (%ld).", (LPCTSTR)qPlayer.AirlineX, adCampaignType);
         return false;
     }
 

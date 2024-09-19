@@ -39,14 +39,14 @@ class GameMechanic {
     };
     static CheckSabotage checkPrerequisitesForSaboteurJob(PLAYER &qPlayer, SLONG type, SLONG number, BOOL fremdSabotage);
     static bool activateSaboteurJob(PLAYER &qPlayer, BOOL fremdSabotage);
-    static void paySaboteurFine(SLONG player, SLONG opfer);
+    static bool paySaboteurFine(SLONG player, SLONG opfer);
 
     /* Kredite */
     static bool takeOutCredit(PLAYER &qPlayer, __int64 amount);
     static bool payBackCredit(PLAYER &qPlayer, __int64 amount);
 
     /* Flugzeuge */
-    static void setPlaneTargetZustand(PLAYER &qPlayer, SLONG idx, SLONG zustand);
+    static bool setPlaneTargetZustand(PLAYER &qPlayer, SLONG idx, SLONG zustand);
 
     /* Security */
     static bool setSecurity(PLAYER &qPlayer, SLONG securityType, bool targetState);
