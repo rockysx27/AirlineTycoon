@@ -27,13 +27,15 @@ void printPostGameInfo();
 
 void printPostGameInfo() {
     SLONG botPlayerNum = -1;
-    SLONG bestEnemy = 0;
+    __int64 bestBot = 1;
+    __int64 bestEnemy = 0;
     for (SLONG c = 0; c < Sim.Players.Players.AnzEntries(); c++) {
         auto &qPlayer = Sim.Players.Players[c];
         if (qPlayer.IsSuperBot()) {
             botPlayerNum = c;
-        } else if (qPlayer.Statistiken[STAT_MISSIONSZIEL].GetAtPastDay(0) > bestEnemy) {
-            bestEnemy = qPlayer.Statistiken[STAT_MISSIONSZIEL].GetAtPastDay(0);
+            bestBot = std::max(bestBot, qPlayer.Statistiken[STAT_MISSIONSZIEL].GetAtPastDay(0));
+        } else {
+            bestEnemy = std::max(bestEnemy, qPlayer.Statistiken[STAT_MISSIONSZIEL].GetAtPastDay(0));
         }
     }
     if (botPlayerNum != -1) {
@@ -50,7 +52,8 @@ void printPostGameInfo() {
             auto &qP = Sim.Players.Players[c];
             printf(", %d", (qP.HasWon() != 0 && qP.IsOut == 0) ? 1 : 0);
         }
-        printf(", %ld\n", bestEnemy);
+        auto bestRatio = static_cast<SLONG>(std::round(100.0F * bestEnemy / bestBot));
+        printf(", %d\n", bestRatio);
 
         qPlayer.mBot->printStatisticsLine("BotStatistics2", true);
 

@@ -93,9 +93,9 @@ std::pair<int, float> BotPlaner::FlightJob::calculateScore(const Factors &f, int
     score += f.constBonus;
     score += f.distanceFactor * Cities.CalcDistance(getStartCity(), getDestCity());
     if (isFreight()) {
-        score += f.freightBonus;
+        score += f.freightBonus * fracht.Tons;
         if (fracht.Praemie == 0) {
-            score += f.freeFreightBonus;
+            score += f.freeFreightBonus * fracht.Tons;
         }
     } else {
         score += f.passengerFactor * auftrag.Personen;
