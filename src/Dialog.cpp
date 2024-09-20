@@ -27,7 +27,7 @@ void printPostGameInfo();
 
 void printPostGameInfo() {
     SLONG botPlayerNum = -1;
-    __int64 bestBot = 1;
+    __int64 bestBot = 0;
     __int64 bestEnemy = 0;
     for (SLONG c = 0; c < Sim.Players.Players.AnzEntries(); c++) {
         auto &qPlayer = Sim.Players.Players[c];
@@ -52,8 +52,12 @@ void printPostGameInfo() {
             auto &qP = Sim.Players.Players[c];
             printf(", %d", (qP.HasWon() != 0 && qP.IsOut == 0) ? 1 : 0);
         }
-        auto bestRatio = static_cast<SLONG>(std::round(100.0F * bestEnemy / bestBot));
-        printf(", %d\n", bestRatio);
+        if (bestBot != 0) {
+            auto bestRatio = static_cast<SLONG>(std::round(100.0F * bestEnemy / bestBot));
+            printf(", %d\n", bestRatio);
+        } else {
+            printf(", NaN\n");
+        }
 
         qPlayer.mBot->printStatisticsLine("BotStatistics2", true);
 
