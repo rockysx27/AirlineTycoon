@@ -176,7 +176,7 @@ bool BotPlaner::shiftRight(Graph &g, int nodeToShift, int shiftT, bool commit) {
         const auto &curInfo = g.nodeInfo[currentNode];
 
         /* check if we can shift this node */
-        if (currentTime.getDate() > Sim.Date + kScheduleForNextDays) {
+        if (currentTime.getDate() > mScheduleLastDay) {
             assert(!commit);
             return false;
         }
@@ -411,7 +411,7 @@ bool BotPlaner::canInsert(const Graph &g, int currentNode, int nextNode) const {
         tEarliest.setDate(nextInfo.earliest);
     }
 
-    if (tEarliest.getDate() > Sim.Date + kScheduleForNextDays) {
+    if (tEarliest.getDate() > mScheduleLastDay) {
         return false; /* we are too late */
     }
 
@@ -726,7 +726,7 @@ bool BotPlaner::runAddBestNeighbor(int planeIdx, int choice) {
             currentTime = planeState.availTime;
         }
 
-        if (currentTime.getDate() > Sim.Date + kScheduleForNextDays) {
+        if (currentTime.getDate() > mScheduleLastDay) {
             continue;
         }
 
@@ -789,7 +789,7 @@ bool BotPlaner::runAddNodeToBestPlaneInner(int jobIdxToInsert) {
         /* for "miles and more" mission: Check actual speed for this job (distance / hours) */
         if (mMinSpeedRatio > 0.0f) {
             const auto &job = mJobList[jobIdxToInsert];
-            float distance = Cities.CalcDistance(job.getStartCity(), job.getDestCity());
+            float distance = job.calculateDistance();
             float speedActual = distance / g.nodeInfo[nodeToInsert].duration;
             float speedPerfect = 1000 * qPlanes[mPlaneStates[planeIdx].planeId].ptGeschwindigkeit;
             float ratio = speedActual / speedPerfect;
@@ -823,7 +823,7 @@ bool BotPlaner::runAddNodeToBestPlaneInner(int jobIdxToInsert) {
                 currentTime = planeState.availTime;
             }
 
-            if (currentTime.getDate() > Sim.Date + kScheduleForNextDays) {
+            if (currentTime.getDate() > mScheduleLastDay) {
                 continue;
             }
 

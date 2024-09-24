@@ -1,5 +1,12 @@
 #pragma once
 
+#include "defines.h"
+
+#include "SDL_log.h"
+#include "SDL_pixels.h"
+#include "SDL_rwops.h"
+#include "SDL_surface.h"
+
 #include <random>
 #include <vector>
 
@@ -36,6 +43,9 @@ extern unsigned char GerToUpper(unsigned char);
 extern UINT KeycodeToUpper(UINT nChar);
 extern void RecapizalizeString(CString &str);
 extern const char *GetSuffix(const char *);
+
+#undef min
+#undef max
 
 #if defined(__RESHARPER__)
 #define PRINTF_ATTR(StringIndex, FirstToCheck) [[gnu::format(printf, StringIndex, FirstToCheck)]]

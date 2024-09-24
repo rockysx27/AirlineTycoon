@@ -2,7 +2,6 @@
 #define BOT_DESIGNER_H_
 
 #include "class.h"
-#include "Editor.h"
 #include "Sbbm.h"
 #include "TeakLibW.h"
 

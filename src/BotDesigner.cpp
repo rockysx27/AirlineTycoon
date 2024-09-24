@@ -1,6 +1,8 @@
 #include "BotDesigner.h"
 
+#include "Editor.h"
 #include "global.h"
+#include "Proto.h"
 #include "sbl.h"
 
 #include <cassert>

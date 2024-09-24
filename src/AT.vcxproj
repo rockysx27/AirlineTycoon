@@ -26,7 +26,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -181,6 +181,15 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Bot.cpp" />
+    <ClCompile Include="BotActions.cpp" />
+    <ClCompile Include="BotConditions.cpp" />
+    <ClCompile Include="BotDesigner.cpp" />
+    <ClCompile Include="BotFunctions.cpp" />
+    <ClCompile Include="BotHelper.cpp" />
+    <ClCompile Include="BotMisc.cpp" />
+    <ClCompile Include="BotPlaner.cpp" />
+    <ClCompile Include="BotPlanerAlgo.cpp" />
     <ClCompile Include="Buero.cpp">
     </ClCompile>
     <ClCompile Include="city.cpp">
@@ -188,6 +197,7 @@
     <ClCompile Include="CVideo.cpp" />
     <ClCompile Include="DataTabl.cpp">
     </ClCompile>
+    <ClCompile Include="GameMechanic.cpp" />
     <ClCompile Include="Route.cpp">
     </ClCompile>
     <ClCompile Include="Tips.cpp">
@@ -370,6 +380,10 @@
     <ClInclude Include="Aufsicht.h" />
     <ClInclude Include="Bank.h" />
     <ClInclude Include="Blenden.h" />
+    <ClInclude Include="Bot.h" />
+    <ClInclude Include="BotDesigner.h" />
+    <ClInclude Include="BotHelper.h" />
+    <ClInclude Include="BotPlaner.h" />
     <ClInclude Include="Buero.h" />
     <ClInclude Include="Cblenden.h" />
     <ClInclude Include="cd_prot.h" />
@@ -385,6 +399,7 @@
     <ClInclude Include="fillfile.h" />
     <ClInclude Include="Fracht.h" />
     <ClInclude Include="GameFrame.h" />
+    <ClInclude Include="GameMechanic.h" />
     <ClInclude Include="glabend.h" />
     <ClInclude Include="glarab.h" />
     <ClInclude Include="glauf.h" />

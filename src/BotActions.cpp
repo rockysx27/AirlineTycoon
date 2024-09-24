@@ -1,9 +1,9 @@
 #include "Bot.h"
 
-#include "BotPlaner.h"
+#include "BotHelper.h"
 #include "GameMechanic.h"
-#include "TeakLibW.h"
-#include "class.h"
+#include "global.h"
+#include "Proto.h"
 
 #include <algorithm>
 #include <array>

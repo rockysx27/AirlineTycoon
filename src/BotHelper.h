@@ -1,6 +1,9 @@
 #ifndef BOT_HELPER_H_
 #define BOT_HELPER_H_
 
+#include "defines.h"
+#include "class.h"
+
 #include <array>
 #include <cassert>
 #include <iostream>

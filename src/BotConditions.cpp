@@ -1,7 +1,8 @@
 #include "Bot.h"
 
+#include "BotHelper.h"
 #include "GameMechanic.h"
-#include "TeakLibW.h"
+#include "global.h"
 
 #include <cassert>
 

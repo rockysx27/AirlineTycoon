@@ -2,6 +2,8 @@
 #define BOT_H_
 
 #include "BotPlaner.h"
+#include "defines.h"
+#include "class.h"
 
 #include <deque>
 #include <unordered_map>

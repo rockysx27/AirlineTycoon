@@ -226,6 +226,36 @@
     <ClCompile Include="CVideo.cpp">
       <Filter>Source Files\Screens\Video</Filter>
     </ClCompile>
+    <ClCompile Include="BotHelper.cpp">
+      <Filter>Source Files\Bot</Filter>
+    </ClCompile>
+    <ClCompile Include="GameMechanic.cpp">
+      <Filter>Source Files\Logic</Filter>
+    </ClCompile>
+    <ClCompile Include="BotPlaner.cpp">
+      <Filter>Source Files\Bot</Filter>
+    </ClCompile>
+    <ClCompile Include="BotPlanerAlgo.cpp">
+      <Filter>Source Files\Bot</Filter>
+    </ClCompile>
+    <ClCompile Include="BotDesigner.cpp">
+      <Filter>Source Files\Bot</Filter>
+    </ClCompile>
+    <ClCompile Include="Bot.cpp">
+      <Filter>Source Files\Bot</Filter>
+    </ClCompile>
+    <ClCompile Include="BotActions.cpp">
+      <Filter>Source Files\Bot</Filter>
+    </ClCompile>
+    <ClCompile Include="BotConditions.cpp">
+      <Filter>Source Files\Bot</Filter>
+    </ClCompile>
+    <ClCompile Include="BotFunctions.cpp">
+      <Filter>Source Files\Bot</Filter>
+    </ClCompile>
+    <ClCompile Include="BotMisc.cpp">
+      <Filter>Source Files\Bot</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Precompile Header File">
@@ -290,6 +320,15 @@
     </Filter>
     <Filter Include="Source Files\Screens\Video">
       <UniqueIdentifier>{7e63dc9b-6ee6-4099-b428-bef65d9f1743}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Bot">
+      <UniqueIdentifier>{70406914-c425-481b-b156-33756f39cb25}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Bot">
+      <UniqueIdentifier>{54325f32-df8d-42d0-8ec6-3703c23e6623}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Logic">
+      <UniqueIdentifier>{312ddc5a-e166-4926-a3a9-d9b750bb3538}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -691,6 +730,21 @@
     </ClInclude>
     <ClInclude Include="CVideo.h">
       <Filter>Header Files\Screens</Filter>
+    </ClInclude>
+    <ClInclude Include="GameMechanic.h">
+      <Filter>Header Files\Logic</Filter>
+    </ClInclude>
+    <ClInclude Include="Bot.h">
+      <Filter>Header Files\Bot</Filter>
+    </ClInclude>
+    <ClInclude Include="BotHelper.h">
+      <Filter>Header Files\Bot</Filter>
+    </ClInclude>
+    <ClInclude Include="BotDesigner.h">
+      <Filter>Header Files\Bot</Filter>
+    </ClInclude>
+    <ClInclude Include="BotPlaner.h">
+      <Filter>Header Files\Bot</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

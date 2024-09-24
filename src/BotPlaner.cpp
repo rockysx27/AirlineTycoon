@@ -1,6 +1,8 @@
 #include "BotPlaner.h"
 
 #include "BotHelper.h"
+#include "GameMechanic.h"
+#include "global.h"
 
 #include <algorithm>
 #include <chrono>
@@ -83,6 +85,8 @@ void BotPlaner::FlightJob::printInfo() const {
     AT_Log("- owner: %d, id: %d", owner, id);
 }
 
+int BotPlaner::FlightJob::calculateDistance() const { return Cities.CalcDistance(getStartCity(), getDestCity()); }
+
 std::pair<int, float> BotPlaner::FlightJob::calculateScore(const Factors &f, int hours, int cost, int numRequired) {
     int score = getPremium() - cost;
 
@@ -108,7 +112,7 @@ std::pair<int, float> BotPlaner::FlightJob::calculateScore(const Factors &f, int
     return {score, _scoreRatio};
 }
 
-BotPlaner::BotPlaner(PLAYER &player, const CPlanes &planes) : qPlayer(player), qPlanes(planes) {}
+BotPlaner::BotPlaner(PLAYER &player, const CPlanes &planes) : qPlayer{player}, qPlanes{planes}, mScheduleLastDay{Sim.Date + kScheduleForNextDays} {}
 
 void BotPlaner::addJobSource(JobOwner jobOwner, const std::vector<int> intJobSource) {
     if (jobOwner == JobOwner::International) {
@@ -224,7 +228,7 @@ void BotPlaner::collectAllFlightJobs(const std::vector<int> &planeIds, const std
             if (job.InPlan != 0) { /* hint: InPlan == 1 even if wrong day */
                 continue;
             }
-            if (job.Date <= Sim.Date + kScheduleForNextDays) {
+            if (job.Date <= mScheduleLastDay) {
                 mJobList.emplace_back(source.jobs->GetIdFromIndex(i), source.sourceId, job, source.owner);
             }
         }
@@ -240,7 +244,7 @@ void BotPlaner::collectAllFlightJobs(const std::vector<int> &planeIds, const std
             if (job.InPlan != 0) { /* hint: for freight, InPlan == 1 only if all instances have been scheduled correctly */
                 continue;
             }
-            if (job.Date <= Sim.Date + kScheduleForNextDays) {
+            if (job.Date <= mScheduleLastDay) {
                 SLONG objectId = source.freight->GetIdFromIndex(i);
                 assert(objectId >= 0x1000000);
 

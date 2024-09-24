@@ -236,6 +236,7 @@ class BotPlaner {
         std::string getName() const { return isFreight() ? Helper::getFreightName(fracht) : Helper::getJobName(auftrag); }
         void printInfo() const;
 
+        int calculateDistance() const;
         std::pair<int, float> calculateScore(const Factors &f, int hours, int cost, int numRequired);
 
       private:
@@ -315,6 +316,7 @@ class BotPlaner {
     std::vector<JobSource> mJobSources{};
     const CPlanes &qPlanes;
     PlaneTime mScheduleFromTime{};
+    int mScheduleLastDay{};
 
     /* score weighting factors */
     Factors mFactors{};

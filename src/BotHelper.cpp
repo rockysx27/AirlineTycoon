@@ -1,6 +1,7 @@
 #include "BotHelper.h"
 
-#include "BotPlaner.h"
+#include "global.h"
+#include "Proto.h"
 
 #include <cstdio>
 #include <iomanip>
@@ -181,10 +182,10 @@ std::pair<PlaneTime, int> getPlaneAvailableTimeLoc(const CPlane &qPlane, std::op
 
     const CFlugplanEintrag *qFPE = ignoreFrom.has_value() ? getLastFlightNotAfter(qPlane, ignoreFrom.value()) : getLastFlight(qPlane);
     if (qFPE != nullptr) {
-        res.first = {qFPE->Landedate, qFPE->Landezeit + kDurationExtra};
+        res.first = {qFPE->Landedate, qFPE->Landezeit + 1};
         res.second = qFPE->NachCity;
     }
-    PlaneTime currentTime{Sim.Date, Sim.GetHour() + kAvailTimeExtra};
+    PlaneTime currentTime{Sim.Date, Sim.GetHour() + 1};
     if (earliest.has_value() && earliest.value() > currentTime) {
         currentTime = earliest.value();
     }
