@@ -170,11 +170,6 @@ endif()
 #set_source_files_properties(BotPlaner.cpp PROPERTIES COMPILE_FLAGS "-O3 -DNEDBUG")
 #set_source_files_properties(BotPlanerAlgo.cpp PROPERTIES COMPILE_FLAGS "-O3 -DNEDBUG")
 
-
-if(NOT ${CMAKE_VERSION} VERSION_LESS "3.16.0")
-    target_precompile_headers(AT PUBLIC StdAfx.h)
-endif()
-
 target_link_libraries(AT PRIVATE
     common
     TeakLibW
