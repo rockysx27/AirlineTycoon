@@ -120,7 +120,6 @@ add_executable (AT
     SmackPrs.cpp
     Sound.cpp
     Statistk.cpp
-    StdAfx.cpp
     StdRaum.cpp
     Synthese.cpp
     Tafel.cpp

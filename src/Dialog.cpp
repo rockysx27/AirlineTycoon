@@ -3,12 +3,14 @@
 //============================================================================================
 // Link: "StdRaum.h"
 //============================================================================================
-#include "StdAfx.h"
 #include "AtNet.h"
 #include "Aufsicht.h"
-#include "Nasa.h"
-
 #include "Bot.h"
+#include "GameMechanic.h"
+#include "global.h"
+#include "helper.h"
+#include "Nasa.h"
+#include "Proto.h"
 
 CString Space = " ";
 

@@ -1,10 +1,13 @@
 //============================================================================================
 // Fracht.cpp : Der Fracht Schalter (neu im Add-On)
 //============================================================================================
-#include "StdAfx.h"
 #include "AtNet.h"
 #include "Fracht.h"
+#include "GameMechanic.h"
 #include "glfracht.h"
+#include "global.h"
+#include "helper.h"
+#include "Proto.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

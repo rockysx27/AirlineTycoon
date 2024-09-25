@@ -1,8 +1,14 @@
 //============================================================================================
 // Person.Cpp - Verwaltung von Clans und Personen (Clan-Ausprägungen)
 //============================================================================================
-#include "StdAfx.h"
+#include "AirportView.h"
 #include "AtNet.h"
+#include "class.h"
+#include "ColorFx.h"
+#include "GameMechanic.h"
+#include "global.h"
+#include "helper.h"
+#include "Proto.h"
 
 extern SB_CColorFX ColorFX;
 
@@ -502,7 +508,6 @@ UBYTE CLANS::GetCustomerId(SLONG Browned, SLONG Koffer, TEAKRAND *pRand) {
         }
     }
 
-    
     SLONG Num = 0;
 
     std::vector<ULONG> possibleClanIds{};
@@ -515,9 +520,8 @@ UBYTE CLANS::GetCustomerId(SLONG Browned, SLONG Koffer, TEAKRAND *pRand) {
         const bool isClanBrowned = clan.Type == CLAN_BROWNFEMALE || clan.Type == CLAN_BROWNMALE;
         const bool isNotClanBrowned = clan.Type == CLAN_FEMALE || clan.Type == CLAN_MALE;
 
-        if (clan.TodayInGame != 0 &&
-            (Koffer == sign(clan.HasSuitcase) || (Koffer == 99 && clan.HasSuitcase <= 0)) &&
-            (isNotClanBrowned && Browned != 2) || (isClanBrowned && Browned != 0)) {
+        if (clan.TodayInGame != 0 && (Koffer == sign(clan.HasSuitcase) || (Koffer == 99 && clan.HasSuitcase <= 0)) && (isNotClanBrowned && Browned != 2) ||
+            (isClanBrowned && Browned != 0)) {
             Num += clan.Wkeit;
 
             possibleClanIds.push_back(c);

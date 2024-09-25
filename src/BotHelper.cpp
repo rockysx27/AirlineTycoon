@@ -1,6 +1,7 @@
 #include "BotHelper.h"
 
 #include "global.h"
+#include "helper.h"
 #include "Proto.h"
 
 #include <cstdio>

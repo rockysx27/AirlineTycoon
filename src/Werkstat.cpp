@@ -3,8 +3,12 @@
 //============================================================================================
 // Link: "Werkstat.h"
 //============================================================================================
-#include "StdAfx.h"
+#include "Werkstat.h"
+
+#include "GameMechanic.h"
+#include "global.h"
 #include "glwerk.h"
+#include "Proto.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

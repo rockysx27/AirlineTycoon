@@ -1,9 +1,12 @@
 //============================================================================================
 // Schedule.cpp - Der Bildschirm für den Scheduler
 //============================================================================================
-#include "StdAfx.h"
+#include "Schedule.h"
+
 #include "AtNet.h"
 #include "BotHelper.h"
+#include "global.h"
+#include "Proto.h"
 
 #define AT_Error(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_ERROR, "Schedule", __VA_ARGS__)
 #define AT_Warn(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "Schedule", __VA_ARGS__)

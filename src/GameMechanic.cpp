@@ -1,8 +1,13 @@
-#include "StdAfx.h"
 #include "AtNet.h"
-#include "Sabotage.h"
-
 #include "BotHelper.h"
+#include "GameMechanic.h"
+#include "global.h"
+#include "helper.h"
+#include "Planer.h"
+#include "Proto.h"
+#include "Sabotage.h"
+#include "StdRaum.h"
+#include "TeakLibW.h"
 
 #include <array>
 

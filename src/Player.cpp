@@ -1,11 +1,14 @@
 //============================================================================================
 // Player.cpp : Routinen zum verwalten der Spieler
 //============================================================================================
-#include "StdAfx.h"
 #include "AtNet.h"
 #include "Bot.h"
 #include "BotHelper.h"
 #include "BotPlaner.h"
+#include "GameMechanic.h"
+#include "global.h"
+#include "helper.h"
+#include "Proto.h"
 
 #define forall(c, object) for ((c) = 0; (c) < SLONG((object).AnzEntries()); (c)++)
 

@@ -3,20 +3,28 @@
 //============================================================================================
 // Link: "GameFrame.h"
 //============================================================================================
-#include "StdAfx.h"
 #include "AtNet.h"
+#include "AirportView.h"
+#include "BotDesigner.h"
 #include "BotHelper.h"
+#include "ColorFx.h"
 #include "CVideo.h"
+#include "global.h"
+#include "glbasis.h"
+#include "glpause.h"
+#include "helper.h"
 #include "Intro.h"
+#include "network.h"
 #include "NewGamePopup.h" //Fenster zum Wahl der Gegner und der Spielstärke
 #include "Outro.h"
-#include "Synthese.h"
-#include "glpause.h"
-
-#include "BotDesigner.h"
-
+#include "Proto.h"
 #include "SbLib.h"
-#include "network.h"
+#include "StdRaum.h"
+#include "Synthese.h"
+
+#include <SDL.h>
+#include <SDL_hints.h>
+
 extern SBNetwork gNetwork;
 
 #ifdef _DEBUG

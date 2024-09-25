@@ -3,6 +3,7 @@
 #include "BotHelper.h"
 #include "GameMechanic.h"
 #include "global.h"
+#include "helper.h"
 #include "Proto.h"
 
 #include <algorithm>

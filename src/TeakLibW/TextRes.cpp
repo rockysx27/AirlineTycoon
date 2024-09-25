@@ -1,6 +1,7 @@
-#include <regex>
+#include "defines.h"
+#include "TeakLibW.h"
 
-#include "StdAfx.h"
+#include <regex>
 
 #define AT_Log(...) AT_Log_I("TextRes", __VA_ARGS__)
 
@@ -12,7 +13,7 @@ const char *ExcTextResNotFound = "The following translation was not found: %s>>%
 SLONG gLanguage;
 const std::string allLanguageTokens = "DEFTPNISOBJKLMNQRTUV";
 
-std::string FindLanguageInString(const char* Dst, const SLONG wantedLanguageIndex) {
+std::string FindLanguageInString(const char *Dst, const SLONG wantedLanguageIndex) {
 
     const std::string targetLanguageToken(1, allLanguageTokens[wantedLanguageIndex]);
     std::regex languageTextPattern("^.*" + targetLanguageToken + "::(.*?)(?:[" + allLanguageTokens + "]::.*)?$");
@@ -42,7 +43,7 @@ void LanguageSpecifyString(char *Dst) {
     std::string foundText = FindLanguageInString(Dst, wantedLanguageIndex);
     if (foundText.empty()) {
         // If we haven't found the language we want, try English
-        foundText = FindLanguageInString(Dst, 1/*E - English*/);
+        foundText = FindLanguageInString(Dst, 1 /*E - English*/);
     }
 
     // If we still haven't found anything, just return
@@ -195,7 +196,7 @@ char *TEXTRES::FindP(ULONG group, ULONG id) {
     strcpy(buffer, text);
     LanguageSpecifyString(buffer);
 
-   if (strlen(buffer) > 0x3FF) {
+    if (strlen(buffer) > 0x3FF) {
         delete[] buffer;
         TeakLibW_Exception(FNL, ExcTextResStaticOverflow, group, id);
     }
@@ -205,9 +206,7 @@ char *TEXTRES::FindP(ULONG group, ULONG id) {
     return result;
 }
 
-char *TEXTRES::FindS(ULONG group, ULONG id) {
-    return TEXTRES::FindP(group, id);
-}
+char *TEXTRES::FindS(ULONG group, ULONG id) { return TEXTRES::FindP(group, id); }
 
 char *TEXTRES::GetP(ULONG group, ULONG id) {
     char *buffer = TEXTRES::FindP(group, id);

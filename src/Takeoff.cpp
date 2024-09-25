@@ -3,8 +3,8 @@
 //============================================================================================
 // Link: "Takeoff.h"
 //============================================================================================
-#include "StdAfx.h"
 #include "Abend.h"
+#include "AirportView.h"
 #include "ArabAir.h"
 #include "Aufsicht.h"
 #include "Bank.h"
@@ -12,21 +12,29 @@
 #include "Buero.h"
 #include "Checkup.h"
 #include "Credits.h"
+#include "CVideo.h"
 #include "Designer.h"
 #include "DutyFree.h"
 #include "Editor.h"
 #include "Fracht.h"
+#include "global.h"
+#include "Globe.h"
+#include "helper.h"
 #include "HLine.h"
 #include "Insel.h"
+#include "Intro.h"
 #include "Kiosk.h"
+#include "LastMin.h"
+#include "Laptop.h"
 #include "Makler.h"
 #include "Museum.h"
 #include "Nasa.h"
 #include "NewGamePopup.h" //Fenster zum Wahl der Gegner und der Spielstärke
-#include "CVideo.h"
-#include "Intro.h"
+#include "Options.h"
 #include "Outro.h"
+#include "Personal.h"
 #include "PlanProp.h"
+#include "Proto.h"
 #include "Reise.h"
 #include "Ricks.h"
 #include "RouteBox.h"
@@ -38,17 +46,18 @@
 #include "TitlePopup.h"
 #include "WeltAll.h"
 #include "Werbung.h"
+#include "Werkstat.h"
 #include "World.h"
-#include <cstdio>
-#include <ctime>
 
 #include "gltitel.h"
 
 #include "AtNet.h"
 #include "SbLib.h"
-class TeakLibException;
-extern SBNetwork gNetwork;
 
+#include <SDL_ttf.h>
+
+#include <cstdio>
+#include <ctime>
 #include <filesystem>
 #include <fstream>
 
@@ -57,6 +66,9 @@ extern SBNetwork gNetwork;
 #endif
 
 #define AT_Log(...) AT_Log_I("Takeoff", __VA_ARGS__)
+
+class TeakLibException;
+extern SBNetwork gNetwork;
 
 CHLPool HLPool;
 

@@ -3,11 +3,15 @@
 //============================================================================================
 // Link: "Planer.h"
 //============================================================================================
-#include "StdAfx.h"
-#include "glglobe.h"
+#include "Planer.h"
 
 #include "BotHelper.h"
 #include "BotPlaner.h"
+#include "GameMechanic.h"
+#include "glglobe.h"
+#include "global.h"
+#include "helper.h"
+#include "Proto.h"
 
 #define RDTSC __asm _emit 0x0F __asm _emit 0x31
 

@@ -1,13 +1,17 @@
 //============================================================================================
 // Sim.cpp : Routinen zur allgemeinen Simulationsverwaltung:
 //============================================================================================
-#include "StdAfx.h"
 #include "AtNet.h"
+#include "BotHelper.h"
 #include "Checkup.h"
+#include "GameMechanic.h"
+#include "global.h"
+#include "helper.h"
+#include "Personal.h"
+#include "Proto.h"
+
 #include <filesystem>
 #include <numeric>
-
-#include "BotHelper.h"
 
 #define AT_Log(...) AT_Log_I("Sim", __VA_ARGS__)
 

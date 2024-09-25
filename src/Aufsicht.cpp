@@ -1,10 +1,13 @@
 //============================================================================================
 // Aufsicht.cpp : Das Büro der Flugaufsicht
 //============================================================================================
-#include "StdAfx.h"
 #include "AtNet.h"
 #include "Aufsicht.h"
+#include "ColorFx.h"
+#include "GameMechanic.h"
 #include "glauf.h"
+#include "global.h"
+#include "Proto.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
