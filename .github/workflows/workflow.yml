@@ -3,13 +3,14 @@ name: build and package
 
 on:
   push:
-    branches: [ "main", "develop" ]
+    branches: [ "master" ]
   pull_request:
-    branches: [ "main", "develop" ]
+    branches: [ "master" ]
 
 jobs:
   env:
     runs-on: ubuntu-latest
+
     outputs:
         cmake-build-dir: ${{ steps.compute-env.outputs.cmake-build-dir }}
         artifact-name: ${{ steps.compute-env.outputs.artifact-name }}
@@ -17,6 +18,7 @@ jobs:
         build-type: ${{ steps.compute-env.outputs.build-type }}
         release-name: ${{ steps.compute-env.outputs.release-name }}
         release-tag: ${{ steps.compute-env.outputs.release-tag }}
+
     steps:
     # Get the code
     - uses: actions/checkout@v4
@@ -31,7 +33,7 @@ jobs:
         echo "cmake-build-dir=cmake-build" >> "$GITHUB_OUTPUT"
         echo "artifact-dir=artifacts" >> "$GITHUB_OUTPUT"
 
-        if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+        if [ "${{ github.ref }}" == "refs/heads/master" ]; then
             echo "Setting production environment variables..."
             echo "build-type=Release" >> "$GITHUB_OUTPUT"
             echo "release-name=ATD Version $VERSION Release" >> "$GITHUB_OUTPUT"
@@ -102,7 +104,7 @@ jobs:
       if: matrix.name == 'linux'
       run: |
         sudo apt-get update
-        sudo apt-get install libjansson-dev libsdl2*-dev
+        sudo apt-get install libjansson-dev libsdl2-dev libsdl2-gfx-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-net-dev libsdl2-ttf-dev
 
     - name: Setup homebrew (macOS)
       if: matrix.name == 'macos'
@@ -111,7 +113,7 @@ jobs:
 
     - name: Install macOS dependencies
       if: matrix.name == 'macos'
-      run: |           
+      run: |
          # Temporary fix, see https://github.com/actions/setup-python/issues/577
          rm /usr/local/bin/2to3-3.12 || true
          rm /usr/local/bin/idle3.12 || true
@@ -180,20 +182,6 @@ jobs:
         echo "artifact-path=$ARTIFACT_PATH" >> "$GITHUB_OUTPUT"
         cat $GITHUB_OUTPUT
 
-    - name: Upload sentry debug files
-      shell: pwsh
-      # Only publish on main/dev build & windows
-      if: matrix.name == 'windows' && (github.ref_name == 'main' || github.ref_name == 'develop') && vars.SENTRY_ORG != ''
-      env:
-        SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-        SENTRY_ORG: ${{ vars.SENTRY_ORG }}
-        SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
-        # SENTRY_URL: https://sentry.io/
-      run: |
-        curl -sL https://github.com/getsentry/sentry-cli/releases/download/2.32.1/sentry-cli-Windows-x86_64.exe > sentry-cli.exe
-        ./sentry-cli.exe debug-files upload ${{ needs.env.outputs.cmake-build-dir }}/${{ matrix.build_type }}/
-
-
     - name: Publish artifact
       uses: actions/upload-artifact@v4
       with:
@@ -219,6 +207,5 @@ jobs:
         name: ${{ needs.env.outputs.release-name }}
         tag_name: ${{ needs.env.outputs.release-tag }}
         prerelease: ${{ github.ref_name == 'develop' }}
-        draft: ${{ github.ref_name == 'main' }}
         files: |
           ${{ needs.env.outputs.artifact-dir }}/${{ needs.env.outputs.artifact-name }}*
