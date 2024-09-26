@@ -2594,7 +2594,6 @@ void CStdRaum::PostPaint() {
 
     XY p;
     SLONG c = 0;
-    SLONG Rand = 0;
 
     if ((IsDialogOpen() != 0) && (qPlayer.DialogWin != nullptr) && (PayingForCall != 0)) {
         if (SLONG((Sim.Time - LetzteEinheit) / 50) > (2 - UsingHandy) * 10 + (3 - Ferngespraech) * 60) {
@@ -3056,8 +3055,6 @@ void CStdRaum::PostPaint() {
                     }
                 }
             }
-        } else {
-            Rand++;
         }
     }
 
@@ -3066,8 +3063,6 @@ void CStdRaum::PostPaint() {
     } else if (gBroadcastBm.Size.y > 0) {
         ColorFX.BlitWhiteTrans(TRUE, gBroadcastBm.pBitmap, &PrimaryBm.PrimaryBm, XY(10 - (10 - gBroadcastBm.Size.y) * 20, 10 + (10 - gBroadcastBm.Size.y) * 5));
     }
-
-    Rand = 0;
 
     if (bHandy == FALSE) {
         if ((ForceRedrawTip != 0) || CurrentTipType != LastTipType || LastTipId != CurrentTipId || CurrentTipIdPar1 != LastTipIdPar1 ||

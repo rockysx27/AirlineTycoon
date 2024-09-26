@@ -124,7 +124,7 @@ class BotPlaner {
         inline bool empty() const { return list.empty(); }
     };
 
-    BotPlaner() = default;
+    BotPlaner() = delete;
     BotPlaner(PLAYER &player, const CPlanes &planes);
 
     void addJobSource(JobOwner jobOwner, std::vector<int> intJobSource);

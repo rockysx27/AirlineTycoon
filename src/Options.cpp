@@ -376,9 +376,6 @@ void Options::OnPaint() {
         KlackerTafel.Klack(); // Tafel notfalls asynchron aktualisieren
     }
 
-    static SLONG cnt = 0;
-    cnt++;
-
     // Die Standard Paint-Sachen kann der Basisraum erledigen
     CStdRaum::OnPaint();
 

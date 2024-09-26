@@ -352,6 +352,7 @@ void CWorkers::ReInit(const CString &TabFilename, const CString &TabFilename2) {
         try {
             CString name = strtok(Line.getData(), TabSeparator);
             if (name.length() == 0) {
+                (void)line;
                 AT_Log("Loading", "Empty worker found in file \"%s\" at line: %d - skipping...", FullFilename(TabFilename, ExcelPath).c_str(), line);
                 continue;
             }
@@ -691,6 +692,7 @@ SLONG CWorkers::AddToPool(SLONG typ, TEAKRAND &LocalRand, SLONG zielAnzahlKompet
         }
     }
 
+    (void)anz;
     AT_Log("Number of expired workers: %li (Typ: %s)", nExpired, Translate_WORKER_TYPE(typ));
     AT_Log("Number of competent workers: %li / %li (Typ: %s)", anzKompetent, anz, Translate_WORKER_TYPE(typ));
 
