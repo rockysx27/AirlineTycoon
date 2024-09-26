@@ -31,7 +31,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -318,8 +318,6 @@
     </ClCompile>
     <ClCompile Include="Statistk.cpp">
     </ClCompile>
-    <ClCompile Include="stdafx.cpp">
-    </ClCompile>
     <ClCompile Include="StdRaum.cpp">
     </ClCompile>
     <ClCompile Include="Synthese.cpp">
@@ -379,14 +377,11 @@
     <ClInclude Include="AtNet.h" />
     <ClInclude Include="Aufsicht.h" />
     <ClInclude Include="Bank.h" />
-    <ClInclude Include="Blenden.h" />
     <ClInclude Include="Bot.h" />
     <ClInclude Include="BotDesigner.h" />
     <ClInclude Include="BotHelper.h" />
     <ClInclude Include="BotPlaner.h" />
     <ClInclude Include="Buero.h" />
-    <ClInclude Include="Cblenden.h" />
-    <ClInclude Include="cd_prot.h" />
     <ClInclude Include="Checkup.h" />
     <ClInclude Include="class.h" />
     <ClInclude Include="Colorfx.h" />
@@ -396,7 +391,6 @@
     <ClInclude Include="Designer.h" />
     <ClInclude Include="DutyFree.h" />
     <ClInclude Include="Editor.h" />
-    <ClInclude Include="fillfile.h" />
     <ClInclude Include="Fracht.h" />
     <ClInclude Include="GameFrame.h" />
     <ClInclude Include="GameMechanic.h" />
@@ -494,11 +488,9 @@
     <ClInclude Include="sbl.h" />
     <ClInclude Include="Schedule.h" />
     <ClInclude Include="Security.h" />
-    <ClInclude Include="SecurityManager.h" />
     <ClInclude Include="Smackprs.h" />
     <ClInclude Include="SSE.h" />
     <ClInclude Include="Statistk.h" />
-    <ClInclude Include="StdAfx.h" />
     <ClInclude Include="Stdraum.h" />
     <ClInclude Include="stdstring.h" />
     <ClInclude Include="Synthese.h" />

@@ -1,6 +1,7 @@
-#include "SbLib.h"
-#include "network.h"
 #include "ENetNetwork.hpp"
+
+#include "network.h"
+#include "SbLib.h"
 
 ENetNetwork::ENetNetwork() : mServer(), mHost(nullptr), mMaster(nullptr), mSocket() {
     TEAKRAND rand;

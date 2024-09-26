@@ -4,9 +4,6 @@
     <ClCompile Include="Sound.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="stdafx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="StdRaum.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -368,9 +365,6 @@
     <ClInclude Include="SSE.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="StdAfx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Stdraum.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -671,23 +665,11 @@
     <ClInclude Include="Abend.h">
       <Filter>Header Files\Screens</Filter>
     </ClInclude>
-    <ClInclude Include="Blenden.h">
-      <Filter>Header Files\Old</Filter>
-    </ClInclude>
-    <ClInclude Include="Cblenden.h">
-      <Filter>Header Files\Old</Filter>
-    </ClInclude>
-    <ClInclude Include="cd_prot.h">
-      <Filter>Header Files\Old</Filter>
-    </ClInclude>
     <ClInclude Include="class.h">
       <Filter>Header Files\Defines</Filter>
     </ClInclude>
     <ClInclude Include="Credits.h">
       <Filter>Header Files\Screens</Filter>
-    </ClInclude>
-    <ClInclude Include="fillfile.h">
-      <Filter>Header Files\Old</Filter>
     </ClInclude>
     <ClInclude Include="HalldiskMenu.h">
       <Filter>Header Files\Screens</Filter>
@@ -712,9 +694,6 @@
     </ClInclude>
     <ClInclude Include="Outro.h">
       <Filter>Header Files\Screens</Filter>
-    </ClInclude>
-    <ClInclude Include="SecurityManager.h">
-      <Filter>Header Files\Old</Filter>
     </ClInclude>
     <ClInclude Include="Synthese.h">
       <Filter>Header Files\Defines</Filter>
