@@ -148,10 +148,9 @@ SLONG ENetNetwork::GetMessageCount() {
             /* Reset the peer's client information. */
             event.peer->data = NULL;
 
-            
         case ENET_EVENT_TYPE_NONE:
-                TeakLibW_Exception(FNL, ExcNever);
-                break;
+            TeakLibW_Exception(FNL, ExcNever);
+            break;
         }
     }
 

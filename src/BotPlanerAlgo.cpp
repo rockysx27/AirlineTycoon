@@ -986,6 +986,7 @@ bool BotPlaner::algo(int64_t timeBudget) {
                     savePath(planeIdx, overallBestPath[planeIdx]);
                     test += mPlaneStates[planeIdx].currentPremium - mPlaneStates[planeIdx].currentCost;
                 }
+                (void)test;
                 assert(test == overallBestGain);
             }
         }

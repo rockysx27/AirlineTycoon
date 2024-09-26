@@ -40,7 +40,7 @@ elseif(UNIX)
         target_compile_options(common INTERFACE "-Wnoexcept")
         target_compile_options(common INTERFACE "-Wstrict-null-sentinel")
         target_compile_options(common INTERFACE "-Wunsafe-loop-optimizations")
-        
+
         target_compile_options(common INTERFACE "-Wno-maybe-uninitialized")
     endif()
 endif()
