@@ -1874,6 +1874,8 @@ template <typename CT> class CStdStr : public std::basic_string<CT> {
             }
             bLoaded = true;
         }
+#else
+        (void)pT;
 #endif
 
         return bLoaded;

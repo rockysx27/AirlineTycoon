@@ -795,7 +795,6 @@ struct TEXTRES_CACHE_ENTRY {
 class TEXTRES {
   public:
     TEXTRES();
-    TEXTRES(char const *, void *);
     ~TEXTRES(void);
 
     void Open(char const *, void *);
@@ -805,7 +804,14 @@ class TEXTRES {
     char *GetP(ULONG, ULONG);
     char *GetS(ULONG, ULONG);
 
-    char *GetS(char const *c, ULONG i) { return GetS(*(const ULONG *)c, i); }
+    char *GetS(char const *c, ULONG i) {
+        ULONG code{};
+        code |= ((ULONG)c[0] << 0);
+        code |= ((ULONG)c[1] << 8);
+        code |= ((ULONG)c[2] << 16);
+        code |= ((ULONG)c[3] << 24);
+        return GetS(code, i);
+    }
 
     void SetOverrideFile(char const *c);
 
