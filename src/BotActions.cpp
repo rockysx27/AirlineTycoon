@@ -1240,7 +1240,7 @@ void Bot::actionVisitAds() {
     AT_Log("Bot::actionVisitAds(): Checked company image: %d", mCurrentImage);
 }
 
-void Bot::actionVisitSecurity(__int64 moneyAvailable) {
+void Bot::actionVisitSecurity(__int64 /*moneyAvailable*/) {
     bool targetState = isLateGame();
     GameMechanic::setSecurity(qPlayer, 0, targetState); /* office: spiked coffee, bomb */
     GameMechanic::setSecurity(qPlayer, 1, targetState); /* laptop: virus */

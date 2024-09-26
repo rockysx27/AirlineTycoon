@@ -2283,7 +2283,7 @@ void AIRPORT::GetRandomShop(XY &ReturnPosition, SLONG &ReturnStatePar, SLONG Cla
             Buffer[Anz++] = c;
             if (Anz == 20) {
                 hprintf(0, "Buffer exceded!");
-                here(FNL);
+                TeakLibW_Exception(FNL, ExcNever);
                 break;
             }
         }
@@ -2555,7 +2555,7 @@ XY AIRPORT::GetRandomTypedRune(ULONG BrickId, UBYTE Par, bool AcceptError, TEAKR
             Buffer[Anz++] = c;
             if (Anz == 20) {
                 hprintf(0, "Buffer exceded!");
-                here(FNL);
+                TeakLibW_Exception(FNL, ExcNever);
                 break;
             }
         }

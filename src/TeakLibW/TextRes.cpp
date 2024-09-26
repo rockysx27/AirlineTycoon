@@ -13,6 +13,9 @@ const char *ExcTextResNotFound = "The following translation was not found: %s>>%
 SLONG gLanguage;
 const std::string allLanguageTokens = "DEFTPNISOBJKLMNQRTUV";
 
+std::string FindLanguageInString(const char *Dst, const SLONG wantedLanguageIndex);
+void LanguageSpecifyString(char *Dst);
+
 std::string FindLanguageInString(const char *Dst, const SLONG wantedLanguageIndex) {
 
     const std::string targetLanguageToken(1, allLanguageTokens[wantedLanguageIndex]);

@@ -749,7 +749,9 @@ bool BotPlaner::runAddBestNeighbor(int planeIdx, int choice) {
 
     if (bestNode != -1) {
         int gap = makeRoom(g, bestWhereToInsert, g.nodeState[bestWhereToInsert].nextNode);
+        (void)gap;
         assert(gap > 0);
+
         insertNode(g, planeIdx, bestWhereToInsert, bestNode);
 
         printForPlane("runAddBestNeighbor() leaving", planeIdx, true);
@@ -850,6 +852,7 @@ bool BotPlaner::runAddNodeToBestPlaneInner(int jobIdxToInsert) {
         auto &g = mGraphs[planeState.planeTypeId];
 
         int gap = makeRoom(g, bestWhereToInsert, g.nodeState[bestWhereToInsert].nextNode);
+        (void)gap;
         assert(gap > 0);
 
         insertNode(g, bestPlaneIdx, bestWhereToInsert, bestNode);

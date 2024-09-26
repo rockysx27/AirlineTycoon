@@ -38,7 +38,6 @@ const char TOKEN_STAT[] = "STAT";
 //--------------------------------------------------------------------------------------------
 // Liest eine Zeile aus einem Buffer aus:
 //--------------------------------------------------------------------------------------------
-SLONG ReadLine(BUFFER_V<UBYTE> &Buffer, SLONG BufferStart, char *Line, SLONG LineLength);
 
 SLONG ReadLine(BUFFER_V<UBYTE> &Buffer, SLONG BufferStart, char *Line, SLONG LineLength) {
     SLONG c = 0;

@@ -29,7 +29,7 @@ extern SLONG timeWerbOpen;
 // #define PRINT_OVERALL 1
 
 inline void setColorForFlightJob(const PLAYER &qPlayer, const CFlugplanEintrag &qFPE) {
-    std::cout << "\e[1;";
+    std::cout << "\033[1;";
     if (qFPE.ObjectType == 1) {
         std::cout << "34";
     } else if (qFPE.ObjectType == 2) {
@@ -46,11 +46,11 @@ inline void setColorForFlightJob(const PLAYER &qPlayer, const CFlugplanEintrag &
     std::cout << "m";
 }
 
-inline void resetColor() { std::cout << "\e[m"; }
+inline void resetColor() { std::cout << "\033[m"; }
 
 namespace Helper {
 void ScheduleInfo::printGain() {
-    printf("Schedule (%s %d - %s %d) with %ld planes gains %s $.\n", (LPCTSTR)getWeekday(scheduleStart), scheduleStart.getHour(),
+    printf("Schedule (%s %d - %s %d) with %d planes gains %s $.\n", (LPCTSTR)getWeekday(scheduleStart), scheduleStart.getHour(),
            (LPCTSTR)getWeekday(scheduleEnd), scheduleEnd.getHour(), numPlanes, Insert1000erDots(gain).c_str());
 }
 
@@ -59,10 +59,10 @@ void ScheduleInfo::printDetails() {
     printGain();
 
     if (uhrigFlights > 0) {
-        printf("Flying %ld jobs (%ld from Uhrig, %ld passengers), %ld freight jobs (%ld tons) and %s miles.\n", jobs, uhrigFlights, passengers, freightJobs,
-               tons, Insert1000erDots(miles).c_str());
+        printf("Flying %d jobs (%d from Uhrig, %d passengers), %d freight jobs (%d tons) and %s miles.\n", jobs, uhrigFlights, passengers, freightJobs, tons,
+               Insert1000erDots(miles).c_str());
     } else {
-        printf("Flying %ld jobs (%ld passengers), %ld freight jobs (%ld tons) and %s miles.\n", jobs, passengers, freightJobs, tons,
+        printf("Flying %d jobs (%d passengers), %d freight jobs (%d tons) and %s miles.\n", jobs, passengers, freightJobs, tons,
                Insert1000erDots(miles).c_str());
     }
     printf("%.1f %% of plane schedule are regular flights, %.1f %% are automatic flights (%.1f %% useful kerosene).\n", getRatioFlights(),

@@ -244,7 +244,7 @@ class BotPlaner {
         CFracht fracht{};
         int id{};
         int sourceId{-1};
-        JobOwner owner;
+        JobOwner owner{};
         float scoreRatio{0};
 
         int numStillNeeded{1}; /* used in heuristic: how much to still plan (after mScheduleFromTime) */

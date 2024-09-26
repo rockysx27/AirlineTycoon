@@ -21,8 +21,6 @@ static char THIS_FILE[] = __FILE__;
 extern SLONG SaveVersion;
 extern SLONG SaveVersionSub;
 
-SLONG ReadLine(BUFFER_V<UBYTE> &Buffer, SLONG BufferStart, char *Line, SLONG LineLength);
-
 //--------------------------------------------------------------------------------------------
 // Konstruktor
 //--------------------------------------------------------------------------------------------

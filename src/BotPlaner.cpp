@@ -62,13 +62,13 @@ inline void calcCostAndDuration(int startCity, int destCity, const CPlane &qPlan
     }
 }
 
-BotPlaner::FlightJob::FlightJob(int i, int j, CAuftrag a, JobOwner o) : id(i), sourceId(j), owner(o), auftrag(a) {
+BotPlaner::FlightJob::FlightJob(int i, int j, CAuftrag a, JobOwner o) : auftrag(a), id(i), sourceId(j), owner(o) {
     assert(i >= 0x1000000);
     startCity = Cities.find(auftrag.VonCity);
     destCity = Cities.find(auftrag.NachCity);
 }
 
-BotPlaner::FlightJob::FlightJob(int i, int j, CFracht a, JobOwner o) : id(i), sourceId(j), owner(o), fracht(a) {
+BotPlaner::FlightJob::FlightJob(int i, int j, CFracht a, JobOwner o) : fracht(a), id(i), sourceId(j), owner(o) {
     assert(i >= 0x1000000);
     startCity = Cities.find(fracht.VonCity);
     destCity = Cities.find(fracht.NachCity);
@@ -702,13 +702,13 @@ BotPlaner::SolutionList BotPlaner::generateSolution(const std::vector<int> &plan
     if (mFactors.freeFreightBonus != 0) {
         AT_Log("BotPlaner::generateSolution(): Using mFreeFreightBonus = %d", mFactors.freeFreightBonus);
     }
-    if (mMinScoreRatio != 1.0f) {
+    if (std::abs(mMinScoreRatio - 1.0f) < 0.01F) {
         AT_Log("BotPlaner::generateSolution(): Using mMinScoreRatio = %f", mMinScoreRatio);
     }
-    if (mMinScoreRatioLastMinute != 1.0f) {
+    if (std::abs(mMinScoreRatioLastMinute - 1.0f) < 0.01F) {
         AT_Log("BotPlaner::generateSolution(): Using mMinScoreRatioLastMinute = %f", mMinScoreRatioLastMinute);
     }
-    if (mMinSpeedRatio != 0.0f) {
+    if (std::abs(mMinSpeedRatio - 0.0f) < 0.01F) {
         AT_Log("BotPlaner::generateSolution(): Using mMinSpeedRatio = %f", mMinSpeedRatio);
     }
 

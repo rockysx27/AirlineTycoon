@@ -15,7 +15,6 @@ extern char *bprintf(char const *, ...);
 extern char *bitoa(SLONG);
 extern char *bitoa(long);
 extern char *bitoa(long long);
-extern void here(char *, SLONG);
 
 extern const char *ExcAssert;
 extern const char *ExcGuardian;
@@ -551,9 +550,9 @@ class CRLEWriter {
     SLONG Key;           // Will always be 0xA5
     const char Magic[6]; // Will always be xtRLE
 
-    BYTE Sequence[132];
+    const char *Path{};
 
-    const char *Path;
+    BYTE Sequence[132];
 };
 
 class TEAKRAND {
@@ -837,6 +836,8 @@ class CRegistration {
 
 #define VIDRAMBM (void *)1
 #define SYSRAMBM (void *)2
+
+XYZ DetectCurrentDisplayResolution(void);
 
 class TECBM {
   public:

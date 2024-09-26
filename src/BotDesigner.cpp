@@ -123,7 +123,7 @@ class PlaneCandidate {
         if (std::abs(wartung - other.wartung) > 0.01) {
             return false;
         }
-        assert(mScore == other.mScore);
+        assert(std::abs(mScore - other.mScore) < 0.01);
         return true;
     }
 

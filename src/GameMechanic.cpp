@@ -1608,7 +1608,7 @@ bool GameMechanic::removeItem(PLAYER &qPlayer, SLONG item) {
             removed = true;
         }
     }
-    if (!remove) {
+    if (!removed) {
         AT_Error("GameMechanic::removeItem(%s): Player does not have item (%ld).", (LPCTSTR)qPlayer.AirlineX, item);
         return false;
     }
