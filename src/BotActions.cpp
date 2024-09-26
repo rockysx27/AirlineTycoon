@@ -471,13 +471,20 @@ void Bot::actionVisitHR() {
         }
     }
 
+    /* create list sorted by salary */
+    std::vector<SLONG> workersSorted;
+    for (SLONG c = 0; c < Workers.Workers.AnzEntries(); c++) {
+        workersSorted.push_back(c);
+    }
+    std::sort(workersSorted.begin(), workersSorted.end(), [&](SLONG a, SLONG b) { return Workers.Workers[a].Gehalt < Workers.Workers[b].Gehalt; });
+
     /* advisors */
     std::vector<SLONG> wantedAdvisors = {BERATERTYP_PERSONAL, BERATERTYP_KEROSIN, BERATERTYP_GELD,      BERATERTYP_INFO,
                                          BERATERTYP_FLUGZEUG, BERATERTYP_FITNESS, BERATERTYP_SICHERHEIT};
     for (auto advisorType : wantedAdvisors) {
         SLONG bestCandidateId = -1;
         SLONG bestCandidateSkill = 0;
-        for (SLONG c = 0; c < Workers.Workers.AnzEntries(); c++) {
+        for (SLONG c : workersSorted) {
             const auto &qWorker = Workers.Workers[c];
             if (qWorker.Typ != advisorType) {
                 continue;
@@ -539,7 +546,7 @@ void Bot::actionVisitHR() {
         stewardessTarget = std::max(stewardessTarget, mDesignerPlane.CalcBegleiter());
     }
 
-    for (SLONG c = 0; c < Workers.Workers.AnzEntries(); c++) {
+    for (SLONG c : workersSorted) {
         const auto &qWorker = Workers.Workers[c];
         if (qWorker.Employer != WORKER_JOBLESS) {
             continue;
