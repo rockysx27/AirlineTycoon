@@ -1,16 +1,25 @@
 #include "Bot.h"
 
 #include "BotHelper.h"
+#include "BotPlaner.h"
 #include "GameMechanic.h"
+#include "Proto.h"
+#include "TeakLibW.h"
+#include "class.h"
+#include "defines.h"
 #include "global.h"
 #include "helper.h"
-#include "Proto.h"
+
+#include <SDL_log.h>
 
 #include <algorithm>
 #include <cassert>
+#include <climits>
 #include <cmath>
 #include <string>
+#include <tuple>
 #include <utility>
+#include <vector>
 
 template <class... Types> void AT_Error(Types... args) { Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_ERROR, "Bot", args...); }
 template <class... Types> void AT_Warn(Types... args) { Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "Bot", args...); }
@@ -99,11 +108,11 @@ void Bot::determineNemesis() {
     }
     if (-1 != mNemesis) {
         if (nemesisOld != mNemesis) {
-            AT_Log("Bot::determineNemesis(): Our nemesis now is %s with a score of %s", (LPCTSTR)Sim.Players.Players[mNemesis].AirlineX,
-                   (LPCTSTR)Insert1000erDots64(mNemesisScore));
+            AT_Log("Bot::determineNemesis(): Our nemesis now is %s with a score of %s", Sim.Players.Players[mNemesis].AirlineX.c_str(),
+                   Insert1000erDots64(mNemesisScore).c_str());
         } else {
-            AT_Log("Bot::determineNemesis(): Our nemesis is still %s with a score of %s", (LPCTSTR)Sim.Players.Players[mNemesis].AirlineX,
-                   (LPCTSTR)Insert1000erDots64(mNemesisScore));
+            AT_Log("Bot::determineNemesis(): Our nemesis is still %s with a score of %s", Sim.Players.Players[mNemesis].AirlineX.c_str(),
+                   Insert1000erDots64(mNemesisScore).c_str());
         }
     }
 }
@@ -137,7 +146,7 @@ void Bot::switchToFinalTarget() {
         /* formula that calculates image gain from largest campaign */
         SLONG adCampaignSize = 5;
         SLONG numCampaignsRequired = ceil_div((TARGET_IMAGE - getImage()) * 55, (adCampaignSize + 6) * (gWerbePrice[adCampaignSize] / 10000));
-        requiredMoney = numCampaignsRequired * gWerbePrice[adCampaignSize];
+        requiredMoney = numCampaignsRequired * static_cast<__int64>(gWerbePrice[adCampaignSize]);
         AT_Log("Bot::switchToFinalTarget(): Need %lld to buy %d ad campaigns.", requiredMoney, numCampaignsRequired);
 
         nemesisRatio = 1.0 * mNemesisScore / TARGET_IMAGE;
@@ -154,9 +163,9 @@ void Bot::switchToFinalTarget() {
             }
 
             auto planes = getAllPlanes();
-            for (SLONG c = 0; c < planes.size(); c++) {
-                CPlane &qPlane = qPlayer.Planes[planes[c]];
-                auto ptPassagiere = qPlane.ptPassagiere;
+            for (auto planeId : planes) {
+                const CPlane &qPlane = qPlayer.Planes[planeId];
+                __int64 ptPassagiere = qPlane.ptPassagiere;
 
                 if (servicePoints > TARGET_SERVICE) {
                     break;
@@ -230,7 +239,7 @@ void Bot::switchToFinalTarget() {
         auto planes = getAllPlanes();
         auto numPlanes = std::min(5, static_cast<SLONG>(planes.size()));
         for (SLONG c = 0; c < numPlanes; c++) {
-            CPlane &qPlane = qPlayer.Planes[planes[c]];
+            const CPlane &qPlane = qPlayer.Planes[planes[c]];
             if (qPlane.ReifenTarget < 2) {
                 requiredMoney += (ReifenCosts[2] - ReifenCosts[qPlane.Reifen] / 2);
             }
@@ -257,7 +266,7 @@ void Bot::switchToFinalTarget() {
     }
 
     if (nemesisRatio > 0) {
-        AT_Log("Bot::switchToFinalTarget(): Most dangerous competitor is %s with %.1f %% of goal achieved.", (LPCTSTR)Sim.Players.Players[mNemesis].AirlineX,
+        AT_Log("Bot::switchToFinalTarget(): Most dangerous competitor is %s with %.1f %% of goal achieved.", Sim.Players.Players[mNemesis].AirlineX.c_str(),
                nemesisRatio * 100);
     }
     if (forceSwitch) {
@@ -282,8 +291,8 @@ void Bot::switchToFinalTarget() {
         if ((availableMoney > requiredMoney) || forceSwitch) {
             mRunToFinalObjective = FinalPhase::TargetRun;
             mMoneyForFinalObjective = requiredMoney;
-            AT_Log("Bot::switchToFinalTarget(): Switching to final target run. Need %s $, got %s $ (+ %s $).", (LPCTSTR)Insert1000erDots64(requiredMoney),
-                   (LPCTSTR)Insert1000erDots64(cash), (LPCTSTR)Insert1000erDots64(availableMoney - cash));
+            AT_Log("Bot::switchToFinalTarget(): Switching to final target run. Need %s $, got %s $ (+ %s $).", Insert1000erDots64(requiredMoney).c_str(),
+                   Insert1000erDots64(cash).c_str(), Insert1000erDots64(availableMoney - cash).c_str());
             return;
         }
     }
@@ -293,14 +302,14 @@ void Bot::switchToFinalTarget() {
         if (1.0 * availableMoney / requiredMoney >= 0.8) {
             mRunToFinalObjective = FinalPhase::SaveMoney;
             mMoneyForFinalObjective = requiredMoney;
-            AT_Log("Bot::switchToFinalTarget(): Switching to money saving phase. Need %s $, got %s $ (+ %s $).", (LPCTSTR)Insert1000erDots64(requiredMoney),
-                   (LPCTSTR)Insert1000erDots64(cash), (LPCTSTR)Insert1000erDots64(availableMoney - cash));
+            AT_Log("Bot::switchToFinalTarget(): Switching to money saving phase. Need %s $, got %s $ (+ %s $).", Insert1000erDots64(requiredMoney).c_str(),
+                   Insert1000erDots64(cash).c_str(), Insert1000erDots64(availableMoney - cash).c_str());
             return;
         }
     }
 
-    AT_Log("Bot::switchToFinalTarget(): Cannot switch to final target run. Need %s $, got %s $ (+ %s $).", (LPCTSTR)Insert1000erDots64(requiredMoney),
-           (LPCTSTR)Insert1000erDots64(cash), (LPCTSTR)Insert1000erDots64(availableMoney - cash));
+    AT_Log("Bot::switchToFinalTarget(): Cannot switch to final target run. Need %s $, got %s $ (+ %s $).", Insert1000erDots64(requiredMoney).c_str(),
+           Insert1000erDots64(cash).c_str(), Insert1000erDots64(availableMoney - cash).c_str());
 }
 
 std::vector<SLONG> Bot::findBestAvailablePlaneType(bool forRoutes, bool canRefresh) {
@@ -338,7 +347,7 @@ std::vector<SLONG> Bot::findBestAvailablePlaneType(bool forRoutes, bool canRefre
     /* exception: Force specified plane type to be best */
     if (kPlaneScoreForceBest != -1) {
         SLONG bestType = kPlaneScoreForceBest + 0x10000000;
-        AT_Log("Bot::findBestAvailablePlaneType(): Forcing best plane type to be %s", (LPCTSTR)PlaneTypes[bestType].Name);
+        AT_Log("Bot::findBestAvailablePlaneType(): Forcing best plane type to be %s", PlaneTypes[bestType].Name.c_str());
         bestList.push_back(bestType);
     }
 
@@ -351,16 +360,16 @@ std::vector<SLONG> Bot::findBestAvailablePlaneType(bool forRoutes, bool canRefre
         }
     }
     if (numGulfstream == 0 && !mDoRoutes) {
-        AT_Log("Bot::findBestAvailablePlaneType(): Forcing best plane type to be %s", (LPCTSTR)PlaneTypes[gulfstreamType].Name);
+        AT_Log("Bot::findBestAvailablePlaneType(): Forcing best plane type to be %s", PlaneTypes[gulfstreamType].Name.c_str());
         bestList.push_back(gulfstreamType);
     }
 
     for (const auto &i : scores) {
-        AT_Log("Bot::findBestAvailablePlaneType(): Plane type %s has score %.2e", (LPCTSTR)PlaneTypes[i.first].Name, i.second);
+        AT_Log("Bot::findBestAvailablePlaneType(): Plane type %s has score %.2e", PlaneTypes[i.first].Name.c_str(), i.second);
         bestList.push_back(i.first);
     }
 
-    AT_Log("Bot::findBestAvailablePlaneType(): Best plane type is %s", (LPCTSTR)PlaneTypes[bestList[0]].Name);
+    AT_Log("Bot::findBestAvailablePlaneType(): Best plane type is %s", PlaneTypes[bestList[0]].Name.c_str());
     return bestList;
 }
 
@@ -515,7 +524,7 @@ void Bot::planFlights() {
         }
         mMoneyReservedForFines += job.Strafe;
         num++;
-        AT_Info("Job %s not planned, fine +%s", Helper::getJobName(job).c_str(), (LPCTSTR)Insert1000erDots64(job.Strafe));
+        AT_Info("Job %s not planned, fine +%s", Helper::getJobName(job).c_str(), Insert1000erDots64(job.Strafe).c_str());
     }
     for (SLONG i = 0; i < qPlayer.Frachten.AnzEntries(); i++) {
         if (qPlayer.Frachten.IsInAlbum(i) == 0) {
@@ -527,11 +536,11 @@ void Bot::planFlights() {
         }
         mMoneyReservedForFines += job.Strafe;
         num++;
-        AT_Info("Freight job %s not planned, fine +%s", Helper::getFreightName(job).c_str(), (LPCTSTR)Insert1000erDots64(job.Strafe));
+        AT_Info("Freight job %s not planned, fine +%s", Helper::getFreightName(job).c_str(), Insert1000erDots64(job.Strafe).c_str());
     }
     if (mMoneyReservedForFines > 0) {
         AT_Warn("Bot::planFlights(): %d jobs not planned, need to reserve %s $ for future fines, available money: %s $", num,
-                (LPCTSTR)Insert1000erDots64(mMoneyReservedForFines), (LPCTSTR)Insert1000erDots64(getMoneyAvailable()));
+                Insert1000erDots64(mMoneyReservedForFines).c_str(), Insert1000erDots64(getMoneyAvailable()).c_str());
     }
 
     forceReplanning();
@@ -798,7 +807,7 @@ void Bot::updateRouteInfoBoard() {
 
             if (qRentRoute.RoutenAuslastungBot > 0 && i != qPlayer.PlayerNum) {
                 AT_Log("Bot::updateRouteInfoBoard(): Route %s: We (%d utilization) are competing with %s (%d utilization)",
-                       Helper::getRouteName(getRoute(route)).c_str(), route.routeOwnUtilization, (LPCTSTR)qqPlayer.AirlineX, qRentRoute.RoutenAuslastungBot);
+                       Helper::getRouteName(getRoute(route)).c_str(), route.routeOwnUtilization, qqPlayer.AirlineX.c_str(), qRentRoute.RoutenAuslastungBot);
             }
         }
         AT_Log("Bot::updateRouteInfoBoard(): Route %s has utilization=%d/%d (%d planes with average utilization=%d/%d)",
@@ -837,7 +846,7 @@ void Bot::routesRecalcNextStep() {
         mBuyPlaneForRouteId = mRoutes[mImproveRouteId].planeTypeId;
         /* if RoutesNextStep changes to something else, we won't reset
          * mBuyPlaneForRouteId so that we keep hiring new employees. */
-        AT_Log("Bot::routesRecalcNextStep(): Need to buy another %s for route %s", (LPCTSTR)PlaneTypes[mBuyPlaneForRouteId].Name, routeName.c_str());
+        AT_Log("Bot::routesRecalcNextStep(): Need to buy another %s for route %s", PlaneTypes[mBuyPlaneForRouteId].Name.c_str(), routeName.c_str());
         break;
     case RoutesNextStep::BuyAdsForRoute:
         AT_Log("Bot::routesRecalcNextStep(): Need to buy ads for route %s with image %d", routeName.c_str(), mRoutes[mImproveRouteId].image);
@@ -977,7 +986,7 @@ void Bot::findBestRoute() {
         /* calc score for route (more passengers always good, longer routes tend to be also more worth it) */
         DOUBLE score = Routen[c].AnzPassagiere();
         if (!qPlayer.RobotUse(ROBOT_USE_SHORTFLIGHTS)) {
-            score *= (Cities.CalcDistance(Routen[c].VonCity, Routen[c].NachCity) / 1000);
+            score *= (Cities.CalcDistance(Routen[c].VonCity, Routen[c].NachCity) / 1000.0);
         }
         score /= Routen[c].Miete;
 
@@ -1054,7 +1063,7 @@ void Bot::findBestRoute() {
                    Helper::getRouteName(Routen[candidate.routeId]).c_str(), candidate.planeId.size(), candidate.numPlanesToBuy, candidate.score);
         } else {
             AT_Log("Bot::actionFindBestRoute(): Score of route %s (using plane type %s, need %d) is: %.2f",
-                   Helper::getRouteName(Routen[candidate.routeId]).c_str(), (LPCTSTR)PlaneTypes[candidate.planeTypeId].Name, candidate.numPlanesToBuy,
+                   Helper::getRouteName(Routen[candidate.routeId]).c_str(), PlaneTypes[candidate.planeTypeId].Name.c_str(), candidate.numPlanesToBuy,
                    candidate.score);
         }
     }
@@ -1068,7 +1077,7 @@ void Bot::findBestRoute() {
                    Helper::getRouteName(Routen[candidate.routeId]).c_str(), planeCost, candidate.numPlanesToBuy, moneyAvailable);
             continue;
         }
-        AT_Log("Bot::actionFindBestRoute(): Best route (using plane type %s) is: ", (LPCTSTR)PlaneTypes[candidate.planeTypeId].Name);
+        AT_Log("Bot::actionFindBestRoute(): Best route (using plane type %s) is: ", PlaneTypes[candidate.planeTypeId].Name.c_str());
         Helper::printRoute(Routen[candidate.routeId]);
 
         mWantToRentRouteId = candidate.routeId;
@@ -1112,8 +1121,8 @@ void Bot::planRoutes() {
             std::tie(availTime, availCity) = Helper::getPlaneAvailableTimeLoc(qPlane, scheduleFromTime, scheduleFromTime);
             availCity = Cities.find(availCity);
 #ifdef PRINT_ROUTE_DETAILS
-            AT_Log("Bot::planRoutes(): Plane %s is in %s @ %s %d", Helper::getPlaneName(qPlane).c_str(), (LPCTSTR)Cities[availCity].Kuerzel,
-                   (LPCTSTR)Helper::getWeekday(availTime.getDate()), availTime.getHour());
+            AT_Log("Bot::planRoutes(): Plane %s is in %s @ %s %d", Helper::getPlaneName(qPlane).c_str(), Cities[availCity].Kuerzel.c_str(),
+                   Helper::getWeekday(availTime.getDate()).c_str(), availTime.getHour());
 #endif
 
             /* planes on same route fly with 3 hours inbetween */
@@ -1125,7 +1134,7 @@ void Bot::planRoutes() {
             PlaneTime startTime = {hours / 24, hours % 24};
 
             /* find insertion point */
-            auto &qFlightPlan = qPlane.Flugplan.Flug;
+            const auto &qFlightPlan = qPlane.Flugplan.Flug;
             SLONG numCorrectlyScheduled = 0;
             for (SLONG d = 0; d < qFlightPlan.AnzEntries(); d++) {
                 const auto &qFPE = qFlightPlan[d];
@@ -1147,8 +1156,7 @@ void Bot::planRoutes() {
                 startTime += duration;
             }
             AT_Log("Bot::planRoutes(): Plane %s: %d instances of route %s were correctly scheduled (until %s %d)", Helper::getPlaneName(qPlane).c_str(),
-                   numCorrectlyScheduled, Helper::getRouteName(getRoute(qRoute)).c_str(), (LPCTSTR)Helper::getWeekday(startTime.getDate()),
-                   startTime.getHour());
+                   numCorrectlyScheduled, Helper::getRouteName(getRoute(qRoute)).c_str(), Helper::getWeekday(startTime.getDate()).c_str(), startTime.getHour());
 
             /* plane is not on the route yet */
             if (numCorrectlyScheduled == 0 && availCity != fromCity) {
@@ -1159,7 +1167,7 @@ void Bot::planRoutes() {
                     startTime += 2 * duration;
                 }
                 AT_Log("Bot::planRoutes(): Plane %s: Adding buffer of %d hours for auto flight from %s to %s", Helper::getPlaneName(qPlane).c_str(),
-                       autoFlightDuration, (LPCTSTR)Cities[availCity].Kuerzel, (LPCTSTR)Cities[fromCity].Kuerzel);
+                       autoFlightDuration, Cities[availCity].Kuerzel.c_str(), Cities[fromCity].Kuerzel.c_str());
             }
 
             if (startTime.getDate() >= Sim.Date + 6) {
@@ -1183,7 +1191,7 @@ void Bot::planRoutes() {
                 currentTime += duration;
             }
             AT_Log("Bot::planRoutes(): Scheduled route %s %d times for plane %s, starting at %s %d", Helper::getRouteName(getRoute(qRoute)).c_str(),
-                   numScheduled, Helper::getPlaneName(qPlane).c_str(), (LPCTSTR)Helper::getWeekday(currentTime.getDate()), currentTime.getHour());
+                   numScheduled, Helper::getPlaneName(qPlane).c_str(), Helper::getWeekday(currentTime.getDate()).c_str(), currentTime.getHour());
             Helper::checkPlaneSchedule(qPlayer, planeId, false);
         }
     }

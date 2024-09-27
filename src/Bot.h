@@ -228,7 +228,7 @@ class Bot {
     void assignPlanesToRoutes(bool areWeInOffice);
 
     /* misc (in BotMisc.cpp) */
-    void printRobotFlags();
+    void printRobotFlags() const;
     SLONG numPlanes() const { return mPlanesForJobs.size() + mPlanesForJobsUnassigned.size() + mPlanesForRoutes.size() + mPlanesForRoutesUnassigned.size(); }
     std::vector<SLONG> getAllPlanes() const;
     bool isOfficeUsable() const;

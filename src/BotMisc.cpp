@@ -2,18 +2,27 @@
 
 #include "BotHelper.h"
 #include "GameMechanic.h"
-#include "global.h"
 #include "Proto.h"
+#include "TeakLibW.h"
+#include "class.h"
+#include "defines.h"
+#include "global.h"
 
+#include <SDL_log.h>
+
+#include <algorithm>
 #include <array>
+#include <deque>
+#include <unordered_map>
 #include <utility>
+#include <vector>
 
 template <class... Types> void AT_Error(Types... args) { Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_ERROR, "Bot", args...); }
 template <class... Types> void AT_Warn(Types... args) { Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "Bot", args...); }
 template <class... Types> void AT_Info(Types... args) { Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "Bot", args...); }
 template <class... Types> void AT_Log(Types... args) { AT_Log_I("Bot", args...); }
 
-void Bot::printRobotFlags() {
+void Bot::printRobotFlags() const {
     const std::array<std::pair<SLONG, bool>, 28> list = {
         {{ROBOT_USE_FRACHT, true},         {ROBOT_USE_WERBUNG, true},           {ROBOT_USE_NASA, false},
          {ROBOT_USE_ROUTES, true},         {ROBOT_USE_FORCEROUTES, false},      {ROBOT_USE_ROUTEMISSION, false},
@@ -38,13 +47,13 @@ void Bot::printRobotFlags() {
 
 std::vector<SLONG> Bot::getAllPlanes() const {
     std::vector<SLONG> planes = mPlanesForRoutes;
-    for (auto &i : mPlanesForRoutesUnassigned) {
+    for (const auto &i : mPlanesForRoutesUnassigned) {
         planes.push_back(i);
     }
-    for (auto &i : mPlanesForJobs) {
+    for (const auto &i : mPlanesForJobs) {
         planes.push_back(i);
     }
-    for (auto &i : mPlanesForJobsUnassigned) {
+    for (const auto &i : mPlanesForJobsUnassigned) {
         planes.push_back(i);
     }
     return planes;
@@ -61,10 +70,8 @@ bool Bot::hoursPassed(SLONG room, SLONG hours) const {
 }
 
 bool Bot::haveDiscount() const {
-    if (qPlayer.HasBerater(BERATERTYP_SICHERHEIT) >= 50 || Sim.Date > 7) {
-        return true; /* wait until we have some discount */
-    }
-    return false;
+    /* wait until we have some discount */
+    return (qPlayer.HasBerater(BERATERTYP_SICHERHEIT) >= 50) || (Sim.Date > 7);
 }
 
 bool Bot::checkLaptop() {
@@ -197,7 +204,7 @@ __int64 Bot::howMuchMoneyCanWeGet(bool extremMeasures) {
     __int64 moneyStockOwn = 0;
     auto stockPrice = static_cast<__int64>(qPlayer.Kurse[0]);
     if (GameMechanic::canEmitStock(qPlayer) == GameMechanic::EmitStockResult::Ok) {
-        __int64 newStock = (qPlayer.MaxAktien - qPlayer.AnzAktien) / 100 * 100;
+        __int64 newStock = 100 * (qPlayer.MaxAktien - qPlayer.AnzAktien) / 100;
         __int64 emissionsKurs = 0;
         __int64 marktAktien = 0;
         if (kStockEmissionMode == 0) {
@@ -211,28 +218,28 @@ __int64 Bot::howMuchMoneyCanWeGet(bool extremMeasures) {
             marktAktien = newStock * 6 / 10;
         }
         moneyEmit = marktAktien * emissionsKurs - newStock * emissionsKurs / 10 / 100 * 100;
-        AT_Log("Bot::howMuchMoneyCanWeGet(): Can get %s $ by emitting stock", (LPCTSTR)Insert1000erDots(moneyEmit));
+        AT_Log("Bot::howMuchMoneyCanWeGet(): Can get %s $ by emitting stock", Insert1000erDots(moneyEmit).c_str());
     }
 
     if (valueCompetitorShares > 0) {
         moneyStock = valueCompetitorShares - valueCompetitorShares / 10 - 100;
-        AT_Log("Bot::howMuchMoneyCanWeGet(): Can get %s $ by selling stock", (LPCTSTR)Insert1000erDots(moneyStock));
+        AT_Log("Bot::howMuchMoneyCanWeGet(): Can get %s $ by selling stock", Insert1000erDots(moneyStock).c_str());
     }
 
     if (numOwnShares > 0) {
         auto value = stockPrice * numOwnShares;
         moneyStockOwn = value - value / 10 - 100;
-        AT_Log("Bot::howMuchMoneyCanWeGet(): Can get %s $ by selling our own stock", (LPCTSTR)Insert1000erDots(moneyStockOwn));
+        AT_Log("Bot::howMuchMoneyCanWeGet(): Can get %s $ by selling our own stock", Insert1000erDots(moneyStockOwn).c_str());
     }
 
     __int64 moneyForecast = qPlayer.Money + moneyEmit + moneyStock + moneyStockOwn - kMoneyEmergencyFund;
     __int64 credit = qPlayer.CalcCreditLimit(moneyForecast, qPlayer.Credit);
     if (credit >= 1000) {
         moneyForecast += credit;
-        AT_Log("Bot::howMuchMoneyCanWeGet(): Can get %s $ by taking a loan", (LPCTSTR)Insert1000erDots(credit));
+        AT_Log("Bot::howMuchMoneyCanWeGet(): Can get %s $ by taking a loan", Insert1000erDots(credit).c_str());
     }
 
-    AT_Log("Bot::howMuchMoneyCanWeGet(): We can get %s $ in total!", (LPCTSTR)Insert1000erDots(moneyForecast));
+    AT_Log("Bot::howMuchMoneyCanWeGet(): We can get %s $ in total!", Insert1000erDots(moneyForecast).c_str());
     return moneyForecast;
 }
 
@@ -348,7 +355,7 @@ bool Bot::checkPlaneLists() {
         uniquePlaneIds[i] = 1;
         newPlanesForJobs.push_back(i);
         AT_Log("Bot::checkPlaneLists(): Jobs: Plane %s gains %s $", Helper::getPlaneName(qPlanes[i]).c_str(),
-               (LPCTSTR)Insert1000erDots64(qPlanes[i].GetSaldo()));
+               Insert1000erDots64(qPlanes[i].GetSaldo()).c_str());
     }
     std::swap(mPlanesForJobs, newPlanesForJobs);
 
@@ -368,7 +375,7 @@ bool Bot::checkPlaneLists() {
         uniquePlaneIds[i] = 2;
         newPlanesForRoutes.push_back(i);
         AT_Log("Bot::checkPlaneLists(): Routes: Plane %s gains %s $", Helper::getPlaneName(qPlanes[i]).c_str(),
-               (LPCTSTR)Insert1000erDots64(qPlanes[i].GetSaldo()));
+               Insert1000erDots64(qPlanes[i].GetSaldo()).c_str());
     }
     std::swap(mPlanesForRoutes, newPlanesForRoutes);
 
@@ -387,7 +394,7 @@ bool Bot::checkPlaneLists() {
         uniquePlaneIds[i] = 3;
         newPlanesJobsUnassigned.push_back(i);
         AT_Log("Bot::checkPlaneLists(): Jobs unassigned: Plane %s gains %s $", Helper::getPlaneName(qPlanes[i]).c_str(),
-               (LPCTSTR)Insert1000erDots64(qPlanes[i].GetSaldo()));
+               Insert1000erDots64(qPlanes[i].GetSaldo()).c_str());
     }
     std::swap(mPlanesForJobsUnassigned, newPlanesJobsUnassigned);
 
@@ -406,7 +413,7 @@ bool Bot::checkPlaneLists() {
         uniquePlaneIds[i] = 4;
         newPlanesRoutesUnassigned.push_back(i);
         AT_Log("Bot::checkPlaneLists(): Routes unassigned: Plane %s gains %s $", Helper::getPlaneName(qPlanes[i]).c_str(),
-               (LPCTSTR)Insert1000erDots64(qPlanes[i].GetSaldo()));
+               Insert1000erDots64(qPlanes[i].GetSaldo()).c_str());
     }
     std::swap(mPlanesForRoutesUnassigned, newPlanesRoutesUnassigned);
 

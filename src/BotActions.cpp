@@ -793,7 +793,8 @@ __int64 Bot::calcAmountToBuy(SLONG buyFromPlayerId, SLONG desiredRatio, __int64 
 }
 
 void Bot::actionEmitShares() {
-    SLONG newStock = (qPlayer.MaxAktien - qPlayer.AnzAktien) / 100 * 100;
+    SLONG newStock = 0;
+    GameMechanic::canEmitStock(qPlayer, &newStock);
     AT_Log("Bot::actionEmitShares(): Emitting stock: %lld", newStock);
     GameMechanic::emitStock(qPlayer, newStock, kStockEmissionMode);
 
