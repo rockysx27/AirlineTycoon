@@ -1,13 +1,22 @@
 #include "BotDesigner.h"
 
 #include "Editor.h"
-#include "global.h"
 #include "Proto.h"
+#include "TeakLibW.h"
+#include "class.h"
+#include "defines.h"
+#include "global.h"
 #include "sbl.h"
 
+#include <algorithm>
 #include <cassert>
+#include <cmath>
+#include <cstring>
 #include <iostream>
 #include <sstream>
+#include <tuple>
+#include <utility>
+#include <vector>
 
 template <class... Types> void AT_Log(Types... args) { AT_Log_I("Bot", args...); }
 
@@ -19,12 +28,12 @@ enum class ScoreType { Standard, FastPassengers, FastFast, VIP, Miss05, Miss08 }
 class PlaneCandidate {
   public:
     PlaneCandidate() = default;
-    PlaneCandidate(CXPlane plane, std::vector<PartIter> config, ScoreType type) : mPlane(std::move(plane)), mPartIter(std::move(config)), mScoreType(type) {
+    PlaneCandidate(const CXPlane &plane, const std::vector<PartIter> &config, ScoreType type) : mPlane(plane), mPartIter(config), mScoreType(type) {
         calculatePlaneScore();
     }
 
     void printPlaneInfo() {
-        AT_Log("*** CXPlane %s ***", (LPCTSTR)mPlane.Name);
+        AT_Log("*** CXPlane %s ***", mPlane.Name.c_str());
         std::stringstream ss;
         for (const auto &iter : mPartIter) {
             ss << iter.formatPrefix() << "@" << iter.position << ", ";
@@ -37,7 +46,7 @@ class PlaneCandidate {
         AT_Log("Geschwindigkeit = %d", mPlane.CalcSpeed());
         AT_Log("Lärm = %d", mPlane.CalcNoise());
         AT_Log("Wartung = %d", mPlane.CalcWartung());
-        AT_Log("Preis = %s", (LPCTSTR)Insert1000erDots(mPlane.CalcCost()));
+        AT_Log("Preis = %s", Insert1000erDots(mPlane.CalcCost()).c_str());
     }
 
     void setPlaneName(SLONG number) {
@@ -191,7 +200,7 @@ class PlaneCandidate {
     CXPlane mPlane;
     std::vector<PartIter> mPartIter;
 
-    ScoreType mScoreType;
+    ScoreType mScoreType{ScoreType::Standard};
     DOUBLE mScore{-1};
     DOUBLE mBaseScore{-1};
 
@@ -225,7 +234,7 @@ BotDesigner::BotDesigner() {
 
     CString GfxLibName = "editor.gli";
     GfxLib *pRoomLib = nullptr;
-    pGfxMain->LoadLib(const_cast<char *>((LPCTSTR)FullFilename(GfxLibName, RoomPath)), &pRoomLib, L_LOCMEM);
+    pGfxMain->LoadLib(FullFilename(GfxLibName, RoomPath).c_str(), &pRoomLib, L_LOCMEM);
     mPartBms.ReSize(pRoomLib, "BODY_A01 BODY_A02 BODY_A03 BODY_A04 BODY_A05 "
                               "CPIT_A01 CPIT_A02 CPIT_A03 CPIT_A04 CPIT_A05 "
                               "HECK_A01 HECK_A02 HECK_A03 HECK_A04 HECK_A05 HECK_A06 HECK_A07 "
@@ -331,7 +340,7 @@ bool BotDesigner::buildPart(CXPlane &plane, const PartIter &partIter) const {
 
         // Ist die Von-Seite ein Part oder der Desktop?
         if (qRelation.FromBuildIndex == -1) {
-            GripToSpot = qRelation.Offset3d - mPartBms[GetPlaneBuild(PartUnderCursor).BitmapIndex].Size / SLONG(2);
+            GripToSpot = qRelation.Offset3d - mPartBms[GetPlaneBuild(PartUnderCursor).BitmapIndex].Size / 2;
             GripToSpot2d = qRelation.Offset2d;
 
             if ((position--) == 0) {
@@ -444,15 +453,15 @@ bool BotDesigner::buildPart(CXPlane &plane, const PartIter &partIter) const {
 
 std::pair<BotDesigner::FailedWhy, SLONG> BotDesigner::buildPlane(CXPlane &plane) const {
     /* check if build configuration makes sense */
-    auto &qFirstEngine = mPartIter[mPrimaryEnginesIdx];
-    auto &qSecondEngine = mPartIter[mSecondaryEnginesIdx];
+    const auto &qFirstEngine = mPartIter[mPrimaryEnginesIdx];
+    const auto &qSecondEngine = mPartIter[mSecondaryEnginesIdx];
     if (qFirstEngine.variant == qSecondEngine.variant) {
         if (qFirstEngine.position < qSecondEngine.position) {
             return {FailedWhy::InvalidPosition, mPrimaryEnginesIdx};
         }
     }
-    auto &qAuxEngine1 = mPartIter[mPrimaryAuxEnginesIdx];
-    auto &qAuxEngine2 = mPartIter[mSecondaryAuxEnginesIdx];
+    const auto &qAuxEngine1 = mPartIter[mPrimaryAuxEnginesIdx];
+    const auto &qAuxEngine2 = mPartIter[mSecondaryAuxEnginesIdx];
     if (qAuxEngine1.variant == qAuxEngine2.variant) {
         if (qAuxEngine1.position < qAuxEngine2.position) {
             return {FailedWhy::InvalidPosition, mPrimaryAuxEnginesIdx};
@@ -465,7 +474,7 @@ std::pair<BotDesigner::FailedWhy, SLONG> BotDesigner::buildPlane(CXPlane &plane)
             continue;
         }
         CString prefix(iter.formatPrefix());
-        plane.Name.append(bprintf("%s%d", (LPCTSTR)prefix, iter.position));
+        plane.Name.append(bprintf("%s%d", prefix.c_str(), iter.position));
         if (!buildPart(plane, iter)) {
             return {FailedWhy::NoMorePositions, i};
         }
@@ -555,9 +564,9 @@ SLONG BotDesigner::findBestDesignerPlane() {
         mPartIter[nextVariant].position++;
     }
 
-    for (SLONG i = 0; i < bestPlanes.size(); i++) {
+    for (auto &qPlanes : bestPlanes) {
         for (int j = 0; j < kMaxBest; j++) {
-            auto &bestPlane = bestPlanes[i][j];
+            auto &bestPlane = qPlanes[j];
             bestPlane.setPlaneName(j);
             bestPlane.save(j);
             bestPlane.printPlaneInfo();

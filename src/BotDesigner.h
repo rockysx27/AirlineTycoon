@@ -1,9 +1,9 @@
 #ifndef BOT_DESIGNER_H_
 #define BOT_DESIGNER_H_
 
-#include "class.h"
 #include "Sbbm.h"
 #include "TeakLibW.h"
+#include "class.h"
 
 #include <queue>
 #include <unordered_map>
