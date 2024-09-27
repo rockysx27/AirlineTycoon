@@ -5386,7 +5386,7 @@ void PLAYER::RobotExecuteAction() {
                                                (Sim.Date > 10 && LocalRandom.Rand(5) == 0))) ||
                      (qZettel.Player == -1 && LocalRandom.Rand(3) == 0)) &&
                     BilanzGestern.GetSumme() > qZettel.Preis * 10 && Credit * 2 < Money * 3 && Money > 0 &&
-                    ((TafelData.Route[c].Player == dislike || RobotUse(ROBOT_USE_BUY_MORE_ABROAD) || RobotUse(ROBOT_USE_ABROAD)))) {
+                    ((qZettel.Player == dislike || RobotUse(ROBOT_USE_BUY_MORE_ABROAD) || RobotUse(ROBOT_USE_ABROAD)))) {
                     GameMechanic::bidOnCity(*this, c);
                 }
             }

@@ -32,7 +32,7 @@ elseif(UNIX)
     target_compile_options(common INTERFACE "-Wno-sign-compare")
     target_compile_options(common INTERFACE "-Wno-type-limits")
     target_compile_options(common INTERFACE "-Wno-unused-result")
-    if(UNIX AND NOT APPLE)
+    if(NOT APPLE)
         target_compile_options(common INTERFACE "-Werror")
 
         target_compile_options(common INTERFACE "-Wdisabled-optimization")

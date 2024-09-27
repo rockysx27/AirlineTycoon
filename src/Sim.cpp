@@ -2502,7 +2502,6 @@ void SIM::NewDay() {
     Workers.NewDay();
 
     // Gute Spieler sind den anderen unsympatisch:
-    // MP: Bonus for computer, not controlled by switch
     for (c = 0; c < Players.AnzPlayers; c++) {
         for (d = 0; d < Players.AnzPlayers; d++) {
             if (c != d && Players.Players[c].Sympathie[d] < 25 && Players.Players[d].Bilanz.GetSumme() > 0) {

@@ -141,147 +141,157 @@ SLONG SBNetwork::GetMessageCount() {
                     dp.messageType = DPSYS_HOST;
                     dp.playerType = DPPLAYERTYPE_PLAYER;
                     dp.dpId = master->ID;
-#include "Proto.h"
+                    ENetPacket *packet = enet_packet_create(&dp, sizeof(DPPacket), ENET_PACKET_FLAG_RELIABLE);
+                    mPackets.Add(packet);
+                    mState = SBNETWORK_SESSION_MASTER;
                 }
 
-                return mPackets.GetNumberOfElements();
+                mMaster = master->peer;
             }
 
-            // Connect to a non-IP medium
-            bool SBNetwork::Connect(SBStr medium) {
-                // Unsupported
-                return false;
-            }
+            /* Reset the peer's client information. */
+            event.peer->data = NULL;
+        }
+    }
 
-            bool SBNetwork::Connect(SBStr medium, char *host) {
-                if (enet_initialize() != 0)
-                    return false;
+    return mPackets.GetNumberOfElements();
+}
 
-                mSocket = enet_socket_create(ENET_SOCKET_TYPE_DATAGRAM);
-                if (mSocket == ENET_SOCKET_NULL)
-                    return false;
+// Connect to a non-IP medium
+bool SBNetwork::Connect(SBStr medium) {
+    // Unsupported
+    return false;
+}
 
-                enet_socket_set_option(mSocket, ENET_SOCKOPT_REUSEADDR, 1);
-                enet_socket_set_option(mSocket, ENET_SOCKOPT_NONBLOCK, 1);
-                if (enet_address_set_host_ip(&mServer, host) < 0) {
-                    enet_socket_set_option(mSocket, ENET_SOCKOPT_BROADCAST, 1);
-                    mServer.host = ENET_HOST_BROADCAST;
-                }
-                mServer.port = 0xA112;
+bool SBNetwork::Connect(SBStr medium, char *host) {
+    if (enet_initialize() != 0)
+        return false;
 
-                ENetAddress address;
-                address.host = ENET_HOST_ANY;
-                address.port = 0xA112;
-                enet_socket_bind(mSocket, &address);
+    mSocket = enet_socket_create(ENET_SOCKET_TYPE_DATAGRAM);
+    if (mSocket == ENET_SOCKET_NULL)
+        return false;
 
-                address.host = ENET_HOST_ANY;
-                address.port = 0xA113;
-                mHost = enet_host_create(&address, 8, 2, 0, 0);
-                return mHost != NULL;
-            }
+    enet_socket_set_option(mSocket, ENET_SOCKOPT_REUSEADDR, 1);
+    enet_socket_set_option(mSocket, ENET_SOCKOPT_NONBLOCK, 1);
+    if (enet_address_set_host_ip(&mServer, host) < 0) {
+        enet_socket_set_option(mSocket, ENET_SOCKOPT_BROADCAST, 1);
+        mServer.host = ENET_HOST_BROADCAST;
+    }
+    mServer.port = 0xA112;
 
-            void SBNetwork::DisConnect() {
-                CloseSession();
-                enet_host_destroy(mHost);
-                enet_deinitialize();
-                mHost = NULL;
-                mSessions.Clear();
-                mSessionInfo.Clear();
-            }
+    ENetAddress address;
+    address.host = ENET_HOST_ANY;
+    address.port = 0xA112;
+    enet_socket_bind(mSocket, &address);
 
-            bool SBNetwork::CreateSession(SBStr name, SBNetworkCreation * create) {
-                SBSessionInfo info;
-                strcpy(info.sessionName, create->sessionName.c_str());
-                info.hostID = mLocalID;
-                info.address.host = ENET_HOST_ANY;
-                info.address.port = 0xA113;
-                mSessionInfo.Clear();
-                mSessionInfo.Add(info);
-                mState = SBNETWORK_SESSION_MASTER;
-                mSearchTime = enet_time_get();
-                return true;
-            }
+    address.host = ENET_HOST_ANY;
+    address.port = 0xA113;
+    mHost = enet_host_create(&address, 8, 2, 0, 0);
+    return mHost != NULL;
+}
 
-            void SBNetwork::CloseSession() { mState = SBNETWORK_SESSION_FINISHED; }
+void SBNetwork::DisConnect() {
+    CloseSession();
+    enet_host_destroy(mHost);
+    enet_deinitialize();
+    mHost = NULL;
+    mSessions.Clear();
+    mSessionInfo.Clear();
+}
 
-            ULONG SBNetwork::GetLocalPlayerID() { return mLocalID; }
+bool SBNetwork::CreateSession(SBStr name, SBNetworkCreation *create) {
+    SBSessionInfo info;
+    strcpy(info.sessionName, create->sessionName.c_str());
+    info.hostID = mLocalID;
+    info.address.host = ENET_HOST_ANY;
+    info.address.port = 0xA113;
+    mSessionInfo.Clear();
+    mSessionInfo.Add(info);
+    mState = SBNETWORK_SESSION_MASTER;
+    mSearchTime = enet_time_get();
+    return true;
+}
 
-            SBList<SBStr> *SBNetwork::GetConnectionList() { return &mConnections; }
+void SBNetwork::CloseSession() { mState = SBNETWORK_SESSION_FINISHED; }
 
-            SBList<SBStr> *SBNetwork::GetSessionListAsync() { return &mSessions; }
+ULONG SBNetwork::GetLocalPlayerID() { return mLocalID; }
 
-            bool SBNetwork::StartGetSessionListAsync() {
-                ENetBuffer buf;
-                buf.data = &mLocalID;
-                buf.dataLength = sizeof(mLocalID);
-                enet_socket_send(mSocket, &mServer, &buf, 1);
-                mState = SBNETWORK_SESSION_SEARCHING;
-                mSearchTime = enet_time_get();
-                return true;
-            }
+SBList<SBStr> *SBNetwork::GetConnectionList() { return &mConnections; }
 
-            SLONG SBNetwork::GetProviderID(char *) { return NET_MEDIUM_TCPIP; }
+SBList<SBStr> *SBNetwork::GetSessionListAsync() { return &mSessions; }
 
-            bool SBNetwork::IsEnumSessionFinished() { return mState == SBNETWORK_SESSION_FINISHED; }
+bool SBNetwork::StartGetSessionListAsync() {
+    ENetBuffer buf;
+    buf.data = &mLocalID;
+    buf.dataLength = sizeof(mLocalID);
+    enet_socket_send(mSocket, &mServer, &buf, 1);
+    mState = SBNETWORK_SESSION_SEARCHING;
+    mSearchTime = enet_time_get();
+    return true;
+}
 
-            bool SBNetwork::IsInSession() { return mState == SBNETWORK_SESSION_MASTER || mState == SBNETWORK_SESSION_CLIENT; }
+SLONG SBNetwork::GetProviderID(char *) { return NET_MEDIUM_TCPIP; }
 
-            bool SBNetwork::Send(BUFFER<UBYTE> & buffer, ULONG length, ULONG peerID, bool compression) {
-                ENetPacket *packet = enet_packet_create(buffer, length, ENET_PACKET_FLAG_RELIABLE);
+bool SBNetwork::IsEnumSessionFinished() { return mState == SBNETWORK_SESSION_FINISHED; }
 
-                if (peerID) {
-                    for (mPlayers.GetFirst(); !mPlayers.IsLast(); mPlayers.GetNext())
-                        if (mPlayers.GetLastAccessed().ID == peerID && mPlayers.GetLastAccessed().peer != NULL)
-                            enet_peer_send(mPlayers.GetLastAccessed().peer, 0, packet);
+bool SBNetwork::IsInSession() { return mState == SBNETWORK_SESSION_MASTER || mState == SBNETWORK_SESSION_CLIENT; }
 
-                    if (mPlayers.IsLast())
-                        return false;
-                } else {
-                    enet_host_broadcast(mHost, 0, packet);
-                }
-                enet_host_flush(mHost);
-                return true;
-            }
+bool SBNetwork::Send(BUFFER<UBYTE> &buffer, ULONG length, ULONG peerID, bool compression) {
+    ENetPacket *packet = enet_packet_create(buffer, length, ENET_PACKET_FLAG_RELIABLE);
 
-            bool SBNetwork::Receive(UBYTE * *buffer, ULONG & size) {
-                mPackets.GetFirst();
-                if (mPackets.IsLast())
-                    return false;
+    if (peerID) {
+        for (mPlayers.GetFirst(); !mPlayers.IsLast(); mPlayers.GetNext())
+            if (mPlayers.GetLastAccessed().ID == peerID && mPlayers.GetLastAccessed().peer != NULL)
+                enet_peer_send(mPlayers.GetLastAccessed().peer, 0, packet);
 
-                ENetPacket *packet = mPackets.GetLastAccessed();
-                size = packet->dataLength;
-                *buffer = new UBYTE[size];
-                memcpy(*buffer, packet->data, size);
+        if (mPlayers.IsLast())
+            return false;
+    } else {
+        enet_host_broadcast(mHost, 0, packet);
+    }
+    enet_host_flush(mHost);
+    return true;
+}
 
-                /* Clean up the packet now that we're done using it. */
-                enet_packet_destroy(packet);
-                mPackets.RemoveLastAccessed();
-                return true;
-            }
+bool SBNetwork::Receive(UBYTE **buffer, ULONG &size) {
+    mPackets.GetFirst();
+    if (mPackets.IsLast())
+        return false;
 
-            bool SBNetwork::JoinSession(SBStr session, SBStr nickname) {
-                SBSessionInfo *info = NULL;
-                for (mSessionInfo.GetFirst(); !mSessionInfo.IsLast(); mSessionInfo.GetNext()) {
-                    if (session == mSessionInfo.GetLastAccessed().sessionName)
-                        info = &mSessionInfo.GetLastAccessed();
-                }
+    ENetPacket *packet = mPackets.GetLastAccessed();
+    size = packet->dataLength;
+    *buffer = new UBYTE[size];
+    memcpy(*buffer, packet->data, size);
 
-                if (!info)
-                    return false;
+    /* Clean up the packet now that we're done using it. */
+    enet_packet_destroy(packet);
+    mPackets.RemoveLastAccessed();
+    return true;
+}
 
-                /* Initiate the connection, allocating the two channels 0 and 1. */
-                ENetEvent event;
-                SBNetworkPlayer player;
-                player.ID = info->hostID;
-                player.peer = enet_host_connect(mHost, &info->address, 2, mLocalID);
-                player.peer->data = &mPlayers.Add(player);
-                enet_peer_timeout(player.peer, 100000, 0, 100000000);
-                mMaster = player.peer;
-                mState = SBNETWORK_SESSION_CLIENT;
-                return enet_host_service(mHost, &event, 5000) > 0 && event.type == ENET_EVENT_TYPE_CONNECT;
-            }
+bool SBNetwork::JoinSession(SBStr session, SBStr nickname) {
+    SBSessionInfo *info = NULL;
+    for (mSessionInfo.GetFirst(); !mSessionInfo.IsLast(); mSessionInfo.GetNext()) {
+        if (session == mSessionInfo.GetLastAccessed().sessionName)
+            info = &mSessionInfo.GetLastAccessed();
+    }
 
-            SBList<SBNetworkPlayer> *SBNetwork::GetAllPlayers() { return &mPlayers; }
+    if (!info)
+        return false;
+
+    /* Initiate the connection, allocating the two channels 0 and 1. */
+    ENetEvent event;
+    SBNetworkPlayer player;
+    player.ID = info->hostID;
+    player.peer = enet_host_connect(mHost, &info->address, 2, mLocalID);
+    player.peer->data = &mPlayers.Add(player);
+    enet_peer_timeout(player.peer, 100000, 0, 100000000);
+    mMaster = player.peer;
+    mState = SBNETWORK_SESSION_CLIENT;
+    return enet_host_service(mHost, &event, 5000) > 0 && event.type == ENET_EVENT_TYPE_CONNECT;
+}
+
+SBList<SBNetworkPlayer> *SBNetwork::GetAllPlayers() { return &mPlayers; }
 
 #endif
 
@@ -319,7 +329,7 @@ void SBNetwork::DisConnect() {
     }
 }
 
-bool SBNetwork::CreateSession(SBStr name, SBNetworkCreation * settings) { return mNetwork->CreateSession(settings); }
+bool SBNetwork::CreateSession(SBStr name, SBNetworkCreation *settings) { return mNetwork->CreateSession(settings); }
 
 void SBNetwork::CloseSession() { mNetwork->CloseSession(); }
 
@@ -390,9 +400,9 @@ bool SBNetwork::IsInSession() const { return mNetwork->IsInSession(); }
 
 bool SBNetwork::IsInitialized() const { return mNetwork != nullptr; }
 
-bool SBNetwork::Send(BUFFER<UBYTE> & buffer, ULONG length, ULONG peerId, bool compress) { return mNetwork->Send(buffer, length, peerId, compress); }
+bool SBNetwork::Send(BUFFER<UBYTE> &buffer, ULONG length, ULONG peerId, bool compress) { return mNetwork->Send(buffer, length, peerId, compress); }
 
-bool SBNetwork::Receive(UBYTE * *buffer, ULONG & size) { return mNetwork->Receive(buffer, size); }
+bool SBNetwork::Receive(UBYTE **buffer, ULONG &size) { return mNetwork->Receive(buffer, size); }
 
 SBList<SBNetworkPlayer *> *SBNetwork::GetAllPlayers() { return mNetwork->GetAllPlayers(); }
 

@@ -1301,9 +1301,6 @@ class /**/ BRICK // Ein einzelnes Bodenteil eines bestimmten Zeitalters
 };
 
 class /**/ BRICKS : public ALBUM_V<BRICK> {
-  private:
-    short CurrentDate{};
-
   public:
     BRICKS() : ALBUM_V<BRICK>("Bricks") {}
     BRICKS(const CString &TabFilename) : ALBUM_V<BRICK>("Bricks") { ReInit(TabFilename); }

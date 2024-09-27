@@ -163,7 +163,7 @@ You can see the instructions to build and run the project in [BUILDING.md](BUILD
 * First class mission 07: Only need to have two repaired planes, not all of them in case more than two were bought
 * Evolution mission 02: Only need to have five planes with full safety upgrades, not all of them in case more than five were bought
 * Fixed many random crashes
-  
+
 ### Default computer player
 * Uses now same credit limit
 * Uses now same rules for trading stock

@@ -1963,6 +1963,7 @@ void NewGamePopup::OnLButtonDown(UINT nFlags, CPoint point) {
             if (GridPos.IfIsWithin(1, 15, 7, 15)) {
                 SIM::SendSimpleMessage(ATNET_WANNALEAVE, 0, gNetwork.GetLocalPlayerID());
                 gNetwork.CloseSession();
+
                 SBCapabilitiesFlags caps = gNetwork.GetSelectedProviderCapabilities();
                 if ((caps & SBCapabilitiesFlags::SBNETWORK_HAS_SERVER_BROWSER) == SBCapabilitiesFlags::SBNETWORK_HAS_SERVER_BROWSER) {
                     gNetworkSavegameLoading = -1;
@@ -1970,9 +1971,12 @@ void NewGamePopup::OnLButtonDown(UINT nFlags, CPoint point) {
                     RefreshKlackerField();
                     return;
                 }
+
                 gNetworkSavegameLoading = -1;
+
                 PageNum = PAGE_TYPE::MULTIPLAYER_SELECT_SESSION;
                 gNetwork.StartGetSessionListAsync();
+
                 RefreshKlackerField();
             }
             // Start Network game:
