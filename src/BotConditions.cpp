@@ -2,8 +2,14 @@
 
 #include "BotHelper.h"
 #include "GameMechanic.h"
+#include "TeakLibW.h"
+#include "class.h"
+#include "defines.h"
 #include "global.h"
 
+#include <SDL_log.h>
+
+#include <algorithm>
 #include <cassert>
 
 template <class... Types> void AT_Error(Types... args) { Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_ERROR, "Bot", args...); }
@@ -622,7 +628,7 @@ Bot::Prio Bot::condDropMoney(__int64 &moneyAvailable) {
         return Prio::None;
     }
 
-    if (moneyAvailable >= 1000 && qPlayer.Credit > 0 && getWeeklyOpSaldo() > 1000 * 1000) {
+    if (moneyAvailable >= 1000 && qPlayer.Credit > 0 && getWeeklyOpSaldo() > 1000 * 1000LL) {
         return Prio::Medium;
     }
     return Prio::None;
@@ -838,7 +844,7 @@ Bot::Prio Bot::condVisitRick() {
 
 Bot::Prio Bot::condVisitDutyFree(__int64 &moneyAvailable) {
     moneyAvailable = getMoneyAvailable();
-    moneyAvailable -= 100 * 1000;
+    moneyAvailable -= 100 * 1000LL;
 
     Prio prio = Prio::None;
     if (hoursPassed(ACTION_VISITDUTYFREE, 24) && moneyAvailable >= 0) {
