@@ -2,8 +2,8 @@
 #define BOT_H_
 
 #include "BotPlaner.h"
-#include "defines.h"
 #include "class.h"
+#include "defines.h"
 
 #include <deque>
 #include <unordered_map>
@@ -58,7 +58,7 @@ class Bot {
   public:
     explicit Bot(PLAYER &player);
 
-    void printStatisticsLine(CString prefix, bool printHeader);
+    void printStatisticsLine(const CString &prefix, bool printHeader);
 
     void RobotInit();
     void RobotPlan();

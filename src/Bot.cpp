@@ -1,16 +1,24 @@
 #include "Bot.h"
 
 #include "BotHelper.h"
+#include "BotPlaner.h"
 #include "GameMechanic.h"
+#include "Proto.h"
+#include "TeakLibW.h"
+#include "class.h"
+#include "defines.h"
 #include "global.h"
 #include "helper.h"
-#include "Proto.h"
+
+#include <SDL_log.h>
 
 #include <algorithm>
+#include <array>
 #include <cassert>
 #include <cstdio>
 #include <filesystem>
 #include <iostream>
+#include <vector>
 
 namespace fs = std::filesystem;
 
@@ -87,9 +95,9 @@ inline const char *getPrioName(SLONG prio) { return getPrioName(static_cast<Bot:
 
 Bot::Bot(PLAYER &player) : qPlayer(player) {}
 
-void Bot::printStatisticsLine(CString prefix, bool printHeader) {
+void Bot::printStatisticsLine(const CString &prefix, bool printHeader) {
     if (printHeader) {
-        printf("%s: Tag, Geld, Kredit, Available, ", (LPCTSTR)prefix);
+        printf("%s: Tag, Geld, Kredit, Available, ", prefix.c_str());
         printf("SaldoGesamt, Saldo, Gewinn, Verlust, ");
         printf("Routen, Auftraege, Fracht, ");
         printf("KerosinFlug, KerosinVorrat, Essen, ");
@@ -118,7 +126,7 @@ void Bot::printStatisticsLine(CString prefix, bool printHeader) {
         printf("ZielSA, ZielFL, ZielPT, ZielHA, ");
         printf("Planetype\n");
     }
-    std::cout << (LPCTSTR)prefix << ": ";
+    std::cout << prefix.c_str() << ": ";
 
     std::vector<__int64> values;
     auto balanceAvg = qPlayer.BilanzWoche.Hole();
@@ -170,7 +178,7 @@ void Bot::printStatisticsLine(CString prefix, bool printHeader) {
             }
         }
     }
-    std::cout << count << std::endl;
+    std::cout << count << '\n';
 }
 
 void Bot::RobotInit() {
@@ -229,7 +237,8 @@ void Bot::RobotInit() {
 
         if (qPlayer.RobotUse(ROBOT_USE_DESIGNER_BUY)) {
             // Path will be "%AppPath%/myplanes/"
-            fs::create_directory(LPCTSTR(AppPath + MyPlanePath.Left(MyPlanePath.GetLength() - 3)));
+            CString path{AppPath + MyPlanePath.Left(MyPlanePath.GetLength() - 3)};
+            fs::create_directory(path.c_str());
 
             if (Sim.Difficulty == DIFF_ATFS05) {
                 kSwitchToRoutesNumPlanesMin = std::max(3, kSwitchToRoutesNumPlanesMin);
@@ -426,8 +435,8 @@ void Bot::RobotExecuteAction() {
 
     mNumActionsToday += 1;
     AT_Info("Bot::RobotExecuteAction(): Executing %s (#%d, %s), current time: %02ld:%02ld, money: %s $ (available: %s $)", Translate_ACTION(qAction.ActionId),
-            mNumActionsToday, getPrioName(qAction.Prio), Sim.GetHour(), Sim.GetMinute(), (LPCTSTR)Insert1000erDots64(qPlayer.Money),
-            (LPCTSTR)Insert1000erDots64(getMoneyAvailable()));
+            mNumActionsToday, getPrioName(qAction.Prio), Sim.GetHour(), Sim.GetMinute(), Insert1000erDots64(qPlayer.Money).c_str(),
+            Insert1000erDots64(getMoneyAvailable()).c_str());
 
     mOnThePhone = 0;
 
@@ -630,7 +639,7 @@ void Bot::RobotExecuteAction() {
                 m = limit;
             }
             if (m > 0) {
-                AT_Log("Bot::RobotExecuteAction(): Taking loan: %s $", (LPCTSTR)Insert1000erDots64(m));
+                AT_Log("Bot::RobotExecuteAction(): Taking loan: %s $", Insert1000erDots64(m).c_str());
                 GameMechanic::takeOutCredit(qPlayer, m);
                 moneyAvailable = getMoneyAvailable();
             }
@@ -643,7 +652,7 @@ void Bot::RobotExecuteAction() {
     case ACTION_DROPMONEY:
         if (condDropMoney(moneyAvailable) != Prio::None) {
             __int64 m = std::min({qPlayer.Credit, moneyAvailable, getWeeklyOpSaldo()});
-            AT_Log("Bot::RobotExecuteAction(): Paying back loan: %s $", (LPCTSTR)Insert1000erDots64(m));
+            AT_Log("Bot::RobotExecuteAction(): Paying back loan: %s $", Insert1000erDots64(m).c_str());
             GameMechanic::payBackCredit(qPlayer, m);
             moneyAvailable = getMoneyAvailable();
         } else {
@@ -1034,8 +1043,8 @@ TEAKFILE &operator<<(TEAKFILE &File, const Bot &bot) {
 }
 
 TEAKFILE &operator>>(TEAKFILE &File, PlaneTime &planeTime) {
-    SLONG date;
-    SLONG time;
+    SLONG date{};
+    SLONG time{};
     File >> date;
     File >> time;
     planeTime = {date, time};
@@ -1044,12 +1053,13 @@ TEAKFILE &operator>>(TEAKFILE &File, PlaneTime &planeTime) {
 }
 
 TEAKFILE &operator>>(TEAKFILE &File, Bot &bot) {
-    SLONG size;
+    SLONG size{};
 
     File >> size;
     bot.mLastTimeInRoom.clear();
     for (SLONG i = 0; i < size; i++) {
-        SLONG key, value;
+        SLONG key{};
+        SLONG value{};
         File >> key >> value;
         bot.mLastTimeInRoom[key] = value;
     }
@@ -1118,7 +1128,7 @@ TEAKFILE &operator>>(TEAKFILE &File, Bot &bot) {
 
     File >> size;
     bot.mRoutes.resize(size);
-    for (SLONG i = 0; i < bot.mRoutes.size(); i++) {
+    for (auto &iter : bot.mRoutes) {
         Bot::RouteInfo info;
         File >> info.routeId >> info.routeReverseId >> info.planeTypeId;
         File >> info.routeUtilization >> info.routeOwnUtilization >> info.image;
@@ -1127,12 +1137,12 @@ TEAKFILE &operator>>(TEAKFILE &File, Bot &bot) {
 
         File >> size;
         info.planeIds.resize(size);
-        for (SLONG i = 0; i < info.planeIds.size(); i++) {
-            File >> info.planeIds[i];
+        for (auto &iter2 : info.planeIds) {
+            File >> iter2;
         }
         File >> info.canUpgrade;
 
-        bot.mRoutes[i] = info;
+        iter = info;
     }
 
     File >> size;
@@ -1152,9 +1162,7 @@ TEAKFILE &operator>>(TEAKFILE &File, Bot &bot) {
 
     File >> size;
     bot.mPlanerSolution.list.resize(size);
-    for (SLONG i = 0; i < bot.mPlanerSolution.list.size(); i++) {
-        auto &solution = bot.mPlanerSolution.list[i];
-
+    for (auto &solution : bot.mPlanerSolution.list) {
         File >> size;
         solution.jobs.resize(size);
         for (auto &i : solution.jobs) {
@@ -1176,7 +1184,7 @@ TEAKFILE &operator>>(TEAKFILE &File, Bot &bot) {
         File >> i.jobIdx;
         File >> i.objectId;
         File >> i.sourceId;
-        SLONG owner;
+        SLONG owner{};
         File >> owner;
         i.owner = static_cast<BotPlaner::JobOwner>(owner);
     }
