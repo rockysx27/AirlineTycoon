@@ -1,6 +1,12 @@
 #ifndef GAMEMECHANIC_H_
 #define GAMEMECHANIC_H_
 
+#include "class.h"
+#include "defines.h"
+
+#include <array>
+#include <vector>
+
 extern std::array<SLONG, 4> TankSize;
 extern std::array<SLONG, 4> TankPrice;
 
@@ -25,7 +31,7 @@ class GameMechanic {
         __int64 Rabatt{};
         __int64 Menge{};
     };
-    static KerosinTransaction calcKerosinPrice(PLAYER &qPlayer, __int64 typ, __int64 menge);
+    static KerosinTransaction calcKerosinPrice(PLAYER &qPlayer, __int64 type, __int64 amount);
 
     /* Sabotage */
     static SLONG setSaboteurTarget(PLAYER &qPlayer, SLONG target);
@@ -118,7 +124,7 @@ class GameMechanic {
     static bool killFlightJob(PLAYER &qPlayer, SLONG par1, bool payFine);
     static bool killFreightJob(PLAYER &qPlayer, SLONG par1, bool payFine);
     static bool removeFromFlightPlan(PLAYER &qPlayer, SLONG planeId, SLONG idx);
-    static bool clearFlightPlan(PLAYER &qPlayer, SLONG par1);
+    static bool clearFlightPlan(PLAYER &qPlayer, SLONG planeId);
     static bool clearFlightPlanFrom(PLAYER &qPlayer, SLONG planeId, SLONG date, SLONG hours);
     static bool refillFlightJobs(SLONG cityNum, SLONG minimum = 0);
     static bool planFlightJob(PLAYER &qPlayer, SLONG planeID, SLONG objectID, SLONG date, SLONG time);

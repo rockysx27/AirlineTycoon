@@ -14,6 +14,7 @@
 #include "TeakLibW.h"
 
 #include <array>
+#include <vector>
 
 class Bot;
 class CPlane;
@@ -2203,11 +2204,11 @@ class PLAYER {
     bool DropItem(UBYTE Item);
     SLONG CalcCreditLimit(void) const;
     SLONG CalcCreditLimit(__int64 money, __int64 credit) const;
-    void CalcRoom(void);                                                                   // Speed-up für GetRoom
-    SLONG CalcPlanePropSum(void);                                                          // Berechnet, was die anstehenden Umrüstungen zusammen kosten werden
-    void ChangeMoney(__int64 Money, SLONG Reason, const CString &Par1, char *Par2 = NULL); // Ändert Barschaft und Profit
-    void CheckAuftragsBerater(const CAuftrag &Auftrag);                                    // in Auftrag.cpp
-    void CheckAuftragsBerater(const CFracht &Fracht);                                      // in Fracht.cpp
+    void CalcRoom(void);          // Speed-up für GetRoom
+    SLONG CalcPlanePropSum(void); // Berechnet, was die anstehenden Umrüstungen zusammen kosten werden
+    void ChangeMoney(__int64 Money, SLONG Reason, const CString &Par1, const char *Par2 = NULL); // Ändert Barschaft und Profit
+    void CheckAuftragsBerater(const CAuftrag &Auftrag);                                          // in Auftrag.cpp
+    void CheckAuftragsBerater(const CFracht &Fracht);                                            // in Fracht.cpp
     void DelayFlightsIfNecessary(void);
     void DoBodyguardRabatt(SLONG Money);
     void EnterRoom(SLONG RoomNum, bool bDontBroadcast = false);

@@ -222,7 +222,7 @@ ULONG PLAYER::BuyPlane(CXPlane &plane, TEAKRAND *pRnd) {
 //--------------------------------------------------------------------------------------------
 // Geld mit Grund verbuchen:
 //--------------------------------------------------------------------------------------------
-void PLAYER::ChangeMoney(__int64 Money, SLONG Reason, const CString &Par1, char *Par2) {
+void PLAYER::ChangeMoney(__int64 Money, SLONG Reason, const CString &Par1, const char *Par2) {
 
     if (IsSuperBot()) {
         if (Money > 0) {
