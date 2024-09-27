@@ -1,16 +1,15 @@
 #ifndef BOT_HELPER_H_
 #define BOT_HELPER_H_
 
-#include "defines.h"
 #include "class.h"
+#include "defines.h"
 
 #include <array>
 #include <cassert>
+#include <climits>
 #include <iostream>
 #include <optional>
 #include <vector>
-
-#include <limits.h>
 
 inline constexpr int ceil_div(int a, int b) {
     assert(b != 0);
@@ -148,8 +147,8 @@ struct ScheduleInfo {
         return *this;
     }
 
-    void printGain();
-    void printDetails();
+    void printGain() const;
+    void printDetails() const;
 };
 
 void printJob(const CAuftrag &qAuftrag);

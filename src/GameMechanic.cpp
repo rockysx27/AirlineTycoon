@@ -8,8 +8,8 @@
 #include "SSE.h"
 #include "StdRaum.h"
 #include "TeakLibW.h"
-#include "defines.h"
 #include "class.h"
+#include "defines.h"
 #include "global.h"
 #include "helper.h"
 
