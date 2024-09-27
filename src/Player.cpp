@@ -17,13 +17,6 @@
 #define AT_Info(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "Player", __VA_ARGS__)
 #define AT_Log(...) AT_Log_I("Player", __VA_ARGS__)
 
-extern SLONG SabotagePrice[];
-extern SLONG SabotagePrice2[];
-extern SLONG SabotagePrice3[];
-
-extern SLONG RocketPrices[];
-extern SLONG StationPrices[];
-
 // Preise verstehen sich pro Sitzplatz:
 extern SLONG SeatCosts[];
 extern SLONG FoodCosts[];

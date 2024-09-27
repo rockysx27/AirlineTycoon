@@ -1,16 +1,15 @@
 #ifndef GAMEMECHANIC_H_
 #define GAMEMECHANIC_H_
 
-extern SLONG TankSize[4];
-extern SLONG TankPrice[4];
+extern std::array<SLONG, 4> TankSize;
+extern std::array<SLONG, 4> TankPrice;
 
-extern SLONG SabotagePrice[5];
-extern SLONG SabotagePrice2[4];
-extern SLONG SabotagePrice3[6];
+extern std::array<SLONG, 5> SabotagePrice;
+extern std::array<SLONG, 4> SabotagePrice2;
+extern std::array<SLONG, 6> SabotagePrice3;
 
-extern SLONG RocketPrices[10];
-
-extern SLONG StationPrices[10];
+extern std::array<SLONG, 10> RocketPrices;
+extern std::array<SLONG, 10> StationPrices;
 
 class GameMechanic {
   public:

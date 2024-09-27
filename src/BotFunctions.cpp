@@ -79,7 +79,7 @@ void Bot::determineNemesis() {
             if (Sim.Difficulty == DIFF_FINAL || Sim.Difficulty == DIFF_ADDON10) {
                 /* better than GetMissionRating(): Calculate sum of part cost instead of just number of parts */
                 const auto &qPrices = (Sim.Difficulty == DIFF_FINAL) ? RocketPrices : StationPrices;
-                auto nParts = sizeof(qPrices) / sizeof(qPrices[0]);
+                auto nParts = qPrices.size();
                 for (SLONG i = 0; i < nParts; i++) {
                     if ((qTarget.RocketFlags & (1 << i)) != 0) {
                         score += qPrices[i];
@@ -119,7 +119,7 @@ void Bot::switchToFinalTarget() {
     DOUBLE nemesisRatio = 0;
     if (qPlayer.RobotUse(ROBOT_USE_NASA) && (Sim.Difficulty == DIFF_FINAL || Sim.Difficulty == DIFF_ADDON10)) {
         const auto &qPrices = (Sim.Difficulty == DIFF_FINAL) ? RocketPrices : StationPrices;
-        auto nParts = sizeof(qPrices) / sizeof(qPrices[0]);
+        auto nParts = qPrices.size();
         SLONG numRequired = 0;
         for (SLONG i = 0; i < nParts; i++) {
             if ((qPlayer.RocketFlags & (1 << i)) == 0) {

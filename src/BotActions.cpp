@@ -649,7 +649,7 @@ void Bot::actionBuyKerosine(__int64 moneyAvailable) {
 }
 
 void Bot::actionBuyKerosineTank(__int64 moneyAvailable) {
-    auto nTankTypes = sizeof(TankSize) / sizeof(TankSize[0]);
+    auto nTankTypes = TankSize.size();
     for (SLONG i = nTankTypes - 1; i >= 1; i--) // avoid cheapest tank (not economical)
     {
         if (moneyAvailable >= TankPrice[i]) {

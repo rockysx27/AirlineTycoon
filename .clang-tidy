@@ -20,6 +20,7 @@ Checks: 'clang-*,
   -google-readability-todo
   -hicpp-multiway-paths-covered
   -hicpp-signed-bitwise,
+  -hicpp-vararg,
   -llvm-header-guard,
   -misc-no-recursion,
   -misc-use-anonymous-namespace
@@ -77,7 +78,9 @@ CheckOptions:
     value:           'true'
   - key:             misc-const-correctness.AnalyzeValues
     value:           'false'
-  - key:             readability-function-cognitive-complexity. Threshold
+  - key:             readability-function-cognitive-complexity.Threshold
     value:           50
+  - key:             readability-function-cognitive-complexity.DescribeBasicIncrements
+    value:           'false'
 ...
 

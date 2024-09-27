@@ -11,21 +11,20 @@
 
 #include <array>
 
-#define AT_Error(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_ERROR, "GM", __VA_ARGS__)
-#define AT_Warn(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "GM", __VA_ARGS__)
-#define AT_Info(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "GM", __VA_ARGS__)
-#define AT_Log(...) AT_Log_I("GM", __VA_ARGS__)
+template <class... Types> void AT_Error(Types... args) { Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_ERROR, "GM", args...); }
+template <class... Types> void AT_Warn(Types... args) { Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "GM", args...); }
+template <class... Types> void AT_Info(Types... args) { Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "GM", args...); }
+template <class... Types> void AT_Log(Types... args) { AT_Log_I("GM", args...); }
 
-SLONG TankSize[4] = {100000, 1000000, 10000000, 100000000};
-SLONG TankPrice[4] = {100000, 800000, 7000000, 60000000};
+std::array<SLONG, 4> TankSize = {100000, 1000000, 10000000, 100000000};
+std::array<SLONG, 4> TankPrice = {100000, 800000, 7000000, 60000000};
 
-SLONG SabotagePrice[5] = {1000, 5000, 10000, 50000, 100000};
-SLONG SabotagePrice2[4] = {10000, 25000, 50000, 250000};
-SLONG SabotagePrice3[6] = {100000, 500000, 1000000, 2000000, 5000000, 8000000};
+std::array<SLONG, 5> SabotagePrice = {1000, 5000, 10000, 50000, 100000};
+std::array<SLONG, 4> SabotagePrice2 = {10000, 25000, 50000, 250000};
+std::array<SLONG, 6> SabotagePrice3 = {100000, 500000, 1000000, 2000000, 5000000, 8000000};
 
-SLONG RocketPrices[10] = {200000, 400000, 600000, 5000000, 8000000, 10000000, 20000000, 25000000, 50000000, 85000000};
-
-SLONG StationPrices[10] = {1000000, 2000000, 3000000, 2000000, 10000000, 20000000, 35000000, 50000000, 35000000, 80000000};
+std::array<SLONG, 10> RocketPrices = {200000, 400000, 600000, 5000000, 8000000, 10000000, 20000000, 25000000, 50000000, 85000000};
+std::array<SLONG, 10> StationPrices = {1000000, 2000000, 3000000, 2000000, 10000000, 20000000, 35000000, 50000000, 35000000, 80000000};
 
 void GameMechanic::bankruptPlayer(PLAYER &qPlayer) {
     qPlayer.IsOut = TRUE;
@@ -48,7 +47,7 @@ void GameMechanic::bankruptPlayer(PLAYER &qPlayer) {
 }
 
 bool GameMechanic::buyKerosinTank(PLAYER &qPlayer, SLONG type, SLONG amount) {
-    auto nTankTypes = sizeof(TankSize) / sizeof(TankSize[0]);
+    auto nTankTypes = TankSize.size();
     if (type < 0 || type >= nTankTypes) {
         AT_Error("GameMechanic::buyKerosinTank(%s): Invalid tank type (%ld).", (LPCTSTR)qPlayer.AirlineX, type);
         return false;

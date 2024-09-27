@@ -499,7 +499,7 @@ Bot::Prio Bot::condBuyKerosineTank(__int64 &moneyAvailable) {
         return Prio::None;
     }
 
-    auto nTankTypes = sizeof(TankSize) / sizeof(TankSize[0]);
+    auto nTankTypes = TankSize.size();
     if (moneyAvailable > TankPrice[nTankTypes - 1]) {
         moneyAvailable = TankPrice[nTankTypes - 1]; /* do not spend more than 1x largest tank at once*/
     }
@@ -783,7 +783,7 @@ Bot::Prio Bot::condVisitNasa(__int64 &moneyAvailable) {
 
     Prio prio = Prio::None;
     const auto &qPrices = (Sim.Difficulty == DIFF_FINAL) ? RocketPrices : StationPrices;
-    auto nRocketParts = sizeof(qPrices) / sizeof(qPrices[0]);
+    auto nRocketParts = qPrices.size();
     for (SLONG i = 0; i < nRocketParts; i++) {
         if ((qPlayer.RocketFlags & (1 << i)) == 0 && moneyAvailable >= qPrices[i]) {
             prio = std::max(prio, Prio::High);

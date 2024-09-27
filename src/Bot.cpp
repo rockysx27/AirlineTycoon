@@ -708,7 +708,7 @@ void Bot::RobotExecuteAction() {
     case ACTION_VISITNASA:
         if (condVisitNasa(moneyAvailable) != Prio::None) {
             const auto &qPrices = (Sim.Difficulty == DIFF_FINAL) ? RocketPrices : StationPrices;
-            auto nParts = sizeof(qPrices) / sizeof(qPrices[0]);
+            auto nParts = qPrices.size();
             for (SLONG i = 0; i < nParts; i++) {
                 if ((qPlayer.RocketFlags & (1 << i)) == 0 && moneyAvailable >= qPrices[i]) {
                     qPlayer.ChangeMoney(-qPrices[i], 3400, "");
