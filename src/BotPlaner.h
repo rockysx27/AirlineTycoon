@@ -127,7 +127,7 @@ class BotPlaner {
     BotPlaner() = delete;
     BotPlaner(PLAYER &player, const CPlanes &planes);
 
-    void addJobSource(JobOwner jobOwner, std::vector<int> intJobSource);
+    void addJobSource(JobOwner jobOwner, const std::vector<int> &intJobSource);
 
     /* score weighting factors */
     void setDistanceFactor(int val) { mFactors.distanceFactor = val; }
@@ -275,8 +275,8 @@ class BotPlaner {
     /* in BotPlanerAlgo.cpp */
     inline int allPlaneGain() {
         int iterGain = 0;
-        for (int planeIdx = 0; planeIdx < mPlaneStates.size(); planeIdx++) {
-            iterGain += mPlaneStates[planeIdx].currentPremium - mPlaneStates[planeIdx].currentCost;
+        for (const auto &qPlaneState : mPlaneStates) {
+            iterGain += qPlaneState.currentPremium - qPlaneState.currentCost;
         }
         return iterGain;
     }

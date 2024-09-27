@@ -1,8 +1,21 @@
 #include "BotPlaner.h"
 
+#include "BotHelper.h"
+#include "TeakLibW.h"
+
+#include <SDL_log.h>
+
+#include <algorithm>
+#include <cassert>
 #include <chrono>
+#include <climits>
 #include <cmath>
+#include <cstdint>
+#include <vector>
+
+#ifdef PRINT_DETAIL
 #include <iostream>
+#endif
 
 template <class... Types> void AT_Error(Types... args) { Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_ERROR, "Bot", args...); }
 template <class... Types> void AT_Warn(Types... args) { Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "Bot", args...); }
@@ -53,8 +66,8 @@ void BotPlaner::printForPlane(const char *txt, int planeIdx, bool printOnErrorOn
 }
 
 void BotPlaner::savePath(int planeIdx, std::vector<int> &path) const {
-    auto &planeState = mPlaneStates[planeIdx];
-    auto &g = mGraphs[planeState.planeTypeId];
+    const auto &planeState = mPlaneStates[planeIdx];
+    const auto &g = mGraphs[planeState.planeTypeId];
     int n = g.nodeState[planeIdx].nextNode;
     path.clear();
     while (n != -1) {
@@ -789,7 +802,7 @@ bool BotPlaner::runAddNodeToBestPlaneInner(int jobIdxToInsert) {
         }
 
         /* for "miles and more" mission: Check actual speed for this job (distance / hours) */
-        if (mMinSpeedRatio > 0.0f) {
+        if (mMinSpeedRatio > 0.0F) {
             const auto &job = mJobList[jobIdxToInsert];
             float distance = job.calculateDistance();
             float speedActual = distance / g.nodeInfo[nodeToInsert].duration;
@@ -879,7 +892,7 @@ bool BotPlaner::runAddNodeToBestPlane(int jobIdxToInsert) {
 }
 
 bool BotPlaner::algo(int64_t timeBudget) {
-    timeBudget = 1000 * std::max((int64_t)1, timeBudget);
+    timeBudget = 1000 * std::max(static_cast<int64_t>(1), timeBudget);
     auto t_begin = std::chrono::steady_clock::now();
 
     for (auto &g : mGraphs) {
