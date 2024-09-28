@@ -270,7 +270,7 @@ int BotPlaner::makeRoom(Graph &g, int nodeToMoveLeft, int nodeToMoveRight) {
     shiftRight(g, nodeToMoveRight, sRight - 1, true);
 
     if (nodeToMoveRight == -1) {
-        return 99;
+        return 99; /* meaning: 'plenty of room' */
     }
 
     auto currentTime = g.nodeState[nodeToMoveLeft].startTime;
@@ -493,7 +493,6 @@ void BotPlaner::insertNode(Graph &g, int planeIdx, int currentNode, int nextNode
     currentTime += nextInfo.duration;
 
     /* assign job */
-    // assert(!mJobList[nextInfo.jobIdx].isFullyScheduled());
     mJobList[nextInfo.jobIdx].schedule(g.planeTypePassengers);
 
     /* did current already have a successor? This will now become the overnext node */

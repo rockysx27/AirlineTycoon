@@ -107,7 +107,7 @@ std::pair<int, float> BotPlaner::FlightJob::calculateScore(const Factors &f, int
     }
 
     score += f.constBonus;
-    score += f.distanceFactor * Cities.CalcDistance(getStartCity(), getDestCity());
+    score += f.distanceFactor * calculateDistance();
     if (isFreight()) {
         score += f.freightBonus * fracht.Tons;
         if (fracht.Praemie == 0) {
@@ -410,6 +410,7 @@ void BotPlaner::findPlaneTypes() {
     for (auto &planeState : mPlaneStates) {
         const auto &qPlane = qPlanes[planeState.planeId];
         if (qPlane.TypeId == -1) {
+            /* designer plane: Each is considered its own type */
             planeState.planeTypeId = nPlaneTypes++;
             mPlaneTypeToPlane.push_back(&qPlane);
             continue;
@@ -443,14 +444,13 @@ std::vector<Graph> BotPlaner::prepareGraph() {
         for (int jobIdx = 0; jobIdx < mJobList.size(); jobIdx++) {
             const auto &job = mJobList[jobIdx];
 
-            /* freight job way too big for plane? */
             int numRequired = 1;
             if (job.isFreight()) {
                 auto tons = std::max(job.getNumToTransport(), job.getNumNotLocked());
                 numRequired = ceil_div(tons, (plane->ptPassagiere / 10));
             }
             if (!job.wasTaken() && (numRequired > kFreightMaxFlights)) {
-                continue; /* job was not taken yet and required too many flights */
+                continue; /* freight job was not taken yet and required too many flights */
             }
 
             /* calculate cost, duration and distance */
@@ -648,6 +648,8 @@ bool BotPlaner::applySolutionForPlane(PLAYER &qPlayer, int planeId, const BotPla
             freightHash[qFPE.ObjectId].pop_back();
         } else {
             if (jobHash.find(qFPE.ObjectId) == jobHash.end()) {
+                AT_Error("BotPlaner::applySolutionForPlane(): Plane %s, schedule entry %d: Unknown job scheduled: %s", qPlanes[planeId].Name.c_str(), d,
+                         strJob.c_str());
                 continue;
             }
             iter = jobHash[qFPE.ObjectId];
