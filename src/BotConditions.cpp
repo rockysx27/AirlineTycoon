@@ -307,38 +307,30 @@ Bot::Prio Bot::condUpgradePlanes() {
         }
     }
 
-    bool shallUpgrade = true;
+    if (!hoursPassed(ACTION_UPGRADE_PLANES, 24)) {
+        return Prio::None; /* upgrade only once per day */
+    }
+
+    bool shallUpgrade = false;
     Prio prio = Prio::None;
 
-    /* upgrade only once per day */
-    if (hoursPassed(ACTION_UPGRADE_PLANES, 24)) {
-        if (mRunToFinalObjective == FinalPhase::SaveMoney) {
-            shallUpgrade = false;
-        } else if (mRunToFinalObjective == FinalPhase::No) {
-            prio = std::max(prio, Prio::Medium);
-            if (!haveDiscount()) {
-                shallUpgrade = false; /* wait until we have some discount */
-            }
-            if (RoutesNextStep::UpgradePlanes != mRoutesNextStep) {
-                shallUpgrade = false;
-            }
-        } else if (mRunToFinalObjective == FinalPhase::TargetRun) {
-            prio = std::max(prio, Prio::High);
-            /* only upgrade if mission is plane upgrades */
-            if (!qPlayer.RobotUse(ROBOT_USE_LUXERY)) {
-                shallUpgrade = false;
-            }
-        } else {
-            assert(false);
+    if (mRunToFinalObjective == FinalPhase::No) {
+        prio = std::max(prio, Prio::Medium);
+        if (haveDiscount() && (RoutesNextStep::UpgradePlanes == mRoutesNextStep)) {
+            shallUpgrade = true;
         }
+    } else if (mRunToFinalObjective == FinalPhase::TargetRun) {
+        prio = std::max(prio, Prio::High);
+        /* only upgrade if mission is plane upgrades */
+        shallUpgrade = qPlayer.RobotUse(ROBOT_USE_LUXERY);
+    }
 
-        /* Plane upgrades happen asynchronously. Therefore, we earmark money in the variable mMoneyReservedForUpgrades.
-         * We need to execute this action regularly even if we have no money since we
-         * might cancel previously planned upgrades to have more available money. */
-        SLONG minCost = 550 * (SeatCosts[2] - SeatCosts[0] / 2); /* assuming 550 seats (777) */
-        if (getMoneyAvailable() < minCost) {
-            shallUpgrade = false;
-        }
+    /* Plane upgrades happen asynchronously. Therefore, we earmark money in the variable mMoneyReservedForUpgrades.
+     * We need to execute this action regularly even if we have no money since we
+     * might cancel previously planned upgrades to have more available money. */
+    SLONG minCost = 550 * (SeatCosts[2] - SeatCosts[0] / 2); /* assuming 550 seats (777) */
+    if (getMoneyAvailable() < minCost) {
+        shallUpgrade = false;
     }
 
     if (!shallUpgrade) {
@@ -366,7 +358,7 @@ Bot::Prio Bot::condBuyNewPlane(__int64 &moneyAvailable) {
         return Prio::None;
     }
     if (!haveDiscount()) {
-        return Prio::None; /* wait until we have some discount */
+        return Prio::None;
     }
 
     SLONG bestPlaneTypeId = mDoRoutes ? mBuyPlaneForRouteId : mBestPlaneTypeId;
@@ -408,7 +400,7 @@ Bot::Prio Bot::condBuyUsedPlane(__int64 &moneyAvailable) {
         return Prio::None;
     }
     if (!haveDiscount()) {
-        return Prio::None; /* wait until we have some discount */
+        return Prio::None;
     }
     if (mBestUsedPlaneIdx < 0) {
         return Prio::None; /* no plane selected (ACTION_VISITMUSEUM) */
@@ -437,7 +429,7 @@ Bot::Prio Bot::condVisitMuseum() {
         return Prio::None;
     }
     if (!haveDiscount()) {
-        return Prio::None; /* wait until we have some discount */
+        return Prio::None;
     }
 
     if (mBestUsedPlaneIdx < 0) {
@@ -493,7 +485,7 @@ Bot::Prio Bot::condBuyKerosineTank(__int64 &moneyAvailable) {
         return Prio::None; /* no access to advisor report */
     }
     if (!haveDiscount()) {
-        return Prio::None; /* wait until we have some discount */
+        return Prio::None;
     }
     if (!mDoRoutes || mRoutes.size() < kNumRoutesStartBuyingTanks) {
         return Prio::None; /* wait until we started using routes */
@@ -594,7 +586,8 @@ Bot::Prio Bot::condIncreaseDividend(__int64 &moneyAvailable) {
         return Prio::None;
     }
 
-    SLONG maxToEmit = (2500000 - qPlayer.MaxAktien) / 100 * 100;
+    SLONG maxToEmit = 0;
+    GameMechanic::canEmitStock(qPlayer, &maxToEmit);
     if (kReduceDividend && maxToEmit < 10000) {
         /* we cannot emit any shares anymore. We do not care about stock prices now. */
         return (qPlayer.Dividende > 0) ? Prio::Medium : Prio::None;
@@ -1031,7 +1024,7 @@ Bot::Prio Bot::condVisitDesigner(__int64 &moneyAvailable) {
         return Prio::None;
     }
     if (!haveDiscount()) {
-        return Prio::None; /* wait until we have some discount */
+        return Prio::None;
     }
 
     if (mDesignerPlane.Name.empty() || !mDesignerPlane.IsBuildable()) {
@@ -1055,7 +1048,7 @@ Bot::Prio Bot::condBuyAdsForRoutes(__int64 &moneyAvailable) {
         return Prio::None;
     }
     if (!haveDiscount()) {
-        return Prio::None; /* wait until we have some discount */
+        return Prio::None;
     }
 
     if (mRunToFinalObjective > FinalPhase::No) {
@@ -1088,7 +1081,7 @@ Bot::Prio Bot::condBuyAds(__int64 &moneyAvailable) {
             return Prio::None;
         }
         if (!haveDiscount()) {
-            return Prio::None; /* wait until we have some discount */
+            return Prio::None;
         }
         if (mRoutesNextStep != RoutesNextStep::ImproveAirlineImage) {
             return Prio::None;
