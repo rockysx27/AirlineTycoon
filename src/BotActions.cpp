@@ -635,7 +635,7 @@ void Bot::actionVisitHR() {
         AT_Log("Bot::actionVisitHR(): We lost %d employees", mNumEmployees - nWorkers);
     }
     if (salaryIncreases > 0) {
-        AT_Log("Bot::actionVisitHR(): Increases salary of %d employees", salaryIncreases);
+        AT_Log("Bot::actionVisitHR(): Increased salary of %d employees", salaryIncreases);
     }
 
     mNumEmployees = nWorkers;
@@ -713,36 +713,20 @@ void Bot::actionSabotage(__int64 moneyAvailable) {
         AT_Error("Bot::actionSabotage(): Conditions not met.");
     }
 
-    /* decide which sabotage. Default: Spiked coffee */
-    SLONG jobType = 1;
-    SLONG jobNumber = 1;
-    SLONG jobHints = 8;
+    SLONG jobType{-1};
+    SLONG jobNumber{-1};
+    SLONG jobHints{-1};
+    if (!determineSabotageMode(moneyAvailable, jobType, jobNumber, jobHints)) {
+        return;
+    }
 
-    /* sabotage planes to damage enemy stock price in stock price competitions */
-    bool stockPriceSabotage = (Sim.Difficulty == DIFF_ADDON08 || Sim.Difficulty == DIFF_ATFS07);
-    /* sabotage plane tire to delay next start in miles&more mission */
-    bool delaySabotage = (Sim.Difficulty == DIFF_ADDON04);
-    if (stockPriceSabotage || delaySabotage) {
-        std::array<SLONG, 5> hintArray{2, 4, 10, 20, 100};
-        jobType = 0;
-        jobNumber = std::min((stockPriceSabotage ? 4 : 3), qPlayer.ArabTrust);
-        jobHints = hintArray[jobNumber - 1];
-
+    /* exceute sabotage */
+    if (jobType == 0) {
         const auto &qNemesisPlanes = Sim.Players.Players[mNemesis].Planes;
         qPlayer.ArabPlaneSelection = qNemesisPlanes.GetRandomUsedIndex(&LocalRandom);
         AT_Log("Bot::actionSabotage(): Selecting plane %s", Helper::getPlaneName(qNemesisPlanes[qPlayer.ArabPlaneSelection]).c_str());
     }
 
-    /* check preconditions */
-    auto minCost = SabotagePrice[jobNumber - 1];
-    if (mArabHintsTracker + jobHints > kMaxSabotageHints) {
-        return; /* wait until we won't be caught */
-    }
-    if (minCost > moneyAvailable) {
-        return; /* wait until we have enough money */
-    }
-
-    /* exceute sabotage */
     const auto &nemesisName = Sim.Players.Players[mNemesis].AirlineX;
     auto ret = GameMechanic::setSaboteurTarget(qPlayer, mNemesis);
     if (ret != mNemesis) {

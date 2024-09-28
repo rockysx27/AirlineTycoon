@@ -526,27 +526,21 @@ Bot::Prio Bot::condSabotage(__int64 &moneyAvailable) {
         return Prio::None;
     }
 
-    /* pre-conditions for: spiking coffee */
-    auto minCost = SabotagePrice2[0];
-    SLONG hints = 2;
+    /* pre-conditions for sabotage */
+    SLONG jobType{-1};
+    SLONG jobNumber{-1};
+    SLONG jobHints{-1};
+    if (!determineSabotageMode(moneyAvailable, jobType, jobNumber, jobHints)) {
+        return Prio::None;
+    }
 
     /* pre-conditions for: damage stock price */
     if (Sim.Difficulty == DIFF_ADDON08 || Sim.Difficulty == DIFF_ATFS07) {
-        minCost = SabotagePrice[0];
-        hints = 4;
-
         if (mNemesisScore * 100 / TARGET_SHARES < 50) {
             return Prio::None;
         }
     }
 
-    if (mArabHintsTracker + hints > kMaxSabotageHints) {
-        return Prio::None;
-    }
-
-    if (minCost <= moneyAvailable) {
-        return Prio::Medium;
-    }
     return Prio::None;
 }
 

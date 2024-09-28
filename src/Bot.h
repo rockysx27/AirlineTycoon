@@ -223,6 +223,7 @@ class Bot {
     void planFlights();
     SLONG replaceAutomaticFlights(SLONG planeId);
     std::pair<SLONG, SLONG> kerosineQualiOptimization(__int64 moneyAvailable, DOUBLE targetFillRatio) const;
+    bool determineSabotageMode(__int64 moneyAvailable, SLONG &jobType, SLONG &jobNumber, SLONG &jobHints);
     /* routes */
     SLONG getNumRentedRoutes() const;
     void checkLostRoutes();

@@ -648,6 +648,38 @@ std::pair<SLONG, SLONG> Bot::kerosineQualiOptimization(__int64 moneyAvailable, D
     return res;
 }
 
+bool Bot::determineSabotageMode(__int64 moneyAvailable, SLONG &jobType, SLONG &jobNumber, SLONG &jobHints) {
+    std::array<SLONG, 5> hintArray1{2, 4, 10, 20, 100};
+    std::array<SLONG, 4> hintArray2{8, 0, 25, 40};
+    /* std::array<SLONG, 6> hintArray3{8, 15, 25, 30, 50, 70}; */
+
+    /* decide which sabotage to use. Default: Spiked coffee */
+    jobType = 1;
+    jobNumber = 1;
+    jobHints = hintArray2[jobNumber - 1];
+    SLONG jobCost = SabotagePrice2[jobNumber - 1];
+
+    /* sabotage planes to damage enemy stock price in stock price competitions */
+    bool stockPriceSabotage = (Sim.Difficulty == DIFF_ADDON08 || Sim.Difficulty == DIFF_ATFS07);
+    /* sabotage plane tire to delay next start in miles&more mission */
+    bool delaySabotage = (Sim.Difficulty == DIFF_ADDON04);
+    if (stockPriceSabotage || delaySabotage) {
+        jobType = 0;
+        jobNumber = std::min((stockPriceSabotage ? 4 : 3), qPlayer.ArabTrust);
+        jobHints = hintArray1[jobNumber - 1];
+        jobCost = SabotagePrice[jobNumber - 1];
+    }
+
+    /* check preconditions */
+    if (mArabHintsTracker + jobHints > kMaxSabotageHints) {
+        return false; /* wait until we won't be caught */
+    }
+    if (jobCost > moneyAvailable) {
+        return false; /* wait until we have enough money */
+    }
+    return true;
+}
+
 SLONG Bot::getNumRentedRoutes() const {
     SLONG numRented = 0;
     const auto &qRRouten = qPlayer.RentRouten.RentRouten;
@@ -667,34 +699,36 @@ void Bot::checkLostRoutes() {
     auto numRented = getNumRentedRoutes();
     assert(numRented % 2 == 0);
     assert(numRented / 2 <= mRoutes.size());
-    if (numRented / 2 < mRoutes.size()) {
-        AT_Error("We lost %d routes!", mRoutes.size() - numRented / 2);
+    if (numRented / 2 >= mRoutes.size()) {
+        return; /* alles ok */
+    }
 
-        std::vector<RouteInfo> routesNew;
-        std::vector<SLONG> planesForRoutesNew;
-        const auto &qRRouten = qPlayer.RentRouten.RentRouten;
-        for (const auto &route : mRoutes) {
-            if (qRRouten[route.routeId].Rang != 0) {
-                /* route still exists */
-                routesNew.emplace_back(route);
-                for (auto planeId : route.planeIds) {
-                    planesForRoutesNew.push_back(planeId);
-                }
-            } else {
-                /* route is gone! move planes from route back into the "unassigned" pile */
-                for (auto planeId : route.planeIds) {
-                    mPlanesForRoutesUnassigned.push_back(planeId);
-                    GameMechanic::clearFlightPlan(qPlayer, planeId);
-                    AT_Log("Bot::checkLostRoutes(): Plane %s does not have a route anymore.", Helper::getPlaneName(qPlayer.Planes[planeId]).c_str());
-                }
+    AT_Error("We lost %d routes!", mRoutes.size() - numRented / 2);
+
+    std::vector<RouteInfo> routesNew;
+    std::vector<SLONG> planesForRoutesNew;
+    const auto &qRRouten = qPlayer.RentRouten.RentRouten;
+    for (const auto &route : mRoutes) {
+        if (qRRouten[route.routeId].Rang != 0) {
+            /* route still exists */
+            routesNew.emplace_back(route);
+            for (auto planeId : route.planeIds) {
+                planesForRoutesNew.push_back(planeId);
+            }
+        } else {
+            /* route is gone! move planes from route back into the "unassigned" pile */
+            for (auto planeId : route.planeIds) {
+                mPlanesForRoutesUnassigned.push_back(planeId);
+                GameMechanic::clearFlightPlan(qPlayer, planeId);
+                AT_Log("Bot::checkLostRoutes(): Plane %s does not have a route anymore.", Helper::getPlaneName(qPlayer.Planes[planeId]).c_str());
             }
         }
-        std::swap(mRoutes, routesNew);
-        std::swap(mPlanesForRoutes, planesForRoutesNew);
-
-        mRoutesUtilizationUpdated = false;
-        mRoutesNextStep = RoutesNextStep::None;
     }
+    std::swap(mRoutes, routesNew);
+    std::swap(mPlanesForRoutes, planesForRoutesNew);
+
+    mRoutesUtilizationUpdated = false;
+    mRoutesNextStep = RoutesNextStep::None;
 }
 
 void Bot::updateRouteInfoOffice() {
@@ -793,12 +827,12 @@ void Bot::routesRecalcNextStep() {
     }
 
     std::tie(mRoutesNextStep, mImproveRouteId) = routesFindNextStep();
+    mWantToRentRouteId = (mRoutesNextStep == RoutesNextStep::RentNewRoute) ? mImproveRouteId : -1;
+
     std::string routeName;
     if (mImproveRouteId != -1) {
         routeName = Helper::getRouteName(getRoute(mRoutes[mImproveRouteId]));
     }
-
-    mWantToRentRouteId = (mRoutesNextStep == RoutesNextStep::RentNewRoute) ? mImproveRouteId : -1;
 
     switch (mRoutesNextStep) {
     case RoutesNextStep::None:
