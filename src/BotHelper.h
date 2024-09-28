@@ -86,6 +86,9 @@ class PlaneTime {
     int mTime{0};
 };
 
+TEAKFILE &operator<<(TEAKFILE &File, const PlaneTime &planeTime);
+TEAKFILE &operator>>(TEAKFILE &File, PlaneTime &planeTime);
+
 namespace Helper {
 
 CString getWeekday(UWORD date);

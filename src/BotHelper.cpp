@@ -39,6 +39,22 @@ extern SLONG timeWerbOpen;
 
 // #define PRINT_OVERALL 1
 
+TEAKFILE &operator<<(TEAKFILE &File, const PlaneTime &planeTime) {
+    File << static_cast<SLONG>(planeTime.getDate());
+    File << static_cast<SLONG>(planeTime.getHour());
+    return (File);
+}
+
+TEAKFILE &operator>>(TEAKFILE &File, PlaneTime &planeTime) {
+    SLONG date{};
+    SLONG time{};
+    File >> date;
+    File >> time;
+    planeTime = {date, time};
+
+    return (File);
+}
+
 inline void setColorForFlightJob(const PLAYER &qPlayer, const CFlugplanEintrag &qFPE) {
     std::cout << "\033[1;";
     if (qFPE.ObjectType == 1) {
@@ -453,7 +469,7 @@ void printFlightJobs(const PLAYER &qPlayer, const CPlane &qPlane) {
                 std::cout << ".";
             }
         }
-        std::cout << '\n';
+        std::cout << std::endl;
     }
 }
 

@@ -45,6 +45,8 @@ void Bot::printRobotFlags() const {
     }
 }
 
+SLONG Bot::numPlanes() const { return mPlanesForJobs.size() + mPlanesForJobsUnassigned.size() + mPlanesForRoutes.size() + mPlanesForRoutesUnassigned.size(); }
+
 std::vector<SLONG> Bot::getAllPlanes() const {
     std::vector<SLONG> planes = mPlanesForRoutes;
     for (const auto &i : mPlanesForRoutesUnassigned) {

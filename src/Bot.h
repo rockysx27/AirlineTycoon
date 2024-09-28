@@ -9,8 +9,8 @@
 #include <unordered_map>
 #include <vector>
 
-class CRoute;
 class CRentRoute;
+class CRoute;
 class PLAYER;
 
 extern const bool kAlwaysReplan;
@@ -50,9 +50,7 @@ extern const SLONG kMoneyReserveBossOffice;
 extern const SLONG kMoneyReserveExpandAirport;
 extern const SLONG kMoneyReserveSabotage;
 
-extern SLONG kPlaneScoreMode;
 extern SLONG kPlaneScoreForceBest;
-extern SLONG kTestMode;
 
 class Bot {
   public:
@@ -66,7 +64,14 @@ class Bot {
 
     void setNoticedSickness() { mIsSickToday = true; }
 
-    // private:
+    /* anim state */
+    bool getOnThePhone() const { return mOnThePhone > 0; }
+    void decOnThePhone() { mOnThePhone--; }
+
+    friend TEAKFILE &operator<<(TEAKFILE &File, const Bot &bot);
+    friend TEAKFILE &operator>>(TEAKFILE &File, Bot &bot);
+
+  private:
     enum class Prio {
         None,   /* conditions not met: Forbidden to perform this action! */
         Lowest, /* unimportant actions (mostly wasting time at bar, telescope, shops, ...) */
@@ -120,6 +125,9 @@ class Bot {
         std::vector<SLONG> planeIds{};
         bool canUpgrade{false};
     };
+
+    const char *getPrioName(Prio prio);
+    const char *getPrioName(SLONG prio);
 
     /* in BotConditions.cpp */
     Prio condAll(SLONG actionId);
@@ -179,6 +187,7 @@ class Bot {
     void updateExtraWorkers();
     void actionBuyNewPlane(__int64 moneyAvailable);
     void actionBuyUsedPlane(__int64 moneyAvailable);
+    void actionMuseumCheckPlanes();
     void actionBuyDesignerPlane(__int64 moneyAvailable);
     void actionVisitHR();
     void actionBuyKerosine(__int64 moneyAvailable);
@@ -209,7 +218,6 @@ class Bot {
     void determineNemesis();
     void switchToFinalTarget();
     std::vector<SLONG> findBestAvailablePlaneType(bool forRoutes, bool canRefresh);
-    SLONG findBestAvailableUsedPlane() const;
     void grabFlights(BotPlaner &planer, bool areWeInOffice);
     void requestPlanFlights(bool areWeInOffice);
     void planFlights();
@@ -229,7 +237,7 @@ class Bot {
 
     /* misc (in BotMisc.cpp) */
     void printRobotFlags() const;
-    SLONG numPlanes() const { return mPlanesForJobs.size() + mPlanesForJobsUnassigned.size() + mPlanesForRoutes.size() + mPlanesForRoutesUnassigned.size(); }
+    SLONG numPlanes() const;
     std::vector<SLONG> getAllPlanes() const;
     bool isOfficeUsable() const;
     bool hoursPassed(SLONG room, SLONG hours) const;
@@ -258,10 +266,6 @@ class Bot {
     void forceReplanning();
     void setHardcodedDesignerPlaneLarge();
     void setHardcodedDesignerPlaneEco();
-
-    /* anim state */
-    bool getOnThePhone() const { return mOnThePhone > 0; }
-    void decOnThePhone() { mOnThePhone--; }
 
     TEAKRAND LocalRandom{};
     PLAYER &qPlayer;
@@ -346,9 +350,6 @@ class Bot {
     CXPlane mDesignerPlane{};
     CString mDesignerPlaneFile{};
 };
-
-TEAKFILE &operator<<(TEAKFILE &File, const PlaneTime &planeTime);
-TEAKFILE &operator>>(TEAKFILE &File, PlaneTime &planeTime);
 
 TEAKFILE &operator<<(TEAKFILE &File, const Bot &bot);
 TEAKFILE &operator>>(TEAKFILE &File, Bot &bot);

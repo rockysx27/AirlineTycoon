@@ -373,41 +373,6 @@ std::vector<SLONG> Bot::findBestAvailablePlaneType(bool forRoutes, bool canRefre
     return bestList;
 }
 
-SLONG Bot::findBestAvailableUsedPlane() const {
-    SLONG bestIdx = -1;
-    DOUBLE bestScore = kUsedPlaneMinimumScore;
-    for (SLONG c = 0; c < 3; c++) {
-        const auto &qPlane = Sim.UsedPlanes[0x1000000 + c];
-        if (qPlane.Name.GetLength() <= 0) {
-            continue;
-        }
-
-        DOUBLE score = 1.0 * 1e9; /* multiplication (geometric mean) because values have wildly different ranges */
-        score *= qPlane.ptPassagiere * qPlane.ptPassagiere;
-        score /= qPlane.ptVerbrauch;
-        score /= (2015 - qPlane.Baujahr);
-
-        auto worstZustand = qPlane.Zustand - 20;
-        SLONG improvementNeeded = std::max(0, 80 - worstZustand);
-        SLONG repairCost = improvementNeeded * (qPlane.ptPreis / 110);
-        if (qPlayer.HasBerater(BERATERTYP_FLUGZEUG) > 0) {
-            score /= repairCost;
-        }
-
-        AT_Log("Bot::findBestAvailableUsedPlane(): Used plane %s has score %.2f", Helper::getPlaneName(qPlane).c_str(), score);
-        AT_Log("\t\tPassengers = %d, fuel = %d, year = %d", qPlane.ptPassagiere, qPlane.ptVerbrauch, qPlane.Baujahr);
-        if (qPlayer.HasBerater(BERATERTYP_FLUGZEUG) > 0) {
-            AT_Log("\t\tWorstZustand = %u, cost = %d", worstZustand, repairCost);
-        }
-
-        if (score > bestScore) {
-            bestScore = score;
-            bestIdx = c;
-        }
-    }
-    return bestIdx;
-}
-
 void Bot::grabFlights(BotPlaner &planer, bool areWeInOffice) {
     auto res = howToPlanFlights();
     if (HowToPlan::None == res) {
