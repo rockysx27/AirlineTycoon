@@ -249,7 +249,7 @@ class Bot {
     __int64 getMoneyAvailable() const;
     AreWeBroke areWeBroke() const;
     HowToGetMoney howToGetMoney();
-    __int64 howMuchMoneyCanWeGet(bool extremMeasures);
+    __int64 howMuchMoneyCanWeGet(bool extremeMeasures);
     bool canWeCallInternational();
     SLONG calcCurrentGainFromJobs() const;
     SLONG calcRouteImageNeeded(const RouteInfo &routeInfo) const;

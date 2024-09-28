@@ -526,19 +526,19 @@ Bot::Prio Bot::condSabotage(__int64 &moneyAvailable) {
         return Prio::None;
     }
 
-    /* pre-conditions for sabotage */
-    SLONG jobType{-1};
-    SLONG jobNumber{-1};
-    SLONG jobHints{-1};
-    if (!determineSabotageMode(moneyAvailable, jobType, jobNumber, jobHints)) {
-        return Prio::None;
-    }
-
-    /* pre-conditions for: damage stock price */
+    /* pre-condition for: damage stock price */
     if (Sim.Difficulty == DIFF_ADDON08 || Sim.Difficulty == DIFF_ATFS07) {
         if (mNemesisScore * 100 / TARGET_SHARES < 50) {
             return Prio::None;
         }
+    }
+
+    /* pre-conditions for sabotage */
+    SLONG jobType{-1};
+    SLONG jobNumber{-1};
+    SLONG jobHints{-1};
+    if (determineSabotageMode(moneyAvailable, jobType, jobNumber, jobHints)) {
+        return Prio::Medium;
     }
 
     return Prio::None;

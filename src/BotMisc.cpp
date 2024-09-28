@@ -185,7 +185,7 @@ Bot::HowToGetMoney Bot::howToGetMoney() {
     return HowToGetMoney::None;
 }
 
-__int64 Bot::howMuchMoneyCanWeGet(bool extremMeasures) {
+__int64 Bot::howMuchMoneyCanWeGet(bool extremeMeasures) {
     __int64 valueCompetitorShares = 0;
     SLONG numOwnShares = 0;
     for (SLONG c = 0; c < Sim.Players.AnzPlayers; c++) {
@@ -197,7 +197,7 @@ __int64 Bot::howMuchMoneyCanWeGet(bool extremMeasures) {
         }
     }
 
-    if (!extremMeasures) {
+    if (!extremeMeasures) {
         numOwnShares = std::max(0, numOwnShares - qPlayer.AnzAktien / 2 - 1);
     }
 

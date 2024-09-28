@@ -325,10 +325,6 @@ std::vector<SLONG> Bot::findBestAvailablePlaneType(bool forRoutes, bool canRefre
         }
         const auto &planeType = PlaneTypes[i];
 
-        if (!GameMechanic::checkPlaneTypeAvailable(i)) {
-            continue;
-        }
-
         DOUBLE score = 1.0; /* multiplication (geometric mean) because values have wildly different ranges */
         score = 1.0 * planeType.Passagiere;
         if (!forRoutes) {

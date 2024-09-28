@@ -803,10 +803,9 @@ __int64 Bot::calcNumOfFreeShares(SLONG playerId) {
 
 __int64 Bot::calcAmountToBuy(SLONG buyFromPlayerId, SLONG desiredRatio, __int64 moneyAvailable) const {
     auto &player = Sim.Players.Players[buyFromPlayerId];
-    __int64 amount = player.AnzAktien;
-    __int64 targetAmount = amount * desiredRatio / 100;
-    __int64 amountFree = calcNumOfFreeShares(buyFromPlayerId);
+    __int64 targetAmount = player.AnzAktien * desiredRatio / 100;
     __int64 amountWanted = targetAmount - qPlayer.OwnsAktien[buyFromPlayerId];
+    __int64 amountFree = calcNumOfFreeShares(buyFromPlayerId);
     __int64 amountCanAfford = calcBuyShares(moneyAvailable, player.Kurse[0]);
     return std::min({amountFree, amountWanted, amountCanAfford});
 }
