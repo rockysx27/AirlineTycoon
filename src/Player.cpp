@@ -241,14 +241,17 @@ void PLAYER::ChangeMoney(__int64 Money, SLONG Reason, const CString &Par1, const
     if (Reason < 2100 || Reason > 2103) {
         /* 2100-2103 sind nur zur Informationen (Saldo), Ein-/Ausgaben für die
          * Flüge wurden schon separat verbucht */
-        if (PLAYER::Money > DEBT_WARNLIMIT1 && PLAYER::Money + Money < DEBT_WARNLIMIT1) {
-            Messages.AddMessage(BERATERTYP_GIRL, StandardTexte.GetS(TOKEN_ADVICE, 2380));
-        }
-        if (PLAYER::Money > DEBT_WARNLIMIT2 && PLAYER::Money + Money < DEBT_WARNLIMIT2) {
-            Messages.AddMessage(BERATERTYP_GIRL, StandardTexte.GetS(TOKEN_ADVICE, 2381));
-        }
-        if (PLAYER::Money > DEBT_WARNLIMIT3 && PLAYER::Money + Money < DEBT_WARNLIMIT3) {
-            Messages.AddMessage(BERATERTYP_GIRL, StandardTexte.GetS(TOKEN_ADVICE, 2382));
+
+        if (Owner == 0) {
+            if (PLAYER::Money > DEBT_WARNLIMIT1 && PLAYER::Money + Money < DEBT_WARNLIMIT1) {
+                Messages.AddMessage(BERATERTYP_GIRL, StandardTexte.GetS(TOKEN_ADVICE, 2380));
+            }
+            if (PLAYER::Money > DEBT_WARNLIMIT2 && PLAYER::Money + Money < DEBT_WARNLIMIT2) {
+                Messages.AddMessage(BERATERTYP_GIRL, StandardTexte.GetS(TOKEN_ADVICE, 2381));
+            }
+            if (PLAYER::Money > DEBT_WARNLIMIT3 && PLAYER::Money + Money < DEBT_WARNLIMIT3) {
+                Messages.AddMessage(BERATERTYP_GIRL, StandardTexte.GetS(TOKEN_ADVICE, 2382));
+            }
         }
 
         PLAYER::Money += Money;
@@ -2245,7 +2248,7 @@ BOOL PLAYER::HasBeraterApplied(SLONG Berater) {
 // Der Personalberater gibt Weisheiten von sich:
 //--------------------------------------------------------------------------------------------
 void PLAYER::UpdatePersonalberater(SLONG Toleranz) {
-    if (HasBerater(BERATERTYP_PERSONAL) != 0) {
+    if ((Owner == 0) && HasBerater(BERATERTYP_PERSONAL) != 0) {
         if (xPiloten > Toleranz) {
             Messages.AddMessage(BERATERTYP_PERSONAL, bprintf(StandardTexte.GetS(TOKEN_ADVICE, 1100), xPiloten), MESSAGE_COMMENT);
         } else if (xBegleiter > Toleranz) {
@@ -5673,7 +5676,7 @@ void PLAYER::DelayFlightsIfNecessary() {
 //--------------------------------------------------------------------------------------------
 
 void PLAYER::RandomBeraterMessagePersonal() {
-    if (HasBerater(BERATERTYP_PERSONAL) == 0) {
+    if ((Owner != 0) || HasBerater(BERATERTYP_PERSONAL) == 0) {
         return;
     }
 
@@ -5721,7 +5724,7 @@ void PLAYER::RandomBeraterMessagePersonal() {
 }
 
 void PLAYER::RandomBeraterMessageKerosene() {
-    if (HasBerater(BERATERTYP_KEROSIN) == 0) {
+    if ((Owner != 0) || HasBerater(BERATERTYP_KEROSIN) == 0) {
         return;
     }
 
@@ -5739,7 +5742,7 @@ void PLAYER::RandomBeraterMessageKerosene() {
 }
 
 void PLAYER::RandomBeraterMessagePlane() {
-    if (HasBerater(BERATERTYP_FLUGZEUG) == 0) {
+    if ((Owner != 0) || HasBerater(BERATERTYP_FLUGZEUG) == 0) {
         return;
     }
 
@@ -5809,7 +5812,7 @@ void PLAYER::RandomBeraterMessagePlane() {
 
 void PLAYER::RandomBeraterMessageJobs() {
     TEAKRAND rnd(Sim.Time);
-    if (HasBerater(BERATERTYP_AUFTRAG) < rnd.getRandInt(0, 100)) {
+    if ((Owner != 0) || HasBerater(BERATERTYP_AUFTRAG) < rnd.getRandInt(0, 100)) {
         return;
     }
 
@@ -6084,7 +6087,7 @@ void PLAYER::MapWorkerOverflow(BOOL Advice) {
         }
     }
 
-    if ((NeedAdvice != 0) && (Advice != 0)) {
+    if ((Owner == 0) && (NeedAdvice != 0) && (Advice != 0)) {
         Messages.AddMessage(BERATERTYP_GIRL, StandardTexte.GetS(TOKEN_ADVICE, 1260), MESSAGE_COMMENT);
     }
 
@@ -6268,7 +6271,7 @@ again: // Zweiter Pass, wenn Stewardessen aus Luxusstellen umgebucht werden, dam
         }
     }
 
-    if ((Advice != 0) && (HasBerater(BERATERTYP_PERSONAL) != 0)) {
+    if ((Owner == 0) && (Advice != 0) && (HasBerater(BERATERTYP_PERSONAL) != 0)) {
         if (LastPiloten != xPiloten) {
             if (xPiloten > 0) {
                 Messages.AddMessage(BERATERTYP_PERSONAL, bprintf(StandardTexte.GetS(TOKEN_ADVICE, 1200), xPiloten), MESSAGE_COMMENT);
@@ -6406,12 +6409,14 @@ void PLAYER::DoBodyguardRabatt(SLONG Money) {
     SLONG quality = HasBerater(BERATERTYP_SICHERHEIT);
 
     if (quality > 20) {
-        if (GetRoom() == ROOM_SHOP1) {
-            Messages.AddMessage(BERATERTYP_SICHERHEIT, bprintf(StandardTexte.GetS(TOKEN_ADVICE, 6001), LPCTSTR(CString(Insert1000erDots(Money))), quality / 10),
-                                MESSAGE_URGENT);
-        } else {
-            Messages.AddMessage(BERATERTYP_SICHERHEIT, bprintf(StandardTexte.GetS(TOKEN_ADVICE, 6000), LPCTSTR(CString(Insert1000erDots(Money))), quality / 10),
-                                MESSAGE_URGENT);
+        if (Owner == 0) {
+            if (GetRoom() == ROOM_SHOP1) {
+                Messages.AddMessage(BERATERTYP_SICHERHEIT,
+                                    bprintf(StandardTexte.GetS(TOKEN_ADVICE, 6001), LPCTSTR(CString(Insert1000erDots(Money))), quality / 10), MESSAGE_URGENT);
+            } else {
+                Messages.AddMessage(BERATERTYP_SICHERHEIT,
+                                    bprintf(StandardTexte.GetS(TOKEN_ADVICE, 6000), LPCTSTR(CString(Insert1000erDots(Money))), quality / 10), MESSAGE_URGENT);
+            }
         }
 
         SLONG delta = Money / 100 * (quality / 10);
