@@ -8,7 +8,6 @@
 #include "SDL_surface.h"
 
 #include <random>
-#include <regex>
 #include <vector>
 
 extern void memswap(void *, void *, ULONG);
@@ -791,17 +790,13 @@ struct TEXTRES_CACHE_ENTRY {
 
 // static_assert(sizeof(TEXTRES_CACHE_ENTRY) == 12, "TEXTRES_CACHE_ENTRY size check");
 
-#define TEXTRES_CACHED (void *)1
-
 class TEXTRES {
   public:
     TEXTRES();
     ~TEXTRES(void);
 
-    void Open(char const *, void *);
-    BUFFER_V<char> &GetB(ULONG, ULONG);
-    char *FindP(ULONG, ULONG);
-    char *FindS(ULONG, ULONG);
+    void Open(char const *source);
+    char *FindTranslation(ULONG, ULONG);
     char *GetP(ULONG, ULONG);
     char *GetS(ULONG, ULONG);
 
@@ -818,10 +813,9 @@ class TEXTRES {
 
   private:
     char *FindOverridenS(ULONG, ULONG);
-    std::string FindLanguageInString(const char *Dst, const SLONG wantedLanguageIndex);
-    void LanguageSpecifyString(char *Dst);
+    void LanguageSpecifyString(char *Dst, bool fallback = false);
 
-    std::vector<std::regex> mLanguageTextPatterns;
+    CString ResultStr;
 
     BUFFER_V<char> Path;
     BUFFER_V<char> Strings;
@@ -831,19 +825,6 @@ class TEXTRES {
 };
 
 // static_assert(sizeof(TEXTRES) == 36, "TEXTRES size check");
-
-class CRegistration {
-  public:
-    CRegistration(void);
-    CRegistration(CString const &, ULONG);
-    void ReSize(CString const &, ULONG);
-    CString GetDisplayString(void);
-    SLONG GetMode(void);
-    CString GetSomeString(char *);
-    ULONG CalcChecksum(CString);
-    SLONG IsMaster(void);
-    void CheckIfIsMaster(void);
-};
 
 #define VIDRAMBM (void *)1
 #define SYSRAMBM (void *)2

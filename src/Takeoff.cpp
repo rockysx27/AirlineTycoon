@@ -599,7 +599,7 @@ void CTakeOffApp::InitInstance(int argc, char *argv[]) {
             LOADING_TEXT("Chargement des textes (1/4)...")
         else
             LOADING_TEXT("Loading modded texts...");
-        ModdedTexte.Open(FullFilename("modded_ger.res", PatchPath), TEXTRES_CACHED);
+        ModdedTexte.Open(FullFilename("modded_ger.res", PatchPath));
 
         if (gLanguage == LANGUAGE_N)
             LOADING_TEXT("Dialoogteksten worden opgestart...")
@@ -607,7 +607,7 @@ void CTakeOffApp::InitInstance(int argc, char *argv[]) {
             LOADING_TEXT("Chargement des textes (2/4)...")
         else
             LOADING_TEXT("Loading dialogue texts...");
-        DialogTexte.Open(FullFilename("dlg_ger.res", MiscPath), TEXTRES_CACHED);
+        DialogTexte.Open(FullFilename("dlg_ger.res", MiscPath));
         DialogTexte.SetOverrideFile(FullFilename("dlg_ger.patched.res", PatchPath));
 
         if (gLanguage == LANGUAGE_N)
@@ -616,7 +616,7 @@ void CTakeOffApp::InitInstance(int argc, char *argv[]) {
             LOADING_TEXT("Chargement des textes (3/4)...")
         else
             LOADING_TEXT("Loading miscellanous texts...");
-        StandardTexte.Open(FullFilename("std_ger.res", MiscPath), TEXTRES_CACHED);
+        StandardTexte.Open(FullFilename("std_ger.res", MiscPath));
         StandardTexte.SetOverrideFile(FullFilename("std_ger.patched.res", PatchPath));
 
         if (gLanguage == LANGUAGE_N)
