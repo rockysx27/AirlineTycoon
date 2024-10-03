@@ -251,7 +251,9 @@ void CTakeOffApp::CLI(int argc, char *argv[]) {
         if (stricmp(Argument, "/d") == 0) {
             gLanguage = LANGUAGE_D;
         }
-        // if (stricmp (Argument, "/f")==0) gLanguage = LANGUAGE_F;
+        if (stricmp(Argument, "/f") == 0) {
+            gLanguage = LANGUAGE_F;
+        }
         // if (stricmp (Argument, "/test")==0) bTest = TRUE;
 
         if (stricmp(Argument, "/window") == 0) {
