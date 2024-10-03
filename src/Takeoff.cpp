@@ -245,8 +245,12 @@ void CTakeOffApp::CLI(int argc, char *argv[]) {
             return;
         }
 
-        // if (stricmp (Argument, "/e")==0) gLanguage = LANGUAGE_E;
-        // if (stricmp (Argument, "/d")==0) gLanguage = LANGUAGE_D;
+        if (stricmp(Argument, "/e") == 0) {
+            gLanguage = LANGUAGE_E;
+        }
+        if (stricmp(Argument, "/d") == 0) {
+            gLanguage = LANGUAGE_D;
+        }
         // if (stricmp (Argument, "/f")==0) gLanguage = LANGUAGE_F;
         // if (stricmp (Argument, "/test")==0) bTest = TRUE;
 
@@ -555,7 +559,9 @@ void CTakeOffApp::InitInstance(int argc, char *argv[]) {
             MessagePump();
         }
 
-        if (gLanguage == LANGUAGE_N)
+        if (gLanguage == LANGUAGE_D)
+            LOADING_TEXT("Lade Charaktere...")
+        else if (gLanguage == LANGUAGE_N)
             LOADING_TEXT("Karakters worden opgestart...")
         else if (gLanguage == LANGUAGE_F)
             LOADING_TEXT("Chargement des personnages...")
@@ -566,7 +572,9 @@ void CTakeOffApp::InitInstance(int argc, char *argv[]) {
             pGfxMain->LoadLib(const_cast<char *>((LPCTSTR)FullFilename("glclan.gli", GliPath)), &pGLibClan, L_LOCMEM);
         }
 
-        if (gLanguage == LANGUAGE_N)
+        if (gLanguage == LANGUAGE_D)
+            LOADING_TEXT("Laden der Berater...")
+        else if (gLanguage == LANGUAGE_N)
             LOADING_TEXT("Adviseurs worden opgestart...")
         else if (gLanguage == LANGUAGE_F)
             LOADING_TEXT("Chargements des conseillers...")
@@ -574,16 +582,20 @@ void CTakeOffApp::InitInstance(int argc, char *argv[]) {
             LOADING_TEXT("Loading Advisors...");
         pGfxMain->LoadLib(const_cast<char *>((LPCTSTR)FullFilename("glberatr.gli", GliPath)), &pGLibBerater, L_LOCMEM);
 
-        if (gLanguage == LANGUAGE_N)
+        if (gLanguage == LANGUAGE_D)
+            LOADING_TEXT("Laden von verschiedenen Grafiken...")
+        else if (gLanguage == LANGUAGE_N)
             LOADING_TEXT("Verscheidene afbeeldingen worden opgestart...")
         else if (gLanguage == LANGUAGE_F)
             LOADING_TEXT("Chargement des graphismes...")
         else
-            LOADING_TEXT("Loading miscellanous grafix...");
+            LOADING_TEXT("Loading miscellaneous graphics...");
 
         pGfxMain->LoadLib(const_cast<char *>((LPCTSTR)FullFilename("glstd.gli", GliPath)), &pGLibStd, L_LOCMEM);
 
-        if (gLanguage == LANGUAGE_N)
+        if (gLanguage == LANGUAGE_D)
+            LOADING_TEXT("Laden von Flugzeugen...")
+        else if (gLanguage == LANGUAGE_N)
             LOADING_TEXT("Vliegtuigen worden opgestart...")
         else if (gLanguage == LANGUAGE_F)
             LOADING_TEXT("Cargement des avions...")
@@ -591,7 +603,9 @@ void CTakeOffApp::InitInstance(int argc, char *argv[]) {
             LOADING_TEXT("Loading planes...");
         pGfxMain->LoadLib(const_cast<char *>((LPCTSTR)FullFilename("glplanes.gli", GliPath)), &pGLibPlanes, L_LOCMEM);
 
-        if (gLanguage == LANGUAGE_N)
+        if (gLanguage == LANGUAGE_D)
+            LOADING_TEXT("Laden von modifizierten Texten...")
+        else if (gLanguage == LANGUAGE_N)
             LOADING_TEXT("Verscheidene teksten worden opgestart...")
         else if (gLanguage == LANGUAGE_F)
             LOADING_TEXT("Chargement des textes (1/4)...")
@@ -599,7 +613,9 @@ void CTakeOffApp::InitInstance(int argc, char *argv[]) {
             LOADING_TEXT("Loading modded texts...");
         ModdedTexte.Open(FullFilename("modded_ger.res", PatchPath));
 
-        if (gLanguage == LANGUAGE_N)
+        if (gLanguage == LANGUAGE_D)
+            LOADING_TEXT("Laden von Dialogtexten...")
+        else if (gLanguage == LANGUAGE_N)
             LOADING_TEXT("Dialoogteksten worden opgestart...")
         else if (gLanguage == LANGUAGE_F)
             LOADING_TEXT("Chargement des textes (2/4)...")
@@ -608,7 +624,9 @@ void CTakeOffApp::InitInstance(int argc, char *argv[]) {
         DialogTexte.Open(FullFilename("dlg_ger.res", MiscPath));
         DialogTexte.SetOverrideFile(FullFilename("dlg_ger.patched.res", PatchPath));
 
-        if (gLanguage == LANGUAGE_N)
+        if (gLanguage == LANGUAGE_D)
+            LOADING_TEXT("Laden diverser Texte...")
+        else if (gLanguage == LANGUAGE_N)
             LOADING_TEXT("Verscheidene teksten worden opgestart...")
         else if (gLanguage == LANGUAGE_F)
             LOADING_TEXT("Chargement des textes (3/4)...")
@@ -617,7 +635,9 @@ void CTakeOffApp::InitInstance(int argc, char *argv[]) {
         StandardTexte.Open(FullFilename("std_ger.res", MiscPath));
         StandardTexte.SetOverrideFile(FullFilename("std_ger.patched.res", PatchPath));
 
-        if (gLanguage == LANGUAGE_N)
+        if (gLanguage == LANGUAGE_D)
+            LOADING_TEXT("Texte der Ma\xDF\x65inheiten laden...")
+        else if (gLanguage == LANGUAGE_N)
             LOADING_TEXT("Eenheidteksten worden opgestart...")
         else if (gLanguage == LANGUAGE_F)
             LOADING_TEXT("Chargement des textes (4/4)...")
@@ -630,7 +650,9 @@ void CTakeOffApp::InitInstance(int argc, char *argv[]) {
         // FrameWnd->SetIcon (m_hBigIcon = LoadIcon(IDR_MAINFRAME1), 1);
         // FrameWnd->SetIcon (m_hSmallIcon = LoadIcon(IDR_MAINFRAME), 0);
 
-        if (gLanguage == LANGUAGE_N)
+        if (gLanguage == LANGUAGE_D)
+            LOADING_TEXT("Initialisierung...")
+        else if (gLanguage == LANGUAGE_N)
             LOADING_TEXT("Initialiseren...")
         else if (gLanguage == LANGUAGE_F)
             LOADING_TEXT("Chargement...")
@@ -638,7 +660,9 @@ void CTakeOffApp::InitInstance(int argc, char *argv[]) {
             LOADING_TEXT("Initializing...");
         InitItems();
 
-        if (gLanguage == LANGUAGE_N)
+        if (gLanguage == LANGUAGE_D)
+            LOADING_TEXT("Initialisierung des Globus...")
+        else if (gLanguage == LANGUAGE_N)
             LOADING_TEXT("Initialiseert de globe...")
         else if (gLanguage == LANGUAGE_F)
             LOADING_TEXT("Chargement du globe...")
@@ -646,7 +670,9 @@ void CTakeOffApp::InitInstance(int argc, char *argv[]) {
             LOADING_TEXT("Initializing globe...");
         InitGlobeMapper();
 
-        if (gLanguage == LANGUAGE_N)
+        if (gLanguage == LANGUAGE_D)
+            LOADING_TEXT("Initialisierung der Statusleiste...")
+        else if (gLanguage == LANGUAGE_N)
             LOADING_TEXT("Initialiseert statusbalk...")
         else if (gLanguage == LANGUAGE_F)
             LOADING_TEXT("Creation de la barre de status...")
@@ -654,7 +680,9 @@ void CTakeOffApp::InitInstance(int argc, char *argv[]) {
             LOADING_TEXT("Initializing status bar...");
         InitStatusLines();
 
-        if (gLanguage == LANGUAGE_N)
+        if (gLanguage == LANGUAGE_D)
+            LOADING_TEXT("Initialisierung des Bildschirms...")
+        else if (gLanguage == LANGUAGE_N)
             LOADING_TEXT("Initialiseert scherm...")
         else if (gLanguage == LANGUAGE_F)
             LOADING_TEXT("Creation de l'ecran...")
@@ -677,7 +705,9 @@ void CTakeOffApp::InitInstance(int argc, char *argv[]) {
             MessagePump();
         }
 
-        if (gLanguage == LANGUAGE_N)
+        if (gLanguage == LANGUAGE_D)
+            LOADING_TEXT("Suche nach Midi-Gerät...")
+        else if (gLanguage == LANGUAGE_N)
             LOADING_TEXT("Zoekt midi-apparaat...")
         else if (gLanguage == LANGUAGE_F)
             LOADING_TEXT("Recherche hauts-parleurs midi...")
@@ -689,7 +719,9 @@ void CTakeOffApp::InitInstance(int argc, char *argv[]) {
         MessagePump(); // lpDD->FlipToGDISurface();
         bMidiAvailable = IsMidiAvailable();
 
-        if (gLanguage == LANGUAGE_N)
+        if (gLanguage == LANGUAGE_D)
+            LOADING_TEXT("Initialisierung des Soundsystems...")
+        else if (gLanguage == LANGUAGE_N)
             LOADING_TEXT("Initialiseert geluidssysteem...")
         else if (gLanguage == LANGUAGE_F)
             LOADING_TEXT("Chargement des systèmes de son...")
@@ -702,7 +734,9 @@ void CTakeOffApp::InitInstance(int argc, char *argv[]) {
             gpSSE->CreateMidi(&gpMidi);
 
             if (gpMidi != nullptr) {
-                if (gLanguage == LANGUAGE_N)
+                if (gLanguage == LANGUAGE_D)
+                    LOADING_TEXT("Midi-Lautstärke einstellen...")
+                else if (gLanguage == LANGUAGE_N)
                     LOADING_TEXT("Stelt het midi-volume in...")
                 else if (gLanguage == LANGUAGE_F)
                     LOADING_TEXT("Ajustement du volume...")
@@ -715,7 +749,9 @@ void CTakeOffApp::InitInstance(int argc, char *argv[]) {
                 gpMidi->SetMode(Sim.Options.OptionMusicType);
 
                 if (Sim.Options.OptionViewedIntro != 0) {
-                    if (gLanguage == LANGUAGE_N)
+                    if (gLanguage == LANGUAGE_D)
+                        LOADING_TEXT("Start der ersten Midi...")
+                    else if (gLanguage == LANGUAGE_N)
                         LOADING_TEXT("Start de eerste midi...")
                     else if (gLanguage == LANGUAGE_F)
                         LOADING_TEXT("Lancement MIDI...")
@@ -726,7 +762,9 @@ void CTakeOffApp::InitInstance(int argc, char *argv[]) {
                     MessagePump(); // lpDD->FlipToGDISurface();
                     NextMidi();
 
-                    if (gLanguage == LANGUAGE_N)
+                    if (gLanguage == LANGUAGE_D)
+                        LOADING_TEXT("Midi-Lautstärke zurücksetzen...")
+                    else if (gLanguage == LANGUAGE_N)
                         LOADING_TEXT("Herstelt het midi-volume...")
                     else if (gLanguage == LANGUAGE_F)
                         LOADING_TEXT("Mise a zero du volume...")
@@ -744,7 +782,9 @@ void CTakeOffApp::InitInstance(int argc, char *argv[]) {
 
         // Registration.ReSize ("Misc\\Register.res", 0x54a8fe83);
 
-        if (gLanguage == LANGUAGE_N)
+        if (gLanguage == LANGUAGE_D)
+            LOADING_TEXT("Initialisierung der Charakterdaten...")
+        else if (gLanguage == LANGUAGE_N)
             LOADING_TEXT("Initialiseert de karakterdata...")
         else if (gLanguage == LANGUAGE_F)
             LOADING_TEXT("Creation des personnages...")
@@ -770,7 +810,9 @@ void CTakeOffApp::InitInstance(int argc, char *argv[]) {
         }
 
         if (gUpdatingPools == 0) {
-            if (gLanguage == LANGUAGE_N)
+            if (gLanguage == LANGUAGE_D)
+                LOADING_TEXT("Initialisierung von R\xF6ntgenstrahlen...")
+            else if (gLanguage == LANGUAGE_N)
                 LOADING_TEXT("Initialiseert de r\xF6ntgenfoto's...")
             else if (gLanguage == LANGUAGE_F)
                 LOADING_TEXT("Creation des rayonnements ionisants X...")
@@ -803,7 +845,10 @@ void CTakeOffApp::InitInstance(int argc, char *argv[]) {
                         Clans[c].ClanPool.PreLoad();
                     }
 
-                    if (gLanguage == LANGUAGE_N)
+                    if (gLanguage == LANGUAGE_D)
+                        LOADING_TEXT((LPCTSTR)(CString("Initialisierung der Charakterdaten...") +
+                                               CString("................................................................").Left(n / 4)))
+                    else if (gLanguage == LANGUAGE_N)
                         LOADING_TEXT((LPCTSTR)(CString("Karakterdata wordt opgestart...") +
                                                CString("................................................................").Left(n / 4)))
                     else if (gLanguage == LANGUAGE_F)
@@ -817,7 +862,9 @@ void CTakeOffApp::InitInstance(int argc, char *argv[]) {
             }
         }
 
-        if (gLanguage == LANGUAGE_N)
+        if (gLanguage == LANGUAGE_D)
+            LOADING_TEXT("Laden von Charakterdaten...")
+        else if (gLanguage == LANGUAGE_N)
             LOADING_TEXT("Karakterdata wordt opgestart...")
         else if (gLanguage == LANGUAGE_F)
             LOADING_TEXT("Chargement des personnages...")
@@ -825,7 +872,9 @@ void CTakeOffApp::InitInstance(int argc, char *argv[]) {
             LOADING_TEXT("Loading people data...");
         Clans.LoadBitmaps();
 
-        if (gLanguage == LANGUAGE_N)
+        if (gLanguage == LANGUAGE_D)
+            LOADING_TEXT("Initialisierung der Städte...")
+        else if (gLanguage == LANGUAGE_N)
             LOADING_TEXT("Initialiseert de steden...")
         else if (gLanguage == LANGUAGE_F)
             LOADING_TEXT("Creation des villes...")
@@ -837,7 +886,9 @@ void CTakeOffApp::InitInstance(int argc, char *argv[]) {
         AuslandsFrachten.resize(MAX_CITIES);
         AuslandsFRefill.resize(MAX_CITIES);
 
-        if (gLanguage == LANGUAGE_N)
+        if (gLanguage == LANGUAGE_D)
+            LOADING_TEXT("Initialisierung der Flugzeuge...")
+        else if (gLanguage == LANGUAGE_N)
             LOADING_TEXT("Initialiseert de vliegtuigen...")
         else if (gLanguage == LANGUAGE_F)
             LOADING_TEXT("Creation des avions...")
@@ -845,7 +896,9 @@ void CTakeOffApp::InitInstance(int argc, char *argv[]) {
             LOADING_TEXT("Initializing planes...");
         PlaneTypes.ReInit("planetyp.csv");
 
-        if (gLanguage == LANGUAGE_N)
+        if (gLanguage == LANGUAGE_D)
+            LOADING_TEXT("Initialisierung der Namen")
+        else if (gLanguage == LANGUAGE_N)
             LOADING_TEXT("Initialiseert de namen...")
         else if (gLanguage == LANGUAGE_F)
             LOADING_TEXT("Creation des noms d'avion...")
@@ -853,7 +906,9 @@ void CTakeOffApp::InitInstance(int argc, char *argv[]) {
             LOADING_TEXT("Initializing names...");
         PlaneNames.ReInit("pnames.csv");
 
-        if (gLanguage == LANGUAGE_N)
+        if (gLanguage == LANGUAGE_D)
+            LOADING_TEXT("Initialisierung der Zeitungen...")
+        else if (gLanguage == LANGUAGE_N)
             LOADING_TEXT("Initialiseert de kranten...")
         else if (gLanguage == LANGUAGE_F)
             LOADING_TEXT("Creation des journaux...")
@@ -861,7 +916,9 @@ void CTakeOffApp::InitInstance(int argc, char *argv[]) {
             LOADING_TEXT("Initializing newspapers...");
         Sim.Headlines.ReInit("stdpaper.csv");
 
-        if (gLanguage == LANGUAGE_N)
+        if (gLanguage == LANGUAGE_D)
+            LOADING_TEXT("Initialisierung der Tooltips...")
+        else if (gLanguage == LANGUAGE_N)
             LOADING_TEXT("Initialiseert de tips...")
         else if (gLanguage == LANGUAGE_F)
             LOADING_TEXT("Creation des info-bulles...")
@@ -869,7 +926,9 @@ void CTakeOffApp::InitInstance(int argc, char *argv[]) {
             LOADING_TEXT("Initializing tooltips...");
         InitTipBms();
 
-        if (gLanguage == LANGUAGE_N)
+        if (gLanguage == LANGUAGE_D)
+            LOADING_TEXT("Das Spiel beginnt...")
+        else if (gLanguage == LANGUAGE_N)
             LOADING_TEXT("Spel wordt gestart...")
         else if (gLanguage == LANGUAGE_F)
             LOADING_TEXT("Lancement du jeu...")
