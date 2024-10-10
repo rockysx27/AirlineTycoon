@@ -23,6 +23,11 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+template <class... Types> void AT_Error(Types... args) { Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_ERROR, "Misc", args...); }
+template <class... Types> void AT_Warn(Types... args) { Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "Misc", args...); }
+template <class... Types> void AT_Info(Types... args) { Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "Misc", args...); }
+template <class... Types> void AT_Log(Types... args) { AT_Log_I("Misc", args...); }
+
 CRect SprechblasenSizes[] = {CRect(15, 6, 266, 16), CRect(19, 8, 266, 31), CRect(32, 8, 308, 51),
                              CRect(30, 9, 498, 64), CRect(49, 8, 296, 31), CRect(62, 8, 338, 51)};
 
@@ -508,46 +513,70 @@ void DoAppPath() {
     SDL_free(buffer);
 }
 
+/* searches for Path (not case-sensitive) and returns full path */
+CString SearchCaseInsensitive(const CString &Path) {
+    std::filesystem::path pathInput{Path.c_str()};
+    std::filesystem::path pathParent{pathInput.parent_path()};
+    auto found = SearchCaseInsensitive(pathParent.c_str(), pathInput.filename().c_str());
+
+    std::filesystem::path pathFound = pathParent / found.c_str();
+    return pathFound.c_str();
+}
+
+/* searches for Filename in Folder (not case-sensitive) and returns only the filename */
+CString SearchCaseInsensitive(const CString &Folder, const CString &Filename) {
+    std::filesystem::path folderInput{Folder.c_str()};
+    if (!std::filesystem::exists(folderInput)) {
+        AT_Warn("SearchCaseInsensitive: Folder %s does not exist.", (const char *)Folder);
+        return Filename;
+    }
+
+    auto fullPath = folderInput / Filename.c_str();
+    if (std::filesystem::exists(fullPath)) {
+        return Filename;
+    }
+
+    /* resolve case-insensitively */
+    const char *searchFor{Filename.c_str()};
+    CString found;
+    for (const auto &e : std::filesystem::directory_iterator(folderInput)) {
+        if (!e.exists()) {
+            continue;
+        }
+        int cmp = stricmp(e.path().filename().c_str(), searchFor);
+        if (cmp != 0) {
+            continue;
+        }
+        if (found.GetLength() != 0) {
+            AT_Warn("SearchCaseInsensitive: Filename '%s' is ambiguous in '%s'.", searchFor, Folder.c_str());
+            return found;
+        }
+        found = e.path().filename().c_str();
+    }
+    if (found.GetLength() == 0) {
+        AT_Warn("SearchCaseInsensitive: Could not find file '%s' in '%s'.", searchFor, Folder.c_str());
+        return Filename;
+    }
+    return found;
+}
+
 //--------------------------------------------------------------------------------------------
 // Gibt einen vollständigen Filenamen mit dem vollen Pfad zurück:
 //--------------------------------------------------------------------------------------------
 CString FullFilename(const CString &Filename, const CString &PathString) {
-    CString path;
-    CString rc;
-
-    path = PathString;
+    CString path = PathString;
     if (std::filesystem::path::preferred_separator != '\\') {
         path.Replace('\\', std::filesystem::path::preferred_separator);
     }
 
+    CString rc;
     if (path[1] == ':') {
         rc.Format(path, (const char *)Filename);
     } else {
         rc.Format(AppPath + path, (const char *)Filename);
     }
 
-    std::filesystem::path p((const char *)rc);
-    if (!exists(p) && exists(p.parent_path())) {
-        /* resolve case-insensitively */
-        CString found;
-        for (std::filesystem::directory_entry e : std::filesystem::directory_iterator(p.parent_path())) {
-            if (!e.exists()) {
-                continue;
-            }
-            int cmp = stricmp(e.path().filename().c_str(), (const char *)Filename);
-            if (cmp != 0) {
-                continue;
-            }
-            if (found.GetLength() != 0) {
-                found.clear();
-                break;
-            }
-            found = e.path().string();
-        }
-        if (found.GetLength() != 0) {
-            rc = found;
-        }
-    }
+    rc = SearchCaseInsensitive(rc);
 
     return (rc);
 }

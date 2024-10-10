@@ -29,32 +29,41 @@ void InitPathVars() {
 
     CString prefix = "";
     if (gLanguage == LANGUAGE_D) {
-        prefix = "de\\";
+        prefix = "de";
     } else if (gLanguage == LANGUAGE_E) {
-        prefix = "en\\";
+        prefix = "en";
     } else if (gLanguage == LANGUAGE_F) {
-        prefix = "fr\\";
+        prefix = "fr";
     }
 
     // fallback check
-    if (!DoesDirectoryExist(prefix)) {
+    if (!DoesDirectoryExist(FullFilename(prefix, "%s"))) {
         prefix.clear();
+
+        if (DoesFileExist(FullFilename("aa/100.ogg", "de\\voice\\%s"))) {
+            prefix = "de";
+        } else if (DoesFileExist(FullFilename("aa/100.ogg", "en\\voice\\%s"))) {
+            prefix = "en";
+        } else if (DoesFileExist(FullFilename("aa/100.ogg", "fr\\voice\\%s"))) {
+            prefix = "fr";
+        }
     }
 
-    ExcelPath = prefix + "data\\%s";
-    GliPath = prefix + "gli\\%s";
-    MiscPath = prefix + "misc\\%s";
-    PatchPath = "patch\\%s";
-    VoicePath = prefix + "voice\\%s";
-    SoundPath = "sound\\%s";
-    RoomPath = "room\\%s";
-    PlanePath = "planes\\%s";
-    SmackerPath = "video\\%s";
-    IntroPath = "intro\\%s";
-    MyPlanePath = "myplanes\\%s";
+    ExcelPath = SearchCaseInsensitive(AppPath + prefix, "data") + "\\%s";
+    GliPath = SearchCaseInsensitive(AppPath + prefix, "gli") + "\\%s";
+    MiscPath = SearchCaseInsensitive(AppPath + prefix, "misc") + "\\%s";
+    VoicePath = SearchCaseInsensitive(AppPath + prefix, "voice") + "\\%s";
+
+    IntroPath = SearchCaseInsensitive(AppPath, "intro") + "\\%s";
+    MyPlanePath = SearchCaseInsensitive(AppPath, "myplanes") + "\\%s";
+    PatchPath = SearchCaseInsensitive(AppPath, "patch") + "\\%s";
+    PlanePath = SearchCaseInsensitive(AppPath, "planes") + "\\%s";
+    RoomPath = SearchCaseInsensitive(AppPath, "room") + "\\%s";
+    SoundPath = SearchCaseInsensitive(AppPath, "sound") + "\\%s";
+    SmackerPath = SearchCaseInsensitive(AppPath, "video") + "\\%s";
 
     if (SavegamePath.GetLength() == 0) {
-        SavegamePath = "Savegame\\%s";
+        SavegamePath = SearchCaseInsensitive(AppPath, "savegame") + "\\%s";
     }
 
     // Unused:
@@ -286,6 +295,8 @@ void InitGlobeMapper() {
     EarthPal.RefreshPalFrom((LPCTSTR)FullFilename("EarthAll.lbm", GliPath), NULL, (LPCTSTR)FullFilename("EarthAll.tga", GliPath));
 
     TECBM ShadeBm(NULL, (LPCTSTR)FullFilename("shade.pcx", GliPath), (LPCTSTR)FullFilename("shade.tga", GliPath), SYSRAMBM);
+
+    GlobeMixTab.ReSize(256 * 64);
 
     for (x = 0; x < 256; x++) {
         for (y = 0; y < 64; y++) {

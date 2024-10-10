@@ -85,6 +85,8 @@ int AbortMessageBox(ULONG Type, LPCTSTR Title, LPCTSTR String, ...);
 CString ConvertDate2String(UWORD Date);
 UWORD ConvertString2Date(char *String);
 void DoAppPath(void);
+CString SearchCaseInsensitive(const CString &Path);
+CString SearchCaseInsensitive(const CString &Folder, const CString &Filename);
 CString FullFilename(const CString &Filename, const CString &PathString);
 CString FullFilename(const CString &Filename, const CString &PathString, SLONG Num);
 SLONG CalculateFlightKerosin(SLONG VonCity, SLONG NachCity, SLONG Verbrauch, SLONG Geschwindigkeit);
