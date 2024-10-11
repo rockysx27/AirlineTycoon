@@ -386,7 +386,7 @@ void CTakeOffApp::ReadOptions(int argc, char *argv[]) {
     // #define LANGUAGE_10     19             //V-noch frei
 
     gLanguage = LANGUAGE_E;
-    std::ifstream ifil = std::ifstream(AppPath + "misc/sabbel.dat");
+    std::ifstream ifil = std::ifstream(FullFilename("sabbel.dat", "misc"));
     if (ifil.is_open()) {
         ifil.read(reinterpret_cast<char *>(&gLanguage), sizeof(gLanguage));
         ifil.close();

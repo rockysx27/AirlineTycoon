@@ -14,7 +14,6 @@
 #include <cassert>
 #include <chrono>
 #include <cmath>
-#include <filesystem>
 #include <locale>
 #include <sstream>
 
@@ -23,10 +22,10 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-template <class... Types> void AT_Error(Types... args) { Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_ERROR, "Misc", args...); }
-template <class... Types> void AT_Warn(Types... args) { Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "Misc", args...); }
-template <class... Types> void AT_Info(Types... args) { Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "Misc", args...); }
-template <class... Types> void AT_Log(Types... args) { AT_Log_I("Misc", args...); }
+#define AT_Error(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_ERROR, "Misc", __VA_ARGS__)
+#define AT_Warn(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "Misc", __VA_ARGS__)
+#define AT_Info(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "Misc", __VA_ARGS__)
+#define AT_Log(...) AT_Log_I("Misc", __VA_ARGS__)
 
 CRect SprechblasenSizes[] = {CRect(15, 6, 266, 16), CRect(19, 8, 266, 31), CRect(32, 8, 308, 51),
                              CRect(30, 9, 498, 64), CRect(49, 8, 296, 31), CRect(62, 8, 338, 51)};
@@ -513,32 +512,21 @@ void DoAppPath() {
     SDL_free(buffer);
 }
 
-/* searches for Path (not case-sensitive) and returns full path */
-CString SearchCaseInsensitive(const CString &Path) {
-    std::filesystem::path pathInput{Path.c_str()};
-    std::filesystem::path pathParent{pathInput.parent_path()};
-    auto found = SearchCaseInsensitive(pathParent.c_str(), pathInput.filename().c_str());
-
-    std::filesystem::path pathFound = pathParent / found.c_str();
-    return pathFound.c_str();
-}
-
-/* searches for Filename in Folder (not case-sensitive) and returns only the filename */
-CString SearchCaseInsensitive(const CString &Folder, const CString &Filename) {
-    std::filesystem::path folderInput{Folder.c_str()};
+/* searches for filename in folderInput (not case-sensitive) and returns only the filename */
+std::filesystem::path SearchCaseInsensitive(const std::filesystem::path &folderInput, const std::filesystem::path &filename) {
     if (!std::filesystem::exists(folderInput)) {
-        AT_Warn("SearchCaseInsensitive: Folder %s does not exist.", (const char *)Folder);
-        return Filename;
+        AT_Warn("SearchCaseInsensitive: Parent folder %s does not exist.", folderInput.c_str());
+        return filename;
     }
 
-    auto fullPath = folderInput / Filename.c_str();
+    auto fullPath = folderInput / filename;
     if (std::filesystem::exists(fullPath)) {
-        return Filename;
+        return filename;
     }
 
     /* resolve case-insensitively */
-    const char *searchFor{Filename.c_str()};
-    CString found;
+    const char *searchFor{filename.c_str()};
+    std::filesystem::path found;
     for (const auto &e : std::filesystem::directory_iterator(folderInput)) {
         if (!e.exists()) {
             continue;
@@ -547,15 +535,15 @@ CString SearchCaseInsensitive(const CString &Folder, const CString &Filename) {
         if (cmp != 0) {
             continue;
         }
-        if (found.GetLength() != 0) {
-            AT_Warn("SearchCaseInsensitive: Filename '%s' is ambiguous in '%s'.", searchFor, Folder.c_str());
+        if (!found.empty()) {
+            AT_Warn("SearchCaseInsensitive: Filename '%s' is ambiguous in '%s'.", searchFor, folderInput.c_str());
             return found;
         }
-        found = e.path().filename().c_str();
+        found = e.path().filename();
     }
-    if (found.GetLength() == 0) {
-        AT_Warn("SearchCaseInsensitive: Could not find file '%s' in '%s'.", searchFor, Folder.c_str());
-        return Filename;
+    if (found.empty()) {
+        AT_Warn("SearchCaseInsensitive: Could not find file '%s' in '%s'.", searchFor, folderInput.c_str());
+        return filename;
     }
     return found;
 }
@@ -563,22 +551,36 @@ CString SearchCaseInsensitive(const CString &Folder, const CString &Filename) {
 //--------------------------------------------------------------------------------------------
 // Gibt einen vollständigen Filenamen mit dem vollen Pfad zurück:
 //--------------------------------------------------------------------------------------------
+CString _FullFilename(const std::filesystem::path &Filename, const std::filesystem::path &PathString);
+
+CString _FullFilename(const std::filesystem::path &Filename, const std::filesystem::path &PathString) {
+    // AT_Info("_FullFilename: '%s', '%s'", Filename.c_str(), PathString.c_str());
+    std::vector<std::filesystem::path> list;
+    std::filesystem::path p = PathString;
+    while (!p.empty() && p != p.parent_path()) {
+        list.push_back(p.filename());
+        // AT_Info("Parent1: '%s', '%s'", p.c_str(), p.filename().c_str());
+        p = p.parent_path();
+    }
+
+    std::filesystem::path resultPath{AppPath.c_str()};
+    for (SLONG i = list.size() - 1; i >= 0; i--) {
+        auto found = SearchCaseInsensitive(resultPath, list[i]);
+        resultPath = resultPath / found;
+    }
+
+    auto found = SearchCaseInsensitive(resultPath, Filename);
+    resultPath = resultPath / found;
+    return CString{resultPath.c_str()};
+}
+
 CString FullFilename(const CString &Filename, const CString &PathString) {
-    CString path = PathString;
-    if (std::filesystem::path::preferred_separator != '\\') {
-        path.Replace('\\', std::filesystem::path::preferred_separator);
-    }
-
-    CString rc;
-    if (path[1] == ':') {
-        rc.Format(path, (const char *)Filename);
-    } else {
-        rc.Format(AppPath + path, (const char *)Filename);
-    }
-
-    rc = SearchCaseInsensitive(rc);
-
-    return (rc);
+    // AT_Info("FullFilename: '%s', '%s'", Filename.c_str(), PathString.c_str());
+    /* Filename sometimes contains folders, so we build a full path... */
+    std::filesystem::path p{PathString.c_str()};
+    p = p / Filename.c_str();
+    /* ... and now split it again properly */
+    return _FullFilename(p.filename(), p.parent_path());
 }
 
 //--------------------------------------------------------------------------------------------

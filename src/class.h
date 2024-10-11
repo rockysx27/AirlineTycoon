@@ -53,7 +53,8 @@ class /**/ SBFX {
         }
     }
     void Destroy(void);
-    void ReInit(const CString &Filename, char *Path = NULL);
+    void ReInit(const CString &Filename);
+    void ReInit(const CString &Filename, const CString &Path);
     void Play(dword dwFlags = 0) const;
     void Play(dword dwFlags, SLONG PercentVolume) const;
     void Stop(void) const;

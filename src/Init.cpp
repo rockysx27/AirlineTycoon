@@ -37,33 +37,36 @@ void InitPathVars() {
     }
 
     // fallback check
-    if (!DoesDirectoryExist(FullFilename(prefix, "%s"))) {
+    if (!DoesDirectoryExist(FullFilename(prefix, ""))) {
         prefix.clear();
 
-        if (DoesFileExist(FullFilename("aa/100.ogg", "de\\voice\\%s"))) {
+        if (DoesFileExist(FullFilename("aa/100.ogg", "de/voice"))) {
             prefix = "de";
-        } else if (DoesFileExist(FullFilename("aa/100.ogg", "en\\voice\\%s"))) {
+        } else if (DoesFileExist(FullFilename("aa/100.ogg", "en/voice"))) {
             prefix = "en";
-        } else if (DoesFileExist(FullFilename("aa/100.ogg", "fr\\voice\\%s"))) {
+        } else if (DoesFileExist(FullFilename("aa/100.ogg", "fr/voice"))) {
             prefix = "fr";
         }
     }
 
-    ExcelPath = SearchCaseInsensitive(AppPath + prefix, "data") + "\\%s";
-    GliPath = SearchCaseInsensitive(AppPath + prefix, "gli") + "\\%s";
-    MiscPath = SearchCaseInsensitive(AppPath + prefix, "misc") + "\\%s";
-    VoicePath = SearchCaseInsensitive(AppPath + prefix, "voice") + "\\%s";
+    std::filesystem::path appPath{AppPath.c_str()};
+    std::filesystem::path prefixPath{appPath / prefix.c_str()};
 
-    IntroPath = SearchCaseInsensitive(AppPath, "intro") + "\\%s";
-    MyPlanePath = SearchCaseInsensitive(AppPath, "myplanes") + "\\%s";
-    PatchPath = SearchCaseInsensitive(AppPath, "patch") + "\\%s";
-    PlanePath = SearchCaseInsensitive(AppPath, "planes") + "\\%s";
-    RoomPath = SearchCaseInsensitive(AppPath, "room") + "\\%s";
-    SoundPath = SearchCaseInsensitive(AppPath, "sound") + "\\%s";
-    SmackerPath = SearchCaseInsensitive(AppPath, "video") + "\\%s";
+    ExcelPath = SearchCaseInsensitive(prefixPath, "data");
+    GliPath = SearchCaseInsensitive(prefixPath, "gli");
+    MiscPath = SearchCaseInsensitive(prefixPath, "misc");
+    VoicePath = SearchCaseInsensitive(prefixPath, "voice");
+
+    IntroPath = SearchCaseInsensitive(appPath, "intro");
+    MyPlanePath = SearchCaseInsensitive(appPath, "myplanes");
+    PatchPath = SearchCaseInsensitive(appPath, "patch");
+    PlanePath = SearchCaseInsensitive(appPath, "planes");
+    RoomPath = SearchCaseInsensitive(appPath, "room");
+    SoundPath = SearchCaseInsensitive(appPath, "sound");
+    SmackerPath = SearchCaseInsensitive(appPath, "video");
 
     if (SavegamePath.GetLength() == 0) {
-        SavegamePath = SearchCaseInsensitive(AppPath, "savegame") + "\\%s";
+        SavegamePath = SearchCaseInsensitive(appPath, "savegame");
     }
 
     // Unused:

@@ -156,7 +156,7 @@ void CSmackerClip::Start() {
                 NextSyllable();
             } else {
                 NumSoundFx = 1;
-                SoundFx.ReInit(SoundFilename, const_cast<char *>((LPCTSTR)SmackerPath));
+                SoundFx.ReInit(SoundFilename, SmackerPath);
             }
         } else {
             NumSoundFx = 0;
@@ -280,7 +280,7 @@ void CSmackerClip::NextSyllable() {
             *pp = 0;
         }
 
-        SoundFx.ReInit(buffer, const_cast<char *>((LPCTSTR)SmackerPath));
+        SoundFx.ReInit(buffer, SmackerPath);
     }
 }
 
@@ -323,7 +323,7 @@ void CSmackerPerson::ReSize(SLONG NumberOfClips) { Clips.ReSize(NumberOfClips); 
 //--------------------------------------------------------------------------------------------
 // Legt fest, wie die Person labert:
 //--------------------------------------------------------------------------------------------
-void CSmackerPerson::SetSpeakFx(const CString &Filename) { SpeakFx.ReInit(Filename, const_cast<char *>((LPCTSTR)SmackerPath)); }
+void CSmackerPerson::SetSpeakFx(const CString &Filename) { SpeakFx.ReInit(Filename, SmackerPath); }
 
 //--------------------------------------------------------------------------------------------
 // Legt die Stimmung (Freizeit, Reden, Zuhören) fest, in der man jemand haben will
