@@ -2072,7 +2072,7 @@ void NewGamePopup::CheckNetEvents() {
                 ULONG Par2 = 0;
                 Message >> MessageType;
 
-                AT_Log_I("NET", "Received net event: %s (%x)", Translate_ATNET(MessageType), MessageType);
+                // AT_Log_I("NET", "Received net event: %s (%x)", Translate_ATNET(MessageType), MessageType);
 
                 switch (MessageType) {
                 case ATNET_ENTERNAME:
@@ -2250,7 +2250,6 @@ void NewGamePopup::CheckNetEvents() {
                         SLONG BotIndex = 0;
                         ULONG BotDifficulty = 0;
                         Message >> BotIndex >> BotDifficulty;
-                        AT_Log_I("NET", "Received: %d, %u", BotIndex, BotDifficulty);
 
                         if (BotIndex >= 0 && BotIndex < 4) {
                             Sim.Players.Players[BotIndex].Owner = 1;
@@ -2734,8 +2733,8 @@ void NewGamePopup::PushName(SLONG n) {
 //--------------------------------------------------------------------------------------------
 bool SIM::SendMemFile(TEAKFILE &file, ULONG target, bool useCompression) {
     useCompression = false;
-    ULONG eventId = (file.MemBuffer[3] << 24) | (file.MemBuffer[2] << 16) | (file.MemBuffer[1] << 8) | (file.MemBuffer[0]);
-    AT_Log_I("NET", "Send Event: %s (%x) TO: %x", Translate_ATNET(eventId), eventId, target);
+    // ULONG eventId = (file.MemBuffer[3] << 24) | (file.MemBuffer[2] << 16) | (file.MemBuffer[1] << 8) | (file.MemBuffer[0]);
+    // AT_Log_I("NET", "Send Event: %s (%x) TO: %x", Translate_ATNET(eventId), eventId, target);
 
     if (((Sim.bNetwork != 0) || (bNetworkUnderway != 0)) && gNetwork.IsInSession()) {
         return gNetwork.Send(file.MemBuffer, file.MemBufferUsed, target, useCompression);
