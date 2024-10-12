@@ -525,24 +525,25 @@ std::filesystem::path SearchCaseInsensitive(const std::filesystem::path &folderI
     }
 
     /* resolve case-insensitively */
-    const char *searchFor{filename.c_str()};
+    CString searchFor{filename.c_str()};
     std::filesystem::path found;
     for (const auto &e : std::filesystem::directory_iterator(folderInput)) {
         if (!e.exists()) {
             continue;
         }
-        int cmp = stricmp(e.path().filename().c_str(), searchFor);
+        CString iter{e.path().filename().string()};
+        int cmp = stricmp(iter.c_str(), searchFor.c_str());
         if (cmp != 0) {
             continue;
         }
         if (!found.empty()) {
-            AT_Warn("SearchCaseInsensitive: Filename '%s' is ambiguous in '%s'.", searchFor, folderInput.c_str());
+            AT_Warn("SearchCaseInsensitive: Filename '%s' is ambiguous in '%s'.", searchFor.c_str(), folderInput.c_str());
             return found;
         }
         found = e.path().filename();
     }
     if (found.empty()) {
-        AT_Warn("SearchCaseInsensitive: Could not find file '%s' in '%s'.", searchFor, folderInput.c_str());
+        AT_Warn("SearchCaseInsensitive: Could not find file '%s' in '%s'.", searchFor.c_str(), folderInput.c_str());
         return filename;
     }
     return found;

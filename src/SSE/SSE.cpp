@@ -625,7 +625,8 @@ SLONG MIDI::Load(const char *file) {
         std::filesystem::path p(_musicData.file);
         std::string fn = p.filename().stem().string();
         std::transform(fn.begin(), fn.end(), fn.begin(), ::tolower);
-        _musicData.file = p.parent_path() / (fn + ".ogg");
+        auto pathResult = p.parent_path() / (fn + ".ogg");
+        _musicData.file = pathResult.string();
         _music = Mix_LoadMUS(_musicData.file.c_str());
     }
 
