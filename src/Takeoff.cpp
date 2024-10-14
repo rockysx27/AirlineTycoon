@@ -708,7 +708,7 @@ void CTakeOffApp::InitInstance(int argc, char *argv[]) {
         }
 
         if (gLanguage == LANGUAGE_D)
-            LOADING_TEXT("Suche nach Midi-Gerät...")
+            LOADING_TEXT("Suche nach Midi-Ger\xE4t...")
         else if (gLanguage == LANGUAGE_N)
             LOADING_TEXT("Zoekt midi-apparaat...")
         else if (gLanguage == LANGUAGE_F)
@@ -726,7 +726,7 @@ void CTakeOffApp::InitInstance(int argc, char *argv[]) {
         else if (gLanguage == LANGUAGE_N)
             LOADING_TEXT("Initialiseert geluidssysteem...")
         else if (gLanguage == LANGUAGE_F)
-            LOADING_TEXT("Chargement des systèmes de son...")
+            LOADING_TEXT("Chargement des syst\xE8mes de son...")
         else
             LOADING_TEXT("Initializing music sound system...");
 
@@ -737,7 +737,7 @@ void CTakeOffApp::InitInstance(int argc, char *argv[]) {
 
             if (gpMidi != nullptr) {
                 if (gLanguage == LANGUAGE_D)
-                    LOADING_TEXT("Midi-Lautstärke einstellen...")
+                    LOADING_TEXT("Midi-Lautst\xE4rke einstellen...")
                 else if (gLanguage == LANGUAGE_N)
                     LOADING_TEXT("Stelt het midi-volume in...")
                 else if (gLanguage == LANGUAGE_F)
@@ -765,7 +765,7 @@ void CTakeOffApp::InitInstance(int argc, char *argv[]) {
                     NextMidi();
 
                     if (gLanguage == LANGUAGE_D)
-                        LOADING_TEXT("Midi-Lautstärke zurücksetzen...")
+                        LOADING_TEXT("Midi-Lautst\xE4rke zur\xFC\x63ksetzen...")
                     else if (gLanguage == LANGUAGE_N)
                         LOADING_TEXT("Herstelt het midi-volume...")
                     else if (gLanguage == LANGUAGE_F)
@@ -875,7 +875,7 @@ void CTakeOffApp::InitInstance(int argc, char *argv[]) {
         Clans.LoadBitmaps();
 
         if (gLanguage == LANGUAGE_D)
-            LOADING_TEXT("Initialisierung der Städte...")
+            LOADING_TEXT("Initialisierung der St\xE4\x64te...")
         else if (gLanguage == LANGUAGE_N)
             LOADING_TEXT("Initialiseert de steden...")
         else if (gLanguage == LANGUAGE_F)
@@ -903,7 +903,7 @@ void CTakeOffApp::InitInstance(int argc, char *argv[]) {
         else if (gLanguage == LANGUAGE_N)
             LOADING_TEXT("Initialiseert de namen...")
         else if (gLanguage == LANGUAGE_F)
-            LOADING_TEXT("Creation des noms d'avion...")
+            LOADING_TEXT("Creation des noms d\x92\x61vion...")
         else
             LOADING_TEXT("Initializing names...");
         PlaneNames.ReInit("pnames.csv");
