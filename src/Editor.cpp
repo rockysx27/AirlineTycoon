@@ -1156,7 +1156,7 @@ void CEditor::OnPaint() {
                                     : (PartBms[GetPlaneBuild(Plane.Parts[d].Shortname).BitmapIndex]);
             XY p = bShift != 0 ? (Plane.Parts[d].Pos2d + XY(320, 200)) : (Plane.Parts[d].Pos3d);
 
-            if (!PartUnderCursor.empty() && !bCursorBlitted &&
+            if (!PartUnderCursor.empty() && !bCursorBlitted && (GripRelation != -1) &&
                 GetPlaneBuild(PartUnderCursor).zPos + GripAtPos.y + gPlanePartRelations[GripRelation].zAdd <=
                     GetPlaneBuild(Plane.Parts[d].Shortname).zPos + Plane.Parts[d].Pos3d.y) {
                 RoomBm.BlitFromT(PartBms[GetPlaneBuild(PartUnderCursor).BitmapIndex], GripAtPos);
