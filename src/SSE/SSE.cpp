@@ -616,20 +616,25 @@ SLONG MIDI::Load(const char *file) {
         Free();
     }
 
-    _musicData.file = file;
+    std::filesystem::path pathToMIDI{file};
+    std::string fn = pathToMIDI.filename().stem().string();
+    auto pathToOgg = SearchCaseInsensitive(pathToMIDI.parent_path(), (fn + ".ogg"));
 
-    if (_mode == 1) {
-        _music = Mix_LoadMUS(_musicData.file.c_str());
-        // Some versions ship with ogg music as well, use it as a fall-back
-    } else if (_mode == 2) {
-        std::filesystem::path p(_musicData.file);
-        std::string fn = p.filename().stem().string();
-        std::transform(fn.begin(), fn.end(), fn.begin(), ::tolower);
-        auto pathResult = p.parent_path() / (fn + ".ogg");
-        _musicData.file = pathResult.string();
-        _music = Mix_LoadMUS(_musicData.file.c_str());
+    // Some versions ship with ogg music as well, use it as a fall-back
+    if (_mode == 1 && !std::filesystem::exists(pathToMIDI)) {
+        _mode = 2;
+    }
+    if (_mode != 1 && !std::filesystem::exists(pathToOgg)) {
+        _mode = 1;
     }
 
+    if (_mode == 1) {
+        _musicData.file = pathToMIDI.string();
+    } else {
+        _musicData.file = pathToOgg.string();
+    }
+
+    _music = Mix_LoadMUS(_musicData.file.c_str());
     if (_music == nullptr) {
         AT_Log_Generic("Could not load music: %s\n", _musicData.file.c_str());
     }
