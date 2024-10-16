@@ -40,7 +40,7 @@ void InitPathVars() {
     } else if (gLanguage == LANGUAGE_F) {
         prefix = "fr";
     }
-    AT_Log("Settings path prefix: '%s'", prefix.c_str());
+    AT_Log("gLanguage = '%x', settings path prefix: '%s'", gLanguage, prefix.c_str());
 
     // fallback check
     if (!DoesDirectoryExist(FullFilename(prefix, ""))) {

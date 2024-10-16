@@ -399,7 +399,7 @@ void CTakeOffApp::ReadOptions(int argc, char *argv[]) {
     std::ifstream ifil = std::ifstream(sabbelPath);
     if (ifil.is_open()) {
         AT_Log("Found sabbel.dat at %s", sabbelPath.c_str());
-        ifil.read(reinterpret_cast<char *>(&gLanguage), sizeof(gLanguage));
+        ifil.read(reinterpret_cast<char *>(&gLanguage), 1);
         ifil.close();
     } else {
         AT_Log("No sabbel.dat found at %s", sabbelPath.c_str());
