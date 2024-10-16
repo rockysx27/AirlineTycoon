@@ -5,3 +5,6 @@
 	path = libs/jansson/repo
 	url = https://github.com/akheron/jansson.git
 	branch = master
+[submodule "libs/libflic"]
+	path = libs/libflic
+	url = https://github.com/aseprite/flic.git

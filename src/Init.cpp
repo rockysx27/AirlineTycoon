@@ -10,6 +10,11 @@
 #include <algorithm>
 #include <sstream>
 
+#define AT_Error(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_ERROR, "Init", __VA_ARGS__)
+#define AT_Warn(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "Init", __VA_ARGS__)
+#define AT_Info(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "Init", __VA_ARGS__)
+#define AT_Log(...) AT_Log_I("Init", __VA_ARGS__)
+
 extern SLONG IconsPos[]; // Referenziert globe.cpp
 
 extern BOOL gSpawnOnly;
@@ -35,6 +40,7 @@ void InitPathVars() {
     } else if (gLanguage == LANGUAGE_F) {
         prefix = "fr";
     }
+    AT_Log("Settings path prefix: '%s'", prefix.c_str());
 
     // fallback check
     if (!DoesDirectoryExist(FullFilename(prefix, ""))) {
@@ -47,26 +53,36 @@ void InitPathVars() {
         } else if (DoesFileExist(FullFilename("aa/100.ogg", "fr/voice"))) {
             prefix = "fr";
         }
+
+        if (prefix.empty()) {
+            AT_Warn("Prefix does not exist!");
+        } else {
+            AT_Info("Using prefix fallback: %s", prefix.c_str());
+        }
     }
 
     std::filesystem::path appPath{AppPath.c_str()};
-    std::filesystem::path prefixPath{appPath / prefix.c_str()};
+    std::filesystem::path prefixPath{prefix.c_str()};
+    AT_Log("Final path prefix: '%s'", prefixPath.c_str());
 
-    ExcelPath = SearchCaseInsensitive(prefixPath, "data");
-    GliPath = SearchCaseInsensitive(prefixPath, "gli");
-    MiscPath = SearchCaseInsensitive(prefixPath, "misc");
-    VoicePath = SearchCaseInsensitive(prefixPath, "voice");
+    /* this should be found under 'prefix/' in some versions
+     * or directly in AppPath (in this case prefix will be empty) */
+    ExcelPath = BuildPathCaseInsensitive(prefixPath, "data");
+    GliPath = BuildPathCaseInsensitive(prefixPath, "gli");
+    MiscPath = BuildPathCaseInsensitive(prefixPath, "misc");
+    VoicePath = BuildPathCaseInsensitive(prefixPath, "voice");
 
-    IntroPath = SearchCaseInsensitive(appPath, "intro");
-    MyPlanePath = SearchCaseInsensitive(appPath, "myplanes");
-    PatchPath = SearchCaseInsensitive(appPath, "patch");
-    PlanePath = SearchCaseInsensitive(appPath, "planes");
-    RoomPath = SearchCaseInsensitive(appPath, "room");
-    SoundPath = SearchCaseInsensitive(appPath, "sound");
-    SmackerPath = SearchCaseInsensitive(appPath, "video");
+    /* this is always directly in AppPath */
+    IntroPath = BuildPathCaseInsensitive({}, "intro");
+    MyPlanePath = BuildPathCaseInsensitive({}, "myplanes");
+    PatchPath = BuildPathCaseInsensitive({}, "patch");
+    PlanePath = BuildPathCaseInsensitive({}, "planes");
+    RoomPath = BuildPathCaseInsensitive({}, "room");
+    SoundPath = BuildPathCaseInsensitive({}, "sound");
+    SmackerPath = BuildPathCaseInsensitive({}, "video");
 
     if (SavegamePath.GetLength() == 0) {
-        SavegamePath = SearchCaseInsensitive(appPath, "savegame");
+        SavegamePath = BuildPathCaseInsensitive({}, "savegame");
     }
 
     // Unused:

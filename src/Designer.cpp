@@ -16,14 +16,7 @@ static char THIS_FILE[] = __FILE__;
 #define DSBVOLUME_MIN (-10000)
 #define DSBVOLUME_MAX 0
 
-#if __cplusplus < 201703L // If the version of C++ is less than 17
-#include <experimental/filesystem>
-// It was still in the experimental:: namespace
-namespace fs = std::experimental::filesystem;
-#else
 #include <filesystem>
-namespace fs = std::filesystem;
-#endif
 
 //--------------------------------------------------------------------------------------------
 // Die Schalter wird eröffnet:

@@ -1,4 +1,5 @@
 #include "defines.h"
+#include "global.h"
 #include "Proto.h"
 #include "sbl.h"
 #include "SSE.h"
@@ -611,14 +612,15 @@ SLONG MIDI::GetPan(SLONG * /*pPan*/) { return SSE_OK; }
 
 SLONG MIDI::SetPan(SLONG /*pan*/) { return SSE_OK; }
 
-SLONG MIDI::Load(const char *file) {
+SLONG MIDI::Load(const CString &file) {
     if (_music != nullptr) {
         Free();
     }
 
-    std::filesystem::path pathToMIDI{file};
-    std::string fn = pathToMIDI.filename().stem().string();
-    auto pathToOgg = SearchCaseInsensitive(pathToMIDI.parent_path(), (fn + ".ogg"));
+    fs::path path{file.c_str()};
+    fs::path rootPath{SoundPath.c_str()};
+    auto pathToMIDI = FullFilesystemPath(path, rootPath);
+    auto pathToOgg = FullFilesystemPath(path.replace_extension("ogg"), rootPath);
 
     // Some versions ship with ogg music as well, use it as a fall-back
     if (_mode == 1 && !std::filesystem::exists(pathToMIDI)) {

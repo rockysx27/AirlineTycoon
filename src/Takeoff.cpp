@@ -65,6 +65,9 @@
 #include "sentry.h"
 #endif
 
+#define AT_Error(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_ERROR, "Takeoff", __VA_ARGS__)
+#define AT_Warn(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_WARN, "Takeoff", __VA_ARGS__)
+#define AT_Info(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "Takeoff", __VA_ARGS__)
 #define AT_Log(...) AT_Log_I("Takeoff", __VA_ARGS__)
 
 class TeakLibException;
@@ -392,10 +395,14 @@ void CTakeOffApp::ReadOptions(int argc, char *argv[]) {
     // #define LANGUAGE_10     19             //V-noch frei
 
     gLanguage = LANGUAGE_E;
-    std::ifstream ifil = std::ifstream(FullFilename("sabbel.dat", "misc"));
+    CString sabbelPath{FullFilename("sabbel.dat", "misc")};
+    std::ifstream ifil = std::ifstream(sabbelPath);
     if (ifil.is_open()) {
+        AT_Log("Found sabbel.dat at %s", sabbelPath.c_str());
         ifil.read(reinterpret_cast<char *>(&gLanguage), sizeof(gLanguage));
         ifil.close();
+    } else {
+        AT_Log("No sabbel.dat found at %s", sabbelPath.c_str());
     }
 
     // gUpdatingPools = TRUE; //Zum testen; für Release auskommentieren

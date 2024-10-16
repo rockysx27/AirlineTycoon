@@ -581,7 +581,7 @@ void PlayMidi(const CString &Filename) {
         }
 
         gpMidi->Stop();
-        gpMidi->Load(FullFilename(Filename, SoundPath));
+        gpMidi->Load(Filename);
         gpMidi->Play();
 
         SSE::SetMusicCallback(NextMidi);

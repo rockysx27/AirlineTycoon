@@ -1928,6 +1928,7 @@ class CBilanzWoche {
 };
 
 typedef struct smk_t *smk;
+class FlcWrapper;
 
 //--------------------------------------------------------------------------------------------
 // Smacker 16-Bit Interface:
@@ -1941,11 +1942,16 @@ class CSmack16 {
     unsigned long Height{};
     DWORD FrameNext{};
 
+    /* for FLC format */
+    FlcWrapper *pFlc{nullptr};
+
   public:
     CSmack16() = default;
     ~CSmack16();
 
     void Open(const CString &Filename);
+    BOOL NextSmk(SBBM *pTargetBm);
+    BOOL NextFlc(SBBM *pTargetBm);
     BOOL Next(SBBM *pTargetBm);
     void Close(void);
 };
