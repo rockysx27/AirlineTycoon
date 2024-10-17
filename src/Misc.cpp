@@ -519,7 +519,7 @@ std::filesystem::path _SearchCaseInsensitive(const std::filesystem::path &folder
 
 std::filesystem::path _SearchCaseInsensitive(const std::filesystem::path &folderInput, const std::filesystem::path &filename) {
     if (!std::filesystem::exists(folderInput)) {
-        AT_Warn("_SearchCaseInsensitive: Parent folder %s does not exist.", folderInput.c_str());
+        AT_Warn("_SearchCaseInsensitive: Parent folder %s does not exist.", folderInput.string().c_str());
         return filename;
     }
 
@@ -541,13 +541,13 @@ std::filesystem::path _SearchCaseInsensitive(const std::filesystem::path &folder
             continue;
         }
         if (!found.empty()) {
-            AT_Warn("_SearchCaseInsensitive: Filename '%s' is ambiguous in '%s'.", searchFor.c_str(), folderInput.c_str());
+            AT_Warn("_SearchCaseInsensitive: Filename '%s' is ambiguous in '%s'.", searchFor.c_str(), folderInput.string().c_str());
             return found;
         }
         found = e.path().filename();
     }
     if (found.empty()) {
-        AT_Warn("_SearchCaseInsensitive: Could not find file '%s' in '%s'.", searchFor.c_str(), folderInput.c_str());
+        AT_Warn("_SearchCaseInsensitive: Could not find file '%s' in '%s'.", searchFor.c_str(), folderInput.string().c_str());
         return filename;
     }
     return found;

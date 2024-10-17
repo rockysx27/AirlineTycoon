@@ -511,6 +511,20 @@ CSmackerPerson::CSmackerPerson() {
 //--------------------------------------------------------------------------------------------
 CSmackerPerson::~CSmackerPerson() = default;
 
+bool CSmackerPerson::clipExists(SLONG clip) const {
+    if (clip < 0 || clip >= Clips.AnzEntries()) {
+        return false;
+    }
+    return (Clips[clip].pSmack != nullptr) || (Clips[clip].pFlc != nullptr);
+}
+
+bool CSmackerPerson::isEmptyClip(SLONG clip) const {
+    if (clip < 0 || clip >= Clips.AnzEntries()) {
+        return false;
+    }
+    return (Clips[ActiveClip].pSmack == nullptr) && (Clips[ActiveClip].pFlc == nullptr);
+}
+
 //--------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------
@@ -549,8 +563,7 @@ SLONG CSmackerPerson::GetClip() { return (ActiveClip); }
 //
 //--------------------------------------------------------------------------------------------
 SLONG CSmackerPerson::GetFrame() const {
-    bool haveData = (Clips[ActiveClip].pSmack != nullptr) || (Clips[ActiveClip].pFlc != nullptr);
-    if (ActiveClip != -1 && haveData) {
+    if (clipExists(ActiveClip)) {
         return (Clips[ActiveClip].FrameNum);
     }
     return (0);
@@ -644,8 +657,7 @@ void CSmackerPerson::Pump() {
     }
 
     // Wenn gerade ein Leerclip abgespielt wird:
-    bool noData = (Clips[ActiveClip].pSmack == nullptr) && (Clips[ActiveClip].pFlc == nullptr);
-    if (ActiveClip != -1 && noData) {
+    if (isEmptyClip(ActiveClip)) {
         Clips[ActiveClip].Stop();
         Clips[ActiveClip].State = SMACKER_CLIP_INACTIVE;
         NextClip();
@@ -1006,8 +1018,7 @@ found_next_clip:
         }
     }
 
-    bool noData = (Clips[ActiveClip].pSmack == nullptr) && (Clips[ActiveClip].pFlc == nullptr);
-    if (noData && Clips[ActiveClip].PostWait.x == 0 && Clips[ActiveClip].PostWait.y == 0) {
+    if (isEmptyClip(ActiveClip) && Clips[ActiveClip].PostWait.x == 0 && Clips[ActiveClip].PostWait.y == 0) {
         NextClip();
     }
 }
@@ -1016,10 +1027,7 @@ found_next_clip:
 // Blittet eine Person in eine Bitmap:
 //--------------------------------------------------------------------------------------------
 void CSmackerPerson::BlitAtT(SBBM &RoomBm, XY Offset) {
-    if (ActiveClip == -1) {
-        return;
-    }
-    if ((Clips[ActiveClip].pSmack != nullptr) || (Clips[ActiveClip].pFlc != nullptr)) {
+    if (clipExists(ActiveClip)) {
         RoomBm.BlitFromT(Bitmap, BitmapPos + Offset);
     }
 }

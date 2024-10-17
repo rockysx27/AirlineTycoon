@@ -189,6 +189,8 @@ class CSmackerPerson {
   public: // State & Initialization:
     CSmackerPerson();
     ~CSmackerPerson();
+    bool clipExists(SLONG clip) const;
+    bool isEmptyClip(SLONG clip) const;
     void ReSize(SLONG NumberOfClips);
     void SetSpeakFx(const CString &Filename);
     void SetDesiredMood(SLONG DesiredMood, SLONG AcceptedMood1 = -1, SLONG AcceptedMood2 = -1);
