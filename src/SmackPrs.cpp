@@ -98,7 +98,7 @@ void FlcWrapper::init_decoder() {
         fclose(f);
     }
 
-    f = std::fopen(Path.c_str(), "rb");
+    f = std::fopen(Path.string().c_str(), "rb");
     if (!f) {
         AT_Error("FlcWrapper: Failed to open %s: errno %d!", Path.c_str(), errno);
         return;
@@ -309,7 +309,7 @@ void CSmackerClip::Start() {
         auto pathToFlc = FullFilesystemPath(path.replace_extension("flc"), rootPath);
 
         if (std::filesystem::exists(pathToSmk)) {
-            pSmack = smk_open_file(pathToSmk.c_str(), SMK_MODE_MEMORY);
+            pSmack = smk_open_file(pathToSmk.string().c_str(), SMK_MODE_MEMORY);
             smk_enable_video(pSmack, 1U);
             smk_info_all(pSmack, &FrameNum, &Frames, nullptr);
             smk_info_video(pSmack, &Width, &Height, nullptr);
