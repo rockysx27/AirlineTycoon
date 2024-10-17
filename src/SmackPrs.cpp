@@ -134,15 +134,15 @@ char FlcWrapper::render() {
 
     int cur = Decoder.getCurrentFrameCount();
     if (cur >= 0 && cur < Header.frames - 1) {
-        AT_Log("%s: SMK_MORE %lu/%lu", Path.c_str(), cur, Header.frames);
+        // AT_Log("%s: SMK_MORE %lu/%lu", Path.c_str(), cur, Header.frames);
         return SMK_MORE;
     }
     if (cur == Header.frames - 1) {
-        AT_Log("%s: SMK_LAST %lu/%lu", Path.c_str(), cur, Header.frames);
+        // AT_Log("%s: SMK_LAST %lu/%lu", Path.c_str(), cur, Header.frames);
         return SMK_LAST;
     }
     if (cur == Header.frames) {
-        AT_Log("%s: SMK_DONE %lu/%lu", Path.c_str(), cur, Header.frames);
+        // AT_Log("%s: SMK_DONE %lu/%lu", Path.c_str(), cur, Header.frames);
         return SMK_DONE;
     }
     AT_Error("%s: SMK_ERROR %lu/%lu", Path.c_str(), cur, Header.frames);
@@ -186,7 +186,7 @@ void CSmack16::Open(const CString &Filename) {
         PaletteMapper = SDL_AllocPalette(256);
         CalculatePalettemapper(smk_get_palette(pSmack), PaletteMapper);
     } else if (fs::exists(pathToFlc)) {
-        AT_Info("FLC: %s", pathToFlc.c_str());
+        // AT_Info("Using FLC fallback: %s", pathToFlc.c_str());
         pFlc = new FlcWrapper(pathToFlc);
         pFlc->info_video(Width, Height);
         FrameNext = 0;

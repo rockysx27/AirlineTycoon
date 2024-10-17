@@ -590,12 +590,22 @@ fs::path BuildPathCaseInsensitive(const fs::path &PathString, const fs::path &Fi
 fs::path FullFilesystemPath(const fs::path &Filename, const fs::path &PathString) {
     // AT_Info("FullFilesystemPath: '%s', '%s'", Filename.c_str(), PathString.c_str());
 
-    /* Filename sometimes contains folders, so we build a full path... */
+    /* Filename sometimes contains folders, so we first build a full path */
     fs::path p{PathString / Filename};
 
-    /* ... and now split it again properly */
-    fs::path appPath{AppPath.c_str()};
-    return appPath / BuildPathCaseInsensitive(p.parent_path(), p.filename());
+    /* caching: searching case-insensitively on every folder level is expensive */
+    static std::unordered_map<fs::path, fs::path> cache;
+    auto it = cache.find(p);
+    if (it != cache.end()) {
+        return it->second;
+    }
+
+    /* construct result path */
+    fs::path result{AppPath.c_str()};
+    result = result / BuildPathCaseInsensitive(p.parent_path(), p.filename());
+    cache[p] = result;
+
+    return result;
 }
 //--------------------------------------------------------------------------------------------
 // Selbe Funktion, aber Parameter und Rückgabetyp sind CString
