@@ -594,8 +594,8 @@ fs::path FullFilesystemPath(const fs::path &Filename, const fs::path &PathString
     fs::path p{PathString / Filename};
 
     /* caching: searching case-insensitively on every folder level is expensive */
-    static std::unordered_map<fs::path, fs::path> cache;
-    auto it = cache.find(p);
+    static std::unordered_map<std::string, fs::path> cache;
+    auto it = cache.find(p.string());
     if (it != cache.end()) {
         return it->second;
     }
@@ -603,7 +603,7 @@ fs::path FullFilesystemPath(const fs::path &Filename, const fs::path &PathString
     /* construct result path */
     fs::path result{AppPath.c_str()};
     result = result / BuildPathCaseInsensitive(p.parent_path(), p.filename());
-    cache[p] = result;
+    cache[p.string()] = result;
 
     return result;
 }
