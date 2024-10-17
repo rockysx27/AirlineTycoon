@@ -5919,6 +5919,11 @@ void PLAYER::RandomBeraterMessageJobs() {
                                                       Helper::getWeekday(start.getDate()).c_str(), start.getHour(), premiumStr.c_str()));
         }
     }
+
+    if (bestJobs.empty()) {
+        return;
+    }
+
     std::sort(bestJobs.begin(), bestJobs.end(),
               [](const std::pair<FLOAT, std::string> &a, const std::pair<FLOAT, std::string> &b) { return (a.first > b.first); });
 
