@@ -31,8 +31,8 @@ You can see the instructions to build and run the project in [BUILDING.md](BUILD
 ## Changes
 
 ### General
-* Now runnable on Linux
-* Allow the game to be ran Windowed / Borderless / Fullscreen
+* Now runnable on Linux (including support for FLC animations found in some versions)
+* Game can be configured for windowed / borderless / fullscreen display
 
 ### New computer player
 * Respects the rules of the game
