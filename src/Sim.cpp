@@ -3209,8 +3209,8 @@ void SIM::SaveGame(SLONG Number, const CString &Name) const {
     SaveVersion = 1;
     SaveVersionSub = 202; // Version 1.6.1
 
-    std::filesystem::path path{Filename.c_str()};
-    std::filesystem::create_directory(path.parent_path());
+    fs::path path{Filename.c_str()};
+    fs::create_directory(path.parent_path());
 
     TEAKFILE OutputFile(Filename, TEAKFILE_WRITE);
 

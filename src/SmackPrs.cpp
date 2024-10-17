@@ -56,8 +56,8 @@ void CalculatePalettemapperFlc(const flic::Colormap &colormap, SDL_Palette *pPal
 //--------------------------------------------------------------------------------------------
 // Wrapper around FLIC library, containing file handles and all data structures
 //--------------------------------------------------------------------------------------------
-FlcWrapper::FlcWrapper(std::filesystem::path fileInput) : Path{fileInput} {
-    if (!std::filesystem::exists(Path)) {
+FlcWrapper::FlcWrapper(fs::path fileInput) : Path{fileInput} {
+    if (!fs::exists(Path)) {
         AT_Error("FlcWrapper: File %s does not exist!", Path.c_str());
         return;
     }
@@ -177,7 +177,7 @@ void CSmack16::Open(const CString &Filename) {
     auto pathToSmk = FullFilesystemPath(path, rootPath);
     auto pathToFlc = FullFilesystemPath(path.replace_extension("flc"), rootPath);
 
-    if (std::filesystem::exists(pathToSmk)) {
+    if (fs::exists(pathToSmk)) {
         pSmack = smk_open_file(FullFilename(Filename, SmackerPath), SMK_MODE_MEMORY);
         smk_enable_video(pSmack, 1U);
         smk_info_video(pSmack, &Width, &Height, nullptr);
@@ -185,7 +185,7 @@ void CSmack16::Open(const CString &Filename) {
         State = smk_first(pSmack);
         PaletteMapper = SDL_AllocPalette(256);
         CalculatePalettemapper(smk_get_palette(pSmack), PaletteMapper);
-    } else if (std::filesystem::exists(pathToFlc)) {
+    } else if (fs::exists(pathToFlc)) {
         AT_Info("FLC: %s", pathToFlc.c_str());
         pFlc = new FlcWrapper(pathToFlc);
         pFlc->info_video(Width, Height);
@@ -308,14 +308,14 @@ void CSmackerClip::Start() {
         auto pathToSmk = FullFilesystemPath(path, rootPath);
         auto pathToFlc = FullFilesystemPath(path.replace_extension("flc"), rootPath);
 
-        if (std::filesystem::exists(pathToSmk)) {
+        if (fs::exists(pathToSmk)) {
             pSmack = smk_open_file(pathToSmk.string().c_str(), SMK_MODE_MEMORY);
             smk_enable_video(pSmack, 1U);
             smk_info_all(pSmack, &FrameNum, &Frames, nullptr);
             smk_info_video(pSmack, &Width, &Height, nullptr);
             smk_first(pSmack);
             CalculatePalettemapper(smk_get_palette(pSmack), PaletteMapper);
-        } else if (std::filesystem::exists(pathToFlc)) {
+        } else if (fs::exists(pathToFlc)) {
             pFlc = new FlcWrapper(pathToFlc);
             pFlc->info_all(FrameNum, Frames);
             pFlc->info_video(Width, Height);

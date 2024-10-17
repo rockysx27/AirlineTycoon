@@ -153,7 +153,7 @@ BOOL CreateSpeechSBFX(const CString &String, SBFX *pFx, SLONG PlayerNum, BOOL *b
         suffix = ".raw";
     }
 
-    char sep = std::filesystem::path::preferred_separator;
+    char sep = fs::path::preferred_separator;
     CString TextFollows;
     BUFFER_V<SBFX *> Effects(50);
     SLONG c = 0;

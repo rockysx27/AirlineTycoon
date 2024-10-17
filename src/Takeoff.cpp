@@ -146,7 +146,7 @@ extern "C"
                                                     "Abort to not send the crash to sentry\n\nCustom Crash ID is: ") +
                                         id;
                 AT_Log_I("CRASH", msg);
-                std::filesystem::copy_file("debug.txt", "crash-" + id + ".txt");
+                fs::copy_file("debug.txt", "crash-" + id + ".txt");
                 if (AbortMessageBox(MESSAGEBOX_ERROR, "Airline Tycoon Deluxe Crash Handler", msg.c_str(), nullptr)) {
                     return sentry_value_new_null(); // Skip
                 }

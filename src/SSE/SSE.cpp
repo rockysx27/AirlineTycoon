@@ -623,10 +623,10 @@ SLONG MIDI::Load(const CString &file) {
     auto pathToOgg = FullFilesystemPath(path.replace_extension("ogg"), rootPath);
 
     // Some versions ship with ogg music as well, use it as a fall-back
-    if (_mode == 1 && !std::filesystem::exists(pathToMIDI)) {
+    if (_mode == 1 && !fs::exists(pathToMIDI)) {
         _mode = 2;
     }
-    if (_mode != 1 && !std::filesystem::exists(pathToOgg)) {
+    if (_mode != 1 && !fs::exists(pathToOgg)) {
         _mode = 1;
     }
 

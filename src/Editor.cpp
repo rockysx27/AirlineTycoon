@@ -1757,7 +1757,7 @@ void CEditor::DeleteCurrent() {
 
     Plane.Clear();
     CString fn = FullFilename(GetMatchingNext(FullFilename("*.plane", MyPlanePath), GetFilenameFromFullFilename(PlaneFilename), -1), MyPlanePath);
-    if (!fn.empty() && fn.Right(1)[0] != std::filesystem::path::preferred_separator) {
+    if (!fn.empty() && fn.Right(1)[0] != fs::path::preferred_separator) {
         Plane.Load(fn);
         PlaneFilename = fn;
     } else {

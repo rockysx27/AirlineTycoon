@@ -61,8 +61,8 @@ void InitPathVars() {
         }
     }
 
-    std::filesystem::path appPath{AppPath.c_str()};
-    std::filesystem::path prefixPath{prefix.c_str()};
+    fs::path appPath{AppPath.c_str()};
+    fs::path prefixPath{prefix.c_str()};
     AT_Log("Final path prefix: '%s'", prefixPath.c_str());
 
     /* this should be found under 'prefix/' in some versions

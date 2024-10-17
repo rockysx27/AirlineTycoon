@@ -515,23 +515,23 @@ void DoAppPath() {
 //--------------------------------------------------------------------------------------------
 // searches for filename in folderInput (not case-sensitive) and returns only the filename
 //--------------------------------------------------------------------------------------------
-std::filesystem::path _SearchCaseInsensitive(const std::filesystem::path &folderInput, const std::filesystem::path &filename);
+fs::path _SearchCaseInsensitive(const fs::path &folderInput, const fs::path &filename);
 
-std::filesystem::path _SearchCaseInsensitive(const std::filesystem::path &folderInput, const std::filesystem::path &filename) {
-    if (!std::filesystem::exists(folderInput)) {
+fs::path _SearchCaseInsensitive(const fs::path &folderInput, const fs::path &filename) {
+    if (!fs::exists(folderInput)) {
         AT_Warn("_SearchCaseInsensitive: Parent folder %s does not exist.", folderInput.string().c_str());
         return filename;
     }
 
     auto fullPath = folderInput / filename;
-    if (std::filesystem::exists(fullPath)) {
+    if (fs::exists(fullPath)) {
         return filename;
     }
 
     /* resolve case-insensitively */
     CString searchFor{filename.c_str()};
-    std::filesystem::path found;
-    for (const auto &e : std::filesystem::directory_iterator(folderInput)) {
+    fs::path found;
+    for (const auto &e : fs::directory_iterator(folderInput)) {
         if (!e.exists()) {
             continue;
         }
@@ -558,19 +558,19 @@ std::filesystem::path _SearchCaseInsensitive(const std::filesystem::path &folder
 // example: BuildPathCaseInsensitive("foo/bar", "baz.txt") will be able to find AppPath/FoO/bAr/BaZ.tXt
 // return value: FoO/bAr/BaZ.tXt (without AppPath)
 //--------------------------------------------------------------------------------------------
-std::filesystem::path BuildPathCaseInsensitive(const std::filesystem::path &PathString, const std::filesystem::path &Filename) {
+fs::path BuildPathCaseInsensitive(const fs::path &PathString, const fs::path &Filename) {
     // AT_Info("BuildPathCaseInsensitive: '%s', '%s'", PathString.c_str(), Filename.c_str());
-    std::filesystem::path appPath{AppPath.c_str()};
+    fs::path appPath{AppPath.c_str()};
 
-    std::vector<std::filesystem::path> list;
-    std::filesystem::path p = PathString;
+    std::vector<fs::path> list;
+    fs::path p = PathString;
     while (!p.empty() && p != p.parent_path()) {
         list.push_back(p.filename());
         // AT_Info("Parent1: '%s', '%s'", p.c_str(), p.filename().c_str());
         p = p.parent_path();
     }
 
-    std::filesystem::path resultPathString{};
+    fs::path resultPathString{};
     p = appPath;
     for (SLONG i = list.size() - 1; i >= 0; i--) {
         auto found = _SearchCaseInsensitive(p, list[i]);
@@ -585,16 +585,16 @@ std::filesystem::path BuildPathCaseInsensitive(const std::filesystem::path &Path
 //--------------------------------------------------------------------------------------------
 // Gibt einen vollständigen Filenamen mit dem vollen Pfad zurück:
 // Ergebnis: AppPath / PathString / Filename
-// Rückgabetyp: std::filesystem::path
+// Rückgabetyp: fs::path
 //--------------------------------------------------------------------------------------------
-std::filesystem::path FullFilesystemPath(const fs::path &Filename, const fs::path &PathString) {
+fs::path FullFilesystemPath(const fs::path &Filename, const fs::path &PathString) {
     // AT_Info("FullFilesystemPath: '%s', '%s'", Filename.c_str(), PathString.c_str());
 
     /* Filename sometimes contains folders, so we build a full path... */
-    std::filesystem::path p{PathString / Filename};
+    fs::path p{PathString / Filename};
 
     /* ... and now split it again properly */
-    std::filesystem::path appPath{AppPath.c_str()};
+    fs::path appPath{AppPath.c_str()};
     return appPath / BuildPathCaseInsensitive(p.parent_path(), p.filename());
 }
 //--------------------------------------------------------------------------------------------
@@ -2013,8 +2013,8 @@ SLONG CountMatchingFilelist(const CString &DirAndWildcards) {
     SLONG n = 0;
 
     // Liste holen:
-    for (const auto &file : std::filesystem::directory_iterator(std::string(Dir))) {
-        const std::filesystem::path &path = file.path();
+    for (const auto &file : fs::directory_iterator(std::string(Dir))) {
+        const fs::path &path = file.path();
         if (!file.is_directory() && path.extension() == std::string(Ext)) {
             n++;
         }
@@ -2034,8 +2034,8 @@ void GetMatchingFilelist(const CString &DirAndWildcards, BUFFER_V<CString> &Arra
     Array.ReSize(0);
 
     // Liste holen:
-    for (const auto &file : std::filesystem::directory_iterator(std::string(Dir))) {
-        const std::filesystem::path &path = file.path();
+    for (const auto &file : fs::directory_iterator(std::string(Dir))) {
+        const fs::path &path = file.path();
         if (!file.is_directory() && path.extension() == std::string(Ext)) {
             Array.ReSize(Array.AnzEntries() + 1);
             Array[Array.AnzEntries() - 1] = path.filename();
