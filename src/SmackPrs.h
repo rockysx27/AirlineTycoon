@@ -80,7 +80,7 @@ class FlcWrapper {
     ~FlcWrapper();
 
     void info_all(unsigned long &FrameNum, unsigned long &Frames);
-    void info_video(unsigned long &Width, unsigned long &Height);
+    void info_video(unsigned long &Width, unsigned long &Height, unsigned long &Speed);
     char first();
     char next();
     const unsigned char *get_video();
@@ -110,6 +110,7 @@ class CSmackerClip {
     smk pSmack{nullptr};
     unsigned long Width{};
     unsigned long Height{};
+    unsigned long Speed{};
     unsigned long FrameNum{};
     unsigned long Frames{};
     DWORD FrameNext{};

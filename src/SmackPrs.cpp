@@ -76,9 +76,10 @@ void FlcWrapper::info_all(unsigned long &FrameNum, unsigned long &Frames) {
     Frames = Header.frames;
 }
 
-void FlcWrapper::info_video(unsigned long &Width, unsigned long &Height) {
+void FlcWrapper::info_video(unsigned long &Width, unsigned long &Height, unsigned long &Speed) {
     Width = Header.width;
     Height = Header.height;
+    Speed = Header.speed;
 }
 
 char FlcWrapper::first() {
@@ -188,7 +189,7 @@ void CSmack16::Open(const CString &Filename) {
     } else if (fs::exists(pathToFlc)) {
         // AT_Info("Using FLC fallback: %s", pathToFlc.c_str());
         pFlc = new FlcWrapper(pathToFlc);
-        pFlc->info_video(Width, Height);
+        pFlc->info_video(Width, Height, Speed);
         FrameNext = 0;
         State = pFlc->first();
         PaletteMapper = SDL_AllocPalette(256);
@@ -226,7 +227,7 @@ BOOL CSmack16::NextFlc(SBBM *pTargetBm) {
         // Take the next frame:
         State = pFlc->next();
 
-        FrameNext = AtGetTime() + 100;
+        FrameNext = AtGetTime() + Speed;
 
         if (pTargetBm != nullptr) {
             if (SLONG(Width) != pTargetBm->Size.x || SLONG(Height) != pTargetBm->Size.y) {
@@ -318,7 +319,7 @@ void CSmackerClip::Start() {
         } else if (fs::exists(pathToFlc)) {
             pFlc = new FlcWrapper(pathToFlc);
             pFlc->info_all(FrameNum, Frames);
-            pFlc->info_video(Width, Height);
+            pFlc->info_video(Width, Height, Speed);
             pFlc->first();
             CalculatePalettemapperFlc(pFlc->get_palette(), PaletteMapper);
         }
@@ -618,7 +619,7 @@ void CSmackerPerson::DecodeFrameFlc() {
         Clips[ActiveClip].pFlc->next();
     }
     Clips[ActiveClip].pFlc->info_all(Clips[ActiveClip].FrameNum, Clips[ActiveClip].Frames);
-    Clips[ActiveClip].FrameNext = AtGetTime() + 100;
+    Clips[ActiveClip].FrameNext = AtGetTime() + Clips[ActiveClip].Speed;
 }
 
 void CSmackerPerson::CopyFrame() {

@@ -1940,6 +1940,7 @@ class CSmack16 {
     char State{};
     unsigned long Width{};
     unsigned long Height{};
+    unsigned long Speed{};
     DWORD FrameNext{};
 
     /* for FLC format */
