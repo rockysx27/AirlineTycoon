@@ -19,7 +19,15 @@ only be used for non-commercial purposes and remains property of BFG.
 
 It is therefore *not* open-source in the free software sense, for more information refer to the License.txt.
 
-## Building and running
+## Installation
+
+1. Buy and install a version of the game (for example on [GOG.com](https://www.gog.com/en/game/airline_tycoon_deluxe) or on [Steam](https://store.steampowered.com/app/331920/Airline_Tycoon_Deluxe/)
+2. Download the latest release of this mod for your platform (Windows, macOS or Linux)
+3. Unpack the archive into the folder where the old game executable is (for example At.exe on Windows)
+4. Start the game using the new game executable (AT.exe on Windows, AT on macOS and Linux)
+5. Enjoy!
+
+## Building
 
 Before building, remember to clone the submodules:
 ```
