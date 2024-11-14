@@ -5531,8 +5531,17 @@ void PLAYER::RobotExecuteAction() {
                 break; // Nicht solange eine Route krieselt
             }
 
+            // Höchste Reichweite
+            SLONG maxRange = 0;
+            for (c = 0; c < SLONG(Planes.AnzEntries()); c++) {
+                if (Planes.IsInAlbum(c) == 0) {
+                    continue;
+                }
+                maxRange = std::max(maxRange, Planes[c].ptReichweite);
+            }
+
             // Neue Route kaufen:
-            if ((DoRoutes != 0) && SLONG(Planes.GetNumUsed()) > (Anz / 2) * 3 / 2 && Anz < SLONG(Routen.GetNumUsed())) {
+            if ((DoRoutes != 0) && (maxRange > 0) && SLONG(Planes.GetNumUsed()) > (Anz / 2) * 3 / 2 && Anz < SLONG(Routen.GetNumUsed())) {
 
                 IsBuyable = GameMechanic::getBuyableRoutes(*this);
 
@@ -5541,29 +5550,37 @@ void PLAYER::RobotExecuteAction() {
 
                 // Beste Route aussuchen:
                 for (c = 0; c < RentRouten.RentRouten.AnzEntries(); c++) {
-                    if (IsBuyable[c] != 0) {
-                        // Ist die Route für die Mission wichtig?
-                        if (RobotUse(ROBOT_USE_ROUTEMISSION)) {
-                            SLONG d = 0;
+                    if (IsBuyable[c] == 0) {
+                        continue;
+                    }
 
-                            for (d = 0; d < 6; d++) {
-                                if ((Routen[c].VonCity == static_cast<ULONG>(Sim.HomeAirportId) &&
-                                     Routen[c].NachCity == static_cast<ULONG>(Sim.MissionCities[d])) ||
-                                    (Routen[c].NachCity == static_cast<ULONG>(Sim.HomeAirportId) &&
-                                     Routen[c].VonCity == static_cast<ULONG>(Sim.MissionCities[d]))) {
-                                    BestC = c;
-                                    if (LocalRandom.Rand(2) == 0) {
-                                        break;
-                                    }
+                    if (RobotUse(ROBOT_TRY_TO_RESPECT_RULES)) {
+                        if (maxRange < Cities.CalcDistance(Routen[c].VonCity, Routen[c].NachCity)) {
+                            continue;
+                        }
+                    }
+
+                    // Ist die Route für die Mission wichtig?
+                    if (RobotUse(ROBOT_USE_ROUTEMISSION)) {
+                        SLONG d = 0;
+
+                        for (d = 0; d < 6; d++) {
+                            if ((Routen[c].VonCity == static_cast<ULONG>(Sim.HomeAirportId) &&
+                                 Routen[c].NachCity == static_cast<ULONG>(Sim.MissionCities[d])) ||
+                                (Routen[c].NachCity == static_cast<ULONG>(Sim.HomeAirportId) &&
+                                 Routen[c].VonCity == static_cast<ULONG>(Sim.MissionCities[d]))) {
+                                BestC = c;
+                                if (LocalRandom.Rand(2) == 0) {
+                                    break;
                                 }
                             }
-                            if (d < 6) {
-                                break;
-                            }
-                        } else if (BestC == -1 || RentRouten.RentRouten[c].Miete / Routen[c].AnzPassagiere() < Best) {
-                            Best = RentRouten.RentRouten[c].Miete / Routen[c].AnzPassagiere();
-                            BestC = c;
                         }
+                        if (d < 6) {
+                            break;
+                        }
+                    } else if (BestC == -1 || RentRouten.RentRouten[c].Miete / Routen[c].AnzPassagiere() < Best) {
+                        Best = RentRouten.RentRouten[c].Miete / Routen[c].AnzPassagiere();
+                        BestC = c;
                     }
                 }
 
