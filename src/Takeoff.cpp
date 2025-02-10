@@ -360,7 +360,8 @@ void CTakeOffApp::CLI(int argc, char *argv[]) {
 
             i++;
             if (i < argc) {
-                gAutoBotDiff = atoi(argv[i]);
+                // gAutoBotDiff = atoi(argv[i]);
+                kSchedulingMinScoreRatio = atoi(argv[i]) * 10 * 1000.0F;
             }
         }
     }

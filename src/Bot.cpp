@@ -211,6 +211,14 @@ void Bot::RobotInit() {
             }
         }
 
+        /* shortterm strategy for missions that usually do not take long */
+        /*if ((Sim.Difficulty >= DIFF_TUTORIAL && Sim.Difficulty <= DIFF_EASY) || (Sim.Difficulty == DIFF_HARD)) {
+            mLongTermStrategy = false;
+        }
+        if (Sim.Difficulty >= DIFF_ADDON02 && Sim.Difficulty <= DIFF_ADDON04) {
+            mLongTermStrategy = false;
+        }*/
+
         /* mission specialization */
         if (Sim.Difficulty == DIFF_TUTORIAL) {
             mItemPills = -1;      /* item not available */

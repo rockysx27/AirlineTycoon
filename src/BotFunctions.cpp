@@ -388,8 +388,8 @@ void Bot::grabFlights(BotPlaner &planer, bool areWeInOffice) {
         planer.setPassengerFactor(10 * 1000); /* need to fly as many passengers as possible */
         break;
     case DIFF_ADDON04:
-        planer.setDistanceFactor(1);
-        planer.setMinSpeedRatio(0.6F);
+        // planer.setDistanceFactor(1);
+        // planer.setMinSpeedRatio(0.6F);
         break;
     case DIFF_ADDON09:
         planer.setUhrigBonus(1000 * 1000);
@@ -1051,7 +1051,6 @@ void Bot::findBestRoute() {
 
     /* sort routes by score */
     std::sort(bestRoutes.begin(), bestRoutes.end());
-
     for (const auto &candidate : bestRoutes) {
         if (!candidate.planeId.empty()) {
             AT_Log("Bot::actionFindBestRoute(): Score of route %s (using %d existing planes, need %d) is: %.2f",
