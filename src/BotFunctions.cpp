@@ -318,6 +318,11 @@ std::vector<SLONG> Bot::findBestAvailablePlaneType(bool forRoutes, bool canRefre
         AT_Log("Bot::findBestAvailablePlaneType(): Checking available plane types: %d available", mKnownPlaneTypes.size());
     }
 
+    if (mKnownPlaneTypes.empty()) {
+        AT_Warn("Bot::findBestAvailablePlaneType(): No plane types known yet.");
+        return {};
+    }
+
     std::vector<std::pair<SLONG, DOUBLE>> scores;
     for (const auto &i : mKnownPlaneTypes) {
         if (!PlaneTypes.IsInAlbum(i)) {
@@ -365,7 +370,11 @@ std::vector<SLONG> Bot::findBestAvailablePlaneType(bool forRoutes, bool canRefre
         bestList.push_back(i.first);
     }
 
-    AT_Log("Bot::findBestAvailablePlaneType(): Best plane type is %s", PlaneTypes[bestList[0]].Name.c_str());
+    if (bestList.empty()) {
+        AT_Warn("Bot::findBestAvailablePlaneType(): No plane types selected!");
+    } else {
+        AT_Log("Bot::findBestAvailablePlaneType(): Best plane type is %s", PlaneTypes[bestList[0]].Name.c_str());
+    }
     return bestList;
 }
 
