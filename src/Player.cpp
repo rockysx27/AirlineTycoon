@@ -5533,7 +5533,7 @@ void PLAYER::RobotExecuteAction() {
 
             // Höchste Reichweite
             SLONG maxRange = 0;
-            for (c = 0; c < SLONG(Planes.AnzEntries()); c++) {
+            for (c = 0; c < Planes.AnzEntries(); c++) {
                 if (Planes.IsInAlbum(c) == 0) {
                     continue;
                 }
@@ -5555,7 +5555,7 @@ void PLAYER::RobotExecuteAction() {
                     }
 
                     if (RobotUse(ROBOT_TRY_TO_RESPECT_RULES)) {
-                        if (maxRange < Cities.CalcDistance(Routen[c].VonCity, Routen[c].NachCity)) {
+                        if (maxRange * 1000 < Cities.CalcDistance(Routen[c].VonCity, Routen[c].NachCity)) {
                             continue;
                         }
                     }
