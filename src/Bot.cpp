@@ -184,8 +184,8 @@ void Bot::RobotInit() {
         printStatisticsLine("BotStatistics", (Sim.Date == 0));
     } else {
         auto balance = qPlayer.BilanzWoche.Hole();
-        AT_Info("Bot.cpp: Enter RobotInit(): Current day: %d, money: %s $ (op saldo %s = %s %s)", Sim.Date, Insert1000erDots64(qPlayer.Money).c_str(),
-                Insert1000erDots64(balance.GetOpSaldo()).c_str(), Insert1000erDots64(balance.GetOpGewinn()).c_str(),
+        AT_Info("Bot.cpp: Enter RobotInit() for %s: Current day: %d, money: %s $ (op saldo %s = %s %s)", qPlayer.Abk.c_str(), Sim.Date,
+                Insert1000erDots64(qPlayer.Money).c_str(), Insert1000erDots64(balance.GetOpSaldo()).c_str(), Insert1000erDots64(balance.GetOpGewinn()).c_str(),
                 Insert1000erDots64(balance.GetOpVerlust()).c_str());
     }
 
@@ -438,9 +438,9 @@ void Bot::RobotExecuteAction() {
     LocalRandom.Rand(2); // Sicherheitshalber, damit wir immer genau ein Random ausführen
 
     mNumActionsToday += 1;
-    AT_Info("Bot::RobotExecuteAction(): Executing %s (#%d, %s), current time: %02ld:%02ld, money: %s $ (available: %s $)", Translate_ACTION(qAction.ActionId),
-            mNumActionsToday, getPrioName(qAction.Prio), Sim.GetHour(), Sim.GetMinute(), Insert1000erDots64(qPlayer.Money).c_str(),
-            Insert1000erDots64(getMoneyAvailable()).c_str());
+    AT_Info("Bot::RobotExecuteAction() for %s: Executing %s (#%d, %s), current time: %02ld:%02ld, money: %s $ (available: %s $)", qPlayer.Abk.c_str(),
+            Translate_ACTION(qAction.ActionId), mNumActionsToday, getPrioName(qAction.Prio), Sim.GetHour(), Sim.GetMinute(),
+            Insert1000erDots64(qPlayer.Money).c_str(), Insert1000erDots64(getMoneyAvailable()).c_str());
 
     mOnThePhone = 0;
 
