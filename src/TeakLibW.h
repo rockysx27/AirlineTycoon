@@ -428,23 +428,23 @@ class TEAKFILE {
     }
 
     friend TEAKFILE &operator<<(TEAKFILE &File, const std::string &b) {
-        File.WriteTrap(4242);
+        // File.WriteTrap(4242);
         ULONG size = b.length();
         File << size;
         File.Write((const UBYTE *)b.c_str(), b.length());
-        File.WriteTrap(4343);
+        // File.WriteTrap(4343);
         // hprintf("Write string of length %d/%d: |%s|", b.length(), size, b.c_str());
         return File;
     }
     friend TEAKFILE &operator>>(TEAKFILE &File, std::string &b) {
-        File.ReadTrap(4242);
+        // File.ReadTrap(4242);
         ULONG size;
         File >> size;
         BUFFER_V<BYTE> str(size+1);
         File.Read(str.getData(), size);
         str[size] = '\0';
         b = (PCSTR)(BYTE *)str.getData();
-        File.ReadTrap(4343);
+        // File.ReadTrap(4343);
         // hprintf("Read string of length %d/%d: |%s|", b.length(), size, b.c_str());
         return File;
     }
