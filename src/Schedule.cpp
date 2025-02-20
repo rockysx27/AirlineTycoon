@@ -310,15 +310,12 @@ void CFlugplanEintrag::CalcPassengers(SLONG PlayerNum, CPlane &qPlane) {
             // if (PlayerNum == 0) AT_Log ("qRoute.Bedarf=%li", qRoute.Bedarf);
 
             // Wie viele wollen mitfliegen?
-#ifdef _DEBUG
-            tmp = qRoute.Bedarf * Gewichte[PlayerNum] / Gesamtgewicht;
-#else
             if (Gesamtgewicht > 0) {
                 tmp = qRoute.Bedarf * Gewichte[PlayerNum] / Gesamtgewicht;
             } else {
                 tmp = 0;
             }
-#endif
+
             // Wie viele können mitfliegen (plus Toleranz)?
             tmp = min(tmp, qPlane.MaxPassagiere + qPlane.MaxPassagiere / 2);
             // if (PlayerNum == 0) AT_Log ("tmp=%li (passagiere+toleranz)", tmp);
@@ -492,15 +489,12 @@ void CFlugplanEintrag::CalcPassengers(SLONG PlayerNum, CPlane &qPlane) {
             }
 
             // Wie viele wollen mitfliegen?
-#ifdef _DEBUG
-            tmp = qRoute.Bedarf * Gewichte[PlayerNum] / Gesamtgewicht;
-#else
             if (Gesamtgewicht > 0) {
                 tmp = qRoute.Bedarf * Gewichte[PlayerNum] / Gesamtgewicht;
             } else {
                 tmp = 0;
             }
-#endif
+
             // Wie viele können mitfliegen (plus Toleranz)?
             tmp = min(tmp, qPlane.MaxPassagiereFC + qPlane.MaxPassagiereFC / 2);
 

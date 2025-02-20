@@ -1352,7 +1352,7 @@ void AirportView::OnPaint() {
                 }
             }
 
-#ifdef _DEBUG
+#ifdef _DEBUG_EDITOR
             // if (Registration.GetMode()==1)
             {
                 if (Editor == EDITOR_NONE)
@@ -2199,7 +2199,7 @@ void AirportView::OnToggleEditor() { Editor ^= 1; }
 void AirportView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags) {
     // Sowas darf nur das Hauptfenster, was immer links oben ist:
     if (WinP1.x == 0 && WinP1.y == 0) {
-#ifdef _DEBUG
+#ifdef _DEBUG_EDITOR
         // Builds-Editor: Parametereingabe
         if (Editor == EDITOR_BUILDS) {
             if (nChar >= '0' && nChar <= '9' && UnderCursor != 0xffffffff && Airport.Builds.IsInAlbum(UnderCursor)) {
