@@ -811,7 +811,7 @@ PERSON::PERSON(UBYTE ClanId, XY Position, UBYTE Reason, UBYTE FlightAirline, SLO
 
     case REASON_FLYING:
         // Sicherheitsabfrage, weil durch einen Bug evtl. woanders falsche Werte reinkamen:
-        if (GetFlugplanEintrag()->Gate == -2) {
+        if (GetFlugplanEintrag()->Gate < 0) {
             // Bad, remove Person again soo:
             PERSON::State = PERSON_LEAVING;
             PERSON::Target = Position;
