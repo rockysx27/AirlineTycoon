@@ -1582,10 +1582,10 @@ void PLAYER::NewDay() {
         ChangeMoney(Money * HabenZins / 100 / 365, 2001, "");
     }
     if (Money < 0) {
-        ChangeMoney(Money * HabenZins / 100 / 365, 2002, "");
+        ChangeMoney(Money * SollZins / 100 / 365, 2002, "");
     }
     if (Credit > 0) {
-        ChangeMoney(-Money * SollZins / 100 / 365, 2000, "");
+        ChangeMoney(-Credit * SollZins / 100 / 365, 2000, "");
     }
     if (CalcSecurityCosts() > 0) {
         ChangeMoney(-CalcSecurityCosts(), 3503, "");
