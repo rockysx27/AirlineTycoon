@@ -120,6 +120,8 @@ class BotPlaner {
     };
     struct SolutionList {
         SolutionList() = default;
+        SolutionList(int g) : gain(g) {}
+        int gain{-1};
         std::vector<JobToTake> toTake{};
         std::vector<Solution> list{};
         inline bool empty() const { return list.empty(); }
@@ -301,7 +303,7 @@ class BotPlaner {
     bool runAddBestNeighbor(int planeIdx, int choice);
     bool runAddNodeToBestPlaneInner(int jobIdxToInsert);
     bool runAddNodeToBestPlane(int jobIdxToInsert);
-    bool algo(int64_t timeBudget);
+    std::pair<bool, int> algo(int64_t timeBudget);
 
     /* apply solution */
     static bool removeInvalidFlightsForPlane(PLAYER &qPlayer, int planeId);

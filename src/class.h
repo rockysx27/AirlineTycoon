@@ -1431,6 +1431,7 @@ class /**/ CLAN {
     friend class AIRPORT;
     friend class PLAYER;
     friend class GameMechanic;
+    friend class Bot;
     friend void UpdateHLinePool(void);
 
     friend TEAKFILE &operator<<(TEAKFILE &File, const CLAN &Clan);
@@ -2306,6 +2307,7 @@ class PLAYER {
 
     /* methods and data for improved robot */
     bool IsSuperBot() const;
+    void ApplyMood(PERSON &qPerson);
     Bot *mBot{nullptr};
 
     friend TEAKFILE &operator<<(TEAKFILE &File, const PLAYER &Player);

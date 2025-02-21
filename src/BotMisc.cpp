@@ -7,6 +7,7 @@
 #include "class.h"
 #include "defines.h"
 #include "global.h"
+#include "helper.h"
 
 #include <SDL_log.h>
 
@@ -619,4 +620,129 @@ void Bot::setHardcodedDesignerPlaneEco() {
     mDesignerPlane.Parts[6].Shortname = "R4";
     mDesignerPlane.Parts[6].ParentShortname = "B1";
     mDesignerPlane.Parts[6].ParentRelationId = 65;
+}
+
+void Bot::setMoodByActionId(SLONG actionId) {
+    switch (actionId) {
+    case ACTION_WAIT:
+        mMoodNext = MoodPersonNone;
+        break;
+    case ACTION_RAISEMONEY:
+        mMoodNext = MoodPersonBankRobber;
+        break;
+    case ACTION_DROPMONEY:
+        [[fallthrough]];
+    case ACTION_VISITBANK:
+        [[fallthrough]];
+    case ACTION_EMITSHARES:
+        [[fallthrough]];
+    case ACTION_SET_DIVIDEND:
+        [[fallthrough]];
+    case ACTION_BUYSHARES:
+        [[fallthrough]];
+    case ACTION_SELLSHARES:
+        [[fallthrough]];
+    case ACTION_OVERTAKE_AIRLINE:
+        mMoodNext = MoodPersonBank;
+        break;
+    case ACTION_CHECKAGENT1:
+        mMoodNext = MoodPersonTicket;
+        break;
+    case ACTION_CHECKAGENT2:
+        mMoodNext = MoodPersonTicket;
+        break;
+    case ACTION_CHECKAGENT3:
+        mMoodNext = MoodPersonTicket;
+        break;
+    case ACTION_STARTDAY:
+        [[fallthrough]];
+    case ACTION_BUERO:
+        [[fallthrough]];
+    case ACTION_UPGRADE_PLANES:
+        mMoodNext = MoodPersonHome;
+        break;
+    case ACTION_CALL_INTERNATIONAL:
+        mMoodNext = -1;
+        break;
+    case ACTION_PERSONAL:
+        mMoodNext = -1;
+        break;
+    case ACTION_VISITARAB:
+        [[fallthrough]];
+    case ACTION_BUY_KEROSIN:
+        [[fallthrough]];
+    case ACTION_BUY_KEROSIN_TANKS:
+        mMoodNext = -1;
+        break;
+    case ACTION_VISITKIOSK:
+        mMoodNext = MoodPersonBeverage;
+        break;
+    case ACTION_VISITMECH:
+        mMoodNext = MoodPersonRepair;
+        break;
+    case ACTION_VISITMUSEUM:
+        mMoodNext = MoodPersonMuseum;
+        break;
+    case ACTION_VISITDUTYFREE:
+        mMoodNext = MoodPersonSchokolade;
+        break;
+    case ACTION_VISITAUFSICHT:
+        mMoodNext = -1;
+        break;
+    case ACTION_EXPANDAIRPORT:
+        mMoodNext = -1;
+        break;
+    case ACTION_VISITNASA:
+        mMoodNext = -1;
+        break;
+    case ACTION_VISITTELESCOPE:
+        mMoodNext = MoodPersonReise;
+        break;
+    case ACTION_VISITMAKLER:
+        mMoodNext = MoodPersonFlying;
+        break;
+    case ACTION_VISITRICK:
+        mMoodNext = MoodPersonBeverage;
+        break;
+    case ACTION_VISITROUTEBOX:
+        [[fallthrough]];
+    case ACTION_VISITROUTEBOX2:
+        mMoodNext = -1;
+        break;
+    case ACTION_VISITSECURITY:
+        mMoodNext = -1;
+        break;
+    case ACTION_VISITDESIGNER:
+        mMoodNext = -1;
+        break;
+    case ACTION_VISITSECURITY2:
+        mMoodNext = -1;
+        break;
+    case ACTION_SABOTAGE:
+        mMoodNext = 4;
+        break;
+    case ACTION_VISITSABOTEUR:
+        mMoodNext = -1;
+        break;
+    case ACTION_BUYUSEDPLANE:
+        mMoodNext = MoodPersonMuseum;
+        break;
+    case ACTION_BUYNEWPLANE:
+        mMoodNext = MoodPersonFlying;
+        break;
+    case ACTION_WERBUNG:
+        [[fallthrough]];
+    case ACTION_WERBUNG_ROUTES:
+        [[fallthrough]];
+    case ACTION_VISITADS:
+        mMoodNext = -1;
+        break;
+    case ACTION_CALL_INTER_HANDY:
+        [[fallthrough]];
+    case ACTION_STARTDAY_LAPTOP:
+        mMoodNext = -1;
+        break;
+    default:
+        DebugBreak();
+    }
 }

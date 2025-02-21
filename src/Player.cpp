@@ -6892,6 +6892,20 @@ void PLAYER::BroadcastPosition(bool bForce) {
 }
 
 bool PLAYER::IsSuperBot() const { return (Owner == 1) && (BotLevel > 0); }
+void PLAYER::ApplyMood(PERSON &qPerson) {
+    if (!IsSuperBot()) {
+        return;
+    }
+
+    if (qPerson.MoodCountdown == 0U) {
+        SLONG mood = mBot->getNextMood();
+        if (mood != -1) {
+            qPerson.Mood = static_cast<UBYTE>(mood);
+            qPerson.MoodCountdown = MOODCOUNT_START + rand() % 15;
+            qPerson.FlightAirline = PlayerNum;
+        }
+    }
+}
 
 //============================================================================================
 // PLAYERS::

@@ -3129,7 +3129,6 @@ void PERSON::PersonReachedTarget() {
             //!//State = PERSON_ENTERINGPL;
             //!//Target= Airport.GetRandomTypedRune (RUNE_WAITPLANE, (UBYTE)fpe->Gate, false, &PersonalRand);
         } break;
-        
 
             // Am Schlauch angekommen, ist das Flugzeug noch da?
         case PERSON_BOARDING: {
@@ -3301,13 +3300,6 @@ void PERSONS::DoOneStep() {
             for (SLONG c = 0; c < Max; c++) {
                 if (IsInAlbum(c) != 0) {
                     PERSON &qPerson = (*this)[c];
-
-                    if (qPerson.MoodCountdown != 0U) {
-                        qPerson.MoodCountdown--;
-                        if (qPerson.MoodCountdown == (MOODCOUNT_START >> 1)) {
-                            qPerson.MoodCountdown -= rand() % 30;
-                        }
-                    }
 
                     switch (Clans[static_cast<SLONG>(qPerson.ClanId)].Type) {
                     case CLAN_MALE:
@@ -3557,7 +3549,7 @@ void PERSONS::TryMoods() {
                                 } else {
                                     (*this)[Indexes[c]].MoodCountdown = MOODCOUNT_START + rand() % 15;
                                 }
-                            } else if (Sim.Players.Players[c].Owner == 1) {
+                            } else if ((!Sim.Players.Players[c].IsSuperBot()) && (Sim.Players.Players[c].Owner == 1)) {
                                 SLONG s = Sim.Players.Players[c].Sympathie[d];
 
                                 if (s > 50) {
@@ -3608,7 +3600,8 @@ void PERSONS::TryMoods() {
                             } else {
                                 qPerson.MoodCountdown = MOODCOUNT_START + rand() % 15;
                             }
-                        } else if (Indexes[static_cast<SLONG>(qPerson.State)] != -1 && Sim.Players.Players[static_cast<SLONG>(qPerson.State)].Owner == 1) {
+                        } else if ((!qPlayer.IsSuperBot()) && Indexes[static_cast<SLONG>(qPerson.State)] != -1 &&
+                                   Sim.Players.Players[static_cast<SLONG>(qPerson.State)].Owner == 1) {
                             SLONG s = qPlayer.Sympathie[Sim.localPlayer];
 
                             if (s > 50) {

@@ -311,6 +311,8 @@ void Bot::RobotPlan() {
     if (qSecondAction.ActionId == ACTION_NONE) {
         AT_Error("Did not plan action for slot #2");
     }
+
+    setMoodByActionId(qFirstAction.ActionId);
 }
 
 void Bot::RobotExecuteAction() {
@@ -633,6 +635,13 @@ void Bot::RobotExecuteAction() {
     }
 
     AT_Log("");
+}
+
+SLONG Bot::getNextMood() {
+    SLONG mood = mMood;
+    mMood = mMoodNext;
+    mMoodNext = -1;
+    return mood;
 }
 
 TEAKFILE &operator<<(TEAKFILE &File, const Bot &bot) {

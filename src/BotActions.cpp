@@ -103,7 +103,7 @@ void Bot::actionStartDayLaptop(__int64 moneyAvailable) {
     }
 
     /* logic deciding when to switch to final target run */
-    determineNemesis();
+    determineNemesis(); /* will also set bot mood */
     switchToFinalTarget();
 
     /* update how much kerosine was used */

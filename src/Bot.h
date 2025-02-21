@@ -53,6 +53,7 @@ class Bot {
     void RobotExecuteAction();
 
     void setNoticedSickness() { mIsSickToday = true; }
+    SLONG getNextMood();
 
     /* misc (in BotMisc.cpp) */
     __int64 getMoneyAvailable() const;
@@ -218,6 +219,7 @@ class Bot {
 
     /* in BotFunctions.cpp */
     void grabNewFlights();
+    __int64 getNemesisScore(SLONG p) const;
     void determineNemesis();
     void switchToFinalTarget();
     std::vector<SLONG> findBestAvailablePlaneType(bool forRoutes, bool canRefresh);
@@ -269,6 +271,7 @@ class Bot {
     void forceReplanning();
     void setHardcodedDesignerPlaneLarge();
     void setHardcodedDesignerPlaneEco();
+    void setMoodByActionId(SLONG actionId);
 
     TEAKRAND LocalRandom{};
     PLAYER &qPlayer;
@@ -349,8 +352,10 @@ class Bot {
     /* current solution (not planned yet) */
     BotPlaner::SolutionList mPlanerSolution;
 
-    /* anim state */
+    /* anim state and mood bubbles */
     SLONG mOnThePhone{0};
+    SLONG mMood{-1};
+    SLONG mMoodNext{-1};
 
     /* designer plane */
     CXPlane mDesignerPlane{};

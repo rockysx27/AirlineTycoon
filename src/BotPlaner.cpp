@@ -818,7 +818,9 @@ BotPlaner::SolutionList BotPlaner::generateSolution(const std::vector<int> &plan
     /* start algo */
     auto t_current = std::chrono::steady_clock::now();
     auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(t_current - t_begin).count();
-    bool needToApplySolution = algo(timeBudgetMS - diff);
+    bool needToApplySolution{false};
+    int overallGain{0};
+    std::tie(needToApplySolution, overallGain) = algo(timeBudgetMS - diff);
 
     /* check statistics */
     int nPreviouslyOwnedScheduled = 0;
@@ -847,7 +849,7 @@ BotPlaner::SolutionList BotPlaner::generateSolution(const std::vector<int> &plan
 
     if (!needToApplySolution) {
         AT_Log("Do not need to apply, returning empty solution.");
-        return {};
+        return SolutionList{0};
     }
 
 #ifdef PRINT_DETAIL
@@ -858,7 +860,7 @@ BotPlaner::SolutionList BotPlaner::generateSolution(const std::vector<int> &plan
 #endif
 
     /* generate solution */
-    SolutionList solutions;
+    SolutionList solutions{overallGain};
     for (const auto &plane : mPlaneStates) {
         solutions.list.emplace_back(plane.currentSolution);
     }

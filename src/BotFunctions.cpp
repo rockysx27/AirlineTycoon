@@ -64,6 +64,32 @@ void Bot::grabNewFlights() {
     mLastTimeInRoom.erase(ACTION_CHECKAGENT3);
 }
 
+__int64 Bot::getNemesisScore(SLONG p) const {
+    __int64 score = 0;
+    auto &qTarget = Sim.Players.Players[p];
+    if (Sim.Difficulty == DIFF_FREEGAME) {
+        score = qTarget.BilanzWoche.Hole().GetOpSaldo();
+    } else {
+        /* for missions */
+        if (Sim.Difficulty == DIFF_FINAL || Sim.Difficulty == DIFF_ADDON10) {
+            /* better than GetMissionRating(): Calculate sum of part cost instead of just number of parts */
+            const auto &qPrices = (Sim.Difficulty == DIFF_FINAL) ? RocketPrices : StationPrices;
+            auto nParts = qPrices.size();
+            for (SLONG i = 0; i < nParts; i++) {
+                if ((qTarget.RocketFlags & (1 << i)) != 0) {
+                    score += qPrices[i];
+                }
+            }
+        } else if (Sim.Difficulty == DIFF_ADDON01) {
+            /* negative: lower score is better! */
+            score = -qTarget.GetMissionRating();
+        } else {
+            score = qTarget.GetMissionRating();
+        }
+    }
+    return score;
+}
+
 void Bot::determineNemesis() {
     auto nemesisOld = mNemesis;
     mNemesis = -1;
@@ -74,36 +100,21 @@ void Bot::determineNemesis() {
         return;
     }
 
+    SLONG enemiesBetterThanMe = 0;
+    __int64 myScore = getNemesisScore(qPlayer.PlayerNum);
     for (SLONG p = 0; p < 4; p++) {
         auto &qTarget = Sim.Players.Players[p];
         if (p == qPlayer.PlayerNum || qTarget.IsOut != 0) {
             continue;
         }
 
-        __int64 score = 0;
-        if (Sim.Difficulty == DIFF_FREEGAME) {
-            score = qTarget.BilanzWoche.Hole().GetOpSaldo();
-        } else {
-            /* for missions */
-            if (Sim.Difficulty == DIFF_FINAL || Sim.Difficulty == DIFF_ADDON10) {
-                /* better than GetMissionRating(): Calculate sum of part cost instead of just number of parts */
-                const auto &qPrices = (Sim.Difficulty == DIFF_FINAL) ? RocketPrices : StationPrices;
-                auto nParts = qPrices.size();
-                for (SLONG i = 0; i < nParts; i++) {
-                    if ((qTarget.RocketFlags & (1 << i)) != 0) {
-                        score += qPrices[i];
-                    }
-                }
-            } else if (Sim.Difficulty == DIFF_ADDON01) {
-                /* negative: lower score is better! */
-                score = -qTarget.GetMissionRating();
-            } else {
-                score = qTarget.GetMissionRating();
-            }
-        }
+        __int64 score = getNemesisScore(p);
         if (score > mNemesisScore && p != nemesisSabotaged) {
             mNemesis = p;
             mNemesisScore = score;
+        }
+        if (score > myScore) {
+            enemiesBetterThanMe++;
         }
     }
     if (-1 != mNemesis) {
@@ -115,6 +126,9 @@ void Bot::determineNemesis() {
                    Insert1000erDots64(mNemesisScore).c_str());
         }
     }
+
+    mMood = enemiesBetterThanMe;
+    AT_Log("Bot::determineNemesis(): Our score is %s, this puts us on place %d", Insert1000erDots64(myScore).c_str(), enemiesBetterThanMe + 1);
 }
 
 void Bot::switchToFinalTarget() {
@@ -426,6 +440,18 @@ void Bot::grabFlights(BotPlaner &planer, bool areWeInOffice) {
     if (!mPlanerSolution.empty()) {
         BotPlaner::takeAllJobs(qPlayer, mPlanerSolution);
         requestPlanFlights(areWeInOffice);
+    }
+
+    if (mPlanerSolution.gain > 1e6) {
+        mMood = 0;
+    } else if (mPlanerSolution.gain > 1e5) {
+        mMood = 1;
+    } else if (mPlanerSolution.gain > 1e4) {
+        mMood = 2;
+    } else if (mPlanerSolution.gain <= 0) {
+        mMood = 4;
+    } else {
+        mMood = 3;
     }
 }
 

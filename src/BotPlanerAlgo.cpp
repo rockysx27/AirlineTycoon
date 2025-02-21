@@ -891,7 +891,7 @@ bool BotPlaner::runAddNodeToBestPlane(int jobIdxToInsert) {
     return job.isScheduled();
 }
 
-bool BotPlaner::algo(int64_t timeBudget) {
+std::pair<bool, int> BotPlaner::algo(int64_t timeBudget) {
     timeBudget = 1000 * std::max(static_cast<int64_t>(1), timeBudget);
     auto t_begin = std::chrono::steady_clock::now();
 
@@ -1036,5 +1036,5 @@ bool BotPlaner::algo(int64_t timeBudget) {
 
     AT_Log("Overall gain improved from %d to %d.", oldGain, overallBestGain);
     bool needToApplySolution = (overallBestGain > oldGain) || existingSolutionsHasProblems;
-    return needToApplySolution;
+    return {needToApplySolution, overallBestGain};
 }
