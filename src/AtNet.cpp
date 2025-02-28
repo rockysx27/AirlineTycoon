@@ -1673,8 +1673,7 @@ void PumpNetwork() {
                     Sim.ItemZange = 0;
                     break;
                 default:
-                    hprintf("AtNet.cpp: Default case should not be reached.");
-                    DebugBreak();
+                    break; /* some items do not require network sync */
                 }
             } break;
 
