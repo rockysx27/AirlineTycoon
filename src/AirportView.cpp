@@ -19,6 +19,8 @@
 
 #include <SDL_ttf.h>
 
+#define AT_Error(...) Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_ERROR, "SMACK", __VA_ARGS__)
+
 extern CHLPool HLPool;
 
 #ifdef _DEBUG
@@ -2585,6 +2587,7 @@ XY AIRPORT::GetRandomTypedRune(ULONG BrickId, UBYTE Par, bool AcceptError, TEAKR
         if (AcceptError) {
             return (XY(-9999, -9999));
         }
+        AT_Error("No runes found. Called with BrickId=%u, Par=%u, AcceptError=%d.", BrickId, Par, AcceptError);
         TeakLibW_Exception(FNL, ExcNever);
     }
 
