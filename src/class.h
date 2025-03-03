@@ -2292,6 +2292,7 @@ class PLAYER {
     static void NetSynchronizePlanes(void);
     static void NetSynchronizeMeeting(void);
     void NetBuyXPlane(SLONG Anzahl, CXPlane &plane) const;
+    void NetSyncRobot(SLONG Par1, SLONG Par2) const;
     static void NetSave(DWORD UniqueGameId, SLONG CursorY, const CString &Name);
 
     /* methods and data for improved robot */
@@ -2682,6 +2683,7 @@ class SIM // Die Simulationswelt; alles was zur aktuellen Partie gehört
     static bool SendSimpleMessage(ULONG Message, ULONG target, SLONG Par1, SLONG Par2, SLONG Par3, SLONG Par4, SLONG Par5);
     static bool SendSimpleMessage(ULONG Message, ULONG target, SLONG Par1, SLONG Par2, SLONG Par3, SLONG Par4, SLONG Par5, SLONG Par6);
     static bool SendChatBroadcast(const CString &Message, bool bSayFromWhom = false, ULONG target = 0);
+    static bool SendSimpleMessage64(ULONG MessageId, ULONG target, __int64 Par1, __int64 Par2, __int64 Par3);
 
     void AddHighscore(const CString &Name, DWORD UniqueGameId2, __int64 Score);
     void SaveHighscores(void);

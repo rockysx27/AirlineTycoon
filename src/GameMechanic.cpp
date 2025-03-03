@@ -79,7 +79,7 @@ bool GameMechanic::buyKerosinTank(PLAYER &qPlayer, SLONG type, SLONG amount) {
 
     CString strAmount{bitoa(amount)};
     qPlayer.ChangeMoney(-cost * amount, 2091, CString(bitoa(size)), strAmount.c_str());
-    SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -cost * amount, -1);
+    SIM::SendSimpleMessage64(ATNET_CHANGEMONEY, 0, qPlayer.PlayerNum, -cost * amount, -1);
 
     qPlayer.DoBodyguardRabatt(cost * amount);
     return true;
@@ -131,7 +131,7 @@ bool GameMechanic::buyKerosin(PLAYER &qPlayer, SLONG type, SLONG amount) {
     qPlayer.NetUpdateKerosin();
 
     qPlayer.ChangeMoney(-cost, 2020, "");
-    SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -cost, -1);
+    SIM::SendSimpleMessage64(ATNET_CHANGEMONEY, 0, qPlayer.PlayerNum, -cost, -1);
 
     qPlayer.DoBodyguardRabatt(cost);
     return true;
@@ -363,7 +363,7 @@ bool GameMechanic::activateSaboteurJob(PLAYER &qPlayer, BOOL fremdSabotage) {
 
             qPlayer.ChangeMoney(-SabotagePrice[qPlayer.ArabMode - 1], 2080, "");
             qPlayer.DoBodyguardRabatt(SabotagePrice[qPlayer.ArabMode - 1]);
-            SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -SabotagePrice[qPlayer.ArabMode - 1], -1);
+            SIM::SendSimpleMessage64(ATNET_CHANGEMONEY, 0, qPlayer.PlayerNum, -SabotagePrice[qPlayer.ArabMode - 1], -1);
         }
 
         qPlayer.NetSynchronizeSabotage();
@@ -403,7 +403,7 @@ bool GameMechanic::activateSaboteurJob(PLAYER &qPlayer, BOOL fremdSabotage) {
 
             qPlayer.ChangeMoney(-SabotagePrice2[qPlayer.ArabMode2 - 1], 2080, "");
             qPlayer.DoBodyguardRabatt(SabotagePrice2[qPlayer.ArabMode2 - 1]);
-            SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -SabotagePrice2[qPlayer.ArabMode2 - 1], -1);
+            SIM::SendSimpleMessage64(ATNET_CHANGEMONEY, 0, qPlayer.PlayerNum, -SabotagePrice2[qPlayer.ArabMode2 - 1], -1);
         }
 
         qPlayer.NetSynchronizeSabotage();
@@ -447,7 +447,7 @@ bool GameMechanic::activateSaboteurJob(PLAYER &qPlayer, BOOL fremdSabotage) {
 
             qPlayer.ChangeMoney(-SabotagePrice3[qPlayer.ArabMode3 - 1], 2080, "");
             qPlayer.DoBodyguardRabatt(SabotagePrice3[qPlayer.ArabMode3 - 1]);
-            SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -SabotagePrice3[qPlayer.ArabMode3 - 1], -1);
+            SIM::SendSimpleMessage64(ATNET_CHANGEMONEY, 0, qPlayer.PlayerNum, -SabotagePrice3[qPlayer.ArabMode3 - 1], -1);
         }
 
         qPlayer.NetSynchronizeSabotage();
@@ -688,7 +688,7 @@ SLONG GameMechanic::buyUsedPlane(PLAYER &qPlayer, SLONG planeID) {
 
     __int64 cost = Sim.UsedPlanes[planeID].CalculatePrice();
     qPlayer.ChangeMoney(-cost, 2010, Sim.UsedPlanes[planeID].Name);
-    SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -cost, STAT_A_SONSTIGES);
+    SIM::SendSimpleMessage64(ATNET_CHANGEMONEY, 0, qPlayer.PlayerNum, -cost, STAT_A_SONSTIGES);
 
     qPlayer.DoBodyguardRabatt(cost);
 
@@ -721,19 +721,17 @@ bool GameMechanic::sellPlane(PLAYER &qPlayer, SLONG planeID) {
         return false;
     }
 
-    SLONG cost = qPlayer.Planes[planeID].CalculatePrice() * 9 / 10;
+    __int64 cost = qPlayer.Planes[planeID].CalculatePrice() * 9 / 10;
 
     qPlayer.ChangeMoney(cost, 2011, qPlayer.Planes[planeID].Name);
-    if (qPlayer.PlayerNum == Sim.localPlayer) {
-        SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, cost, STAT_E_SONSTIGES);
-    }
+    SIM::SendSimpleMessage64(ATNET_CHANGEMONEY, 0, qPlayer.PlayerNum, cost, STAT_E_SONSTIGES);
 
     qPlayer.Planes -= planeID;
     if (qPlayer.Planes.IsInAlbum(qPlayer.ReferencePlane) == 0) {
         qPlayer.ReferencePlane = -1;
     }
 
-    SIM::SendSimpleMessage(ATNET_SELL_USED, 0, planeID, planeID);
+    SIM::SendSimpleMessage(ATNET_SELL_USED, 0, qPlayer.PlayerNum, planeID);
     PLAYER::NetSynchronizeMoney();
 
     qPlayer.MapWorkers(FALSE);
@@ -828,10 +826,8 @@ bool GameMechanic::buyStock(PLAYER &qPlayer, SLONG airlineNum, SLONG amount) {
         qPlayerBuyFrom.Kurse[0] = 0;
     }
 
-    if (aktienWert != 0) {
-        if (qPlayer.PlayerNum == Sim.localPlayer) {
-            SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, static_cast<SLONG>(-aktienWert), STAT_A_SONSTIGES);
-        }
+    if (gesamtPreis != 0) {
+        SIM::SendSimpleMessage64(ATNET_CHANGEMONEY, 0, qPlayer.PlayerNum, -gesamtPreis, STAT_A_SONSTIGES);
 
         if ((Sim.bNetwork != 0) && qPlayerBuyFrom.Owner == 2) {
             SIM::SendSimpleMessage(ATNET_ADVISOR, qPlayerBuyFrom.NetworkID, 4, qPlayer.PlayerNum, airlineNum);
@@ -893,10 +889,8 @@ bool GameMechanic::sellStock(PLAYER &qPlayer, SLONG airlineNum, SLONG amount) {
         qPlayerSellFrom.Kurse[0] = 0;
     }
 
-    if (aktienWert != 0) {
-        if (qPlayer.PlayerNum == Sim.localPlayer) {
-            SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, static_cast<SLONG>(aktienWert), STAT_E_SONSTIGES);
-        }
+    if (gesamtPreis != 0) {
+        SIM::SendSimpleMessage64(ATNET_CHANGEMONEY, 0, qPlayer.PlayerNum, gesamtPreis, STAT_E_SONSTIGES);
     }
 
     PLAYER::NetSynchronizeMoney();
@@ -999,9 +993,7 @@ bool GameMechanic::emitStock(PLAYER &qPlayer, SLONG neueAktien, SLONG mode) {
     qPlayer.ChangeMoney(-emissionsGebuehr, 3160, "");
 
     __int64 preis = emissionsWert - emissionsGebuehr;
-    if (qPlayer.PlayerNum == Sim.localPlayer) {
-        SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, preis, STAT_E_SONSTIGES);
-    }
+    SIM::SendSimpleMessage64(ATNET_CHANGEMONEY, 0, qPlayer.PlayerNum, preis, STAT_E_SONSTIGES);
 
     qPlayer.Kurse[0] = (qPlayer.Kurse[0] * anzAktien + emissionsWert) / (anzAktien + marktAktien);
     if (qPlayer.Kurse[0] < 0) {
@@ -1013,10 +1005,10 @@ bool GameMechanic::emitStock(PLAYER &qPlayer, SLONG neueAktien, SLONG mode) {
     qPlayer.ChangeMoney(-((anzAktien - qPlayer.OwnsAktien[qPlayer.PlayerNum]) * kursDiff), 3161, "");
     for (SLONG c = 0; c < Sim.Players.Players.AnzEntries(); c++) {
         if (c != qPlayer.PlayerNum) {
-            auto entschaedigung = static_cast<SLONG>(std::round(Sim.Players.Players[c].OwnsAktien[qPlayer.PlayerNum] * kursDiff));
+            auto entschaedigung = static_cast<__int64>(std::round(Sim.Players.Players[c].OwnsAktien[qPlayer.PlayerNum] * kursDiff));
 
             Sim.Players.Players[c].ChangeMoney(entschaedigung, 3163, "");
-            SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, c, entschaedigung, STAT_E_SONSTIGES);
+            SIM::SendSimpleMessage64(ATNET_CHANGEMONEY, 0, c, entschaedigung, STAT_E_SONSTIGES);
         }
     }
 
@@ -1310,9 +1302,7 @@ bool GameMechanic::buyAdvertisement(PLAYER &qPlayer, SLONG adCampaignType, SLONG
     }
 
     qPlayer.ChangeMoney(-cost, adCampaignSize + 3120, "");
-    if (qPlayer.PlayerNum == Sim.localPlayer) {
-        SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -cost, STAT_A_SONSTIGES);
-    }
+    SIM::SendSimpleMessage64(ATNET_CHANGEMONEY, 0, qPlayer.PlayerNum, -cost, STAT_A_SONSTIGES);
 
     PLAYER::NetSynchronizeImage();
     qPlayer.DoBodyguardRabatt(cost);
@@ -1387,7 +1377,7 @@ GameMechanic::BuyItemResult GameMechanic::buyDutyFreeItem(PLAYER &qPlayer, UBYTE
     }
 
     qPlayer.ChangeMoney(-delta, 9999, buf);
-    SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -delta, STAT_A_SONSTIGES);
+    SIM::SendSimpleMessage64(ATNET_CHANGEMONEY, 0, qPlayer.PlayerNum, -delta, STAT_A_SONSTIGES);
     qPlayer.DoBodyguardRabatt(delta);
 
     qPlayer.BuyItem(item);
@@ -2020,7 +2010,7 @@ bool GameMechanic::takeFlightJob(PLAYER &qPlayer, SLONG jobId, SLONG &outObjectI
 
     qAuftrag.Praemie = -1000;
 
-    SIM::SendSimpleMessage(ATNET_SYNCNUMFLUEGE, 0, Sim.localPlayer, static_cast<SLONG>(qPlayer.Statistiken[STAT_AUFTRAEGE].GetAtPastDay(0)),
+    SIM::SendSimpleMessage(ATNET_SYNCNUMFLUEGE, 0, qPlayer.PlayerNum, static_cast<SLONG>(qPlayer.Statistiken[STAT_AUFTRAEGE].GetAtPastDay(0)),
                            static_cast<SLONG>(qPlayer.Statistiken[STAT_LMAUFTRAEGE].GetAtPastDay(0)),
                            static_cast<SLONG>(qPlayer.Statistiken[STAT_FRACHTEN].GetAtPastDay(0)));
     qPlayer.NetUpdateTook(2, jobId);
@@ -2053,7 +2043,7 @@ bool GameMechanic::takeLastMinuteJob(PLAYER &qPlayer, SLONG jobId, SLONG &outObj
 
     qAuftrag.Praemie = -1000;
 
-    SIM::SendSimpleMessage(ATNET_SYNCNUMFLUEGE, 0, Sim.localPlayer, static_cast<SLONG>(qPlayer.Statistiken[STAT_AUFTRAEGE].GetAtPastDay(0)),
+    SIM::SendSimpleMessage(ATNET_SYNCNUMFLUEGE, 0, qPlayer.PlayerNum, static_cast<SLONG>(qPlayer.Statistiken[STAT_AUFTRAEGE].GetAtPastDay(0)),
                            static_cast<SLONG>(qPlayer.Statistiken[STAT_LMAUFTRAEGE].GetAtPastDay(0)),
                            static_cast<SLONG>(qPlayer.Statistiken[STAT_FRACHTEN].GetAtPastDay(0)));
     qPlayer.NetUpdateTook(1, jobId);
@@ -2085,7 +2075,7 @@ bool GameMechanic::takeFreightJob(PLAYER &qPlayer, SLONG jobId, SLONG &outObject
 
     qAuftrag.Praemie = -1000;
 
-    SIM::SendSimpleMessage(ATNET_SYNCNUMFLUEGE, 0, Sim.localPlayer, static_cast<SLONG>(qPlayer.Statistiken[STAT_AUFTRAEGE].GetAtPastDay(0)),
+    SIM::SendSimpleMessage(ATNET_SYNCNUMFLUEGE, 0, qPlayer.PlayerNum, static_cast<SLONG>(qPlayer.Statistiken[STAT_AUFTRAEGE].GetAtPastDay(0)),
                            static_cast<SLONG>(qPlayer.Statistiken[STAT_LMAUFTRAEGE].GetAtPastDay(0)),
                            static_cast<SLONG>(qPlayer.Statistiken[STAT_FRACHTEN].GetAtPastDay(0)));
     qPlayer.NetUpdateTook(3, jobId);

@@ -2809,6 +2809,14 @@ bool SIM::SendChatBroadcast(const CString &Message, bool bSayFromWhom, ULONG tar
     return Sim.SendMemFile(MessageBox, target);
 }
 
+bool SIM::SendSimpleMessage64(ULONG MessageId, ULONG target, __int64 Par1, __int64 Par2, __int64 Par3) {
+    TEAKFILE Message;
+
+    Message.Announce(30);
+    Message << MessageId << Par1 << Par2 << Par3;
+    return Sim.SendMemFile(Message, target);
+}
+
 //--------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------

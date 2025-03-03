@@ -5,6 +5,8 @@
 #include "class.h"
 #include "global.h"
 
+#define AT_Log(...) AT_Log_I("Player", __VA_ARGS__)
+
 extern bool bgIsLoadingSavegame;
 
 //--------------------------------------------------------------------------------------------
@@ -421,7 +423,7 @@ void PLAYER::NetUpdateWorkers() {
         }
         Statistiken[STAT_GEHALT].SetAtPastDay(-d);
 
-        SIM::SendSimpleMessage(ATNET_SYNCGEHALT, 0, Sim.localPlayer, d);
+        SIM::SendSimpleMessage(ATNET_SYNCGEHALT, 0, PlayerNum, d);
     }
 }
 
@@ -495,6 +497,27 @@ void PLAYER::NetBuyXPlane(SLONG Anzahl, CXPlane &plane) const {
 
     Message << ATNET_BUY_NEWX;
     Message << PlayerNum << Anzahl << plane;
+
+    SIM::SendMemFile(Message);
+}
+
+//--------------------------------------------------------------------------------------------
+// Broadcasts robot state:
+//--------------------------------------------------------------------------------------------
+void PLAYER::NetSyncRobot(SLONG Par1, SLONG Par2) const {
+    AT_Log("%s NetSyncRobot(): Par1 = %d, Par2 = %d", AirlineX.c_str(), Par1, Par2);
+
+    TEAKFILE Message;
+
+    Message.Announce(128);
+    Message << ATNET_ROBOT_EXECUTE << PlayerNum << Par1 << Par2;
+
+    for (SLONG c = 0; c < 4; c++) {
+        Message << Sympathie[c];
+    }
+    for (SLONG c = 0; c < RobotActions.AnzEntries(); c++) {
+        Message << RobotActions[c];
+    }
 
     SIM::SendMemFile(Message);
 }

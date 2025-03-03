@@ -2083,6 +2083,7 @@ void GameFrame::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) {
         }
     }
 
+#ifndef _DEBUG
     if (Editor == EDITOR_NONE) {
         if (nChar == ATKEY_F5) {
             Helper::printAllSchedules(false);
@@ -2096,6 +2097,7 @@ void GameFrame::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) {
             BotDesigner().findBestDesignerPlane();
         }
     }
+#endif
 
     RePostMessage(CPoint(0, 0));
 

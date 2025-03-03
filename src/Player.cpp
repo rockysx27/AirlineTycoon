@@ -3005,12 +3005,11 @@ void PLAYER::RobotPump() {
     SLONG c = 0;
     PERSON *pPerson = nullptr;
 
+    AT_Log("%s RobotPump(): WaitWorkTill = %d, Sim.TimeSlice = %d", AirlineX.c_str(), WaitWorkTill, Sim.TimeSlice);
     if ((Sim.bNetwork != 0) && WaitWorkTill != -1) {
         if (WaitWorkTill <= Sim.TimeSlice) {
             RobotExecuteAction();
-        } else if (WaitWorkTill == 0 && Sim.TimeSlice > 0) {
-            WaitWorkTill = -1;
-        } else if (Sim.TimeSlice < WaitWorkTill) {
+        } else {
             return;
         }
     }
@@ -3288,6 +3287,7 @@ void PLAYER::RobotPlan() {
                               ACTION_VISITROUTEBOX, ACTION_VISITNASA,   ACTION_VISITSECURITY, ACTION_VISITSECURITY, ACTION_VISITSECURITY,  ACTION_VISITDESIGNER,
                               ACTION_VISITDESIGNER};
 
+    // if ((Owner != 1) || (IsOut != 0) || (Sim.bNetwork != 0 && Sim.bIsHost == 0)) {
     if (Owner != 1 || (IsOut != 0)) {
         return; // War Irtum, kein Computerspieler
     }
@@ -3514,6 +3514,7 @@ void PLAYER::RobotPlanRoutes() {
     SLONG BestDValue = 0;
     BOOL FlightAdded = 0;
 
+    // if ((Owner != 1) || (IsOut != 0) || (Sim.bNetwork != 0 && Sim.bIsHost == 0)) {
     if (Owner != 1 || (IsOut != 0)) {
         return; // War Irtum, kein Computerspieler
     }
@@ -3833,9 +3834,12 @@ void PLAYER::RobotExecuteAction() {
     SLONG level = 0;
     TEAKRAND rnd;
 
+    // if ((Owner != 1) || (IsOut != 0) || (Sim.bNetwork != 0 && Sim.bIsHost == 0)) {
     if (Owner != 1 || (IsOut != 0)) {
         return; // War Irtum, kein Computerspieler
     }
+
+    AT_Log("%s RobotExecuteAction(): WaitWorkTill = %d, WaitWorkTill2 = %d", AirlineX.c_str(), WaitWorkTill, WaitWorkTill2);
 
     TEAKRAND LocalRandom;
     LocalRandom.SRand(WaitWorkTill);
@@ -3850,23 +3854,11 @@ void PLAYER::RobotExecuteAction() {
                     return;
                 }
 
-                if (!(Sim.CallItADay == 1)) {
+                if (Sim.CallItADay != 1) {
                     // Normal tagsüber synchronisieren:
                     WaitWorkTill = Sim.TimeSlice + 40; // Zwei Sekunden warten, bis die Aktion wirklich ausgeführt wird
                     WaitWorkTill2 = Sim.Time + 2000;   // Zwei Sekunden warten, bis die Aktion wirklich ausgeführt wird
-
-                    TEAKFILE Message;
-
-                    Message.Announce(128);
-
-                    Message << ATNET_ROBOT_EXECUTE << PlayerNum << WaitWorkTill << WaitWorkTill2;
-
-                    for (c = 0; c < 4; c++) {
-                        Message << Sympathie[c];
-                    }
-                    for (c = 0; c < RobotActions.AnzEntries(); c++) {
-                        Message << RobotActions[c];
-                    }
+                    PLAYER::NetSyncRobot(WaitWorkTill, WaitWorkTill2);
 
                     // Sicherheitshalber, falls zum Feierabend gewechselt wird:
                     if (Sim.bWatchForReady == 0 && Sim.Time > 9 * 60000 + 500 && Sim.Players.Players[Sim.localPlayer].GetRoom() != ROOM_ABEND &&
@@ -3875,9 +3867,6 @@ void PLAYER::RobotExecuteAction() {
                             Sim.Players.Players[c].bReadyForMorning = 0;
                         }
                     }
-
-                    SIM::SendMemFile(Message);
-
                     return;
                 }
             } else {
@@ -3889,28 +3878,16 @@ void PLAYER::RobotExecuteAction() {
         }
 
         // Synchronisieren (nach Feierabend):
-        if ((Sim.bNetwork != 0) && Sim.GetHour() >= 9 && Sim.GetHour() < 18 && Sim.CallItADay == 1) {
+        if (Sim.GetHour() >= 9 && Sim.GetHour() < 18 && Sim.CallItADay == 1) {
             WaitWorkTill = -1;
 
             if (Sim.bIsHost != 0) {
-                // Feierabend synchronisieren: Die anderen Spieler auffordern, nachzuziehen:
-                TEAKFILE Message;
-
-                Message.Announce(128);
 
                 LocalRandom.SRand(Sim.TimeSlice);
 
+                // Feierabend synchronisieren: Die anderen Spieler auffordern, nachzuziehen:
                 WaitWorkTill2 = Sim.Time;
-                Message << ATNET_ROBOT_EXECUTE << PlayerNum << Sim.TimeSlice << WaitWorkTill2;
-
-                for (c = 0; c < 4; c++) {
-                    Message << Sympathie[c];
-                }
-                for (c = 0; c < RobotActions.AnzEntries(); c++) {
-                    Message << RobotActions[c];
-                }
-
-                SIM::SendMemFile(Message);
+                PLAYER::NetSyncRobot(Sim.TimeSlice, WaitWorkTill2);
 
                 // Darauf warten, daß die anderen Spieler ihr okay geben:
                 if (Sim.Time > 9 * 60000 + 500) {
@@ -3966,9 +3943,7 @@ void PLAYER::RobotExecuteAction() {
                             bgWarp = FALSE;
                             if (CheatTestGame == 0 && CheatAutoSkip == 0) {
                                 Sim.Players.Players[TargetPlayer].GameSpeed = 0;
-                                if (Sim.bNetwork != 0) {
-                                    SIM::SendSimpleMessage(ATNET_SETSPEED, 0, Sim.localPlayer, Sim.Players.Players[TargetPlayer].GameSpeed);
-                                }
+                                SIM::SendSimpleMessage(ATNET_SETSPEED, 0, Sim.localPlayer, Sim.Players.Players[TargetPlayer].GameSpeed);
                             }
 
                             (Sim.Players.Players[TargetPlayer].LocationWin)->StartDialog(TALKER_COMPETITOR, MEDIUM_HANDY, PlayerNum, 1);
@@ -4008,8 +3983,8 @@ void PLAYER::RobotExecuteAction() {
 
     /*AT_Log("Player %li: Action: %s, %s at %li/%li\n", PlayerNum, Translate_ACTION(RobotActions[0].ActionId), Translate_ACTION(RobotActions[1].ActionId),
            WaitWorkTill, WaitWorkTill2);*/
-    NetGenericSync(770 + PlayerNum, RobotActions[0].ActionId);
-    NetGenericSync(740 + PlayerNum, RobotActions[1].ActionId);
+    // NetGenericSync(770 + PlayerNum, RobotActions[0].ActionId);
+    // NetGenericSync(740 + PlayerNum, RobotActions[1].ActionId);
 
     if (Sim.bNetwork != 0) {
         Sim.Time = WaitWorkTill2;
@@ -4028,7 +4003,7 @@ void PLAYER::RobotExecuteAction() {
             Sim.Time = RealLocalTime;
         }
 
-        NetGenericSync(680 + PlayerNum, RobotActions[0].ActionId);
+        // NetGenericSync(680 + PlayerNum, RobotActions[0].ActionId);
         return;
     }
 
@@ -5726,7 +5701,7 @@ void PLAYER::RobotExecuteAction() {
         Sim.Time = RealLocalTime;
     }
 
-    NetGenericSync(680 + PlayerNum, RobotActions[0].ActionId);
+    // NetGenericSync(680 + PlayerNum, RobotActions[0].ActionId);
 }
 
 //--------------------------------------------------------------------------------------------
@@ -6562,7 +6537,7 @@ void PLAYER::DoBodyguardRabatt(SLONG Money) {
 
         SLONG delta = Money / 100 * (quality / 10);
         ChangeMoney(delta, 3130, "");
-        SIM::SendSimpleMessage(ATNET_BODYGUARD, 0, Sim.localPlayer, delta);
+        SIM::SendSimpleMessage(ATNET_BODYGUARD, 0, PlayerNum, delta);
     }
 }
 

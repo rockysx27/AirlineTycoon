@@ -2608,7 +2608,7 @@ void CStdRaum::PostPaint() {
             qPlayer.Statistiken[STAT_A_SONSTIGES].AddAtPastDay(-1);
             qPlayer.Bilanz.SonstigeAusgaben -= 1;
             if (PlayerNum == Sim.localPlayer) {
-                SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -1, STAT_A_SONSTIGES);
+                SIM::SendSimpleMessage64(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -1, STAT_A_SONSTIGES);
             }
 
             StatusCount = max(StatusCount, 3);
@@ -5808,7 +5808,7 @@ void CStdRaum::MenuLeftClick(XY Pos) {
                         qPlayer.Statistiken[STAT_A_SONSTIGES].AddAtPastDay(-1);
                         qPlayer.Bilanz.SonstigeAusgaben -= 1;
                         if (PlayerNum == Sim.localPlayer) {
-                            SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -1, STAT_A_SONSTIGES);
+                            SIM::SendSimpleMessage64(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -1, STAT_A_SONSTIGES);
                         }
                     }
                 } else if (Sim.Options.OptionEffekte != 0) {
@@ -5911,7 +5911,7 @@ void CStdRaum::MenuLeftClick(XY Pos) {
             qPlayer.Statistiken[STAT_A_SONSTIGES].AddAtPastDay(-1);
             qPlayer.Bilanz.SonstigeAusgaben -= 1;
             if (PlayerNum == Sim.localPlayer) {
-                SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -1, STAT_A_SONSTIGES);
+                SIM::SendSimpleMessage64(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -1, STAT_A_SONSTIGES);
             }
 
             LastMenu = -1;
@@ -6018,7 +6018,7 @@ void CStdRaum::MenuLeftClick(XY Pos) {
                         qPlayer.Statistiken[STAT_A_SONSTIGES].AddAtPastDay(-1);
                         qPlayer.Bilanz.SonstigeAusgaben -= 1;
                         if (PlayerNum == Sim.localPlayer) {
-                            SIM::SendSimpleMessage(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -1, STAT_A_SONSTIGES);
+                            SIM::SendSimpleMessage64(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -1, STAT_A_SONSTIGES);
                         }
 
                         StartDialog(TALKER_COMPETITOR, MEDIUM_HANDY, MouseClickPar2, 0);

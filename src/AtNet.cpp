@@ -14,6 +14,8 @@
 
 #include <cmath>
 
+#define AT_Log(...) AT_Log_I("AtNet", __VA_ARGS__)
+
 extern SBNetwork gNetwork;
 
 #define GFX_MENU (0x00000000554e454d)
@@ -229,8 +231,8 @@ void PumpNetwork() {
 
         if (SIM::ReceiveMemFile(Message)) {
             ULONG MessageType = 0;
-            ULONG Par1 = 0;
-            ULONG Par2 = 0;
+            SLONG Par1 = 0;
+            SLONG Par2 = 0;
 
             Message >> MessageType;
             // AT_Log_I("Net", "Received net event: %s", Translate_ATNET(MessageType));
@@ -238,7 +240,7 @@ void PumpNetwork() {
             switch (MessageType) {
             case ATNET_SETSPEED:
                 Message >> Par1 >> Par2;
-                Sim.Players.Players[static_cast<SLONG>(Par1)].GameSpeed = Par2;
+                Sim.Players.Players[Par1].GameSpeed = Par2;
                 if (Sim.Players.Players[Sim.localPlayer].LocationWin != nullptr) {
                     (Sim.Players.Players[Sim.localPlayer].LocationWin)->StatusCount = 3;
                 }
@@ -256,12 +258,12 @@ void PumpNetwork() {
 
             case ATNET_READYFORMORNING:
                 Message >> Par1;
-                Sim.Players.Players[SLONG(Par1)].bReadyForMorning = 1;
+                Sim.Players.Players[Par1].bReadyForMorning = 1;
                 break;
 
             case ATNET_READYFORBRIEFING:
                 Message >> Par1;
-                Sim.Players.Players[SLONG(Par1)].bReadyForBriefing = 1;
+                Sim.Players.Players[Par1].bReadyForBriefing = 1;
                 break;
 
             case ATNET_PAUSE:
@@ -363,7 +365,7 @@ void PumpNetwork() {
             case ATNET_OPTIONS:
                 Message >> Par1 >> Par2;
                 nOptionsOpen += Par1;
-                nPlayerOptionsOpen[static_cast<SLONG>(Par2)] += Par1;
+                nPlayerOptionsOpen[Par2] += Par1;
                 SetNetworkBitmap(static_cast<SLONG>(nOptionsOpen > 0) * 1);
                 break;
 
@@ -371,14 +373,14 @@ void PumpNetwork() {
                 Message >> Par1 >> Par2;
                 nAppsDisabled += Par1;
                 nOptionsOpen += Par1;
-                nPlayerOptionsOpen[static_cast<SLONG>(Par2)] += Par1;
-                nPlayerAppsDisabled[static_cast<SLONG>(Par2)] += Par1;
+                nPlayerOptionsOpen[Par2] += Par1;
+                nPlayerAppsDisabled[Par2] += Par1;
                 SetNetworkBitmap(static_cast<SLONG>(nOptionsOpen > 0) * 2);
                 break;
 
             case ATNET_TIMEPING:
                 Message >> Par1;
-                gTimerCorrection = SLONG(Par1) - SLONG(Sim.TimeSlice);
+                gTimerCorrection = Par1 - Sim.TimeSlice;
                 break;
 
             case ATNET_SETGAMESPEED: {
@@ -902,6 +904,8 @@ void PumpNetwork() {
                 for (c = 0; c < qPlayer.RobotActions.AnzEntries(); c++) {
                     Message >> qPlayer.RobotActions[c];
                 }
+                AT_Log("%s Received NetSyncRobot: qPlayer.WaitWorkTill = %d, qPlayer.WaitWorkTill2 = %d", qPlayer.AirlineX.c_str(), qPlayer.WaitWorkTill,
+                       qPlayer.WaitWorkTill2);
             } break;
 
                 //--------------------------------------------------------------------------------------------
@@ -1385,7 +1389,7 @@ void PumpNetwork() {
                 Message >> TextAlign >> id >> Answer;
 
                 if (qPlayer.LocationWin != nullptr) {
-                    (qPlayer.LocationWin)->MakeSayWindow(static_cast<BOOL>(static_cast<BOOL>(TextAlign) == 0), id, Answer, (qPlayer.LocationWin)->pFontNormal);
+                    (qPlayer.LocationWin)->MakeSayWindow(static_cast<BOOL>(TextAlign == 0), id, Answer, (qPlayer.LocationWin)->pFontNormal);
                 }
             } break;
 
@@ -1632,9 +1636,9 @@ void PumpNetwork() {
             case ATNET_WAITFORPLAYER:
                 Message >> Par1 >> Par2;
                 nWaitingForPlayer += Par1;
-                nPlayerWaiting[static_cast<SLONG>(Par2)] += Par1;
-                if (nPlayerWaiting[static_cast<SLONG>(Par2)] < 0) {
-                    nPlayerWaiting[static_cast<SLONG>(Par2)] = 0;
+                nPlayerWaiting[Par2] += Par1;
+                if (nPlayerWaiting[Par2] < 0) {
+                    nPlayerWaiting[Par2] = 0;
                 }
                 SetNetworkBitmap(static_cast<SLONG>(nWaitingForPlayer > 0) * 3);
                 break;
@@ -1905,20 +1909,20 @@ void PumpNetwork() {
             } break;
 
             case ATNET_CHANGEMONEY: {
-                SLONG localPlayer = 0;
-                SLONG delta = 0;
-                SLONG statistikid = 0;
+                __int64 Par1 = 0;
+                __int64 Par2 = 0;
+                __int64 Par3 = 0;
 
-                Message >> localPlayer >> delta >> statistikid;
+                Message >> Par1 >> Par2 >> Par3;
 
-                Sim.Players.Players[localPlayer].ChangeMoney(delta, 9999, "");
-                if (statistikid != -1) {
-                    Sim.Players.Players[localPlayer].Statistiken[statistikid].AddAtPastDay(delta);
-                }
+                SLONG playerId = static_cast<SLONG>(Par1);
+                SLONG statistikid = static_cast<SLONG>(Par3);
+
+                Sim.Players.Players[playerId].ChangeMoney(Par2, statistikid, "");
             } break;
 
             case ATNET_SYNCKEROSIN: {
-                SLONG localPlayer = 0;
+                SLONG playerId = 0;
                 SLONG TankOpen = 0;
                 SLONG TankInhalt = 0;
                 DOUBLE KerosinQuali = 0;
@@ -1926,10 +1930,10 @@ void PumpNetwork() {
                 BOOL Tank = 0;
                 DOUBLE TankPreis = NAN;
 
-                Message >> localPlayer >> Tank >> TankOpen >> TankInhalt >> KerosinQuali >> KerosinKind >> TankPreis;
+                Message >> playerId >> Tank >> TankOpen >> TankInhalt >> KerosinQuali >> KerosinKind >> TankPreis;
 
-                if (localPlayer != Sim.localPlayer) {
-                    PLAYER &qPlayer = Sim.Players.Players[localPlayer];
+                if (playerId != Sim.localPlayer) {
+                    PLAYER &qPlayer = Sim.Players.Players[playerId];
 
                     qPlayer.Tank = Tank;
                     qPlayer.TankOpen = TankOpen;
@@ -1941,25 +1945,25 @@ void PumpNetwork() {
             } break;
 
             case ATNET_SYNCGEHALT: {
-                SLONG localPlayer = 0;
+                SLONG playerId = 0;
                 SLONG gehalt = 0;
 
-                Message >> localPlayer >> gehalt;
+                Message >> playerId >> gehalt;
 
-                Sim.Players.Players[localPlayer].Statistiken[STAT_GEHALT].SetAtPastDay(-gehalt);
+                Sim.Players.Players[playerId].Statistiken[STAT_GEHALT].SetAtPastDay(-gehalt);
             } break;
 
             case ATNET_SYNCNUMFLUEGE: {
-                SLONG localPlayer = 0;
+                SLONG playerId = 0;
                 SLONG auftrag = 0;
                 SLONG lm = 0;
                 SLONG fracht = 0;
 
-                Message >> localPlayer >> auftrag >> lm >> fracht;
+                Message >> playerId >> auftrag >> lm >> fracht;
 
-                Sim.Players.Players[localPlayer].Statistiken[STAT_AUFTRAEGE].SetAtPastDay(auftrag);
-                Sim.Players.Players[localPlayer].Statistiken[STAT_LMAUFTRAEGE].SetAtPastDay(lm);
-                Sim.Players.Players[localPlayer].Statistiken[STAT_FRACHTEN].SetAtPastDay(fracht);
+                Sim.Players.Players[playerId].Statistiken[STAT_AUFTRAEGE].SetAtPastDay(auftrag);
+                Sim.Players.Players[playerId].Statistiken[STAT_LMAUFTRAEGE].SetAtPastDay(lm);
+                Sim.Players.Players[playerId].Statistiken[STAT_FRACHTEN].SetAtPastDay(fracht);
             } break;
 
                 //--------------------------------------------------------------------------------------------
@@ -2050,7 +2054,7 @@ void NetGenericSync(SLONG SyncId, SLONG Par) {
 
     bReentrant = true;
 
-    Sim.SendSimpleMessage(ATNET_GENERICSYNCX, NULL, Sim.localPlayer, SyncId, Par); // Requesting Sync
+    Sim.SendSimpleMessage(ATNET_GENERICSYNCX, 0, Sim.localPlayer, SyncId, Par); // Requesting Sync
 
     GenericSyncIds[Sim.localPlayer] = SyncId;
     GenericSyncIdPars[Sim.localPlayer] = Par;
