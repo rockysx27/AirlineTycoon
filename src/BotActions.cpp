@@ -673,7 +673,10 @@ void Bot::actionBuyKerosine(__int64 moneyAvailable) {
     }
 
     /* update how much kerosine was used */
-    assert(mKerosineLevelLastChecked >= qPlayer.TankInhalt);
+    if (mKerosineLevelLastChecked < qPlayer.TankInhalt) {
+        AT_Error("Bot::actionBuyKerosine(): mKerosineLevelLastChecked >= qPlayer.TankInhalt should hold");
+        return;
+    }
     mKerosineUsedTodaySoFar += (mKerosineLevelLastChecked - qPlayer.TankInhalt);
     mKerosineLevelLastChecked = qPlayer.TankInhalt;
 
