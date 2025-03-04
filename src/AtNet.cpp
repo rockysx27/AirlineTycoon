@@ -2037,7 +2037,7 @@ void NetGenericSync(SLONG SyncId) {
 // Kehrt erst zurück, wenn die anderen Spieler hier auch waren:
 // Gibt Warnung aus, falls die Parameter unterschiedlich waren.
 //--------------------------------------------------------------------------------------------
-#ifdef _DEBUG
+#ifdef _DEBUG2
 void NetGenericSync(SLONG SyncId, SLONG Par) {
     static bool bReentrant = false;
 
@@ -2091,7 +2091,7 @@ void NetGenericSync(SLONG /*SyncId*/, SLONG /*Par*/) {}
 // Kehrt erst zurück, wenn die anderen Spieler hier auch waren:
 // Gibt Warnung aus, falls die Parameter unterschiedlich waren.
 //--------------------------------------------------------------------------------------------
-#ifdef _DEBUG
+#ifdef _DEBUG2
 void NetGenericAsync(SLONG SyncId, SLONG Par, SLONG player) {
     if (!Sim.bNetwork)
         return;

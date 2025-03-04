@@ -1,5 +1,6 @@
 #include "Bot.h"
 
+#include "AtNet.h"
 #include "BotHelper.h"
 #include "BotPlaner.h"
 #include "GameMechanic.h"
@@ -605,6 +606,7 @@ void Bot::RobotExecuteAction() {
         for (SLONG i = 0; i < qPrices.size(); i++) {
             if ((qPlayer.RocketFlags & (1 << i)) == 0 && moneyAvailable >= qPrices[i]) {
                 qPlayer.ChangeMoney(-qPrices[i], 3400, "");
+                SIM::SendSimpleMessage64(ATNET_CHANGEMONEY, 0, qPlayer.PlayerNum, -qPrices[i], 3400);
                 PlayFanfare();
                 qPlayer.RocketFlags |= (1 << i);
             }

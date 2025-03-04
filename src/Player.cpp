@@ -518,29 +518,14 @@ void PLAYER::ChangeMoney(__int64 Money, SLONG Reason, const CString &Par1, const
         break;
     case 3200:
         /* D::Ortsgespräch */
-        Statistiken[STAT_A_SONSTIGES].AddAtPastDay(Money);
-        Bilanz.SonstigeAusgaben += Money;
-        break;
     case 3201:
         /* D::Ortsgespräch (Handy) */
-        Statistiken[STAT_A_SONSTIGES].AddAtPastDay(Money);
-        Bilanz.SonstigeAusgaben += Money;
-        break;
     case 3202:
         /* D::Ferngespräch */
-        Statistiken[STAT_A_SONSTIGES].AddAtPastDay(Money);
-        Bilanz.SonstigeAusgaben += Money;
-        break;
     case 3203:
         /* D::Ferngespräch (Handy) */
-        Statistiken[STAT_A_SONSTIGES].AddAtPastDay(Money);
-        Bilanz.SonstigeAusgaben += Money;
-        break;
     case 3204:
         /* D::Auslandsgespräch */
-        Statistiken[STAT_A_SONSTIGES].AddAtPastDay(Money);
-        Bilanz.SonstigeAusgaben += Money;
-        break;
     case 3205:
         /* D::Auslandsgespräch (Handy) */
         Statistiken[STAT_A_SONSTIGES].AddAtPastDay(Money);
@@ -596,13 +581,27 @@ void PLAYER::ChangeMoney(__int64 Money, SLONG Reason, const CString &Par1, const
         Statistiken[STAT_A_SONSTIGES].AddAtPastDay(Money);
         Bilanz.GeldGeschickt += Money;
         break;
+    case 8000:
+    case 8001:
+    case 8002:
+    case 8100:
+    case 8101:
+    case 8102:
+    case 8103:
+    case 8104:
+    case 8200:
+    case 8201:
+        /* verschiedene Stationsteile */
+        Statistiken[STAT_A_SONSTIGES].AddAtPastDay(Money);
+        Bilanz.SonstigeAusgaben += Money;
+        break;
     case 9999:
         /* shoppen im DutyFree */
         Statistiken[STAT_A_SONSTIGES].AddAtPastDay(Money);
         Bilanz.SonstigeAusgaben += Money;
         break;
     default:
-        AT_Log("ChangeMoney: No category for %d", Reason);
+        AT_Warn("ChangeMoney: No category for %d", Reason);
     }
 
     if (LocationWin != nullptr) {
@@ -652,6 +651,7 @@ void PLAYER::EnterRoom(SLONG RoomNum, bool bDontBroadcast) {
 void PLAYER::AddRocketPart(SLONG rocketPart, SLONG price) {
     RocketFlags |= rocketPart;
     this->ChangeMoney(-price, 3400, "");
+    SIM::SendSimpleMessage64(ATNET_CHANGEMONEY, 0, PlayerNum, -price, 3400);
 
     // Synchronize to other players
     NetSynchronizeFlags();
@@ -663,6 +663,7 @@ void PLAYER::AddRocketPart(SLONG rocketPart, SLONG price) {
 void PLAYER::AddSpaceStationPart(SLONG flag, SLONG rocketPart, SLONG price) {
     RocketFlags |= flag;
     this->ChangeMoney(-price, rocketPart, "");
+    SIM::SendSimpleMessage64(ATNET_CHANGEMONEY, 0, PlayerNum, -price, rocketPart);
 
     // Synchronize to other players
     NetSynchronizeFlags();
@@ -4877,6 +4878,7 @@ void PLAYER::RobotExecuteAction() {
                 if (Sim.Difficulty == DIFF_FINAL) {
                     if (RocketPrices[c] < Money) {
                         ChangeMoney(-RocketPrices[c], 3400, "");
+                        SIM::SendSimpleMessage64(ATNET_CHANGEMONEY, 0, PlayerNum, -RocketPrices[c], 3400);
 
                         PlayFanfare();
                         RocketFlags |= (1 << c);
@@ -4886,6 +4888,7 @@ void PLAYER::RobotExecuteAction() {
                 } else if (Sim.Difficulty == DIFF_ADDON10) {
                     if (StationPrices[c] < Money) {
                         ChangeMoney(-StationPrices[c], 3400, "");
+                        SIM::SendSimpleMessage64(ATNET_CHANGEMONEY, 0, PlayerNum, -StationPrices[c], 3400);
 
                         PlayFanfare();
                         RocketFlags |= (1 << c);

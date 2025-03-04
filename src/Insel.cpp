@@ -3,6 +3,7 @@
 //============================================================================================
 // Link: "Insel.h"
 //============================================================================================
+#include "AtNet.h"
 #include "ColorFx.h"
 #include "Insel.h"
 #include "glinsel.h"
@@ -268,6 +269,7 @@ CInsel::CInsel(BOOL bHandy, ULONG PlayerNum) : CStdRaum(bHandy, PlayerNum, "", 0
 
     if (Sim.Difficulty < ROOM_LIMIT) {
         Sim.Players.Players[static_cast<SLONG>(PlayerNum)].ChangeMoney(-1, 3300, "");
+        SIM::SendSimpleMessage64(ATNET_CHANGEMONEY, 0, PlayerNum, -1, 3300);
 
         ReSize("noinsel.gli", GFX_NOINSEL);
     } else {
@@ -277,6 +279,7 @@ CInsel::CInsel(BOOL bHandy, ULONG PlayerNum) : CStdRaum(bHandy, PlayerNum, "", 0
         HandyOffset = 320;
 
         Sim.Players.Players[static_cast<SLONG>(PlayerNum)].ChangeMoney(-1, 3300, "");
+        SIM::SendSimpleMessage64(ATNET_CHANGEMONEY, 0, PlayerNum, -1, 3300);
 
         SBBM TempBm;
 

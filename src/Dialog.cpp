@@ -5310,7 +5310,7 @@ BOOL CStdRaum::PreLButtonDown(CPoint point) {
                 if (id >= 8000 && id <= 8002) {
                     Index = id - 8000;
                 }
-                if (id >= 8100 && id <= 8106) {
+                if (id >= 8100 && id <= 8104) {
                     Index = id - 8100 + 3;
                 }
                 if (id >= 8200 && id <= 8201) {
