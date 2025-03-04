@@ -70,19 +70,6 @@ CTafel::~CTafel() {
     LeereZettelBms.Destroy();
     PostcardBm.Destroy();
     Sim.Players.Players[PlayerNum].Messages.AddMessage(BERATERTYP_ROUTE, "", MESSAGE_COMMENT);
-
-    TEAKFILE Message;
-
-    Message.Announce(1024);
-
-    Message << ATNET_TAKE_CITY;
-
-    for (SLONG c = 0; c < 7; c++) {
-        Message << TafelData.City[c].Player << TafelData.City[c].Preis;
-        Message << TafelData.Gate[c].Player << TafelData.Gate[c].Preis;
-    }
-
-    SIM::SendMemFile(Message);
 }
 
 //--------------------------------------------------------------------------------------------
@@ -219,8 +206,7 @@ void CTafel::RepaintZettel(SLONG n) {
                 ZettelBms[n].PrintAt(Sim.Players.Players[entry->Player].Airline, FontSmallBlack, TEC_FONT_LEFT, XY(13, 55 + 30),
                                      XY(ZettelBms[n].Size.x - 3, 132));
             }
-            ZettelBms[n].PrintAt(Einheiten[EINH_DM].bString(entry->Preis), FontSmallBlack, TEC_FONT_LEFT, XY(13, 70 + 30),
-                                      XY(ZettelBms[n].Size.x - 3, 132));
+            ZettelBms[n].PrintAt(Einheiten[EINH_DM].bString(entry->Preis), FontSmallBlack, TEC_FONT_LEFT, XY(13, 70 + 30), XY(ZettelBms[n].Size.x - 3, 132));
         }
     } else if (entry->Type == CTafelZettel::Type::GATE) {
         if (entry->ZettelId <= -1) {
@@ -278,16 +264,8 @@ void CTafel::OnLButtonDown(UINT nFlags, CPoint point) {
                             entry->WasInterested = LastTafelData[c].WasInterested;
                         } else if (entry->Type == CTafelZettel::Type::CITY && entry->Player != PlayerNum &&
                                    Sim.Players.Players[Sim.localPlayer].RentCities.RentCities[entry->ZettelId].Rang == 0) {
-                            if ((Sim.bNetwork != 0) && entry->Player != -1 && Sim.Players.Players[entry->Player].Owner == 2) {
-                                SIM::SendSimpleMessage(ATNET_ADVISOR, Sim.Players.Players[entry->Player].NetworkID, 0, PlayerNum, c);
-                            }
-
                             GameMechanic::bidOnCity(qPlayer, c);
                         } else if (entry->Type == CTafelZettel::Type::GATE && entry->Player != PlayerNum) {
-                            if ((Sim.bNetwork != 0) && entry->Player != -1 && Sim.Players.Players[entry->Player].Owner == 2) {
-                                SIM::SendSimpleMessage(ATNET_ADVISOR, Sim.Players.Players[entry->Player].NetworkID, 0, PlayerNum, c);
-                            }
-
                             GameMechanic::bidOnGate(qPlayer, c);
                         }
                         RepaintZettel(c);

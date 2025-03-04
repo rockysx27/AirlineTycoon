@@ -1,5 +1,6 @@
 #include "Bot.h"
 
+#include "AtNet.h"
 #include "BotHelper.h"
 #include "BotPlaner.h"
 #include "GameMechanic.h"
@@ -162,10 +163,9 @@ void Bot::actionCallInternational(bool areWeInOffice) {
         grabFlights(planer, areWeInOffice);
 
         SLONG cost = cities.size();
+        qPlayer.ChangeMoney(-cost, 3204 + (areWeInOffice ? 0 : 1), "");
+        SIM::SendSimpleMessage64(ATNET_CHANGEMONEY, 0, qPlayer.PlayerNum, -cost, 3204 + (areWeInOffice ? 0 : 1));
         qPlayer.History.AddCallCost(cost);
-        qPlayer.Money -= cost;
-        qPlayer.Statistiken[STAT_A_SONSTIGES].AddAtPastDay(-cost);
-        qPlayer.Bilanz.SonstigeAusgaben -= cost;
     }
 }
 

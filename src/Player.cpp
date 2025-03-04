@@ -3009,7 +3009,6 @@ void PLAYER::RobotPump() {
     SLONG c = 0;
     PERSON *pPerson = nullptr;
 
-    AT_Log("%s RobotPump(): WaitWorkTill = %d, Sim.TimeSlice = %d", AirlineX.c_str(), WaitWorkTill, Sim.TimeSlice);
     if ((Sim.bNetwork != 0) && WaitWorkTill != -1) {
         if (WaitWorkTill <= Sim.TimeSlice) {
             RobotExecuteAction();
@@ -3291,8 +3290,7 @@ void PLAYER::RobotPlan() {
                               ACTION_VISITROUTEBOX, ACTION_VISITNASA,   ACTION_VISITSECURITY, ACTION_VISITSECURITY, ACTION_VISITSECURITY,  ACTION_VISITDESIGNER,
                               ACTION_VISITDESIGNER};
 
-    // if ((Owner != 1) || (IsOut != 0) || (Sim.bNetwork != 0 && Sim.bIsHost == 0)) {
-    if (Owner != 1 || (IsOut != 0)) {
+    if ((Owner != 1) || (IsOut != 0) || (Sim.bNetwork != 0 && Sim.bIsHost == 0)) {
         return; // War Irtum, kein Computerspieler
     }
 
@@ -3518,8 +3516,7 @@ void PLAYER::RobotPlanRoutes() {
     SLONG BestDValue = 0;
     BOOL FlightAdded = 0;
 
-    // if ((Owner != 1) || (IsOut != 0) || (Sim.bNetwork != 0 && Sim.bIsHost == 0)) {
-    if (Owner != 1 || (IsOut != 0)) {
+    if ((Owner != 1) || (IsOut != 0) || (Sim.bNetwork != 0 && Sim.bIsHost == 0)) {
         return; // War Irtum, kein Computerspieler
     }
 
@@ -3838,8 +3835,7 @@ void PLAYER::RobotExecuteAction() {
     SLONG level = 0;
     TEAKRAND rnd;
 
-    // if ((Owner != 1) || (IsOut != 0) || (Sim.bNetwork != 0 && Sim.bIsHost == 0)) {
-    if (Owner != 1 || (IsOut != 0)) {
+    if ((Owner != 1) || (IsOut != 0)) {
         return; // War Irtum, kein Computerspieler
     }
 
@@ -3989,6 +3985,11 @@ void PLAYER::RobotExecuteAction() {
            WaitWorkTill, WaitWorkTill2);*/
     // NetGenericSync(770 + PlayerNum, RobotActions[0].ActionId);
     // NetGenericSync(740 + PlayerNum, RobotActions[1].ActionId);
+
+    if (Sim.bNetwork != 0 && Sim.bIsHost == 0) {
+        WaitWorkTill = -1;
+        return;
+    }
 
     if (Sim.bNetwork != 0) {
         Sim.Time = WaitWorkTill2;

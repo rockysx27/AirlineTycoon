@@ -153,6 +153,7 @@ class GameMechanic {
 
   private:
     static bool _planFlightJob(PLAYER &qPlayer, SLONG planeID, SLONG objectID, SLONG objectType, SLONG date, SLONG time);
+    static void _syncTafelData();
 };
 
 #endif // GAMEMECHANIC_H_

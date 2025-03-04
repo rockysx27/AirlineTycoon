@@ -1107,11 +1107,18 @@ bool GameMechanic::bidOnGate(PLAYER &qPlayer, SLONG idx) {
         }
     }
 
+    if ((Sim.bNetwork != 0) && (qGate.Player != -1) && Sim.Players.Players[qGate.Player].Owner == 2) {
+        SIM::SendSimpleMessage(ATNET_ADVISOR, Sim.Players.Players[qGate.Player].NetworkID, 0, qPlayer.PlayerNum, idx);
+    }
+
     qGate.Preis += qGate.Preis / 10;
     qGate.Player = qPlayer.PlayerNum;
     if (qPlayer.PlayerNum == Sim.localPlayer) {
         qGate.WasInterested = TRUE;
     }
+
+    _syncTafelData();
+
     return true;
 }
 
@@ -1139,13 +1146,33 @@ bool GameMechanic::bidOnCity(PLAYER &qPlayer, SLONG idx) {
                                                                                               qPlayer.AirlineX.c_str(), Cities[qCity.ZettelId].Name.c_str()));
         }
     }
+    if ((Sim.bNetwork != 0) && (qCity.Player != -1) && Sim.Players.Players[qCity.Player].Owner == 2) {
+        SIM::SendSimpleMessage(ATNET_ADVISOR, Sim.Players.Players[qCity.Player].NetworkID, 0, qPlayer.PlayerNum, idx);
+    }
 
     qCity.Preis += qCity.Preis / 10;
     qCity.Player = qPlayer.PlayerNum;
     if (qPlayer.PlayerNum == Sim.localPlayer) {
         qCity.WasInterested = TRUE;
     }
+
+    _syncTafelData();
+
     return true;
+}
+
+void GameMechanic::_syncTafelData() {
+    TEAKFILE Message;
+    Message.Announce(1024);
+
+    Message << ATNET_TAKE_CITY;
+
+    for (SLONG c = 0; c < 7; c++) {
+        Message << TafelData.City[c].Player << TafelData.City[c].Preis;
+        Message << TafelData.Gate[c].Player << TafelData.Gate[c].Preis;
+    }
+
+    SIM::SendMemFile(Message);
 }
 
 SLONG GameMechanic::setMechMode(PLAYER &qPlayer, SLONG mode) {

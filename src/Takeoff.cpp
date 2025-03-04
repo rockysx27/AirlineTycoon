@@ -1350,7 +1350,7 @@ void CTakeOffApp::GameLoop(void * /*unused*/) {
                 }
 
                 if (Sim.bNetwork != 0) {
-                    // Synchronisierung morgends:
+                    // Synchronisierung morgens:
                     if (Sim.GetHour() >= 9 && (Sim.bWatchForReady != 0) && Sim.CallItADay == 0) {
                         if (!static_cast<bool>(Sim.Players.Players[Sim.localPlayer].bReadyForMorning) &&
                             (Sim.Players.Players[Sim.localPlayer].GetRoom() != ROOM_AUFSICHT || Sim.GetHour() > 9 || Sim.GetMinute() > 0)) {

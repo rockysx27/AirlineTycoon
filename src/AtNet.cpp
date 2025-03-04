@@ -1106,14 +1106,13 @@ void PumpNetwork() {
                 // Tafel: Jemand hat einen überboten
                 case 0:
                     if (qPlayer.HasBerater(BERATERTYP_INFO) >= rnd.Rand(100)) {
-                        if (Generic1 >= 14) {
+                        auto &qEntry = *TafelData.ByPositions[Generic1];
+                        if (qEntry.Type == CTafelZettel::Type::GATE) {
                             qPlayer.Messages.AddMessage(
                                 BERATERTYP_INFO, bprintf(StandardTexte.GetS(TOKEN_ADVICE, 9001), (LPCTSTR)qFromPlayer.NameX, (LPCTSTR)qFromPlayer.AirlineX));
-                        }
-                        if (Generic1 >= 7 && Generic1 < 14 && TafelData.City[Generic1 - 7].ZettelId > -1) {
-                            qPlayer.Messages.AddMessage(BERATERTYP_INFO,
-                                                        bprintf(StandardTexte.GetS(TOKEN_ADVICE, 9002), (LPCTSTR)qFromPlayer.NameX,
-                                                                (LPCTSTR)qFromPlayer.AirlineX, (LPCTSTR)Cities[TafelData.City[Generic1 - 7].ZettelId].Name));
+                        } else if (qEntry.Type == CTafelZettel::Type::CITY) {
+                            qPlayer.Messages.AddMessage(BERATERTYP_INFO, bprintf(StandardTexte.GetS(TOKEN_ADVICE, 9002), (LPCTSTR)qFromPlayer.NameX,
+                                                                                 (LPCTSTR)qFromPlayer.AirlineX, (LPCTSTR)Cities[qEntry.ZettelId].Name));
                         }
                     }
                     break;
