@@ -2140,7 +2140,7 @@ void NetGenericAsync(SLONG SyncId, SLONG Par, SLONG player) {
             if (Sim.Players.Players[c].Owner != 1 && !Sim.Players.Players[c].IsOut && GenericAsyncIdPars[d + c] != Par) {
                 DisplayBroadcastMessage(bprintf("NetGenericAsync (%li): %li vs. %li\n", SyncId, Par, GenericAsyncIdPars[d + c]));
                 AT_Log_I("AtNet", "Desync detected Id(%li): %li vs. %li\n", SyncId, Par, GenericSyncIdPars[d + c]);
-                DebugBreak();
+                // DebugBreak();
             }
 
         for (c = 0; c < 4; c++)

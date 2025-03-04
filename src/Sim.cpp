@@ -1802,6 +1802,7 @@ void SIM::DoTimeStep() {
 
                                     if (bCanHappenToThisPlane) {
                                         qPlayer.ChangeMoney(-75000, 3501, "");
+                                        // SIM::SendSimpleMessage64(ATNET_CHANGEMONEY, 0, qPlayer.PlayerNum, -75000, 3501);
 
                                         qPlane.AddPanne(10 + GetSeason());
                                         qPlayer.Messages.AddMessage(BERATERTYP_GIRL,
@@ -2410,7 +2411,8 @@ void SIM::NewDay() {
         for (c = 0; c < 7; c++) {
             // City:
             if (TafelData.City[c].ZettelId > -1 && TafelData.City[c].Player != -1) {
-                CRentCity &NewCity = Players.Players[TafelData.City[c].Player].RentCities.RentCities[TafelData.City[c].ZettelId];
+                PLAYER &qPlayer = Players.Players[TafelData.City[c].Player];
+                CRentCity &NewCity = qPlayer.RentCities.RentCities[TafelData.City[c].ZettelId];
 
                 if (TafelData.City[c].WasInterested != 0) {
                     if (TafelData.City[c].Player == localPlayer) {
@@ -2424,12 +2426,13 @@ void SIM::NewDay() {
                 NewCity.Image = 0;
                 NewCity.Miete = TafelData.City[c].Preis;
 
-                // hprintf ("Event: %s (Player %li) buys %s.", Players.Players[TafelData.City[c].Player].NameX, TafelData.City[c].Player+1,
+                // hprintf ("Event: %s (Player %li) buys %s.", qPlayer.NameX, TafelData.City[c].Player+1,
                 // (LPCTSTR)Cities[TafelData.City[c].ZettelId].Name);
 
-                Players.Players[TafelData.City[c].Player].ChangeMoney(-TafelData.City[c].Preis * 3,
-                                                                      2040, // Ersteigerung eines Schalters
-                                                                      Cities[TafelData.City[c].ZettelId].Name);
+                qPlayer.ChangeMoney(-TafelData.City[c].Preis * 3,
+                                    2040, // Ersteigerung eines Schalters
+                                    Cities[TafelData.City[c].ZettelId].Name);
+                // SIM::SendSimpleMessage64(ATNET_CHANGEMONEY, 0, qPlayer.PlayerNum, -TafelData.City[c].Preis * 3, 2040);
 
                 TafelData.City[c].ZettelId = -1;
                 TafelData.City[c].Player = -1;
@@ -2457,6 +2460,7 @@ void SIM::NewDay() {
                                     2041, // Ersteigerung einer Route
                                     CString(bprintf("%s-%s", (LPCTSTR)Cities[Routen[TafelData.Route[c].ZettelId].VonCity].Kuerzel,
                                                     (LPCTSTR)Cities[Routen[TafelData.Route[c].ZettelId].NachCity].Kuerzel)));
+                // SIM::SendSimpleMessage64(ATNET_CHANGEMONEY, 0, qPlayer.PlayerNum, -TafelData.Route[c].Preis * 3, 2041);
 
                 TafelData.Route[c].ZettelId = 0;
                 TafelData.Route[c].Player = -1;
@@ -2487,6 +2491,7 @@ void SIM::NewDay() {
 
                 // Ersteigerung eines Gates:
                 qPlayer.ChangeMoney(-TafelData.Gate[c].Preis * 3, 2042, "");
+                // SIM::SendSimpleMessage64(ATNET_CHANGEMONEY, 0, qPlayer.PlayerNum, -TafelData.Gate[c].Preis * 3, 2042);
 
                 TafelData.Gate[c].ZettelId = -1;
                 TafelData.Gate[c].Player = -1;

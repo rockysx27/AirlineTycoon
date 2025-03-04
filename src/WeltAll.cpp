@@ -3,6 +3,7 @@
 //============================================================================================
 #include "WeltAll.h"
 
+#include "AtNet.h"
 #include "ColorFx.h"
 #include "global.h"
 #include "glweltall.h"
@@ -44,6 +45,7 @@ CWeltAll::CWeltAll(BOOL bHandy, ULONG PlayerNum) : CStdRaum(bHandy, PlayerNum, "
     HandyOffset = 320;
 
     Sim.Players.Players[static_cast<SLONG>(PlayerNum)].ChangeMoney(-1, 3300, "");
+    SIM::SendSimpleMessage64(ATNET_CHANGEMONEY, 0, PlayerNum, -1, 3300);
     Sim.FocusPerson = -1;
 
     LastTime = AtGetTime();

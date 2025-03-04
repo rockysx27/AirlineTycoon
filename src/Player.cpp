@@ -257,7 +257,10 @@ void PLAYER::ChangeMoney(__int64 Money, SLONG Reason, const CString &Par1, const
         PLAYER::Money += Money;
     }
 
-    History.AddEntry(Money, bprintf(StandardTexte.GetS(TOKEN_MONEY, Reason), (LPCTSTR)Par1, Par2));
+    if (Reason < 3200 || Reason > 3205) {
+        /* 3200 - 3205 are phone calls are handled separately */
+        History.AddEntry(Money, bprintf(StandardTexte.GetS(TOKEN_MONEY, Reason), (LPCTSTR)Par1, Par2));
+    }
 
     switch (Reason) {
     case 2000:
@@ -515,33 +518,33 @@ void PLAYER::ChangeMoney(__int64 Money, SLONG Reason, const CString &Par1, const
         break;
     case 3200:
         /* D::Ortsgespräch */
-        // nicht benutzt
-        DebugBreak();
+        Statistiken[STAT_A_SONSTIGES].AddAtPastDay(Money);
+        Bilanz.SonstigeAusgaben += Money;
         break;
     case 3201:
         /* D::Ortsgespräch (Handy) */
-        // nicht benutzt
-        DebugBreak();
+        Statistiken[STAT_A_SONSTIGES].AddAtPastDay(Money);
+        Bilanz.SonstigeAusgaben += Money;
         break;
     case 3202:
         /* D::Ferngespräch */
-        // nicht benutzt
-        DebugBreak();
+        Statistiken[STAT_A_SONSTIGES].AddAtPastDay(Money);
+        Bilanz.SonstigeAusgaben += Money;
         break;
     case 3203:
         /* D::Ferngespräch (Handy) */
-        // nicht benutzt
-        DebugBreak();
+        Statistiken[STAT_A_SONSTIGES].AddAtPastDay(Money);
+        Bilanz.SonstigeAusgaben += Money;
         break;
     case 3204:
         /* D::Auslandsgespräch */
-        // nicht benutzt
-        DebugBreak();
+        Statistiken[STAT_A_SONSTIGES].AddAtPastDay(Money);
+        Bilanz.SonstigeAusgaben += Money;
         break;
     case 3205:
         /* D::Auslandsgespräch (Handy) */
-        // nicht benutzt
-        DebugBreak();
+        Statistiken[STAT_A_SONSTIGES].AddAtPastDay(Money);
+        Bilanz.SonstigeAusgaben += Money;
         break;
     case 3300:
         /* D::Münze für Fernglas */

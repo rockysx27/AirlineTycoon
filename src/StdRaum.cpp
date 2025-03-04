@@ -2603,12 +2603,11 @@ void CStdRaum::PostPaint() {
         if (SLONG((Sim.Time - LetzteEinheit) / 50) > (2 - UsingHandy) * 10 + (3 - Ferngespraech) * 60) {
             LetzteEinheit = Sim.Time;
             qPlayer.History.AddCallCost(1);
-            qPlayer.Money -= 1;
 
-            qPlayer.Statistiken[STAT_A_SONSTIGES].AddAtPastDay(-1);
-            qPlayer.Bilanz.SonstigeAusgaben -= 1;
+            SLONG category = (3200 + UsingHandy + 2 * Ferngespraech);
+            qPlayer.ChangeMoney(-1, category, "");
             if (PlayerNum == Sim.localPlayer) {
-                SIM::SendSimpleMessage64(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -1, STAT_A_SONSTIGES);
+                SIM::SendSimpleMessage64(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -1, category);
             }
 
             StatusCount = max(StatusCount, 3);
@@ -5803,12 +5802,11 @@ void CStdRaum::MenuLeftClick(XY Pos) {
                         }
 
                         qPlayer.History.AddNewCall(UsingHandy + Ferngespraech * 2);
-                        qPlayer.Money -= 1;
 
-                        qPlayer.Statistiken[STAT_A_SONSTIGES].AddAtPastDay(-1);
-                        qPlayer.Bilanz.SonstigeAusgaben -= 1;
+                        SLONG category = (3200 + UsingHandy + 2 * Ferngespraech);
+                        qPlayer.ChangeMoney(-1, category, "");
                         if (PlayerNum == Sim.localPlayer) {
-                            SIM::SendSimpleMessage64(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -1, STAT_A_SONSTIGES);
+                            SIM::SendSimpleMessage64(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -1, category);
                         }
                     }
                 } else if (Sim.Options.OptionEffekte != 0) {
@@ -5906,12 +5904,11 @@ void CStdRaum::MenuLeftClick(XY Pos) {
             }
 
             qPlayer.History.AddNewCall(UsingHandy + Ferngespraech * 2);
-            qPlayer.Money -= 1;
 
-            qPlayer.Statistiken[STAT_A_SONSTIGES].AddAtPastDay(-1);
-            qPlayer.Bilanz.SonstigeAusgaben -= 1;
+            SLONG category = (3200 + UsingHandy + 2 * Ferngespraech);
+            qPlayer.ChangeMoney(-1, category, "");
             if (PlayerNum == Sim.localPlayer) {
-                SIM::SendSimpleMessage64(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -1, STAT_A_SONSTIGES);
+                SIM::SendSimpleMessage64(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -1, category);
             }
 
             LastMenu = -1;
@@ -6013,12 +6010,11 @@ void CStdRaum::MenuLeftClick(XY Pos) {
                         }
 
                         qPlayer.History.AddNewCall(UsingHandy + Ferngespraech * 2);
-                        qPlayer.Money -= 1;
 
-                        qPlayer.Statistiken[STAT_A_SONSTIGES].AddAtPastDay(-1);
-                        qPlayer.Bilanz.SonstigeAusgaben -= 1;
+                        SLONG category = (3200 + UsingHandy + 2 * Ferngespraech);
+                        qPlayer.ChangeMoney(-1, category, "");
                         if (PlayerNum == Sim.localPlayer) {
-                            SIM::SendSimpleMessage64(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -1, STAT_A_SONSTIGES);
+                            SIM::SendSimpleMessage64(ATNET_CHANGEMONEY, 0, Sim.localPlayer, -1, category);
                         }
 
                         StartDialog(TALKER_COMPETITOR, MEDIUM_HANDY, MouseClickPar2, 0);

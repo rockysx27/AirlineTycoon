@@ -3,6 +3,7 @@
 //============================================================================================
 #include "Rushmore.h"
 
+#include "AtNet.h"
 #include "global.h"
 #include "glrush.h"
 #include "Proto.h"
@@ -27,6 +28,7 @@ CRushmore::CRushmore(BOOL bHandy, ULONG PlayerNum) : CStdRaum(bHandy, PlayerNum,
     LogoBms.ReSize(pRoomLib, "LOGO00", 4);
 
     Sim.Players.Players[static_cast<SLONG>(PlayerNum)].ChangeMoney(-1, 3300, "");
+    SIM::SendSimpleMessage64(ATNET_CHANGEMONEY, 0, PlayerNum, -1, 3300);
 
     if (bHandy == 0) {
         AmbientManager.SetGlobalVolume(60);
