@@ -412,7 +412,8 @@ void PLAYER::NetUpdateWorkers() {
 
     SIM::SendMemFile(Message);
 
-    if ((Sim.bIsHost != 0 && Owner == 1 && !RobotUse(ROBOT_USE_FAKE_PERSONAL)) || Owner == 0) {
+    if (Owner == 0 || ((Owner == 1) && (Sim.bIsHost != 0) && !RobotUse(ROBOT_USE_FAKE_PERSONAL))) {
+        /*
         SLONG c = 0;
         SLONG d = 0;
 
@@ -422,8 +423,9 @@ void PLAYER::NetUpdateWorkers() {
             }
         }
         Statistiken[STAT_GEHALT].SetAtPastDay(-d);
+        */
 
-        SIM::SendSimpleMessage(ATNET_SYNCGEHALT, 0, PlayerNum, d);
+        SIM::SendSimpleMessage(ATNET_SYNCGEHALT, 0, PlayerNum, Statistiken[STAT_GEHALT].GetAtPastDay(0));
     }
 }
 

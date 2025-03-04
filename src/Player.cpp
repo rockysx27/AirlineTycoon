@@ -929,17 +929,17 @@ void PLAYER::BookSalary() {
         for (c = 0; c < Workers.Workers.AnzEntries(); c++) {
             if (Workers.Workers[c].Employer == PlayerNum) {
                 // Gehaltssumme berechnen:
-                Money += Workers.Workers[c].Gehalt;
+                Money += (Workers.Workers[c].Gehalt / 30);
 
                 // Flugzeugbilanz korrigieren:
                 if (Workers.Workers[c].PlaneId != -1) {
-                    Planes[Workers.Workers[c].PlaneId].Salden[0] -= Workers.Workers[c].Gehalt / 30;
+                    Planes[Workers.Workers[c].PlaneId].Salden[0] -= (Workers.Workers[c].Gehalt / 30);
                 }
             }
         }
 
         if (Money != 0) {
-            ChangeMoney(-Money / 30, 2070, "");
+            ChangeMoney(-Money, 2070, "");
         }
     }
 }
@@ -1840,6 +1840,8 @@ void PLAYER::NewDay() {
     if (Tax != 0) {
         ChangeMoney(-Tax, 3600, "");
     }
+
+    NetUpdateWorkers();
 }
 
 //--------------------------------------------------------------------------------------------
@@ -6573,7 +6575,6 @@ void PLAYER::SackWorkers() {
 void PLAYER::UpdateStatistics() {
     SLONG c = 0;
     SLONG d = 0;
-    SLONG e = 0;
     __int64 value = 0;
 
     // STAT_KONTO:
@@ -6648,14 +6649,15 @@ void PLAYER::UpdateStatistics() {
     // STAT_SABOTIERT: in Sim::NewDay()
 
     // STAT_MITARBEITER:
-    if (Owner == 0 || (Owner == 1 && !RobotUse(ROBOT_USE_FAKE_PERSONAL))) {
+    bool hostOrNoNetwork = (Sim.bIsHost != 0) || (Sim.bNetwork == 0);
+    if (Owner == 0 || (Owner == 1 && hostOrNoNetwork && !RobotUse(ROBOT_USE_FAKE_PERSONAL))) {
         for (c = d = 0; c < Workers.Workers.AnzEntries(); c++) {
             if (Workers.Workers[c].Employer == PlayerNum) {
                 d++;
             }
         }
         Statistiken[STAT_MITARBEITER].SetAtPastDay(d);
-    } else if (Owner == 1) {
+    } else if (Owner == 1 && hostOrNoNetwork) {
         for (c = d = 0; c < Planes.AnzEntries(); c++) {
             if (Planes.IsInAlbum(c) != 0) {
                 // d+=PlaneTypes[Planes[c].TypeId].AnzPiloten;
@@ -6669,7 +6671,7 @@ void PLAYER::UpdateStatistics() {
     // Owner==2 über Network
 
     // STAT_ZUFR_PERSONAL:
-    if (Owner == 0 || (Owner == 1 && !RobotUse(ROBOT_USE_FAKE_PERSONAL))) {
+    if (Owner == 0 || (Owner == 1 && hostOrNoNetwork && !RobotUse(ROBOT_USE_FAKE_PERSONAL))) {
         SLONG Anz = 0;
 
         for (c = d = 0; c < Workers.Workers.AnzEntries(); c++) {
@@ -6685,7 +6687,7 @@ void PLAYER::UpdateStatistics() {
         } else {
             Statistiken[STAT_ZUFR_PERSONAL].SetAtPastDay(0);
         }
-    } else if (Owner == 1) {
+    } else if (Owner == 1 && hostOrNoNetwork) {
         c = SLONG(Statistiken[STAT_MITARBEITER].GetAtPastDay(0));
 
         c = c * (min(500, Image) + 2500) / 3000;
@@ -6805,7 +6807,8 @@ void PLAYER::UpdateStatistics() {
         }
         Statistiken[STAT_GEHALT].SetAtPastDay(-d);
         */
-    } else if (Owner == 1 && RobotUse(ROBOT_USE_FAKE_PERSONAL)) {
+    } else if (Owner == 1 && RobotUse(ROBOT_USE_FAKE_PERSONAL) && hostOrNoNetwork) {
+        /*
         e = 0;
         SLONG NumIgnore = PlayerNum * 2;
 
@@ -6851,6 +6854,7 @@ void PLAYER::UpdateStatistics() {
         }
 
         Statistiken[STAT_GEHALT].SetAtPastDay(-(e + e / 4));
+        */
     }
 
     // STAT_BEKANNTHEIT:

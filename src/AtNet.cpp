@@ -1949,7 +1949,7 @@ void PumpNetwork() {
 
                 Message >> playerId >> gehalt;
 
-                Sim.Players.Players[playerId].Statistiken[STAT_GEHALT].SetAtPastDay(-gehalt);
+                Sim.Players.Players[playerId].Statistiken[STAT_GEHALT].SetAtPastDay(gehalt);
             } break;
 
             case ATNET_SYNCNUMFLUEGE: {
