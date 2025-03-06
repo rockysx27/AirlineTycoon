@@ -2272,7 +2272,6 @@ class PLAYER {
     bool RobotUse(SLONG FeatureId) const;
 
   public: // Network-Sachen:
-    static SLONG NetSynchronizeGetNum(void);
     static void NetSynchronizeImage(void);
     static void NetSynchronizeMoney(void);
     static void NetSynchronizeRoutes(void);

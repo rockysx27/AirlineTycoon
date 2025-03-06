@@ -9,24 +9,31 @@
 
 extern bool bgIsLoadingSavegame;
 
+inline bool needToSyncPlayer(const PLAYER &qPlayer, bool onlyBots) {
+    if (qPlayer.IsOut != 0) {
+        return false;
+    }
+    if (qPlayer.Owner == 0 && !onlyBots) {
+        return true;
+    }
+    if ((Sim.bIsHost != 0) && qPlayer.Owner == 1) {
+        return true;
+    }
+    return false;
+}
+
 //--------------------------------------------------------------------------------------------
 // Returns the number of players on which this computer will send information:
 //--------------------------------------------------------------------------------------------
-SLONG PLAYER::NetSynchronizeGetNum() {
-    if (Sim.bIsHost != 0) {
-        SLONG c = 0;
-        SLONG n = 0;
-
-        n = 1;
-        for (c = 0; c < 4; c++) {
-            if (Sim.Players.Players[c].Owner == 1 && (Sim.Players.Players[c].IsOut == 0)) {
-                n++;
-            }
+inline SLONG NetSynchronizeGetNum(bool onlyBots) {
+    SLONG n = 0;
+    for (SLONG c = 0; c < 4; c++) {
+        PLAYER &qPlayer = Sim.Players.Players[c];
+        if (needToSyncPlayer(qPlayer, onlyBots)) {
+            n++;
         }
-
-        return (n);
     }
-    return (1);
+    return (n);
 }
 
 //--------------------------------------------------------------------------------------------
@@ -38,13 +45,13 @@ void PLAYER::NetSynchronizeImage() {
 
     Message.Announce(1024);
 
-    Message << ATNET_SYNC_IMAGE << NetSynchronizeGetNum();
+    Message << ATNET_SYNC_IMAGE << NetSynchronizeGetNum(false);
 
     // Für den lokalen Spieler und (wenn dies der Server ist) auch für Computerspieler:
     for (c = 0; c < 4; c++) {
         PLAYER &qPlayer = Sim.Players.Players[c];
 
-        if (qPlayer.Owner == 0 || ((Sim.bIsHost != 0) && qPlayer.Owner == 1 && (qPlayer.IsOut == 0))) {
+        if (needToSyncPlayer(qPlayer, false)) {
             SLONG d = 0;
 
             Message << c << qPlayer.Image << qPlayer.ImageGotWorse;
@@ -74,13 +81,13 @@ void PLAYER::NetSynchronizeMoney() {
 
     Message.Announce(256);
 
-    Message << ATNET_SYNC_MONEY << NetSynchronizeGetNum();
+    Message << ATNET_SYNC_MONEY << NetSynchronizeGetNum(false);
 
     // Für den lokalen Spieler und (wenn dies der Server ist) auch für Computerspieler:
     for (c = 0; c < 4; c++) {
         PLAYER &qPlayer = Sim.Players.Players[c];
 
-        if (qPlayer.Owner == 0 || ((Sim.bIsHost != 0) && qPlayer.Owner == 1 && (qPlayer.IsOut == 0))) {
+        if (needToSyncPlayer(qPlayer, false)) {
             SLONG d = 0;
 
             Message << c;
@@ -109,13 +116,13 @@ void PLAYER::NetSynchronizeRoutes() {
 
     Message.Announce(1024);
 
-    Message << ATNET_SYNC_ROUTES << NetSynchronizeGetNum();
+    Message << ATNET_SYNC_ROUTES << NetSynchronizeGetNum(false);
 
     // Für den lokalen Spieler und (wenn dies der Server ist) auch für Computerspieler:
     for (c = 0; c < 4; c++) {
         PLAYER &qPlayer = Sim.Players.Players[c];
 
-        if (qPlayer.Owner == 0 || ((Sim.bIsHost != 0) && qPlayer.Owner == 1 && (qPlayer.IsOut == 0))) {
+        if (needToSyncPlayer(qPlayer, false)) {
             Message << c;
 
             for (SLONG d = Routen.AnzEntries() - 1; d >= 0; d--) {
@@ -146,13 +153,13 @@ void PLAYER::NetSynchronizeFlags() {
 
     Message.Announce(64);
 
-    Message << ATNET_SYNC_FLAGS << NetSynchronizeGetNum();
+    Message << ATNET_SYNC_FLAGS << NetSynchronizeGetNum(false);
 
     // Für den lokalen Spieler und (wenn dies der Server ist) auch für Computerspieler:
     for (c = 0; c < 4; c++) {
         PLAYER &qPlayer = Sim.Players.Players[c];
 
-        if (qPlayer.Owner == 0 || ((Sim.bIsHost != 0) && qPlayer.Owner == 1 && (qPlayer.IsOut == 0))) {
+        if (needToSyncPlayer(qPlayer, false)) {
             Message << c;
 
             Message << qPlayer.SickTokay << qPlayer.RunningToToilet << qPlayer.PlayerSmoking << qPlayer.Stunned << qPlayer.OfficeState << qPlayer.Koffein
@@ -173,13 +180,13 @@ void PLAYER::NetSynchronizeItems() {
 
     Message.Announce(64);
 
-    Message << ATNET_SYNC_ITEMS << NetSynchronizeGetNum();
+    Message << ATNET_SYNC_ITEMS << NetSynchronizeGetNum(false);
 
     // Für den lokalen Spieler und (wenn dies der Server ist) auch für Computerspieler:
     for (c = 0; c < 4; c++) {
         PLAYER &qPlayer = Sim.Players.Players[c];
 
-        if (qPlayer.Owner == 0 || ((Sim.bIsHost != 0) && qPlayer.Owner == 1 && (qPlayer.IsOut == 0))) {
+        if (needToSyncPlayer(qPlayer, false)) {
             Message << c;
 
             for (SLONG d = 0; d < 6; d++) {
@@ -201,22 +208,13 @@ void PLAYER::NetSynchronizePlanes() {
 
         Message.Announce(1024);
 
-        SLONG count = 0;
+        Message << ATNET_SYNC_PLANES << NetSynchronizeGetNum(true);
+
+        // Wenn dies der Server ist für alle Computerspieler:
         for (c = 0; c < 4; c++) {
             PLAYER &qPlayer = Sim.Players.Players[c];
 
-            if (qPlayer.Owner == 1 && (qPlayer.IsOut == 0)) {
-                count++;
-            }
-        }
-
-        Message << ATNET_SYNC_PLANES << count;
-
-        // Wwenn dies der Server ist für alle Computerspieler:
-        for (c = 0; c < 4; c++) {
-            PLAYER &qPlayer = Sim.Players.Players[c];
-
-            if (qPlayer.Owner == 1 && (qPlayer.IsOut == 0)) {
+            if (needToSyncPlayer(qPlayer, true)) {
                 Message << c;
                 Message << qPlayer.Planes << qPlayer.Auftraege << qPlayer.Frachten << qPlayer.RentCities;
             }
@@ -235,22 +233,13 @@ void PLAYER::NetSynchronizeMeeting() {
 
     Message.Announce(64);
 
-    SLONG count = 0;
-    for (c = 0; c < 4; c++) {
-        PLAYER &qPlayer = Sim.Players.Players[c];
-
-        if ((((Sim.bIsHost != 0) && qPlayer.Owner == 1) || qPlayer.Owner == 0) && (qPlayer.IsOut == 0)) {
-            count++;
-        }
-    }
-
-    Message << ATNET_SYNC_MEETING << count;
+    Message << ATNET_SYNC_MEETING << NetSynchronizeGetNum(false);
 
     // Wenn dies der Server ist für alle Computerspieler:
     for (c = 0; c < 4; c++) {
         PLAYER &qPlayer = Sim.Players.Players[c];
 
-        if ((((Sim.bIsHost != 0) && qPlayer.Owner == 1) || qPlayer.Owner == 0) && (qPlayer.IsOut == 0)) {
+        if (needToSyncPlayer(qPlayer, false)) {
             Message << c;
             Message << qPlayer.ArabTrust << qPlayer.ArabMode << qPlayer.ArabMode2 << qPlayer.ArabMode3 << qPlayer.ArabActive;
             Message << qPlayer.ArabOpfer << qPlayer.ArabOpfer2 << qPlayer.ArabOpfer3 << qPlayer.ArabPlane << qPlayer.ArabHints;
