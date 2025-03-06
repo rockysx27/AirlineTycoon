@@ -117,6 +117,7 @@ extern "C"
 
     int
     main(int argc, char *argv[]) {
+
 #ifdef SENTRY
     const bool disableSentry = DoesFileExist("no-sentry");
 
@@ -158,37 +159,25 @@ extern "C"
 
         sentry_set_tag("Crash ID", std::to_string(crashId).c_str());
     }
-#endif
 
-#ifdef TEST
-    if (!run_regression()) {
-        hprintf("Regression test failed!");
-        return 1;
+    theApp.InitInstance(argc, argv);
+
+    if (!disableSentry) {
+        sentry_close();
     }
-    {
-        TEAKRAND rnd;
-        hprintf("Rnd: %u %u %u %u %u", rnd.Rand(), rnd.Rand(), rnd.Rand(), rnd.Rand(), rnd.Rand());
-    }
-    for (int seed = 0; seed < 10; seed++) {
-        TEAKRAND rnd(seed);
-        hprintf("Rnd(%d): %u %u %u %u %u", seed, rnd.Rand(), rnd.Rand(), rnd.Rand(), rnd.Rand(), rnd.Rand());
-    }
-#endif
-#ifndef SENTRY
+#else
+
+#ifdef _DEBUG
+    theApp.InitInstance(argc, argv);
+#else
     try {
         theApp.InitInstance(argc, argv);
     } catch (TeakLibException &e) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "AT - Exception", e.what(), nullptr);
         throw;
     }
-#else
-    theApp.InitInstance(argc, argv);
 #endif
 
-#ifdef SENTRY
-    if (!disableSentry) {
-        sentry_close();
-    }
 #endif
 
     return 0;
