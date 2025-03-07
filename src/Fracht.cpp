@@ -55,9 +55,6 @@ CFrachtRaum::CFrachtRaum(BOOL bHandy, ULONG PlayerNum) : CStdRaum(bHandy, Player
     }
     DefaultDialogPartner = TALKER_FRACHT;
 
-    Sim.NetRefill(3);
-    gFrachten.Refill();
-
     SP_Fracht.ReSize(13);
     SP_Fracht.Clips[0].ReSize(0, "fm1a.smk", "", XY(485, 50), SPM_IDLE, CRepeat(1, 1), CPostWait(0, 20), SMACKER_CLIP_DONTCANCEL, nullptr, SMACKER_CLIP_SET, 0,
                               &KommVar, // Warten
@@ -173,9 +170,6 @@ CFrachtRaum::~CFrachtRaum() {
     if ((pMenuLib != nullptr) && (pGfxMain != nullptr)) {
         pGfxMain->ReleaseLib(pMenuLib);
     }
-
-    Sim.NetRefill(3);
-    gFrachten.Refill();
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -511,6 +505,9 @@ void CFracht::RandomCities(SLONG AreaType, SLONG HomeCity, TEAKRAND *pRand) {
 void CFracht::RefillForBegin(SLONG AreaType, TEAKRAND *pRand) {
     SLONG TimeOut = 0;
 
+    NetGenericSync(10000, AreaType);
+    NetGenericSync(10001, pRand->GetSeed());
+
     InPlan = 0;
     Okay = 1;
 
@@ -610,6 +607,9 @@ too_large:
 //--------------------------------------------------------------------------------------------
 void CFracht::Refill(SLONG AreaType, TEAKRAND *pRnd) {
     SLONG TimeOut = 0;
+
+    NetGenericSync(11000, AreaType);
+    NetGenericSync(11001, pRnd->GetSeed());
 
     InPlan = 0;
     Okay = 1;
@@ -792,6 +792,10 @@ void CFrachten::Fill() {
 void CFrachten::Refill(SLONG Minimum) {
     SLONG Anz = min(AnzEntries(), Sim.TickFrachtRefill);
 
+    NetGenericSync(12000, Minimum);
+    NetGenericSync(12001, Sim.TickFrachtRefill);
+    NetGenericSync(12002, Random.GetSeed());
+
     CalcPlayerMaximums();
 
     ReSize(6);
@@ -820,7 +824,7 @@ void CFrachten::Refill(SLONG Minimum) {
         if (Anz <= 0) {
             break;
         }
-        if (f.Praemie != -1) {
+        if (f.Praemie >= 0) {
             Minimum--;
         }
     }
@@ -978,6 +982,10 @@ void PLAYER::CheckAuftragsBerater(const CFracht &Fracht) {
 void CFracht::RefillForAusland(SLONG AreaType, SLONG CityNum, TEAKRAND *pRandom) {
     SLONG TimeOut = 0;
 
+    NetGenericSync(13000, AreaType);
+    NetGenericSync(13001, CityNum);
+    NetGenericSync(13002, pRandom->GetSeed());
+
     InPlan = 0;
     Okay = 1;
 
@@ -1112,6 +1120,10 @@ too_large:
 void CFrachten::RefillForAusland(SLONG CityNum, SLONG Minimum) {
     SLONG Anz = min(AnzEntries(), AuslandsFRefill[CityNum]);
 
+    NetGenericSync(14000, CityNum);
+    NetGenericSync(14001, Minimum);
+    NetGenericSync(14002, Random.GetSeed());
+
     CalcPlayerMaximums();
 
     ReSize(6);
@@ -1122,7 +1134,7 @@ void CFrachten::RefillForAusland(SLONG CityNum, SLONG Minimum) {
         if (Anz <= 0) {
             break;
         }
-        if (f.Praemie <= 0) {
+        if (f.Praemie < 0) {
             if (Sim.Date < 5 && c < 5) {
                 f.RefillForAusland(4, CityNum, &Random);
             } else if (Sim.Date < 10 && c < 3) {
@@ -1140,7 +1152,7 @@ void CFrachten::RefillForAusland(SLONG CityNum, SLONG Minimum) {
         if (Anz <= 0) {
             break;
         }
-        if (f.Praemie != 0) {
+        if (f.Praemie >= 0) {
             Minimum--;
         }
     }
@@ -1150,7 +1162,7 @@ void CFrachten::RefillForAusland(SLONG CityNum, SLONG Minimum) {
         if (Anz <= 0) {
             break;
         }
-        if (f.Praemie <= 0 && Minimum > 0) {
+        if (f.Praemie < 0 && Minimum > 0) {
             if (Sim.Date < 5 && c < 5) {
                 f.RefillForAusland(4, CityNum, &Random);
             } else if (Sim.Date < 10 && c < 3) {

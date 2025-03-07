@@ -127,6 +127,8 @@ class GameMechanic {
     static bool clearFlightPlan(PLAYER &qPlayer, SLONG planeId);
     static bool clearFlightPlanFrom(PLAYER &qPlayer, SLONG planeId, SLONG date, SLONG hours);
     static bool refillFlightJobs(SLONG cityNum, SLONG minimum = 0);
+    static bool flightJobsInitialFill();
+    static bool flightJobsRefill();
     static bool planFlightJob(PLAYER &qPlayer, SLONG planeID, SLONG objectID, SLONG date, SLONG time);
     static bool planFreightJob(PLAYER &qPlayer, SLONG planeID, SLONG objectID, SLONG date, SLONG time);
     static bool planRouteJob(PLAYER &qPlayer, SLONG planeID, SLONG objectID, SLONG date, SLONG time);

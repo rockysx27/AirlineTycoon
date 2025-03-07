@@ -286,8 +286,8 @@ void CAuftrag::RandomCities(SLONG AreaType, SLONG HomeCity, TEAKRAND *pRandom) {
 void CAuftrag::RefillForLastMinute(SLONG AreaType, TEAKRAND *pRandom) {
     SLONG TimeOut = 0;
 
-    // NetGenericSync (2000, AreaType);
-    // NetGenericSync (2001, pRandom->GetSeed());
+    NetGenericSync(2000, AreaType);
+    NetGenericSync(2001, pRandom->GetSeed());
 
 too_large:
     RandomCities(AreaType, Sim.HomeAirportId, pRandom);
@@ -379,8 +379,8 @@ too_large:
 void CAuftrag::RefillForReisebuero(SLONG AreaType, TEAKRAND *pRandom) {
     SLONG TimeOut = 0;
 
-    // NetGenericSync (3000, AreaType);
-    // NetGenericSync (3001, pRandom->GetSeed());
+    NetGenericSync(3000, AreaType);
+    NetGenericSync(3001, pRandom->GetSeed());
 
 too_large:
     RandomCities(AreaType, Sim.HomeAirportId, pRandom);
@@ -480,8 +480,8 @@ too_large:
 void CAuftrag::RefillForBegin(SLONG AreaType, TEAKRAND *pRandom) {
     SLONG TimeOut = 0;
 
-    // NetGenericSync (4000, AreaType);
-    // NetGenericSync (4001, pRandom->GetSeed());
+    NetGenericSync(4000, AreaType);
+    NetGenericSync(4001, pRandom->GetSeed());
 
 too_large:
     do {
@@ -558,8 +558,8 @@ too_large:
 void CAuftrag::RefillForUhrig(SLONG AreaType, TEAKRAND *pRandom) {
     SLONG TimeOut = 0;
 
-    // NetGenericSync (5000, AreaType);
-    // NetGenericSync (5001, pRandom->GetSeed());
+    NetGenericSync(5000, AreaType);
+    NetGenericSync(5001, pRandom->GetSeed());
 
 too_large:
     RandomCities(AreaType, Sim.HomeAirportId, pRandom);
@@ -659,6 +659,10 @@ too_large:
 //--------------------------------------------------------------------------------------------
 void CAuftrag::RefillForAusland(SLONG AreaType, SLONG CityNum, TEAKRAND *pRandom) {
     SLONG TimeOut = 0;
+
+    NetGenericSync(6000, AreaType);
+    NetGenericSync(6001, CityNum);
+    NetGenericSync(6002, pRandom->GetSeed());
 
     TEAKRAND localRand;
     localRand.SRand(pRandom->Rand());
@@ -855,7 +859,7 @@ void CAuftraege::FillForLastMinute() {
 
     if (Sim.Difficulty == DIFF_ATFS10 && Sim.Date >= 20 && Sim.Date <= 30) {
         for (auto &a : *this) {
-            a.Praemie = 0;
+            a.Praemie = -1;
         }
     }
 }
@@ -880,7 +884,7 @@ void CAuftraege::RefillForLastMinute(SLONG Minimum) {
         if (Anz <= 0) {
             break;
         }
-        if (a.Praemie == 0) {
+        if (a.Praemie < 0) {
             a.RefillForLastMinute(c / 2, &Random);
             Anz--;
         }
@@ -891,7 +895,7 @@ void CAuftraege::RefillForLastMinute(SLONG Minimum) {
         if (Anz <= 0) {
             break;
         }
-        if (a.Praemie != 0) {
+        if (a.Praemie >= 0) {
             Minimum--;
         }
     }
@@ -901,7 +905,7 @@ void CAuftraege::RefillForLastMinute(SLONG Minimum) {
         if (Anz <= 0) {
             break;
         }
-        if (a.Praemie == 0 && Minimum > 0) {
+        if (a.Praemie < 0 && Minimum > 0) {
             a.RefillForLastMinute(c / 2, &Random);
             Minimum--;
         }
@@ -912,7 +916,7 @@ void CAuftraege::RefillForLastMinute(SLONG Minimum) {
 
     if (Sim.Difficulty == DIFF_ATFS10 && Sim.Date >= 20 && Sim.Date <= 30) {
         for (auto &a : *this) {
-            a.Praemie = 0;
+            a.Praemie = -1;
         }
     }
 }
@@ -941,7 +945,7 @@ void CAuftraege::FillForReisebuero() {
 
     if (Sim.Difficulty == DIFF_ATFS10 && Sim.Date >= 20 && Sim.Date <= 30) {
         for (auto &a : *this) {
-            a.Praemie = 0;
+            a.Praemie = -1;
         }
     }
 }
@@ -952,8 +956,9 @@ void CAuftraege::FillForReisebuero() {
 void CAuftraege::RefillForReisebuero(SLONG Minimum) {
     SLONG Anz = min(AnzEntries(), Sim.TickReisebueroRefill);
 
-    // NetGenericSync (8000, Minimum);
-    // NetGenericSync (8001, Random.GetSeed());
+    NetGenericSync(8000, Minimum);
+    NetGenericSync(8001, Sim.TickReisebueroRefill);
+    NetGenericSync(8002, Random.GetSeed());
 
     CalcPlayerMaximums();
 
@@ -965,7 +970,7 @@ void CAuftraege::RefillForReisebuero(SLONG Minimum) {
         if (Anz <= 0) {
             break;
         }
-        if (a.Praemie == 0) {
+        if (a.Praemie < 0) {
             if (Sim.Date < 5 && c < 5) {
                 a.RefillForAusland(4, Sim.HomeAirportId, &Random);
             } else if (Sim.Date < 10 && c < 3) {
@@ -983,7 +988,7 @@ void CAuftraege::RefillForReisebuero(SLONG Minimum) {
         if (Anz <= 0) {
             break;
         }
-        if (a.Praemie != 0) {
+        if (a.Praemie >= 0) {
             Minimum--;
         }
     }
@@ -993,7 +998,7 @@ void CAuftraege::RefillForReisebuero(SLONG Minimum) {
         if (Anz <= 0) {
             break;
         }
-        if (a.Praemie == 0 && Minimum > 0) {
+        if (a.Praemie < 0 && Minimum > 0) {
             if (Sim.Date < 5 && c < 5) {
                 a.RefillForAusland(4, Sim.HomeAirportId, &Random);
             } else if (Sim.Date < 10 && c < 3) {
@@ -1011,7 +1016,7 @@ void CAuftraege::RefillForReisebuero(SLONG Minimum) {
 
     if (Sim.Difficulty == DIFF_ATFS10 && Sim.Date >= 20 && Sim.Date <= 30) {
         for (auto &a : *this) {
-            a.Praemie = 0;
+            a.Praemie = -1;
         }
     }
 }
@@ -1045,6 +1050,10 @@ void CAuftraege::FillForAusland(SLONG CityNum) {
 void CAuftraege::RefillForAusland(SLONG CityNum, SLONG Minimum) {
     SLONG Anz = min(AnzEntries(), AuslandsRefill[CityNum]);
 
+    NetGenericSync(9000, CityNum);
+    NetGenericSync(9001, Minimum);
+    NetGenericSync(9002, Random.GetSeed());
+
     CalcPlayerMaximums();
 
     ReSize(6);
@@ -1055,7 +1064,7 @@ void CAuftraege::RefillForAusland(SLONG CityNum, SLONG Minimum) {
         if (Anz <= 0) {
             break;
         }
-        if (a.Praemie == 0) {
+        if (a.Praemie < 0) {
             if (Sim.Date < 5 && c < 5) {
                 a.RefillForAusland(4, CityNum, &Random);
             } else if (Sim.Date < 10 && c < 3) {
@@ -1073,7 +1082,7 @@ void CAuftraege::RefillForAusland(SLONG CityNum, SLONG Minimum) {
         if (Anz <= 0) {
             break;
         }
-        if (a.Praemie != 0) {
+        if (a.Praemie >= 0) {
             Minimum--;
         }
     }
@@ -1083,7 +1092,7 @@ void CAuftraege::RefillForAusland(SLONG CityNum, SLONG Minimum) {
         if (Anz <= 0) {
             break;
         }
-        if (a.Praemie == 0 && Minimum > 0) {
+        if (a.Praemie < 0 && Minimum > 0) {
             if (Sim.Date < 5 && c < 5) {
                 a.RefillForAusland(4, CityNum, &Random);
             } else if (Sim.Date < 10 && c < 3) {

@@ -3980,9 +3980,6 @@ void CStdRaum::MenuStart(SLONG MenuType, SLONG MenuPar1, SLONG MenuPar2, SLONG M
         break;
 
     case MENU_AUSLANDSAUFTRAG:
-        Sim.NetRefill(4, MenuPar1);
-        Sim.NetRefill(5, MenuPar1);
-        GameMechanic::refillFlightJobs(MenuPar1);
         pGfxMain->LoadLib(const_cast<char *>((LPCTSTR)FullFilename("listauft.gli", GliPath)), &pMenuLib1, L_LOCMEM);
         MenuBms.ReSize(pMenuLib1, "BLOCK LEFT RIGHT");
         MenuBms2.ReSize(5);

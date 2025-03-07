@@ -40,8 +40,6 @@ CLastMinute::CLastMinute(BOOL bHandy, ULONG PlayerNum) : CStdRaum(bHandy, Player
     if (bHandy == 0) {
         AmbientManager.SetGlobalVolume(60);
     }
-    Sim.NetRefill(1);
-    LastMinuteAuftraege.RefillForLastMinute();
 
     MoveKran = 0;
     NewKranDir = -1;
@@ -131,9 +129,6 @@ CLastMinute::~CLastMinute() {
     }
 
     Sim.Players.Players[PlayerNum].Messages.AddMessage(BERATERTYP_AUFTRAG, "", MESSAGE_COMMENT);
-
-    Sim.NetRefill(1);
-    LastMinuteAuftraege.RefillForLastMinute();
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////

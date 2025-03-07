@@ -904,8 +904,6 @@ void PumpNetwork() {
                 for (c = 0; c < qPlayer.RobotActions.AnzEntries(); c++) {
                     Message >> qPlayer.RobotActions[c];
                 }
-                AT_Log("%s Received NetSyncRobot: qPlayer.WaitWorkTill = %d, qPlayer.WaitWorkTill2 = %d", qPlayer.AirlineX.c_str(), qPlayer.WaitWorkTill,
-                       qPlayer.WaitWorkTill2);
             } break;
 
                 //--------------------------------------------------------------------------------------------
@@ -2036,20 +2034,25 @@ void NetGenericSync(SLONG SyncId) {
 // Kehrt erst zurück, wenn die anderen Spieler hier auch waren:
 // Gibt Warnung aus, falls die Parameter unterschiedlich waren.
 //--------------------------------------------------------------------------------------------
-#ifdef _DEBUG2
+#ifdef _DEBUG
 void NetGenericSync(SLONG SyncId, SLONG Par) {
     static bool bReentrant = false;
 
-    if (bReentrant)
+    if (bReentrant) {
         return;
-    if (!Sim.bNetwork)
+    }
+    if (!Sim.bNetwork) {
         return;
-    if (Sim.localPlayer < 0 || Sim.localPlayer > 3)
+    }
+    if (Sim.localPlayer < 0 || Sim.localPlayer > 3) {
         return;
-    if (Sim.Players.Players[Sim.localPlayer].Owner == 1)
+    }
+    if (Sim.Players.Players[Sim.localPlayer].Owner == 1) {
         return;
-    if (Sim.Time == 9 * 60000)
+    }
+    if (Sim.Time == 9 * 60000) {
         return;
+    }
 
     bReentrant = true;
 
@@ -2060,20 +2063,24 @@ void NetGenericSync(SLONG SyncId, SLONG Par) {
 
     while (1) {
         SLONG c = 0;
-        for (; c < 4; c++)
-            if (Sim.Players.Players[c].Owner != 1 && GenericSyncIds[c] != SyncId && !Sim.Players.Players[c].IsOut)
+        for (; c < 4; c++) {
+            if (Sim.Players.Players[c].Owner != 1 && GenericSyncIds[c] != SyncId && !Sim.Players.Players[c].IsOut) {
                 break;
+            }
+        }
 
         if (c == 4) {
-            for (c = 0; c < 4; c++)
+            for (c = 0; c < 4; c++) {
                 if (Sim.Players.Players[c].Owner != 1 && !Sim.Players.Players[c].IsOut && GenericSyncIdPars[c] != Par) {
                     DisplayBroadcastMessage(bprintf("NetGenericSync (%li): %li vs. %li\n", SyncId, Par, GenericSyncIdPars[c]));
                     AT_Log_I("AtNet", "Desync detected Id(%li): %li vs. %li\n", SyncId, Par, GenericSyncIdPars[c]);
-                    DebugBreak();
+                    // DebugBreak();
                 }
+            }
 
-            for (c = 0; c < 4; c++)
+            for (c = 0; c < 4; c++) {
                 GenericSyncIds[c] = 0;
+            }
 
             bReentrant = false;
             return;
@@ -2090,16 +2097,20 @@ void NetGenericSync(SLONG /*SyncId*/, SLONG /*Par*/) {}
 // Kehrt erst zurück, wenn die anderen Spieler hier auch waren:
 // Gibt Warnung aus, falls die Parameter unterschiedlich waren.
 //--------------------------------------------------------------------------------------------
-#ifdef _DEBUG2
+#ifdef _DEBUG
 void NetGenericAsync(SLONG SyncId, SLONG Par, SLONG player) {
-    if (!Sim.bNetwork)
+    if (!Sim.bNetwork) {
         return;
-    if (Sim.localPlayer < 0 || Sim.localPlayer > 3)
+    }
+    if (Sim.localPlayer < 0 || Sim.localPlayer > 3) {
         return;
-    if (Sim.Players.Players[Sim.localPlayer].Owner == 1)
+    }
+    if (Sim.Players.Players[Sim.localPlayer].Owner == 1) {
         return;
-    if (Sim.Time == 9 * 60000)
+    }
+    if (Sim.Time == 9 * 60000) {
         return;
+    }
 
     if (player == -1) {
         Sim.SendSimpleMessage(ATNET_GENERICASYNC, 0, Sim.localPlayer, SyncId, Par); // Requesting Sync
@@ -2109,15 +2120,19 @@ void NetGenericAsync(SLONG SyncId, SLONG Par, SLONG player) {
     SLONG d;
 
     // Gibt es den Eintrag schon?
-    for (d = 0; d < 400; d++)
-        if (GenericAsyncIds[d] == SyncId)
+    for (d = 0; d < 400; d++) {
+        if (GenericAsyncIds[d] == SyncId) {
             break;
+        }
+    }
 
     // Eventuell müssen wir einen Leereintrag suchen:
     if (d == 400) {
-        for (d = 0; d < 400; d += 4)
-            if (GenericAsyncIds[d] == 0 && GenericAsyncIds[d + 1] == 0 && GenericAsyncIds[d + 2] == 0 && GenericAsyncIds[d + 3] == 0)
+        for (d = 0; d < 400; d += 4) {
+            if (GenericAsyncIds[d] == 0 && GenericAsyncIds[d + 1] == 0 && GenericAsyncIds[d + 2] == 0 && GenericAsyncIds[d + 3] == 0) {
                 break;
+            }
+        }
 
         if (d == 400) {
             DisplayBroadcastMessage("NetGenericAsync overflow\n");
@@ -2130,20 +2145,24 @@ void NetGenericAsync(SLONG SyncId, SLONG Par, SLONG player) {
     GenericAsyncIdPars[d + player] = Par;
 
     SLONG c = 0;
-    for (; c < 4; c++)
-        if (Sim.Players.Players[c].Owner != 1 && GenericAsyncIds[d + c] != SyncId && !Sim.Players.Players[c].IsOut)
+    for (; c < 4; c++) {
+        if (Sim.Players.Players[c].Owner != 1 && GenericAsyncIds[d + c] != SyncId && !Sim.Players.Players[c].IsOut) {
             break;
+        }
+    }
 
     if (c == 4) {
-        for (c = 0; c < 4; c++)
+        for (c = 0; c < 4; c++) {
             if (Sim.Players.Players[c].Owner != 1 && !Sim.Players.Players[c].IsOut && GenericAsyncIdPars[d + c] != Par) {
                 DisplayBroadcastMessage(bprintf("NetGenericAsync (%li): %li vs. %li\n", SyncId, Par, GenericAsyncIdPars[d + c]));
                 AT_Log_I("AtNet", "Desync detected Id(%li): %li vs. %li\n", SyncId, Par, GenericSyncIdPars[d + c]);
                 // DebugBreak();
             }
+        }
 
-        for (c = 0; c < 4; c++)
+        for (c = 0; c < 4; c++) {
             GenericAsyncIds[d + c] = 0;
+        }
     }
 }
 #else

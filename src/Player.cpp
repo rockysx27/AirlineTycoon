@@ -3298,6 +3298,7 @@ void PLAYER::RobotPlan() {
 
     if (IsSuperBot()) {
         mBot->RobotPlan();
+        PLAYER::NetSyncRobot(WaitWorkTill, WaitWorkTill2);
         return;
     }
 
@@ -3504,6 +3505,7 @@ void PLAYER::RobotPlan() {
             }
         }
     }
+    PLAYER::NetSyncRobot(WaitWorkTill, WaitWorkTill2);
 }
 
 //--------------------------------------------------------------------------------------------
@@ -3841,8 +3843,6 @@ void PLAYER::RobotExecuteAction() {
         return; // War Irtum, kein Computerspieler
     }
 
-    AT_Log("%s RobotExecuteAction(): WaitWorkTill = %d, WaitWorkTill2 = %d", AirlineX.c_str(), WaitWorkTill, WaitWorkTill2);
-
     TEAKRAND LocalRandom;
     LocalRandom.SRand(WaitWorkTill);
 
@@ -3869,11 +3869,6 @@ void PLAYER::RobotExecuteAction() {
                             Sim.Players.Players[c].bReadyForMorning = 0;
                         }
                     }
-                    return;
-                }
-            } else {
-                // Für Synchronität zwischen Host und Client
-                if (!(Sim.CallItADay == 1)) {
                     return;
                 }
             }
@@ -3906,20 +3901,9 @@ void PLAYER::RobotExecuteAction() {
         LocalRandom.SRand(time(nullptr));
     }
 
-    // Manchmal führt der Client Sachen doppelt aus. Seltsam aber wahr. Hiermit wird's verhindert:
-    {
-        static SLONG LastActionId;
-        static ULONG LastTime;
-        static ULONG UniqueGameId;
-
-        if (Sim.Time == LastTime && RobotActions[0].ActionId == LastActionId && UniqueGameId == Sim.UniqueGameId) {
-            RobotActions[0].ActionId = ACTION_NONE;
-            return;
-        }
-
-        LastTime = Sim.Time;
-        LastActionId = RobotActions[0].ActionId;
-        UniqueGameId = Sim.UniqueGameId;
+    if (Sim.bNetwork != 0 && Sim.bIsHost == 0) {
+        WaitWorkTill = -1;
+        return;
     }
 
     // NetGenericSync (100, LocalRandom.GetSeed());
@@ -3980,21 +3964,12 @@ void PLAYER::RobotExecuteAction() {
         RobotActions[RobotActions.AnzEntries() - 1].ActionId = ACTION_NONE;
     }
 
-    // Die exakte Zeit des Ausführens auf dem Server simulieren
-    SLONG RealLocalTime = Sim.Time;
-
     /*AT_Log("Player %li: Action: %s, %s at %li/%li\n", PlayerNum, Translate_ACTION(RobotActions[0].ActionId), Translate_ACTION(RobotActions[1].ActionId),
            WaitWorkTill, WaitWorkTill2);*/
     // NetGenericSync(770 + PlayerNum, RobotActions[0].ActionId);
     // NetGenericSync(740 + PlayerNum, RobotActions[1].ActionId);
 
-    if (Sim.bNetwork != 0 && Sim.bIsHost == 0) {
-        WaitWorkTill = -1;
-        return;
-    }
-
     if (Sim.bNetwork != 0) {
-        Sim.Time = WaitWorkTill2;
         WaitWorkTill = -1;
     }
 
@@ -4004,11 +3979,6 @@ void PLAYER::RobotExecuteAction() {
         Sim.Players.CheckFlighplans();
 
         RobotActions[0].ActionId = ACTION_NONE;
-
-        // Die exakte Zeit des Ausführens auf dem Server simulieren (Ende):
-        if (Sim.bNetwork != 0) {
-            Sim.Time = RealLocalTime;
-        }
 
         // NetGenericSync(680 + PlayerNum, RobotActions[0].ActionId);
         return;
@@ -4124,8 +4094,6 @@ void PLAYER::RobotExecuteAction() {
 
                 CAuftraege &qAuftraege = AuslandsAuftraege[n];
                 CFrachten &qFrachten = AuslandsFrachten[n];
-
-                GameMechanic::refillFlightJobs(n);
 
                 // Normale Aufträge:
                 for (c = 0; c < SLONG(Planes.AnzEntries()); c++) {
@@ -4974,10 +4942,6 @@ void PLAYER::RobotExecuteAction() {
         // Last-Minute
     case ACTION_CHECKAGENT1:
         if (DoRoutes == 0) {
-            LastMinuteAuftraege.RefillForLastMinute();
-
-            NetGenericAsync(17000 + Sim.Date * 100, PlayerNum, PlayerNum);
-            NetGenericAsync(17010 + Sim.Date * 100, Planes.AnzEntries(), PlayerNum);
             for (c = 0; c < SLONG(Planes.AnzEntries()); c++) {
                 if (Planes.IsInAlbum(c) == 0) {
                     continue;
@@ -5104,7 +5068,6 @@ void PLAYER::RobotExecuteAction() {
                     }
                 }
             }
-            LastMinuteAuftraege.RefillForLastMinute();
         }
         WorkCountdown = 20 * 7;
         TimeReiseburo = Sim.Time;
@@ -5113,7 +5076,6 @@ void PLAYER::RobotExecuteAction() {
         // Reisebüro:
     case ACTION_CHECKAGENT2:
         if (DoRoutes == 0) {
-            ReisebueroAuftraege.RefillForReisebuero();
             for (c = 0; c < SLONG(Planes.AnzEntries()); c++) {
                 if (Planes.IsInAlbum(c) == 0) {
                     continue;
@@ -5238,7 +5200,6 @@ void PLAYER::RobotExecuteAction() {
                     }
                 }
             }
-            ReisebueroAuftraege.RefillForReisebuero();
         }
         WorkCountdown = 20 * 7;
         TimeReiseburo = Sim.Time;
@@ -5256,7 +5217,6 @@ void PLAYER::RobotExecuteAction() {
                 Bewertungsbonus = 150000;
             }
 
-            gFrachten.Refill();
             for (c = 0; c < SLONG(Planes.AnzEntries()); c++) {
                 if (Planes.IsInAlbum(c) == 0) {
                     continue;
@@ -5404,7 +5364,6 @@ void PLAYER::RobotExecuteAction() {
                     }
                 }
             }
-            gFrachten.Refill();
         }
         WorkCountdown = 20 * 7;
         TimeReiseburo = Sim.Time;
@@ -5705,11 +5664,6 @@ void PLAYER::RobotExecuteAction() {
 
     RobotActions[0].ActionId = ACTION_NONE;
 
-    // Die exakte Zeit des Ausführens auf dem Server simulieren (Ende):
-    if (Sim.bNetwork != 0) {
-        Sim.Time = RealLocalTime;
-    }
-
     // NetGenericSync(680 + PlayerNum, RobotActions[0].ActionId);
 }
 
@@ -5940,7 +5894,6 @@ void PLAYER::RandomBeraterMessageJobs() {
         if (!GameMechanic::canCallInternational(*this, n)) {
             continue;
         }
-        GameMechanic::refillFlightJobs(n);
         cities.push_back(n);
     }
 

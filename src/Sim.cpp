@@ -631,7 +631,7 @@ void SIM::ChooseStartup() {
     DontDisplayPlayer = -1;
     ShowExtrablatt = -1;
 
-    TickReisebueroRefill = TickLastMinuteRefill = TickMuseumRefill = TickFrachtRefill = 6;
+    TickMuseumRefill = 6;
 
     // Bedarf der Leute initialisieren:
     Routen.NewDay();
@@ -1145,32 +1145,9 @@ void SIM::ChooseStartup() {
 
     // Aushänge für Versteigerungen, Aufträge, ..:
     TafelData.Randomize(2);
-    gFrachten.Random.SRand(Date);
-    LastMinuteAuftraege.Random.SRand(Date + 1);
-    ReisebueroAuftraege.Random.SRand(Date + 2);
-    if (bNetwork == 0) {
-        gFrachten.Random.SRand(AtGetTime());
-        LastMinuteAuftraege.Random.SRand(AtGetTime());
-        ReisebueroAuftraege.Random.SRand(AtGetTime());
-    }
-
-    gFrachten.Fill();
-    LastMinuteAuftraege.FillForLastMinute();
-    ReisebueroAuftraege.FillForReisebuero();
 
     DumpAASeedSum(1001);
-
-    for (c = 0; c < SLONG(Cities.AnzEntries()); c++) {
-        AuslandsRefill[c] = 6;
-        AuslandsAuftraege[c].Random.SRand(Date + c + 3);
-        AuslandsAuftraege[c].FillForAusland(c);
-        AuslandsRefill[c] = 6;
-
-        AuslandsFRefill[c] = 6;
-        AuslandsFrachten[c].Random.SRand(Date + c + 3);
-        AuslandsFrachten[c].FillForAusland(c);
-        AuslandsFRefill[c] = 6;
-    }
+    GameMechanic::flightJobsInitialFill();
 
     // Die Schlagzeilen der Zeitungen laden:
     Headlines.Init();
@@ -1359,10 +1336,10 @@ void SIM::DoTimeStep() {
         PersonRandMisc.SRand(Minute * 333 + GetHour() * 7);
 
         if ((Minute % 5) == 0) {
-            // NetGenericSync (1300, TickReisebueroRefill);
-            // NetGenericSync (1301, TickLastMinuteRefill);
-            // NetGenericSync (1302, TickFrachtRefill);
-            // NetGenericSync (1303, TickMuseumRefill);
+            NetGenericSync(1300, TickReisebueroRefill);
+            NetGenericSync(1301, TickLastMinuteRefill);
+            NetGenericSync(1302, TickFrachtRefill);
+            NetGenericSync(1303, TickMuseumRefill);
 
             TickReisebueroRefill++;
             TickLastMinuteRefill++;
@@ -1370,10 +1347,12 @@ void SIM::DoTimeStep() {
             TickMuseumRefill++;
 
             for (SLONG c = 0; c < SLONG(Cities.AnzEntries()); c++) {
-                // NetGenericSync (1310+c, AuslandsRefill[c]);
+                NetGenericSync(1310 + c, AuslandsRefill[c]);
                 AuslandsRefill[c]++;
                 AuslandsFRefill[c]++;
             }
+
+            GameMechanic::flightJobsRefill();
         }
 
         if (GetHour() >= 9 && GetHour() < 18 && (CallItADay == 0)) {
@@ -2310,25 +2289,10 @@ void SIM::NewDay() {
     UpdateSeason();
     AT_Log("Start of new day: %ld (%s)", Date, (LPCTSTR)Helper::getWeekday(Sim.Date));
 
+    TickMuseumRefill = 6;
+
     // In den Reisebüros die Zettel nachfüllen:
-    gFrachten.Random.SRand(Date);
-    LastMinuteAuftraege.Random.SRand(Date + 1);
-    ReisebueroAuftraege.Random.SRand(Date + 2);
-
-    LastMinuteAuftraege.FillForLastMinute();
-    ReisebueroAuftraege.FillForReisebuero();
-    gFrachten.Fill();
-    TickReisebueroRefill = TickLastMinuteRefill = TickMuseumRefill = TickFrachtRefill = 6;
-
-    for (c = 0; c < SLONG(Cities.AnzEntries()); c++) {
-        AuslandsAuftraege[c].Random.SRand(Date + c + 3);
-        AuslandsAuftraege[c].FillForAusland(c);
-        AuslandsRefill[c] = 6;
-
-        AuslandsFrachten[c].Random.SRand(Date + c + 3);
-        AuslandsFrachten[c].FillForAusland(c);
-        AuslandsFRefill[c] = 6;
-    }
+    GameMechanic::flightJobsInitialFill();
 
     MonthDay++;
     if (MonthLength[Month - 1] <= MonthDay) {

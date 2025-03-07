@@ -489,15 +489,20 @@ class /**/ CAuftrag {
 
     void BlitGridAt(SBBM *pBitmap, XY Offset, BOOL Tagesansicht, SLONG Page) const;
     void RandomCities(SLONG AreaType, SLONG HomeCity, TEAKRAND *pRandom);
-    void RefillForLastMinute(SLONG AreaType, TEAKRAND *pRandom);
-    void RefillForReisebuero(SLONG AreaType, TEAKRAND *pRandom);
-    void RefillForBegin(SLONG AreaType, TEAKRAND *pRandom);
-    void RefillForAusland(SLONG AreaType, SLONG CityNum, TEAKRAND *pRandom);
-    void RefillForUhrig(SLONG AreaType, TEAKRAND *pRandom);
     BOOL FitsInPlane(const CPlane &Plane) const;
+
+    void RefillForBegin(SLONG AreaType, TEAKRAND *pRandom);
+    void RefillForUhrig(SLONG AreaType, TEAKRAND *pRandom);
 
     friend TEAKFILE &operator<<(TEAKFILE &File, const CAuftrag &Auftrag);
     friend TEAKFILE &operator>>(TEAKFILE &File, CAuftrag &Auftrag);
+
+  private:
+    void RefillForLastMinute(SLONG AreaType, TEAKRAND *pRandom);
+    void RefillForReisebuero(SLONG AreaType, TEAKRAND *pRandom);
+    void RefillForAusland(SLONG AreaType, SLONG CityNum, TEAKRAND *pRandom);
+
+    friend class CAuftraege;
 };
 
 class CAuftraege : public ALBUM_V<CAuftrag> {
@@ -547,14 +552,19 @@ class CFracht {
 
     void BlitGridAt(SBBM *pBitmap, XY Offset, BOOL Tagesansicht, SLONG Page) const;
     void RandomCities(SLONG AreaType, SLONG HomeCity, TEAKRAND *pRand);
-    void RefillForBegin(SLONG AreaType, TEAKRAND *pRand);
-    void Refill(SLONG AreaType, TEAKRAND *pRnd);
-    void RefillForAusland(SLONG AreaType, SLONG CityNum, TEAKRAND *pRandom);
     BOOL FitsInPlane(const CPlane &Plane) const;
     BOOL IsValid() const { return Praemie > 0; };
 
+    void RefillForBegin(SLONG AreaType, TEAKRAND *pRand);
+
     friend TEAKFILE &operator<<(TEAKFILE &File, const CFracht &Fracht);
     friend TEAKFILE &operator>>(TEAKFILE &File, CFracht &Fracht);
+
+  private:
+    void Refill(SLONG AreaType, TEAKRAND *pRnd);
+    void RefillForAusland(SLONG AreaType, SLONG CityNum, TEAKRAND *pRandom);
+
+    friend class CFrachten;
 };
 
 class CFrachten : public ALBUM_V<CFracht> {

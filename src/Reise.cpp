@@ -61,9 +61,6 @@ CReisebuero::CReisebuero(BOOL bHandy, ULONG PlayerNum) : CStdRaum(bHandy, Player
 
     AmbientManager.SetGlobalVolume(60);
 
-    Sim.NetRefill(2);
-    ReisebueroAuftraege.RefillForReisebuero();
-
     SP_Girl.ReSize(4);
     //--------------------------------------------------------------------------------------------
     SP_Girl.Clips[0].ReSize(0, "rbwait.smk", "", XY(200, 227), SPM_IDLE, CRepeat(1, 1), CPostWait(40, 80), SMACKER_CLIP_CANCANCEL, nullptr, SMACKER_CLIP_SET, 0,
@@ -164,9 +161,6 @@ CReisebuero::~CReisebuero() {
     }
 
     Sim.Players.Players[PlayerNum].Messages.AddMessage(BERATERTYP_AUFTRAG, "", MESSAGE_COMMENT);
-
-    Sim.NetRefill(2);
-    ReisebueroAuftraege.RefillForReisebuero();
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////

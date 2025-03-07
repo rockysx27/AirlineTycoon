@@ -3005,7 +3005,6 @@ void CPlaner::AutoPlan(SLONG mode) {
             continue;
         }
 
-        GameMechanic::refillFlightJobs(n);
         cities.push_back(n);
     }
 

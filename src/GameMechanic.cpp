@@ -2383,6 +2383,57 @@ bool GameMechanic::refillFlightJobs(SLONG cityNum, SLONG minimum) {
     return true;
 }
 
+bool GameMechanic::flightJobsInitialFill() {
+    if (Sim.bNetwork == 0) {
+        gFrachten.Random.SRand(AtGetTime());
+        LastMinuteAuftraege.Random.SRand(AtGetTime());
+        ReisebueroAuftraege.Random.SRand(AtGetTime());
+    } else {
+        gFrachten.Random.SRand(Sim.Date);
+        LastMinuteAuftraege.Random.SRand(Sim.Date + 1);
+        ReisebueroAuftraege.Random.SRand(Sim.Date + 2);
+
+        // Sim.NetRefill(1);
+        // Sim.NetRefill(2);
+        // Sim.NetRefill(3);
+    }
+
+    LastMinuteAuftraege.FillForLastMinute();
+    ReisebueroAuftraege.FillForReisebuero();
+    gFrachten.Fill();
+
+    for (SLONG c = 0; c < Cities.AnzEntries(); c++) {
+        if (Sim.bNetwork == 0) {
+            AuslandsAuftraege[c].Random.SRand(AtGetTime());
+            AuslandsFrachten[c].Random.SRand(AtGetTime());
+        } else {
+            AuslandsAuftraege[c].Random.SRand(Sim.Date + c + 3);
+            AuslandsFrachten[c].Random.SRand(Sim.Date + c + 3);
+
+            // Sim.NetRefill(4, c);
+            // Sim.NetRefill(5, c);
+        }
+
+        AuslandsAuftraege[c].FillForAusland(c);
+        AuslandsFrachten[c].FillForAusland(c);
+    }
+
+    return true;
+}
+
+bool GameMechanic::flightJobsRefill() {
+    LastMinuteAuftraege.RefillForLastMinute();
+    ReisebueroAuftraege.RefillForReisebuero();
+    gFrachten.Refill();
+
+    for (SLONG c = 0; c < Cities.AnzEntries(); c++) {
+        AuslandsAuftraege[c].RefillForAusland(c);
+        AuslandsFrachten[c].RefillForAusland(c);
+    }
+
+    return true;
+}
+
 bool GameMechanic::planFlightJob(PLAYER &qPlayer, SLONG planeID, SLONG objectID, SLONG date, SLONG time) {
     if (!qPlayer.Auftraege.IsInAlbum(objectID)) {
         AT_Error("GameMechanic::planFlightJob(%s): Invalid job index (%ld).", qPlayer.AirlineX.c_str(), objectID);

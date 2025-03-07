@@ -151,7 +151,6 @@ void Bot::actionCallInternational(bool areWeInOffice) {
             continue;
         }
 
-        GameMechanic::refillFlightJobs(n);
         cities.push_back(n);
     }
 
@@ -170,13 +169,9 @@ void Bot::actionCallInternational(bool areWeInOffice) {
 }
 
 void Bot::actionCheckLastMinute() {
-    LastMinuteAuftraege.RefillForLastMinute();
-
     BotPlaner planer(qPlayer, qPlayer.Planes);
     planer.addJobSource(BotPlaner::JobOwner::LastMinute, {});
     grabFlights(planer, false);
-
-    LastMinuteAuftraege.RefillForLastMinute();
 }
 
 void Bot::actionCheckTravelAgency() {
@@ -190,23 +185,15 @@ void Bot::actionCheckTravelAgency() {
         }
     }
 
-    ReisebueroAuftraege.RefillForReisebuero();
-
     BotPlaner planer(qPlayer, qPlayer.Planes);
     planer.addJobSource(BotPlaner::JobOwner::TravelAgency, {});
     grabFlights(planer, false);
-
-    ReisebueroAuftraege.RefillForReisebuero();
 }
 
 void Bot::actionCheckFreightDepot() {
-    gFrachten.Refill();
-
     BotPlaner planer(qPlayer, qPlayer.Planes);
     planer.addJobSource(BotPlaner::JobOwner::Freight, {});
     grabFlights(planer, false);
-
-    gFrachten.Refill();
 }
 
 void Bot::actionUpgradePlanes() {
