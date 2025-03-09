@@ -351,6 +351,7 @@ void CTakeOffApp::CLI(int argc, char *argv[]) {
             if (i < argc) {
                 // gAutoBotDiff = atoi(argv[i]);
                 kSchedulingMinScoreRatio = atoi(argv[i]) * 10 * 1000.0F;
+                kSchedulingMinScoreRatioLastMinute = kSchedulingMinScoreRatio / 10.0F;
             }
         }
     }

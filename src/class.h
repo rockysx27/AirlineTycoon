@@ -140,7 +140,7 @@ class /**/ SValue {
     void NewDay(void);
 
     // Funktionen zum Abfragen der Daten:
-    __int64 GetAtPastDay(SLONG Day) // 0=Heute, 1=Gestern, ... 29=letzer Eintrag
+    __int64 GetAtPastDay(SLONG Day) const // 0=Heute, 1=Gestern, ... 29=letzer Eintrag
     {
         if (Day >= Days.AnzEntries()) {
             return 0;

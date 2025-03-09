@@ -28,44 +28,40 @@ extern SLONG WasLButtonDownMouseClickPar2;
 void printPostGameInfo();
 
 void printPostGameInfo() {
-    SLONG botPlayerNum = -1;
+    Helper::printStatisticsLineForAllPlayers("BotStatistics2", true);
+
     __int64 bestBot = 0;
     __int64 bestEnemy = 0;
     for (SLONG c = 0; c < Sim.Players.Players.AnzEntries(); c++) {
         auto &qPlayer = Sim.Players.Players[c];
         if (qPlayer.IsSuperBot()) {
-            botPlayerNum = c;
             bestBot = std::max(bestBot, qPlayer.Statistiken[STAT_MISSIONSZIEL].GetAtPastDay(0));
         } else {
             bestEnemy = std::max(bestEnemy, qPlayer.Statistiken[STAT_MISSIONSZIEL].GetAtPastDay(0));
         }
     }
-    if (botPlayerNum != -1) {
-        auto &qPlayer = Sim.Players.Players[botPlayerNum];
 
-        printf("BotMission: Mission, Tage");
-        for (SLONG c = 0; c < 4; c++) {
-            printf(", Sieg%s", (LPCTSTR)Sim.Players.Players[c].Abk);
-        }
-        printf(", BesterGegner\n");
+    printf("BotMission: Mission, Tage");
+    for (SLONG c = 0; c < 4; c++) {
+        printf(", Sieg%s", (LPCTSTR)Sim.Players.Players[c].Abk);
+    }
+    printf(", BesterGegner\n");
 
-        printf("BotMission: %d, %d", Sim.Difficulty, Sim.Date);
-        for (SLONG c = 0; c < 4; c++) {
-            auto &qP = Sim.Players.Players[c];
-            printf(", %d", (qP.HasWon() != 0 && qP.IsOut == 0) ? 1 : 0);
-        }
-        if (bestBot != 0) {
-            auto bestRatio = static_cast<SLONG>(std::round(100.0F * bestEnemy / bestBot));
-            printf(", %d\n", bestRatio);
-        } else {
-            printf(", NaN\n");
-        }
+    printf("BotMission: %d, %d", Sim.Difficulty, Sim.Date);
+    for (SLONG c = 0; c < 4; c++) {
+        auto &qPlayer = Sim.Players.Players[c];
+        printf(", %d", (qPlayer.HasWon() != 0 && qPlayer.IsOut == 0) ? 1 : 0);
+    }
+    if (bestBot != 0) {
+        auto bestRatio = static_cast<SLONG>(std::round(100.0F * bestEnemy / bestBot));
+        printf(", %d\n", bestRatio);
+    } else {
+        printf(", NaN\n");
+    }
 
-        qPlayer.mBot->printStatisticsLine("BotStatistics2", true);
-
-        if (gQuickTestRun > 0) {
-            exit(0);
-        }
+    if (gQuickTestRun > 0) {
+        std::cout << "---" << std::endl;
+        exit(0);
     }
 }
 

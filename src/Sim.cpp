@@ -1157,6 +1157,8 @@ void SIM::ChooseStartup() {
     CreateRandomUsedPlanes();
 
     DumpAASeedSum(1002);
+
+    Helper::printStatisticsLineForAllPlayers("BotStatistics", (Sim.Date == 0));
 }
 
 //----------------------------------------------------------------------------------------
@@ -2528,6 +2530,8 @@ void SIM::NewDay() {
     }
 
     CallItADay = FALSE;
+
+    Helper::printStatisticsLineForAllPlayers("BotStatistics", (Sim.Date == 0));
 }
 
 //--------------------------------------------------------------------------------------------

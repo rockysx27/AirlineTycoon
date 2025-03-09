@@ -56,13 +56,14 @@ class Bot {
   public:
     explicit Bot(PLAYER &player);
 
-    void printStatisticsLine(const CString &prefix, bool printHeader);
-
     void RobotInit();
     void RobotPlan();
     void RobotExecuteAction();
 
     void setNoticedSickness() { mIsSickToday = true; }
+
+    /* misc (in BotMisc.cpp) */
+    __int64 getMoneyAvailable() const;
 
     /* anim state */
     bool getOnThePhone() const { return mOnThePhone > 0; }
@@ -246,7 +247,6 @@ class Bot {
     bool checkLaptop();
     enum class HowToPlan { None, Laptop, Office };
     HowToPlan howToPlanFlights();
-    __int64 getMoneyAvailable() const;
     AreWeBroke areWeBroke() const;
     HowToGetMoney howToGetMoney();
     __int64 howMuchMoneyCanWeGet(bool extremeMeasures);

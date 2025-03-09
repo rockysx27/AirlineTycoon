@@ -187,6 +187,9 @@ SLONG getWalkDistance(int playerNum, SLONG roomId);
 
 const char *getItemName(SLONG item);
 
+void printStatisticsLine(const PLAYER &qPlayer, const CString &prefix, bool printHeader);
+void printStatisticsLineForAllPlayers(const CString &prefix, bool printHeader);
+
 } // namespace Helper
 
 #endif // BOT_HELPER_H_

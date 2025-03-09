@@ -22,6 +22,16 @@ template <class... Types> void AT_Warn(Types... args) { Hdu.HercPrintfMsg(SDL_LO
 template <class... Types> void AT_Info(Types... args) { Hdu.HercPrintfMsg(SDL_LOG_PRIORITY_INFO, "Bot", args...); }
 template <class... Types> void AT_Log(Types... args) { AT_Log_I("Bot", args...); }
 
+__int64 Bot::getMoneyAvailable() const {
+    __int64 m = qPlayer.Money;
+    m -= mMoneyReservedForRepairs;
+    m -= mMoneyReservedForUpgrades;
+    m -= mMoneyReservedForAuctions;
+    m -= mMoneyReservedForFines;
+    m -= kMoneyEmergencyFund;
+    return m;
+}
+
 void Bot::printRobotFlags() const {
     const std::array<std::pair<SLONG, bool>, 28> list = {
         {{ROBOT_USE_FRACHT, true},         {ROBOT_USE_WERBUNG, true},           {ROBOT_USE_NASA, false},
@@ -99,16 +109,6 @@ Bot::HowToPlan Bot::howToPlanFlights() {
         return HowToPlan::Office;
     }
     return HowToPlan::None;
-}
-
-__int64 Bot::getMoneyAvailable() const {
-    __int64 m = qPlayer.Money;
-    m -= mMoneyReservedForRepairs;
-    m -= mMoneyReservedForUpgrades;
-    m -= mMoneyReservedForAuctions;
-    m -= mMoneyReservedForFines;
-    m -= kMoneyEmergencyFund;
-    return m;
 }
 
 Bot::AreWeBroke Bot::areWeBroke() const {
