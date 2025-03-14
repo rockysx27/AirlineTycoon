@@ -72,7 +72,9 @@ void Bot::actionStartDayLaptop(__int64 moneyAvailable) {
     mArabHintsTracker -= std::min(3, mArabHintsTracker);
 
     /* check lists of planes, check which planes are available for service and which are not */
-    checkPlaneLists();
+    if (checkPlaneLists()) {
+        planFlights();
+    }
 
     /* check routes */
     if (mDoRoutes) {

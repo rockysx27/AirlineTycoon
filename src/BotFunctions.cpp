@@ -443,7 +443,6 @@ void Bot::requestPlanFlights(bool areWeInOffice) {
     if (res == HowToPlan::Office && areWeInOffice) {
         AT_Log("Bot::requestPlanFlights(): Already in office, planning right now");
         planFlights();
-        mNeedToPlanJobs = false;
     }
 }
 
