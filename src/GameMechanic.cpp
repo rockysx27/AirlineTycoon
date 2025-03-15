@@ -2891,7 +2891,6 @@ void GameMechanic::executeAirlineOvertake() {
 
         // Geld und Aktien übernehmen:
         Overtaker.ChangeMoney(Overtaken.Money, 3180, "");
-        SIM::SendSimpleMessage64(ATNET_CHANGEMONEY, 0, Overtaker.PlayerNum, Overtaken.Money, 3180);
         Overtaker.Credit += Overtaken.Credit;
         Overtaker.AnzAktien += Overtaken.AnzAktien;
         for (c = 0; c < 4; c++) {
@@ -3027,7 +3026,6 @@ void GameMechanic::executeAirlineOvertake() {
             if ((Sim.Players.Players[c].IsOut == 0) && (ownsStock != 0)) {
                 __int64 money = moneyToDistribute * ownsStock / stockTotal;
                 Sim.Players.Players[c].ChangeMoney(money, 3181, Overtaken.AirlineX.c_str());
-                SIM::SendSimpleMessage64(ATNET_CHANGEMONEY, 0, c, money, 3181);
             }
         }
     }
