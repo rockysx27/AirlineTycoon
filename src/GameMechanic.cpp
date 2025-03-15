@@ -3147,7 +3147,6 @@ void GameMechanic::executeSabotageMode1() {
                 qPlayer.ArabHints += 4;
             }
             qOpfer.ChangeMoney(-2000, 3500, "");
-            SIM::SendSimpleMessage64(ATNET_CHANGEMONEY, 0, qOpfer.PlayerNum, -2000, 3500);
             qOpfer.Kurse[0] *= 0.9;
             qOpfer.TrustedDividende -= 2;
             qOpfer.Sympathie[c] -= 15;
@@ -3167,7 +3166,6 @@ void GameMechanic::executeSabotageMode1() {
                 qPlayer.ArabHints += 10;
             }
             qOpfer.ChangeMoney(-8000, 3500, "");
-            SIM::SendSimpleMessage64(ATNET_CHANGEMONEY, 0, qOpfer.PlayerNum, -8000, 3500);
             qOpfer.Kurse[0] *= 0.85;
             qOpfer.TrustedDividende -= 3;
             qOpfer.Sympathie[c] -= 35;
@@ -3211,7 +3209,6 @@ void GameMechanic::executeSabotageMode1() {
                 qPlayer.ArabHints += 20;
             }
             qOpfer.ChangeMoney(-40000, 3500, "");
-            SIM::SendSimpleMessage64(ATNET_CHANGEMONEY, 0, qOpfer.PlayerNum, -40000, 3500);
             qOpfer.Kurse[0] *= 0.75;
             qOpfer.TrustedDividende -= 4;
             qOpfer.Sympathie[c] -= 80;
@@ -3230,7 +3227,6 @@ void GameMechanic::executeSabotageMode1() {
                 qPlayer.ArabHints += 100;
             }
             qOpfer.ChangeMoney(-70000, 3500, "");
-            SIM::SendSimpleMessage64(ATNET_CHANGEMONEY, 0, qOpfer.PlayerNum, -70000, 3500);
             qOpfer.Kurse[0] *= 0.70;
             qOpfer.TrustedDividende -= 5;
             qOpfer.Sympathie[c] -= 200;
@@ -3453,10 +3449,8 @@ void GameMechanic::executeSabotageMode3() {
 
         case 4: // Bankkonto hacken
             qOpfer.ChangeMoney(-1000000, 3502, "");
-            SIM::SendSimpleMessage64(ATNET_CHANGEMONEY, 0, qOpfer.PlayerNum, -1000000, 3502);
             if (!bFremdsabotage) {
                 qPlayer.ChangeMoney(1000000, 3502, "");
-                SIM::SendSimpleMessage64(ATNET_CHANGEMONEY, 0, qPlayer.PlayerNum, 1000000, 3502);
             }
             if (!bFremdsabotage) {
                 qPlayer.ArabHints += 30;
