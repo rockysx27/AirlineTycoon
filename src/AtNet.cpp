@@ -1118,9 +1118,8 @@ void PumpNetwork() {
                     // Jemand kauft gebrauchtes Flugzeug:
                 case 1:
                     if (qPlayer.HasBerater(BERATERTYP_INFO) >= rnd.Rand(100)) {
-                        qPlayer.Messages.AddMessage(BERATERTYP_INFO,
-                                                    bprintf(StandardTexte.GetS(TOKEN_ADVICE, 9000), (LPCTSTR)qFromPlayer.NameX, (LPCTSTR)qFromPlayer.AirlineX,
-                                                            Sim.UsedPlanes[0x1000000 + Generic1].CalculatePrice()));
+                        qPlayer.Messages.AddMessage(BERATERTYP_INFO, bprintf(StandardTexte.GetS(TOKEN_ADVICE, 9000), (LPCTSTR)qFromPlayer.NameX,
+                                                                             (LPCTSTR)qFromPlayer.AirlineX, Sim.UsedPlanes[Generic1].CalculatePrice()));
                     }
                     break;
 
@@ -1158,9 +1157,9 @@ void PumpNetwork() {
                     qFromPlayer.Planes.ReSize(qFromPlayer.Planes.AnzEntries() + 10);
                 }
 
-                qFromPlayer.Planes += Sim.UsedPlanes[0x1000000 + PlaneIndex];
+                qFromPlayer.Planes += Sim.UsedPlanes[PlaneIndex];
 
-                Sim.UsedPlanes[0x1000000 + PlaneIndex].Name.Empty();
+                Sim.UsedPlanes[PlaneIndex].Name.Empty();
                 Sim.TickMuseumRefill = 0;
             } break;
 
@@ -2034,7 +2033,7 @@ void NetGenericSync(SLONG SyncId) {
 // Kehrt erst zurück, wenn die anderen Spieler hier auch waren:
 // Gibt Warnung aus, falls die Parameter unterschiedlich waren.
 //--------------------------------------------------------------------------------------------
-#ifdef _DEBUG
+#ifdef DEBUG_NET
 void NetGenericSync(SLONG SyncId, SLONG Par) {
     static bool bReentrant = false;
 
@@ -2097,7 +2096,7 @@ void NetGenericSync(SLONG /*SyncId*/, SLONG /*Par*/) {}
 // Kehrt erst zurück, wenn die anderen Spieler hier auch waren:
 // Gibt Warnung aus, falls die Parameter unterschiedlich waren.
 //--------------------------------------------------------------------------------------------
-#ifdef _DEBUG
+#ifdef DEBUG_NET
 void NetGenericAsync(SLONG SyncId, SLONG Par, SLONG player) {
     if (!Sim.bNetwork) {
         return;

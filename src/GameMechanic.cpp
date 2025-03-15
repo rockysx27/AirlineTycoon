@@ -699,10 +699,13 @@ SLONG GameMechanic::buyUsedPlane(PLAYER &qPlayer, SLONG planeID) {
 
     qPlayer.DoBodyguardRabatt(cost);
 
-    SLONG idx = planeID - 0x10000000;
     if (Sim.bNetwork != 0) {
-        SIM::SendSimpleMessage(ATNET_ADVISOR, 0, 1, qPlayer.PlayerNum, idx);
-        SIM::SendSimpleMessage(ATNET_BUY_USED, 0, qPlayer.PlayerNum, idx, Sim.Time);
+        SLONG id = planeID;
+        if (id < 0x1000000) {
+            id = Sim.UsedPlanes.GetIdFromIndex(id);
+        }
+        SIM::SendSimpleMessage(ATNET_ADVISOR, 0, 1, qPlayer.PlayerNum, id);
+        SIM::SendSimpleMessage(ATNET_BUY_USED, 0, qPlayer.PlayerNum, id, Sim.Time);
     }
 
     Sim.UsedPlanes[planeID].Name.Empty();
