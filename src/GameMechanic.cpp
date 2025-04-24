@@ -1580,7 +1580,7 @@ GameMechanic::PickUpItemResult GameMechanic::pickUpItem(PLAYER &qPlayer, SLONG i
         if (room != ROOM_ARAB_AIR) {
             AT_Log("GameMechanic::pickUpItem(%s): Player is in wrong room (%u).", qPlayer.AirlineX.c_str(), room);
         }
-        if (Sim.ItemGlove != 0) {
+        if (Sim.ItemGlove == 0) {
             AT_Error("GameMechanic::pickUpItem(%s): Item already taken (%ld).", qPlayer.AirlineX.c_str(), item);
             return PickUpItemResult::ConditionsNotMet;
         }
