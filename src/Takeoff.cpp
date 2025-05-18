@@ -736,7 +736,7 @@ void CTakeOffApp::InitInstance(int argc, char *argv[]) {
         }
 
         if (gLanguage == LANGUAGE_P)
-            LOADING_TEXT("Wyszukiwanie urz\xB9dzenia MIDI...")
+            LOADING_TEXT("Wyszukiwanie urz\u00B9dzenia MIDI...")
         else if (gLanguage == LANGUAGE_D)
             LOADING_TEXT("Suche nach Midi-Ger\xE4t...")
         else if (gLanguage == LANGUAGE_N)
@@ -770,7 +770,7 @@ void CTakeOffApp::InitInstance(int argc, char *argv[]) {
             if (gpMidi != nullptr) {
 
                 if (gLanguage == LANGUAGE_P)
-                    LOADING_TEXT("Ustawianie g\xB3\xF3\x9Cno\xE6ci MIDI...")
+                    LOADING_TEXT("Ustawianie g\xB3\xF3\u00E6ci MIDI...")
                 else if (gLanguage == LANGUAGE_D)
                     LOADING_TEXT("Midi-Lautst\xE4rke einstellen...")
                 else if (gLanguage == LANGUAGE_N)
@@ -803,7 +803,7 @@ void CTakeOffApp::InitInstance(int argc, char *argv[]) {
                     NextMidi();
 
                     if (gLanguage == LANGUAGE_P)
-                        LOADING_TEXT("Resetowanie g\xB3\xF3\x9Cno\xE6ci MIDI...")
+                        LOADING_TEXT("Resetowanie g\u0142\u00F3\u00A6ci MIDI...")
                     else if (gLanguage == LANGUAGE_D)
                         LOADING_TEXT("Midi-Lautst\xE4rke zur\xFC\x63ksetzen...")
                     else if (gLanguage == LANGUAGE_N)
@@ -913,7 +913,7 @@ void CTakeOffApp::InitInstance(int argc, char *argv[]) {
         }
 
         if (gLanguage == LANGUAGE_P)
-            LOADING_TEXT("\xA3adowanie danych postaci...")
+            LOADING_TEXT("\u00A3adowanie danych postaci...")
         else if (gLanguage == LANGUAGE_D)
             LOADING_TEXT("Laden von Charakterdaten...")
         else if (gLanguage == LANGUAGE_N)
