@@ -613,6 +613,9 @@ void SIM::ChooseStartup() {
         if (gLanguage == LANGUAGE_F) {
             Options.OptionAirport = Cities.GetIdFromName("Paris");
         }
+        if (gLanguage == LANGUAGE_P) {
+            Options.OptionAirport = Cities.GetIdFromName("Warszawa");
+        }
     }
     HomeAirportId = Options.OptionAirport;
 
@@ -1190,7 +1193,7 @@ void SIM::CreateMissionCities() {
     MissionCities.ReSize(6);
 
     // Default-Städte:
-    MissionCities[0] = Cities.GetIdFromNames("R\xEDo de Janeiro", "Rio de Janeiro", "Rio", NULL);
+    MissionCities[0] = Cities.GetIdFromNames("R\xEDo de Janeiro", "Rio de Janeiro", NULL);
     MissionCities[1] = Cities.GetIdFromNames("Nova Iorque", "Nueva York", "New York", "Nowy Jork", NULL);
     MissionCities[2] = Cities.GetIdFromNames("T\xF3quio", "Tokio", "Tokyo", NULL);
     MissionCities[3] = Cities.GetIdFromNames("Deli", "Delhi", "Dill\xED", NULL);
