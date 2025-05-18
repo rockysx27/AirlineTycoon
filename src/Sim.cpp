@@ -1190,12 +1190,12 @@ void SIM::CreateMissionCities() {
     MissionCities.ReSize(6);
 
     // Default-Städte:
-    MissionCities[0] = Cities.GetIdFromNames("R\xEDo de Janeiro", "Rio de Janeiro", NULL);
-    MissionCities[1] = Cities.GetIdFromNames("Nova Iorque", "Nueva York", "New York", NULL);
+    MissionCities[0] = Cities.GetIdFromNames("R\xEDo de Janeiro", "Rio de Janeiro", "Rio", NULL);
+    MissionCities[1] = Cities.GetIdFromNames("Nova Iorque", "Nueva York", "New York", "Nowy Jork", NULL);
     MissionCities[2] = Cities.GetIdFromNames("T\xF3quio", "Tokio", "Tokyo", NULL);
     MissionCities[3] = Cities.GetIdFromNames("Deli", "Delhi", "Dill\xED", NULL);
     MissionCities[4] = Cities.GetIdFromNames("Joanesburgo", "Johanesburgo", "Johannesburg", NULL);
-    MissionCities[5] = Cities.GetIdFromNames("Moskau", "Moskou", "Moscovo", "Moscou", "Mosca", "Mosc\xFA", "Moscow", "Moskva", NULL);
+    MissionCities[5] = Cities.GetIdFromNames("Moskau", "Moskou", "Moscovo", "Moscou", "Mosca", "Mosc\xFA", "Moscow", "Moskva", "Moskwa", NULL);
 
     /*if (gLanguage==LANGUAGE_S) MissionCities[0]=Cities.GetIdFromName ("Río de Janeiro");
       else                       MissionCities[0]=Cities.GetIdFromName ("Rio de Janeiro");
