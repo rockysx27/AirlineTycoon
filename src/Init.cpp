@@ -49,11 +49,8 @@ void InitPathVars() {
     if (!DoesFileExist(FullFilename("voice/aa/100.ogg", prefix))) {
         prefix.clear();
 
-        if (DoesFileExist(FullFilename("voice/aa/100.ogg", "pl"))) {
-            gLanguage = LANGUAGE_P;
-            prefix = "pl";
-        }
-        else if (DoesFileExist(FullFilename("voice/aa/100.ogg", "de"))) {
+
+        if (DoesFileExist(FullFilename("voice/aa/100.ogg", "de"))) {
             gLanguage = LANGUAGE_D;
             prefix = "de";
         } else if (DoesFileExist(FullFilename("voice/aa/100.ogg", "en"))) {
@@ -62,6 +59,9 @@ void InitPathVars() {
         } else if (DoesFileExist(FullFilename("voice/aa/100.ogg", "fr"))) {
             gLanguage = LANGUAGE_F;
             prefix = "fr";
+        } else {
+            gLanguage = LANGUAGE_P;
+            prefix = "pl";
         }
 
         if (prefix.empty()) {
