@@ -3997,6 +3997,11 @@ void COptions::ReadOptions() {
             OptionSpeechBubble = TRUE;
             OptionTalking = FALSE;
         }
+        NO_P_VOICES
+        if (gLanguage == LANGUAGE_P) {
+            OptionSpeechBubble = TRUE;
+            OptionTalking = FALSE;
+        }
 #endif
 
         if (bVoicesNotFound) {
