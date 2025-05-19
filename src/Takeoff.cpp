@@ -239,9 +239,6 @@ void CTakeOffApp::CLI(int argc, char *argv[]) {
 
         if (stricmp(Argument, "/p") == 0) { // 2.0
             gLanguage = LANGUAGE_P;
-        } else if (stricmp(Argument, "-p") == 0 || stricmp(Argument, "p") == 0) {
-            exit(0);
-            return;
         }
 
 
